@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 import asyncio
 import uvicorn
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 import json
 import os
 from pathlib import Path
@@ -272,7 +272,7 @@ async def _build_ticker_payload(force_refresh: bool = False) -> TickerPayload:
 
     return TickerPayload(
         items=combined[: ticker_service.max_items],
-        last_updated=datetime.utcnow(),
+        last_updated=datetime.now(UTC),
         cache_ttl_seconds=int(ticker_service.cache_ttl.total_seconds()),
     )
 

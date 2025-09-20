@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from typing import AsyncContextManager, Callable, List, Optional, Sequence
 
@@ -49,7 +49,7 @@ class TechTickerService:
     def _cache_expired(self) -> bool:
         if not self._cache_ts:
             return True
-        return datetime.utcnow() - self._cache_ts > self.cache_ttl
+        return datetime.now(UTC) - self._cache_ts > self.cache_ttl
 
     async def _refresh_cache(self) -> None:
         logger.info("Opdaterer tech ticker cache")
@@ -63,12 +63,12 @@ class TechTickerService:
         if items:
             converted = [self._convert_item(item) for item in items]
             self._cache = converted
-            self._cache_ts = datetime.utcnow()
+            self._cache_ts = datetime.now(UTC)
             await self._write_fallback_cache(converted)
         else:
             fallback = await self._load_fallback_cache()
             self._cache = fallback[: self.max_items]
-            self._cache_ts = datetime.utcnow()
+            self._cache_ts = datetime.now(UTC)
 
     def _convert_item(self, item: TickerItem) -> TickerArticle:
         return TickerArticle(

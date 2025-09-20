@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import List, Optional
 from urllib.parse import urlparse
 
@@ -160,7 +160,7 @@ class TechNewsTicker:
                     url=link,
                     source=self._resolve_source(entry, source_name),
                     published_at=published,
-                    scraped_at=datetime.utcnow(),
+                    scraped_at=datetime.now(UTC),
                 )
             )
 
@@ -173,7 +173,7 @@ class TechNewsTicker:
                         url=link,
                         source=self._resolve_source(fallback_entry, source_name),
                         published_at=self._parse_datetime(fallback_entry),
-                        scraped_at=datetime.utcnow(),
+                        scraped_at=datetime.now(UTC),
                     )
                 )
 

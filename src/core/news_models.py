@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from typing import List, Optional
 
@@ -67,7 +67,7 @@ class TickerArticle(BaseModel):
     url: AnyHttpUrl
     source: str
     published_at: Optional[datetime] = None
-    scraped_at: datetime = Field(default_factory=datetime.utcnow)
+    scraped_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class TickerPayload(BaseModel):

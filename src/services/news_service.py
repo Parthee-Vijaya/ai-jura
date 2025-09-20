@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 from typing import AsyncContextManager, Callable, List, Optional, Sequence
 
@@ -88,7 +88,7 @@ class NewsService:
     def _cache_expired(self) -> bool:
         if not self._cache_ts:
             return True
-        return datetime.utcnow() - self._cache_ts > self.cache_ttl
+        return datetime.now(UTC) - self._cache_ts > self.cache_ttl
 
     async def _refresh_cache(self) -> None:
         """Forsøg at hente nye nyheder og opdater cache"""
@@ -114,7 +114,7 @@ class NewsService:
             self._update_source_status(articles, fallback=True)
 
         self._cache = articles[: self.max_items]
-        self._cache_ts = datetime.utcnow()
+        self._cache_ts = datetime.now(UTC)
 
     def _convert_items(self, items: Sequence[NewsItem]) -> List[NewsArticle]:
         converted: List[NewsArticle] = []
@@ -162,7 +162,7 @@ class NewsService:
         return converted
 
     def _update_source_status(self, articles: Sequence[NewsArticle], *, fallback: bool = False) -> None:
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         counts: dict[str, int] = {}
         for article in articles:
             counts[article.source] = counts.get(article.source, 0) + 1
@@ -186,16 +186,16 @@ class NewsService:
             # Mark kilder uden artikler som manglende
             for source_name, status in self._source_status.items():
                 if counts.get(source_name, 0) == 0:
-                    self._source_status[source_name] = status.copy(update={
+                    self._source_status[source_name] = status.model_copy(update={
                         "status": SourceFetchStatus.NO_RECENT_ITEMS,
                         "last_attempt": now,
                         "items_collected": 0,
                     })
 
     def _mark_sources_error(self, error_message: str) -> None:
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         for source, status in list(self._source_status.items()):
-            self._source_status[source] = status.copy(
+            self._source_status[source] = status.model_copy(
                 update={
                     "status": SourceFetchStatus.ERROR,
                     "last_attempt": now,
