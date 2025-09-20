@@ -56,6 +56,7 @@ class LiveNewsScraper:
                 'url': 'https://ec.europa.eu/commission/presscorner',
                 'rss_feed': 'https://ec.europa.eu/newsroom/feeds/all/rss_en.xml',
                 'alt_rss_feed': 'https://ec.europa.eu/info/news/alerts/rss_en.xml',
+                'api_url': 'https://ec.europa.eu/commission/presscorner/api/latest?language=en',
                 'search_url': 'https://commission.europa.eu/news-and-media',
                 'category': 'eu_news',
                 'keywords': ['artificial intelligence', 'AI Act', 'data protection', 'digital strategy', 'AI regulation']
@@ -109,7 +110,10 @@ class LiveNewsScraper:
             connector=connector,
             timeout=aiohttp.ClientTimeout(total=15, connect=5),
             headers={
-                'User-Agent': 'Mozilla/5.0 (compatible; Judge-Jarvis-News-Bot/1.0; AI Compliance Research)'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'da-DK,da;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cache-Control': 'no-cache'
             }
         )
         return self
@@ -952,19 +956,98 @@ class LiveNewsScraper:
 
             logger.info(f"Scraped {len(news_items)} relevant articles from EU Commission RSS")
 
-            # Fallback to HTML scraping if RSS doesn't provide enough content
-            if len(news_items) < 2:
+            seen_urls = {item.url for item in news_items}
+
+            if len(news_items) < 4:
+                api_items = await self._fetch_eu_commission_api()
+                for api_item in api_items:
+                    if api_item.url not in seen_urls:
+                        news_items.append(api_item)
+                        seen_urls.add(api_item.url)
+                    if len(news_items) >= 6:
+                        break
+
+            # Fallback til HTML scraping hvis vi stadig mangler indhold
+            if len(news_items) < 3:
                 html_items = await self._scrape_eu_commission_html()
-                news_items.extend(html_items[:3])  # Add up to 3 from HTML
+                for html_item in html_items:
+                    if html_item.url not in seen_urls:
+                        news_items.append(html_item)
+                        seen_urls.add(html_item.url)
+                    if len(news_items) >= 6:
+                        break
 
         except Exception as e:
             logger.error(f"EU Commission RSS scraping failed: {e}")
-            # Try HTML fallback
+            # Try API og HTML fallback
             try:
-                html_items = await self._scrape_eu_commission_html()
-                news_items.extend(html_items[:3])
+                api_items = await self._fetch_eu_commission_api()
+                news_items.extend(api_items)
             except Exception:
                 pass
+            try:
+                html_items = await self._scrape_eu_commission_html()
+                news_items.extend(html_items)
+            except Exception:
+                pass
+
+        return news_items
+
+    async def _fetch_eu_commission_api(self) -> List[NewsItem]:
+        news_items: List[NewsItem] = []
+        if not self.session:
+            return news_items
+
+        api_url = self.sources['eu_commission'].get('api_url')
+        if not api_url:
+            return news_items
+
+        try:
+            async with self.session.get(api_url, headers={'Accept': 'application/json'}) as response:
+                if response.status != 200:
+                    logger.debug(f"EU Commission API returned status {response.status}")
+                    return news_items
+                data = await response.json()
+        except Exception as exc:
+            logger.debug(f"EU Commission API fetch fejlede: {exc}")
+            return news_items
+
+        if isinstance(data, dict):
+            entries = data.get('items') or data.get('news') or data.get('pressReleases') or []
+        elif isinstance(data, list):
+            entries = data
+        else:
+            entries = []
+
+        for entry in entries[:10]:
+            if not isinstance(entry, dict):
+                continue
+            title = entry.get('title') or entry.get('headline') or entry.get('name')
+            link = entry.get('url') or entry.get('link') or entry.get('href')
+            if not title or not link:
+                continue
+
+            summary = entry.get('summary') or entry.get('teaser') or entry.get('lead') or ''
+            summary = self._extract_text_summary(summary, 280) if summary else ''
+
+            published_raw = entry.get('date') or entry.get('published') or entry.get('publicationDate')
+            published_date = self._parse_date(published_raw) if published_raw else datetime.now() - timedelta(hours=6)
+
+            keywords = self._extract_keywords(f"{title} {summary}")
+            if not self._is_relevant_content(title, summary, keywords):
+                continue
+
+            news_items.append(NewsItem(
+                title=title,
+                url=link,
+                source='EU Commission',
+                category='eu_news',
+                summary=summary,
+                keywords=keywords,
+                importance=self._assess_importance(title, summary, keywords),
+                scraped_at=datetime.now(),
+                published_date=published_date
+            ))
 
         return news_items
 
@@ -1468,49 +1551,120 @@ class LiveNewsScraper:
         )
 
     async def _scrape_council_eu_rss(self) -> List[NewsItem]:
-        """Scrape Council of EU news via RSS feed"""
-        news_items = []
+        """Scrape Council of EU news med HTML fallback"""
+        news_items: List[NewsItem] = []
         try:
-            # Try primary RSS feed first
-            rss_url = self.sources['council_eu']['rss_feed']
-            entries = await self._fetch_rss_feed(rss_url)
-
-            # If primary feed fails, try alternative
-            if not entries and 'alt_rss_feed' in self.sources['council_eu']:
-                logger.info("Trying alternative Council of EU RSS feed...")
-                rss_url = self.sources['council_eu']['alt_rss_feed']
-                entries = await self._fetch_rss_feed(rss_url)
+            rss_candidates = [
+                self.sources['council_eu'].get('rss_feed'),
+                self.sources['council_eu'].get('alt_rss_feed')
+            ]
 
             source_keywords = self.sources['council_eu']['keywords']
 
-            for entry in entries[:15]:  # Limit to latest 15
-                news_item = self._extract_rss_content(
-                    entry, "Council of EU", "eu_council", source_keywords
-                )
-                if news_item:
-                    news_items.append(news_item)
+            for rss_url in rss_candidates:
+                if not rss_url:
+                    continue
+                entries = await self._fetch_rss_feed(rss_url)
+                if not entries:
+                    continue
 
-            logger.info(f"Scraped {len(news_items)} relevant articles from Council of EU RSS")
+                for entry in entries[:15]:
+                    news_item = self._extract_rss_content(
+                        entry, "Council of EU", "eu_council", source_keywords
+                    )
+                    if news_item:
+                        news_items.append(news_item)
 
-            # Add fallback item if no RSS results
+                if news_items:
+                    break
+
             if not news_items:
-                fallback_item = NewsItem(
-                    title="Council of the European Union - Digital and AI Policy Updates",
-                    url="https://www.consilium.europa.eu/en/policies/digital-agenda/",
-                    source="Council of EU",
-                    published_date=datetime.now() - timedelta(hours=4),
-                    category="eu_council",
-                    summary="Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
-                    keywords=["digital agenda", "ai regulation", "digital policy"],
-                    importance="medium",
-                    scraped_at=datetime.now()
-                )
-                news_items.append(fallback_item)
+                logger.info("Council of EU RSS gav ingen resultater, forsøger HTML scraping")
+                news_items = await self._scrape_council_eu_html()
+
+            if not news_items:
+                news_items.append(self._create_council_fallback())
 
         except Exception as e:
-            logger.error(f"Council of EU RSS scraping failed: {e}")
+            logger.error(f"Council of EU scraping failed: {e}")
+            news_items = [self._create_council_fallback()]
 
         return news_items
+
+    async def _scrape_council_eu_html(self) -> List[NewsItem]:
+        news_items: List[NewsItem] = []
+        session = self.session
+        if not session:
+            return news_items
+
+        page_candidates = [
+            'https://www.consilium.europa.eu/en/press/press-releases/',
+            'https://www.consilium.europa.eu/en/policies/digital-agenda/',
+            'https://www.consilium.europa.eu/en/search/?q=artificial%20intelligence&type=press_release'
+        ]
+
+        for page_url in page_candidates:
+            try:
+                soup = await self._fetch_html_page(page_url)
+                if not soup:
+                    continue
+
+                article_elements = soup.select('article, .listing__item, .ct-press-release, .press-release')
+                for element in article_elements[:10]:
+                    title_elem = element.select_one('h2, h3, .title, .listing__title')
+                    link_elem = element.select_one('a[href]')
+                    summary_elem = element.select_one('p, .lead, .listing__description, .summary')
+
+                    title = title_elem.get_text(strip=True) if title_elem else ''
+                    link = link_elem['href'] if link_elem else ''
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(page_url, link)
+
+                    combined = f"{title} {summary}"
+                    keywords = self._extract_keywords(combined)
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    published = self._parse_date(self._extract_date_from_element(element))
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="Council of EU",
+                        category='eu_council',
+                        summary=self._extract_text_summary(summary, 280),
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now(),
+                        published_date=published
+                    ))
+
+                if news_items:
+                    break
+
+            except Exception as exc:
+                logger.debug("Council of EU HTML parsing mislykkedes for %s: %s", page_url, exc)
+                continue
+
+        return news_items
+
+    def _create_council_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="Council of the European Union - Digital and AI Policy Updates",
+            url="https://www.consilium.europa.eu/en/policies/digital-agenda/",
+            source="Council of EU",
+            published_date=datetime.now() - timedelta(hours=4),
+            category="eu_council",
+            summary="Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
+            keywords=["digital agenda", "ai regulation", "digital policy"],
+            importance="medium",
+            scraped_at=datetime.now()
+        )
 
     async def _scrape_kl(self) -> List[NewsItem]:
         """Legacy method - redirects to RSS scraping"""

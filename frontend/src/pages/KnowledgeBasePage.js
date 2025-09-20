@@ -23,7 +23,8 @@ import {
   FaLock,
   FaPlus,
   FaTimes,
-  FaSave
+  FaSave,
+  FaYoutube
 } from 'react-icons/fa';
 
 const initialKnowledgeItems = [
@@ -155,11 +156,12 @@ const initialKnowledgeItems = [
     term: 'Embeddings',
     category: 'technical',
     icon: FaDatabase,
-    definition: 'Numeriske repræsentationer af ord, sætninger eller dokumenter der bevarer semantisk betydning i et højdimensionalt vektorrum.',
-    context: 'Embeddings er fundamentale for moderne AI-systemer og muliggør semantisk analyse og sammenligning. De bruges til alt fra søgning og anbefaling til tekstklassificering og oversættelse.',
-    tags: ['Semantisk analyse', 'Vektorrepræsentation', 'NLP'],
+    definition: 'Numeriske vektorer som repræsenterer tekst i et højdimensionalt rum, hvor semantisk lignende tekster ligger tæt på hinanden.',
+    context: 'Embeddings bruges i semantisk søgning, RAG og klassificering. Moderne embeddings (fx OpenAI text-embedding-3, Cohere embed v3) understøtter både flersprogede inputs og metadata-annotering for præcis retrieval.',
+    tags: ['Semantisk søgning', 'Vektorrepræsentation', 'NLP'],
     references: [
-      { text: 'Word2Vec Paper', url: 'https://arxiv.org/abs/1301.3781' }
+      { text: 'Word2Vec Paper', url: 'https://arxiv.org/abs/1301.3781' },
+      { text: 'OpenAI Embeddings Guide', url: 'https://platform.openai.com/docs/guides/embeddings' }
     ]
   },
   {
@@ -211,6 +213,90 @@ const initialKnowledgeItems = [
     tags: ['Systemisk risiko', 'Computational power', 'Red teaming'],
     references: [
       { text: 'AI Act Art. 55', url: 'https://eur-lex.europa.eu/eli/reg/2024/1689/oj' }
+    ]
+  },
+  {
+    id: 16,
+    term: 'IBM Think 2024 – Åbningskeynote',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Keynote fra IBM Think 2024 hvor IBM præsenterer strategier for ansvarlig AI, hybrid cloud og governance.',
+    context: 'Videoen opsummerer hovedbudskaberne fra Think-konferencens åbningssession og viser, hvordan globale virksomheder operationaliserer AI under regulering.',
+    tags: ['IBM Think', 'Keynote', 'AI strategi'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/7ypI1oojoII?si=3jkLR7HPhejrr7EQ',
+    references: [
+      { text: 'Se keynote (YouTube)', url: 'https://www.youtube.com/watch?v=7ypI1oojoII' },
+      { text: 'IBM Technology kanalen', url: 'https://www.youtube.com/@IBMTechnology' }
+    ]
+  },
+  {
+    id: 17,
+    term: 'IBM Think 2024 – Responsible AI panel',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Paneldebat om ansvarlig AI, governance og regulatorisk klarhed optaget på IBM Think 2024.',
+    context: 'Eksperter fra IBM og partnere diskuterer praktiske modeller for dokumentation, risk frameworks og alignment med AI Act og GDPR.',
+    tags: ['IBM Think', 'Responsible AI', 'Governance'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/dalXpz7s7Zw?si=1U0T4s_ejmVn_RZy',
+    references: [
+      { text: 'Responsible AI (YouTube)', url: 'https://www.youtube.com/watch?v=dalXpz7s7Zw' },
+      { text: 'IBM Think playlister', url: 'https://www.youtube.com/@IBMTechnology/playlists' }
+    ]
+  },
+  {
+    id: 19,
+    term: 'IBM Think On Tour – Highlights',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Highlightsamling fra IBM Think On Tour med fokus på AI-innovation, governance og brancherelevante cases.',
+    context: 'Playlisten samler nøglesessions fra Think On Tour med indsigter i, hvordan større organisationer operationaliserer ansvarlig AI og datadrevne transformationer.',
+    tags: ['IBM Think', 'On Tour', 'Highlights'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/aGwYtUzMQUk?list=PLOspHqNVtKABEKVgWGrf6_x6OQYnYnCiM',
+    references: [
+      { text: 'IBM Think On Tour playlist', url: 'https://www.youtube.com/playlist?list=PLOspHqNVtKABEKVgWGrf6_x6OQYnYnCiM' },
+      { text: 'IBM Technology', url: 'https://www.youtube.com/@IBMTechnology' }
+    ]
+  },
+  {
+    id: 20,
+    term: 'IBM Think – AI & Data Platform Sessions',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Playlist fra IBM Think med fokus på Watsonx, dataplatforme og operativ AI-implementering.',
+    context: 'Videoerne dækker arkitektur, datastyring og compliance-løsninger, herunder best practices for modelstyring, data lineage og integration med eksisterende processer.',
+    tags: ['Watsonx', 'Data Platform', 'Compliance'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/0Zzn4eVbqfk?list=PLOspHqNVtKABpPMnwkx27tEO2KOBvHLu6',
+    references: [
+      { text: 'AI & Data Platform playlist', url: 'https://www.youtube.com/playlist?list=PLOspHqNVtKABpPMnwkx27tEO2KOBvHLu6' },
+      { text: 'Watsonx landing page', url: 'https://www.ibm.com/watsonx' }
+    ]
+  },
+  {
+    id: 21,
+    term: 'IBM Think – Responsible AI Sessions',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Sessions dedikeret til ansvarlig AI, governance, red-teaming og regulatorisk overholdelse.',
+    context: 'Playlisten samler foredrag og paneler om Responsible AI, herunder implementering af AI Act-krav, audit frameworks og risk mitigation.',
+    tags: ['Responsible AI', 'Governance', 'AI Act'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/jcgaNrC4ElU?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0',
+    references: [
+      { text: 'Responsible AI playlist', url: 'https://www.youtube.com/playlist?list=PLOspHqNVtKAC-FUNMq8qjYVw6_semZHw0' },
+      { text: 'IBM Responsible AI', url: 'https://www.ibm.com/artificial-intelligence/responsible-ai' }
+    ]
+  },
+  {
+    id: 18,
+    term: 'IBM Think 2024 – Watsonx kundecases',
+    category: 'video',
+    icon: FaYoutube,
+    definition: 'Session fra IBM Think 2024 med kundecases om Watsonx, datastyring og modelstyring.',
+    context: 'Videoen illustrerer, hvordan organisationer kombinerer AI-innovation og compliance, inklusiv dokumentation, audits og data lineage i Watsonx.',
+    tags: ['IBM Think', 'Watsonx', 'Kundecase'],
+    videoEmbedUrl: 'https://www.youtube.com/embed/S1oSxYtYzuM?si=obNd7TLjqFztzOCI',
+    references: [
+      { text: 'Watsonx cases (YouTube)', url: 'https://www.youtube.com/watch?v=S1oSxYtYzuM' },
+      { text: 'IBM Technology @YouTube', url: 'https://www.youtube.com/@IBMTechnology' }
     ]
   }
 ];
@@ -323,6 +409,7 @@ const TermCard = styled(motion.div)`
       case 'ai': return props.theme.colors.juridical.gold;
       case 'technical': return props.theme.colors.success;
       case 'compliance': return props.theme.colors.warning;
+      case 'video': return props.theme.colors.danger;
       default: return props.theme.colors.gray[300];
     }
   }};
@@ -347,6 +434,7 @@ const TermHeader = styled.div`
         case 'ai': return props.theme.colors.juridical.gold;
         case 'technical': return props.theme.colors.success;
         case 'compliance': return props.theme.colors.warning;
+        case 'video': return props.theme.colors.danger;
         default: return props.theme.colors.gray[400];
       }
     }};
@@ -409,6 +497,25 @@ const TermContext = styled.div`
   }
 `;
 
+const VideoWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 12px 30px -15px rgba(0, 0, 0, 0.35);
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+`;
+
 const TermFooter = styled.div`
   display: flex;
   justify-content: space-between;
@@ -448,6 +555,25 @@ const TermFooter = styled.div`
       color: ${props => props.theme.colors.juridical.lightNavy};
     }
   }
+`;
+
+const VideoSection = styled.div`
+  margin-top: 3rem;
+`;
+
+const VideoHeading = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: ${props => props.theme.colors.gray[800]};
+  margin-bottom: 1.5rem;
+  font-size: 1.35rem;
+`;
+
+const VideoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 2rem;
 `;
 
 const StatsBar = styled.div`
@@ -698,7 +824,8 @@ const KnowledgeBasePage = () => {
     { id: 'legal', label: 'Juridiske Termer', icon: FaGavel },
     { id: 'ai', label: 'AI Teknologi', icon: FaRobot },
     { id: 'technical', label: 'Tekniske Begreber', icon: FaCogs },
-    { id: 'compliance', label: 'Compliance', icon: FaBalanceScale }
+    { id: 'compliance', label: 'Compliance', icon: FaBalanceScale },
+    { id: 'video', label: 'Videoressourcer', icon: FaYoutube }
   ];
 
 
@@ -723,7 +850,7 @@ const KnowledgeBasePage = () => {
 
       return matchesSearch && matchesCategory;
     });
-  }, [searchTerm, activeCategory]);
+  }, [knowledgeItems, searchTerm, activeCategory]);
 
   const stats = useMemo(() => {
     const total = knowledgeItems.length;
@@ -731,9 +858,117 @@ const KnowledgeBasePage = () => {
     const ai = knowledgeItems.filter(item => item.category === 'ai').length;
     const technical = knowledgeItems.filter(item => item.category === 'technical').length;
     const compliance = knowledgeItems.filter(item => item.category === 'compliance').length;
+    const video = knowledgeItems.filter(item => item.category === 'video').length;
 
-    return { total, legal, ai, technical, compliance };
-  }, []);
+    return { total, legal, ai, technical, compliance, video };
+  }, [knowledgeItems]);
+
+  const nonVideoItems = filteredItems.filter(item => item.category !== 'video');
+  const videoItems = filteredItems.filter(item => item.category === 'video');
+
+  const extractYouTubeId = (url = '') => {
+    if (!url) return '';
+    const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch && embedMatch[1]) return embedMatch[1];
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch && shortMatch[1]) return shortMatch[1];
+    const paramMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (paramMatch && paramMatch[1]) return paramMatch[1];
+    return '';
+  };
+
+
+  const renderTermCard = (item) => {
+    const IconComponent = item.icon || FaBook;
+    const rawEmbed = item.videoEmbedUrl || item.videoUrl || (item.videoId ? `https://www.youtube.com/embed/${item.videoId}` : undefined);
+    const videoId = extractYouTubeId(rawEmbed);
+    const embedSrc = videoId ? `https://www.youtube.com/embed/${videoId}` : rawEmbed;
+    const previewHtml = videoId
+      ? `
+        <style>
+          *{padding:0;margin:0;overflow:hidden}
+          html,body{height:100%;}
+          img{width:100%;height:100%;object-fit:cover;}
+          .yt-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:68px;height:48px;background:url('https://www.youtube.com/s/desktop/6b47b750/img/watch/yt_play_button.svg') no-repeat center center;}
+        </style>
+        <a href="https://www.youtube.com/embed/${videoId}?autoplay=1">
+          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Video preview"/>
+          <span class='yt-play'></span>
+        </a>
+      `
+      : null;
+
+    return (
+      <TermCard
+        key={item.id}
+        category={item.category}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <TermHeader category={item.category}>
+          <div className="icon">
+            <IconComponent />
+          </div>
+          <div className="content">
+            <h3>{item.term}</h3>
+            <div className="meta">
+              <FaTags />
+              <span>{categories.find(cat => cat.id === item.category)?.label}</span>
+            </div>
+          </div>
+        </TermHeader>
+
+        <TermDefinition>{item.definition}</TermDefinition>
+
+        {item.context && (
+          <TermContext>
+            <div className="label">Kontekst og anvendelse</div>
+            <div className="content">{item.context}</div>
+          </TermContext>
+        )}
+
+        {embedSrc && (
+          <VideoWrapper>
+            <iframe
+              src={embedSrc}
+              title={`Videoressource: ${item.term}`}
+              loading="lazy"
+              srcDoc={previewHtml || undefined}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </VideoWrapper>
+        )}
+
+        <TermFooter>
+          <div className="tags">
+            {item.tags?.map((tag, index) => (
+              <span key={index} className="tag">{tag}</span>
+            ))}
+          </div>
+          <div className="references">
+            {item.references?.map((ref, index) => (
+              <a
+                key={index}
+                href={ref.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="reference-link"
+              >
+                {ref.text}
+                <FaExternalLinkAlt />
+              </a>
+            ))}
+          </div>
+        </TermFooter>
+      </TermCard>
+    );
+  };
+
+  const shouldShowVideoSection = videoItems.length > 0 && (activeCategory === 'video' || activeCategory === 'all');
+
 
   const getCategoryIcon = (categoryId) => {
     const category = categories.find(cat => cat.id === categoryId);
@@ -743,8 +978,8 @@ const KnowledgeBasePage = () => {
   return (
     <KnowledgeContainer>
       <PageHeader>
-        <h1><FaBook /> Videnbase</h1>
-        <p>Omfattende guide til juridiske termer, AI teknologi og compliance begreber</p>
+        <h1><FaBook /> Vidensdatabase</h1>
+        <p>Opslagsværk med juridiske termer, AI-teknologi og videoressourcer for compliance</p>
       </PageHeader>
 
       <StatsBar>
@@ -768,13 +1003,17 @@ const KnowledgeBasePage = () => {
           <div className="number">{stats.compliance}</div>
           <div className="label">Compliance</div>
         </div>
+        <div className="stat">
+          <div className="number">{stats.video}</div>
+          <div className="label">Videoressourcer</div>
+        </div>
       </StatsBar>
 
       <SearchAndFilter>
         <SearchBox>
           <input
             type="text"
-            placeholder="Søg efter termer, definitioner eller tags..."
+            placeholder="Søg i vidensdatabasen efter termer, definitioner eller tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -800,64 +1039,23 @@ const KnowledgeBasePage = () => {
         </AddButton>
       </SearchAndFilter>
 
-      <KnowledgeGrid>
-        {filteredItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <TermCard
-              key={item.id}
-              category={item.category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <TermHeader category={item.category}>
-                <div className="icon">
-                  <IconComponent />
-                </div>
-                <div className="content">
-                  <h3>{item.term}</h3>
-                  <div className="meta">
-                    <FaTags />
-                    <span>{categories.find(cat => cat.id === item.category)?.label}</span>
-                  </div>
-                </div>
-              </TermHeader>
+      {activeCategory !== 'video' && nonVideoItems.length > 0 && (
+        <KnowledgeGrid>
+          {nonVideoItems.map(item => renderTermCard(item))}
+        </KnowledgeGrid>
+      )}
 
-              <TermDefinition>
-                {item.definition}
-              </TermDefinition>
-
-              <TermContext>
-                <div className="label">Kontekst og anvendelse</div>
-                <div className="content">{item.context}</div>
-              </TermContext>
-
-              <TermFooter>
-                <div className="tags">
-                  {item.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
-                  ))}
-                </div>
-                <div className="references">
-                  {item.references.map((ref, index) => (
-                    <a
-                      key={index}
-                      href={ref.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="reference-link"
-                    >
-                      {ref.text}
-                      <FaExternalLinkAlt />
-                    </a>
-                  ))}
-                </div>
-              </TermFooter>
-            </TermCard>
-          );
-        })}
-      </KnowledgeGrid>
+      {shouldShowVideoSection && (
+        <VideoSection>
+          <VideoHeading>
+            <FaYoutube />
+            Videoressourcer
+          </VideoHeading>
+          <VideoGrid>
+            {videoItems.map(item => renderTermCard(item))}
+          </VideoGrid>
+        </VideoSection>
+      )}
 
       {filteredItems.length === 0 && (
         <div style={{
@@ -893,6 +1091,7 @@ const AddTermModal = ({ onClose, onSave, categories }) => {
     definition: '',
     context: '',
     tags: '',
+    videoEmbedUrl: '',
     references: [{ text: '', url: '' }]
   });
 
@@ -926,6 +1125,7 @@ const AddTermModal = ({ onClose, onSave, categories }) => {
       const categoryIcon = categories.find(cat => cat.id === formData.category)?.icon || FaBook;
       const newTerm = {
         ...formData,
+        videoEmbedUrl: formData.videoEmbedUrl?.trim(),
         icon: categoryIcon,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       };
@@ -997,6 +1197,21 @@ const AddTermModal = ({ onClose, onSave, categories }) => {
               placeholder="Hvor og hvordan bruges dette term i praksis..."
             />
           </FormGroup>
+
+          {formData.category === 'video' && (
+            <FormGroup>
+              <label>YouTube URL eller embed-link</label>
+              <input
+                type="url"
+                value={formData.videoEmbedUrl}
+                onChange={(e) => handleInputChange('videoEmbedUrl', e.target.value)}
+                placeholder="https://www.youtube.com/embed/..."
+              />
+              <small style={{ color: '#718096' }}>
+                Tip: Brug det fulde embed-link (fx https://www.youtube.com/embed?...), eller lad feltet være tomt for at bruge automatiske søgninger.
+              </small>
+            </FormGroup>
+          )}
 
           <FormGroup>
             <label>Tags (komma-separeret)</label>

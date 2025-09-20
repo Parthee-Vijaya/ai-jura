@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { FaGlobeEurope } from 'react-icons/fa';
-import { useQuery } from 'react-query';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
-const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutter
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // fallback interval hvis stream ikke virker
 
 const scroll = keyframes`
   0% { transform: translateX(100%); }
@@ -80,23 +79,76 @@ const HeadlineText = styled.span`
 `;
 
 const NewsTicker = () => {
-  const { data } = useQuery(
-    ['news', 'ticker'],
-    async () => {
-      const res = await fetch(`${API_BASE_URL}/api/news/ticker`);
-      if (!res.ok) {
-        throw new Error('Kunne ikke hente ticker');
-      }
-      return res.json();
-    },
-    {
-      refetchInterval: POLL_INTERVAL_MS,
-      refetchOnWindowFocus: false,
-      staleTime: POLL_INTERVAL_MS,
-    }
-  );
+  const [items, setItems] = useState([]);
 
-  const items = data?.items || [];
+  useEffect(() => {
+    let source;
+    let reconnectTimeout;
+    let fallbackInterval;
+
+    const streamUrl = API_BASE_URL
+      ? `${API_BASE_URL.replace(/\/$/, '')}/api/news/ticker/stream`
+      : '/api/news/ticker/stream';
+
+    const fallbackUrl = API_BASE_URL
+      ? `${API_BASE_URL.replace(/\/$/, '')}/api/news/ticker`
+      : '/api/news/ticker';
+
+    const fetchFallback = async () => {
+      try {
+        const res = await fetch(fallbackUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.items)) {
+            setItems(data.items);
+          }
+        }
+      } catch (err) {
+        console.warn('Fallback ticker fetch fejlede', err);
+      }
+    };
+
+    const connect = () => {
+      if (source) {
+        source.close();
+      }
+
+      source = new EventSource(streamUrl);
+
+      source.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (Array.isArray(payload)) {
+            setItems(payload);
+          }
+        } catch (err) {
+          console.warn('Kunne ikke parse ticker data', err);
+        }
+      };
+
+      source.onerror = (error) => {
+        console.warn('Ticker stream fejlede – forsøger genforbindelse om 5 sek.', error);
+        source.close();
+        reconnectTimeout = window.setTimeout(connect, 5000);
+      };
+    };
+
+    connect();
+    fetchFallback();
+    fallbackInterval = window.setInterval(fetchFallback, POLL_INTERVAL_MS);
+
+    return () => {
+      if (source) {
+        source.close();
+      }
+      if (reconnectTimeout) {
+        window.clearTimeout(reconnectTimeout);
+      }
+      if (fallbackInterval) {
+        window.clearInterval(fallbackInterval);
+      }
+    };
+  }, []);
 
   const tickerItems = useMemo(() => {
     if (!items.length) {
@@ -112,8 +164,8 @@ const NewsTicker = () => {
   }, [items]);
 
   const duration = useMemo(() => {
-    const base = 45;
-    return Math.max(30, Math.min(base + tickerItems.length * 6, 90));
+    const base = 60;
+    return Math.max(40, Math.min(base + tickerItems.length * 8, 110));
   }, [tickerItems.length]);
 
   const displayItems = useMemo(() => {

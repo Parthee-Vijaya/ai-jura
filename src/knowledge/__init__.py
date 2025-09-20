@@ -1,1 +1,0 @@
-"""Omfattende juridisk videnbase"""

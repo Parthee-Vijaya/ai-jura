@@ -3,9 +3,9 @@ FastAPI Backend for The Judge - AI Compliance Platform
 Dansk AI compliance platform med web research
 """
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 import asyncio
@@ -60,8 +60,11 @@ news_service = NewsService()
 ticker_service = TechTickerService()
 agent_registry = get_agent_registry()
 ticker_refresh_task: Optional[asyncio.Task] = None
+ticker_refresh_task: Optional[asyncio.Task] = None
+ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "900"))  # 15 minutter
+TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS", "120"))
 
 
 async def _refresh_news_periodically() -> None:
@@ -221,6 +224,29 @@ async def refresh_news():
 @app.get("/api/news/ticker", response_model=TickerPayload)
 async def get_ticker_news(force_refresh: bool = False):
     """Returnér AI-ticker fra internationale medier"""
+    return await _build_ticker_payload(force_refresh=force_refresh)
+
+
+@app.get("/api/news/ticker/stream")
+async def stream_ticker(request: Request):
+    """Server-Sent Events stream med løbende ticker data"""
+
+    async def event_generator():
+        while True:
+            if await request.is_disconnected():
+                break
+
+            payload = await _build_ticker_payload()
+            data = json.dumps([
+                article.model_dump(mode="json") for article in payload.items
+            ])
+            yield f"data: {data}\n\n"
+            await asyncio.sleep(TICKER_STREAM_INTERVAL_SECONDS)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+async def _build_ticker_payload(force_refresh: bool = False) -> TickerPayload:
     ticker_payload = await ticker_service.get_latest(force_refresh=force_refresh)
     news_payload = await news_service.get_latest_news()
 
