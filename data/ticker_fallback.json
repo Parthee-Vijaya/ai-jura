@@ -1,0 +1,37 @@
+[
+  {
+    "title": "OpenAI lancerer ny sikkerhedspolitik for virksomhedsbrug",
+    "url": "https://www.theverge.com/ai/2024/09/10/openai-enterprise-safety-update",
+    "source": "The Verge",
+    "published_at": "2024-09-10T08:00:00+00:00",
+    "scraped_at": "2024-09-10T08:05:00+00:00"
+  },
+  {
+    "title": "EU investerer milliarder i ansvarlig AI-udvikling",
+    "url": "https://www.bbc.com/news/technology-eu-ai-investment",
+    "source": "BBC Technology",
+    "published_at": "2024-09-12T11:30:00+00:00",
+    "scraped_at": "2024-09-12T11:45:00+00:00"
+  },
+  {
+    "title": "Regeringer øger fokus på global AI-regulering",
+    "url": "https://edition.cnn.com/2024/09/08/tech/government-ai-regulation/index.html",
+    "source": "CNN Technology",
+    "published_at": "2024-09-08T07:10:00+00:00",
+    "scraped_at": "2024-09-08T07:15:00+00:00"
+  },
+  {
+    "title": "TechCrunch: Europæisk startup skalerer grøn AI",
+    "url": "https://techcrunch.com/2024/09/14/european-ai-startup-green/",
+    "source": "TechCrunch AI",
+    "published_at": "2024-09-14T09:20:00+00:00",
+    "scraped_at": "2024-09-14T09:25:00+00:00"
+  },
+  {
+    "title": "Financial Times analyserer AI-økonomi",
+    "url": "https://www.ft.com/content/example-ai-economy",
+    "source": "Financial Times Tech",
+    "published_at": "2024-09-11T06:15:00+00:00",
+    "scraped_at": "2024-09-11T06:20:00+00:00"
+  }
+]
