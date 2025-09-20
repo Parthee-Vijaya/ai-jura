@@ -12,7 +12,7 @@
       "guidelines",
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:41:11.279684",
+    "scraped_at": "2025-09-20T21:56:18.252246",
     "content_snippet": "Brussels, 12 September - During its September plenary meeting, the European Data Protection Board (EDPB) has adopted guidelines on the interplay between the Digital Services Act (DSA) and the General ..."
   },
   {
@@ -26,7 +26,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:41:11.280222",
+    "scraped_at": "2025-09-20T21:56:18.252801",
     "content_snippet": "A fundamental rights approach to innovation and competitiveness Helsinki, 3 July 2025 – At a high-level meeting in Helsinki on 1–2 July 2025, the European Data Protection Board (EDPB) adopted a landma..."
   },
   {
@@ -43,7 +43,7 @@
       "gdpr",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-09-20T21:41:11.280644",
+    "scraped_at": "2025-09-20T21:56:18.253580",
     "content_snippet": "Brussels, 05 June - During its latest plenary, the European Data Protection Board (EDPB) adopted the final version of its guidelines on Art.48 GDPR about data transfers to third country authorities, a..."
   },
   {
@@ -57,7 +57,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:41:11.281146",
+    "scraped_at": "2025-09-20T21:56:18.254168",
     "content_snippet": "Brussels, 08 May - The European Data Protection Board (EDPB) and the European Data Protection Supervisor (EDPS) have adopted a letter, addressed to the European Commission, on the upcoming proposal on..."
   },
   {
@@ -71,7 +71,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:41:11.281731",
+    "scraped_at": "2025-09-20T21:56:18.254583",
     "content_snippet": "Brussels, 06 May - During its latest plenary, the European Data Protection Board (EDPB) adopted an opinion on the European Commission’s draft adequacy decision under the GDPR concerning the European P..."
   },
   {
@@ -86,7 +86,7 @@
       "ai",
       "guidelines"
     ],
-    "scraped_at": "2025-09-20T21:41:11.283076",
+    "scraped_at": "2025-09-20T21:56:18.255955",
     "content_snippet": "Brussels, 14 April - During its April 2025 plenary, the European Data Protection Board (EDPB) has adopted guidelines on processing of personal data through blockchain technologies. A blockchain is a d..."
   },
   {
@@ -98,7 +98,7 @@
     "published_at": "2025-03-14T13:00:00",
     "importance": "high",
     "keywords": [],
-    "scraped_at": "2025-09-20T21:41:11.283344",
+    "scraped_at": "2025-09-20T21:56:18.256214",
     "content_snippet": "Brussels, 14 March - During its March 2025 plenary meeting, the European Data Protection Board (EDPB) adopted a statement on the implementation of the Passenger Name Record Directive (PNR) in light of..."
   },
   {
@@ -107,14 +107,14 @@
     "source": "Council of EU",
     "category": "eu_council",
     "summary": "Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
-    "published_at": "2025-09-20T17:41:13.067522",
+    "published_at": "2025-09-20T17:56:18.913023",
     "importance": "medium",
     "keywords": [
       "digital agenda",
       "ai regulation",
       "digital policy"
     ],
-    "scraped_at": "2025-09-20T21:41:13.067568",
+    "scraped_at": "2025-09-20T21:56:18.913093",
     "content_snippet": null
   },
   {
@@ -123,14 +123,14 @@
     "source": "KL",
     "category": "danish_municipal",
     "summary": "Besøg KL's nyhedsside for aktuelle beslutninger, vejledninger og projekter om kommunernes brug af AI og data.",
-    "published_at": "2025-09-20T15:41:12.135430",
+    "published_at": "2025-09-20T15:56:19.235578",
     "importance": "medium",
     "keywords": [
       "kommuner",
       "ai",
       "digitalisering"
     ],
-    "scraped_at": "2025-09-20T21:41:12.135440",
+    "scraped_at": "2025-09-20T21:56:19.235588",
     "content_snippet": null
   },
   {
@@ -139,7 +139,7 @@
     "source": "European Court of Justice",
     "category": "court_cases",
     "summary": "Visit the European Court of Justice for the latest rulings on AI, automated decision-making, and data protection under GDPR.",
-    "published_at": "2025-09-20T13:41:11.312013",
+    "published_at": "2025-09-20T13:56:18.292543",
     "importance": "medium",
     "keywords": [
       "court decisions",
@@ -147,7 +147,7 @@
       "ai",
       "automated decisions"
     ],
-    "scraped_at": "2025-09-20T21:41:11.312017",
+    "scraped_at": "2025-09-20T21:56:18.292556",
     "content_snippet": null
   },
   {
@@ -156,13 +156,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:41:15.118131",
+    "published_at": "2025-09-19T21:56:22.201223",
     "importance": "medium",
     "keywords": [
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-09-20T21:41:15.118132",
+    "scraped_at": "2025-09-20T21:56:22.201224",
     "content_snippet": null
   },
   {
@@ -171,14 +171,14 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:41:15.118019",
+    "published_at": "2025-09-19T21:56:22.201097",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-09-20T21:41:15.118021",
+    "scraped_at": "2025-09-20T21:56:22.201099",
     "content_snippet": null
   },
   {
@@ -187,13 +187,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:41:15.117878",
+    "published_at": "2025-09-19T21:56:22.200950",
     "importance": "medium",
     "keywords": [
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-09-20T21:41:15.117885",
+    "scraped_at": "2025-09-20T21:56:22.200957",
     "content_snippet": null
   },
   {
@@ -202,13 +202,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:41:13.172069",
+    "published_at": "2025-09-19T21:56:20.158227",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-09-20T21:41:13.172071",
+    "scraped_at": "2025-09-20T21:56:20.158228",
     "content_snippet": null
   },
   {
@@ -217,13 +217,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:41:13.171950",
+    "published_at": "2025-09-19T21:56:20.158095",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-09-20T21:41:13.171952",
+    "scraped_at": "2025-09-20T21:56:20.158097",
     "content_snippet": null
   },
   {
@@ -232,13 +232,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:41:13.171810",
+    "published_at": "2025-09-19T21:56:20.157909",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-09-20T21:41:13.171817",
+    "scraped_at": "2025-09-20T21:56:20.157917",
     "content_snippet": null
   },
   {
@@ -247,13 +247,13 @@
     "source": "Datatilsynet",
     "category": "datatilsynet",
     "summary": "",
-    "published_at": "2025-09-18T23:41:11.449286",
+    "published_at": "2025-09-19T17:56:18.420109",
     "importance": "medium",
     "keywords": [
       "gdpr",
       "vejledning"
     ],
-    "scraped_at": "2025-09-20T21:41:11.449302",
+    "scraped_at": "2025-09-20T21:56:18.420138",
     "content_snippet": null
   },
   {
@@ -268,7 +268,7 @@
       "ai",
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:41:11.279990",
+    "scraped_at": "2025-09-20T21:56:18.252569",
     "content_snippet": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation ame..."
   },
   {
@@ -282,7 +282,7 @@
     "keywords": [
       "ai"
     ],
-    "scraped_at": "2025-09-20T21:41:11.282860",
+    "scraped_at": "2025-09-20T21:56:18.255743",
     "content_snippet": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important mile..."
   }
 ]

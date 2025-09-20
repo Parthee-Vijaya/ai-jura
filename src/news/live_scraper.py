@@ -94,6 +94,36 @@ class LiveNewsScraper:
                 'news_url': 'https://curia.europa.eu/jcms/jcms/j_6/en/',
                 'category': 'court_cases',
                 'keywords': ['data protection', 'gdpr', 'automated decision', 'artificial intelligence']
+            },
+            'jurainfo': {
+                'url': 'https://jurainfo.dk',
+                'news_url': 'https://jurainfo.dk/nyheder',
+                'category': 'danish_law',
+                'keywords': ['gdpr', 'databeskyttelse', 'compliance', 'persondata', 'tilsyn']
+            },
+            'knews': {
+                'url': 'https://www.k-news.dk',
+                'news_url': 'https://www.k-news.dk/nyheder',
+                'category': 'danish_media',
+                'keywords': ['ai', 'jura', 'digitalisering', 'ret', 'lovgivning']
+            },
+            'propria_ai': {
+                'url': 'https://propria.ai',
+                'news_url': 'https://propria.ai/blog',
+                'category': 'ai_industry',
+                'keywords': ['ai governance', 'responsible ai', 'compliance', 'model risk']
+            },
+            'dansk_erhverv': {
+                'url': 'https://www.danskerhverv.dk',
+                'news_url': 'https://www.danskerhverv.dk/nyheder/',
+                'category': 'danish_business',
+                'keywords': ['erhverv', 'digital', 'regulering', 'ai', 'politikanalyse']
+            },
+            'dansk_industri': {
+                'url': 'https://www.danskindustri.dk',
+                'news_url': 'https://www.danskindustri.dk/nyheder/',
+                'category': 'danish_industry',
+                'keywords': ['industri', 'digitalisering', 'ai', 'innovation', 'produktion']
             }
         }
 
@@ -514,7 +544,12 @@ class LiveNewsScraper:
             self._scrape_edpb_rss(),
             self._scrape_council_eu_rss(),
             self._scrape_kl_rss(),
-            self._scrape_ai_court_cases()
+            self._scrape_ai_court_cases(),
+            self._scrape_jurainfo(),
+            self._scrape_knews(),
+            self._scrape_propria_ai(),
+            self._scrape_dansk_erhverv(),
+            self._scrape_dansk_industri()
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -1816,3 +1851,333 @@ async def get_news_scraper() -> LiveNewsScraper:
         async with news_scraper:
             await news_scraper.fetch_latest_news()
     return news_scraper
+    async def _scrape_jurainfo(self) -> List[NewsItem]:
+        """Scrape JuraInfo for danske GDPR/AI nyheder"""
+        news_items: List[NewsItem] = []
+        news_url = self.sources['jurainfo']['news_url']
+
+        try:
+            soup = await self._fetch_html_page(news_url)
+            if soup:
+                article_elements = soup.select('article, .news-item, .post, .et_pb_post')
+                for element in article_elements[:6]:
+                    title_elem = element.select_one('h1 a, h2 a, h3 a, a.et_pb_post_title') or element.find('a')
+                    if not title_elem:
+                        continue
+
+                    title = title_elem.get_text(strip=True)
+                    link = title_elem.get('href')
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(news_url, link)
+
+                    summary_elem = element.select_one('p, .excerpt, .et_pb_post_excerpt, .summary')
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary = self._extract_text_summary(summary, 240)
+
+                    date_text = self._extract_date_from_element(element)
+                    published = self._parse_date(date_text) if date_text else None
+
+                    keywords = self._extract_keywords(f"{title} {summary}")
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="JuraInfo",
+                        published_date=published or datetime.now() - timedelta(hours=8),
+                        category='danish_law',
+                        summary=summary,
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now()
+                    ))
+
+        except Exception as exc:
+            logger.debug("JuraInfo scraping fejlede: %s", exc)
+
+        if not news_items:
+            news_items.append(self._create_jurainfo_fallback())
+
+        return news_items[:6]
+
+    def _create_jurainfo_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="JuraInfo – Seneste nyheder om GDPR og AI",
+            url=self.sources['jurainfo']['news_url'],
+            source="JuraInfo",
+            published_date=datetime.now() - timedelta(hours=12),
+            category='danish_law',
+            summary="Besøg JuraInfo for analyser, domme og vejledninger om databeskyttelse, AI og compliance i Danmark.",
+            keywords=['gdpr', 'databeskyttelse', 'ai'],
+            importance='medium',
+            scraped_at=datetime.now()
+        )
+
+    async def _scrape_knews(self) -> List[NewsItem]:
+        """Scrape K-News (Karnov) for AI/jura artikler"""
+        news_items: List[NewsItem] = []
+        news_url = self.sources['knews']['news_url']
+
+        try:
+            soup = await self._fetch_html_page(news_url)
+            if soup:
+                article_elements = soup.select('article, .article, .c-article-card, .post')
+                for element in article_elements[:8]:
+                    title_elem = element.select_one('h1 a, h2 a, h3 a, a.c-article-card__title') or element.find('a')
+                    if not title_elem:
+                        continue
+
+                    title = title_elem.get_text(strip=True)
+                    link = title_elem.get('href')
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(news_url, link)
+
+                    summary_elem = element.select_one('p, .c-article-card__lead, .excerpt, .summary')
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary = self._extract_text_summary(summary, 220)
+
+                    date_text = self._extract_date_from_element(element)
+                    published = self._parse_date(date_text) if date_text else None
+
+                    keywords = self._extract_keywords(f"{title} {summary}")
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="K-News",
+                        published_date=published or datetime.now() - timedelta(hours=8),
+                        category='danish_media',
+                        summary=summary,
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now()
+                    ))
+
+        except Exception as exc:
+            logger.debug("K-News scraping fejlede: %s", exc)
+
+        if not news_items:
+            news_items.append(self._create_knews_fallback())
+
+        return news_items[:8]
+
+    def _create_knews_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="K-News – Seneste artikler om AI og jura",
+            url=self.sources['knews']['news_url'],
+            source="K-News",
+            published_date=datetime.now() - timedelta(hours=12),
+            category='danish_media',
+            summary="Følg K-News for analyser af teknologi, regulation og advokatbranchens arbejde med AI.",
+            keywords=['karnov', 'jura', 'ai'],
+            importance='medium',
+            scraped_at=datetime.now()
+        )
+
+    async def _scrape_propria_ai(self) -> List[NewsItem]:
+        """Scrape PropriaAI blog for governance-indhold"""
+        news_items: List[NewsItem] = []
+        news_url = self.sources['propria_ai']['news_url']
+
+        try:
+            soup = await self._fetch_html_page(news_url)
+            if soup:
+                article_elements = soup.select('article, .blog-card, .post-preview, .card')
+                for element in article_elements[:6]:
+                    title_elem = element.select_one('h1 a, h2 a, h3 a, a')
+                    if not title_elem:
+                        continue
+
+                    title = title_elem.get_text(strip=True)
+                    link = title_elem.get('href')
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(news_url, link)
+
+                    summary_elem = element.select_one('p, .excerpt, .summary, .card-text')
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary = self._extract_text_summary(summary, 240)
+
+                    date_text = self._extract_date_from_element(element)
+                    published = self._parse_date(date_text) if date_text else None
+
+                    keywords = self._extract_keywords(f"{title} {summary}")
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="PropriaAI",
+                        published_date=published or datetime.now() - timedelta(hours=10),
+                        category='ai_industry',
+                        summary=summary,
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now()
+                    ))
+
+        except Exception as exc:
+            logger.debug("PropriaAI scraping fejlede: %s", exc)
+
+        if not news_items:
+            news_items.append(self._create_propria_fallback())
+
+        return news_items[:6]
+
+    def _create_propria_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="PropriaAI – Insights om ansvarlig AI",
+            url=self.sources['propria_ai']['news_url'],
+            source="PropriaAI",
+            published_date=datetime.now() - timedelta(hours=14),
+            category='ai_industry',
+            summary="Læs PropriaAI's blog for governance-frameworks, audits og compliance i AI-projekter.",
+            keywords=['responsible ai', 'governance', 'compliance'],
+            importance='medium',
+            scraped_at=datetime.now()
+        )
+
+    async def _scrape_dansk_erhverv(self) -> List[NewsItem]:
+        """Scrape Dansk Erhverv for AI/business artikler"""
+        news_items: List[NewsItem] = []
+        news_url = self.sources['dansk_erhverv']['news_url']
+
+        try:
+            soup = await self._fetch_html_page(news_url)
+            if soup:
+                article_elements = soup.select('article, .news-list__item, .article-card, .post')
+                for element in article_elements[:8]:
+                    title_elem = element.select_one('h1 a, h2 a, h3 a, a.article-card__title') or element.find('a')
+                    if not title_elem:
+                        continue
+
+                    title = title_elem.get_text(strip=True)
+                    link = title_elem.get('href')
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(news_url, link)
+
+                    summary_elem = element.select_one('p, .lead, .intro, .summary')
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary = self._extract_text_summary(summary, 220)
+
+                    date_text = self._extract_date_from_element(element)
+                    published = self._parse_date(date_text) if date_text else None
+
+                    keywords = self._extract_keywords(f"{title} {summary}")
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="Dansk Erhverv",
+                        published_date=published or datetime.now() - timedelta(hours=6),
+                        category='danish_business',
+                        summary=summary,
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now()
+                    ))
+
+        except Exception as exc:
+            logger.debug("Dansk Erhverv scraping fejlede: %s", exc)
+
+        if not news_items:
+            news_items.append(self._create_dansk_erhverv_fallback())
+
+        return news_items[:8]
+
+    def _create_dansk_erhverv_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="Dansk Erhverv – AI og digital regulering",
+            url=self.sources['dansk_erhverv']['news_url'],
+            source="Dansk Erhverv",
+            published_date=datetime.now() - timedelta(hours=10),
+            category='danish_business',
+            summary="Følg Dansk Erhverv for analyser af erhvervslivets arbejde med AI, regulering og digitalisering.",
+            keywords=['erhverv', 'ai', 'digitalisering'],
+            importance='medium',
+            scraped_at=datetime.now()
+        )
+
+    async def _scrape_dansk_industri(self) -> List[NewsItem]:
+        """Scrape Dansk Industri for AI/industrinyheder"""
+        news_items: List[NewsItem] = []
+        news_url = self.sources['dansk_industri']['news_url']
+
+        try:
+            soup = await self._fetch_html_page(news_url)
+            if soup:
+                article_elements = soup.select('article, .card, .news-card, .post')
+                for element in article_elements[:8]:
+                    title_elem = element.select_one('h1 a, h2 a, h3 a, a')
+                    if not title_elem:
+                        continue
+
+                    title = title_elem.get_text(strip=True)
+                    link = title_elem.get('href')
+                    if not title or not link:
+                        continue
+
+                    if not link.startswith('http'):
+                        link = urljoin(news_url, link)
+
+                    summary_elem = element.select_one('p, .lead, .summary, .intro')
+                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary = self._extract_text_summary(summary, 220)
+
+                    date_text = self._extract_date_from_element(element)
+                    published = self._parse_date(date_text) if date_text else None
+
+                    keywords = self._extract_keywords(f"{title} {summary}")
+                    if not self._is_relevant_content(title, summary, keywords):
+                        continue
+
+                    news_items.append(NewsItem(
+                        title=title,
+                        url=link,
+                        source="Dansk Industri",
+                        published_date=published or datetime.now() - timedelta(hours=6),
+                        category='danish_industry',
+                        summary=summary,
+                        keywords=keywords,
+                        importance=self._assess_importance(title, summary, keywords),
+                        scraped_at=datetime.now()
+                    ))
+
+        except Exception as exc:
+            logger.debug("Dansk Industri scraping fejlede: %s", exc)
+
+        if not news_items:
+            news_items.append(self._create_dansk_industri_fallback())
+
+        return news_items[:8]
+
+    def _create_dansk_industri_fallback(self) -> NewsItem:
+        return NewsItem(
+            title="Dansk Industri – Digitalisering og AI",
+            url=self.sources['dansk_industri']['news_url'],
+            source="Dansk Industri",
+            published_date=datetime.now() - timedelta(hours=8),
+            category='danish_industry',
+            summary="Hold dig opdateret på Dansk Industri's indblik i AI, industri 4.0 og digital innovation.",
+            keywords=['industri', 'innovation', 'ai'],
+            importance='medium',
+            scraped_at=datetime.now()
+        )
+

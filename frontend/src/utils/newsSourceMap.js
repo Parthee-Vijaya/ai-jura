@@ -4,6 +4,11 @@ import kammeradvokatenLogo from '../assets/logos/kammeradvokaten.svg';
 import euLogo from '../assets/logos/eu.svg';
 import edpbLogo from '../assets/logos/edpb.svg';
 import defaultLogo from '../assets/logos/default.svg';
+import jurainfoLogo from '../assets/logos/jurainfo.svg';
+import knewsLogo from '../assets/logos/knews.svg';
+import propriaLogo from '../assets/logos/propriaai.svg';
+import danskErhvervLogo from '../assets/logos/dansk_erhverv.svg';
+import danskIndustriLogo from '../assets/logos/dansk_industri.svg';
 
 export const SOURCE_MAPPINGS = [
   {
@@ -47,6 +52,46 @@ export const SOURCE_MAPPINGS = [
     accent: '#0B3D91',
   },
   {
+    matchers: ['jurainfo'],
+    id: 'jurainfo',
+    name: 'JuraInfo',
+    region: 'Danmark',
+    logo: jurainfoLogo,
+    accent: '#0B3D91',
+  },
+  {
+    matchers: ['k-news', 'knews', 'karnov'],
+    id: 'knews',
+    name: 'K-News',
+    region: 'Danmark',
+    logo: knewsLogo,
+    accent: '#1F2937',
+  },
+  {
+    matchers: ['propria'],
+    id: 'propria_ai',
+    name: 'PropriaAI',
+    region: 'International',
+    logo: propriaLogo,
+    accent: '#0E7C7B',
+  },
+  {
+    matchers: ['dansk erhverv', 'danish chamber of commerce'],
+    id: 'dansk_erhverv',
+    name: 'Dansk Erhverv',
+    region: 'Danmark',
+    logo: danskErhvervLogo,
+    accent: '#003D7C',
+  },
+  {
+    matchers: ['dansk industri', 'di business'],
+    id: 'dansk_industri',
+    name: 'Dansk Industri',
+    region: 'Danmark',
+    logo: danskIndustriLogo,
+    accent: '#005B96',
+  },
+  {
     matchers: ['retsinformation', 'ministeriet', 'folketinget', 'lovtidende'],
     id: 'danish_authorities',
     name: 'Danske myndigheder',
@@ -86,6 +131,11 @@ export function availableCategories() {
     { key: 'kammeradvokaten', label: 'Kammeradvokaten' },
     { key: 'edpb', label: 'EDPB' },
     { key: 'eu', label: 'EU institutioner' },
+    { key: 'jurainfo', label: 'JuraInfo' },
+    { key: 'knews', label: 'K-News' },
+    { key: 'propria_ai', label: 'PropriaAI' },
+    { key: 'dansk_erhverv', label: 'Dansk Erhverv' },
+    { key: 'dansk_industri', label: 'Dansk Industri' },
     { key: 'danish_authorities', label: 'Danske myndigheder' },
   ];
 }
