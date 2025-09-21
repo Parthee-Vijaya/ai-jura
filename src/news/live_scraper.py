@@ -2084,18 +2084,9 @@ class LiveNewsScraper:
                 await asyncio.sleep(300)  # Prøv igen efter 5 minutter
 
 
-# Singleton instance
-news_scraper = None
 
 
-async def get_news_scraper() -> LiveNewsScraper:
-    """Get or create news scraper instance"""
-    global news_scraper
-    if news_scraper is None:
-        news_scraper = LiveNewsScraper()
-        async with news_scraper:
-            await news_scraper.fetch_latest_news()
-    return news_scraper
+
     async def _scrape_jurainfo(self) -> List[NewsItem]:
         """Scrape JuraInfo for danske GDPR/AI nyheder"""
         news_items: List[NewsItem] = []
@@ -2425,3 +2416,15 @@ async def get_news_scraper() -> LiveNewsScraper:
             importance='medium',
             scraped_at=datetime.now()
         )
+
+# Singleton instance
+news_scraper = None
+
+async def get_news_scraper() -> LiveNewsScraper:
+    """Get or create news scraper instance"""
+    global news_scraper
+    if news_scraper is None:
+        news_scraper = LiveNewsScraper()
+        async with news_scraper:
+            await news_scraper.fetch_latest_news()
+    return news_scraper
