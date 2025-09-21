@@ -58,7 +58,6 @@ Den indbyggede AI-sagsformular sender mails via SMTP. Udfyld følgende variabler
 - `SMTP_FROM` og evt. `SMTP_REPLY_TO` – afsenderadresse
 - `AI_CASES_RECIPIENT` – hovedmodtager (standard: ServicePortalen@kalundborg.dk)
 - `AI_CASES_CC` – ekstra modtagere (standard inkluderer pavi@kalundborg.dk)
-- `APP_VERSION` – manuelt versionsnummer vist i UI'et (overstyrer automatisk git-version)
 
 5. **Start backend:**
 ```bash

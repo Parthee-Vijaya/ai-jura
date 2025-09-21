@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-import os
 import subprocess
 from typing import Iterable, Literal, Optional
 
@@ -158,10 +157,6 @@ def get_version_info() -> dict[str, object]:
     """Return git-driven version information suitable for APIs."""
     version, last_change = _calculate_semver()
     commit_hash, short_hash, author, message, timestamp = _get_last_commit_details()
-
-    version_override = os.getenv('APP_VERSION')
-    if version_override:
-        version = version_override.strip()
 
     info = GitVersionInfo(
         version=version,
