@@ -283,10 +283,16 @@ const VersionToggleButton = styled.button`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 10px;
-  border: 1px solid ${props => props.theme.layout.sidebar.border};
-  background: ${props => props.theme.layout.sidebar.hoverBackground};
-  color: ${props => props.theme.layout.sidebar.text};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148,163,184,0.32)'
+    : 'rgba(148,163,184,0.45)'};
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(30,41,59,0.6)'
+    : 'rgba(255,255,255,0.75)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
   cursor: pointer;
   transition: ${props => props.theme.animations.transitionFast};
 
@@ -362,8 +368,18 @@ const VersionDetails = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 0.8rem 0.85rem;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15, 23, 42, 0.72)'
+    : 'rgba(248, 250, 252, 0.9)'};
+  border-radius: ${props => props.theme.borderRadius};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.18)'
+    : 'rgba(148, 163, 184, 0.3)'};
   font-size: 0.75rem;
-  color: ${props => props.theme.layout.sidebar.muted};
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(226, 232, 240, 0.85)'
+    : props.theme.layout.sidebar.muted};
 
   .relative {
     font-size: 0.72rem;
@@ -507,8 +523,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
               <FaInfoCircle size={12} />
               <VersionMeta>
                 <VersionLabel>Platformsversion</VersionLabel>
-                <VersionValue>{versionLabel}</VersionValue>
-                {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
+                <VersionValue>
+                  {versionLabel}
+                  {changeTypeLabel && (
+                    <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>
+                  )}
+                </VersionValue>
               </VersionMeta>
               <VersionToggleButton
                 onClick={() => setShowVersionDetails(prev => !prev)}

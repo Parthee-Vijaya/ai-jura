@@ -11,27 +11,52 @@ const scroll = keyframes`
 `;
 
 const TickerWrapper = styled.div`
-  background: ${props => props.theme.layout.ticker.background};
-  color: ${props => props.theme.layout.ticker.text};
+  position: relative;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(120deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9))'
+    : 'linear-gradient(120deg, rgba(253, 230, 138, 0.92), rgba(250, 204, 21, 0.85))'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : '#1f2937'};
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: 0.75rem 1rem;
-  border-radius: 14px;
-  margin-bottom: 1.5rem;
-  box-shadow: ${props => props.theme.shadows.lg};
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  margin-bottom: 1.8rem;
+  box-shadow: ${props => props.theme.shadows.xl};
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: ${props => props.theme.mode === 'dark'
+      ? 'rgba(148, 163, 184, 0.12)'
+      : 'rgba(255, 255, 255, 0.55)'};
+    mix-blend-mode: screen;
+    opacity: 0.35;
+    pointer-events: none;
+  }
 `;
 
 const TickerLabel = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-right: 1rem;
+  gap: 0.55rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-right: 1.5rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: inherit;
+  letter-spacing: 0.1em;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15,23,42,0.6)'
+    : 'rgba(255,255,255,0.75)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
 `;
 
 const TickerTrack = styled.div`
@@ -42,7 +67,7 @@ const TickerTrack = styled.div`
 const TickerContent = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 3rem;
+  gap: 2.5rem;
   white-space: nowrap;
   animation: ${scroll} ${props => props.duration}s linear infinite;
 `;
@@ -50,10 +75,10 @@ const TickerContent = styled.div`
 const TickerItem = styled.a`
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   color: inherit;
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   opacity: 0.9;
   transition: opacity 0.2s ease;
 
@@ -64,19 +89,29 @@ const TickerItem = styled.a`
 
 const SourceTag = styled.span`
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  background: ${props => props.theme.layout.ticker.badgeBackground};
-  color: ${props => props.theme.layout.ticker.badgeText};
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(96, 165, 250, 0.25)'
+    : 'rgba(30, 64, 175, 0.15)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(191, 219, 254, 1)'
+    : '#1e3a8a'};
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+  letter-spacing: 0.08em;
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(96, 165, 250, 0.35)'
+    : 'rgba(30, 64, 175, 0.25)'};
 `;
 
 const HeadlineText = styled.span`
   font-size: 0.95rem;
   color: inherit;
   font-weight: 500;
+  max-width: 480px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const NewsTicker = () => {
