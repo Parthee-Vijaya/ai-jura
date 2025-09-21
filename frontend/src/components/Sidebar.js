@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
@@ -13,6 +13,8 @@ import {
   FaBalanceScale,
   FaChevronLeft,
   FaChevronRight,
+  FaChevronDown,
+  FaChevronUp,
   FaExternalLinkAlt,
   FaInfoCircle,
   FaCog
@@ -37,10 +39,11 @@ const buildApiUrl = (path) => {
 
 const fetchVersionInfo = async () => {
   const response = await fetch(buildApiUrl('/api/version'), {
+    cache: 'no-store',
     headers: {
       'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
     },
-    cache: 'no-store',
   });
   if (!response.ok) {
     throw new Error('Kunne ikke hente versionsdata');
@@ -263,7 +266,8 @@ const SidebarFooter = styled.div`
 
   .version-info {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
 
@@ -335,8 +339,29 @@ const SidebarFooter = styled.div`
   }
 `;
 
+const VersionToggleButton = styled.button`
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid ${props => props.theme.layout.sidebar.border};
+  background: ${props => props.theme.layout.sidebar.badgeBackground};
+  color: ${props => props.theme.layout.sidebar.text};
+  cursor: pointer;
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${props => props.theme.shadows.sm};
+  }
+`;
+
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
+  const [showVersionDetails, setShowVersionDetails] = useState(false);
   const { data: versionData, isError: versionError } = useQuery(
     VERSION_QUERY_KEY,
     fetchVersionInfo,
@@ -456,33 +481,44 @@ const Sidebar = ({ collapsed, onToggle }) => {
       </NavContent>
 
       {!collapsed && (
-        <SidebarFooter>
-          <div className="version-info">
-            <FaInfoCircle size={12} />
-            <div className="meta">
-              <span className="version">{versionLabel}</span>
-              {changeTypeLabel && <span className="change-type">{changeTypeLabel}</span>}
-            </div>
+      <SidebarFooter>
+        <div className="version-info">
+          <FaInfoCircle size={12} />
+          <div className="meta">
+            <span className="version">{versionLabel}</span>
+            {changeTypeLabel && <span className="change-type">{changeTypeLabel}</span>}
           </div>
-          <div className="date">
-            {lastUpdated ? (
-              <>
-                <span>Sidst ændret: {lastUpdated.formatted}</span>
-                {lastUpdated.relative && <span className="relative">{lastUpdated.relative}</span>}
-              </>
-            ) : (
-              <span>{versionError ? 'Sidst ændret: ukendt' : 'Opdaterer versionsinfo...'}</span>
+          <VersionToggleButton
+            onClick={() => setShowVersionDetails(prev => !prev)}
+            aria-label={showVersionDetails ? 'Skjul commitdetaljer' : 'Vis commitdetaljer'}
+            aria-expanded={showVersionDetails}
+          >
+            {showVersionDetails ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+          </VersionToggleButton>
+        </div>
+        {showVersionDetails && (
+          <>
+            <div className="date">
+              {lastUpdated ? (
+                <>
+                  <span>Sidst ændret: {lastUpdated.formatted}</span>
+                  {lastUpdated.relative && <span className="relative">{lastUpdated.relative}</span>}
+                </>
+              ) : (
+                <span>{versionError ? 'Sidst ændret: ukendt' : 'Opdaterer versionsinfo...'}</span>
+              )}
+            </div>
+            {(lastUpdated?.shortHash || lastUpdated?.message) && (
+              <div className="commit">
+                {lastUpdated.shortHash && <span>Commit {lastUpdated.shortHash}</span>}
+                {lastUpdated.message && <span> · {lastUpdated.message}</span>}
+              </div>
             )}
-          </div>
-          {(lastUpdated?.shortHash || lastUpdated?.message) && (
-            <div className="commit">
-              {lastUpdated.shortHash && <span>Commit {lastUpdated.shortHash}</span>}
-              {lastUpdated.message && <span> · {lastUpdated.message}</span>}
-            </div>
-          )}
-          <div className="organization">Kun til internt brug – Digitalisering og IT</div>
-        </SidebarFooter>
-      )}
+          </>
+        )}
+        <div className="organization">Kun til internt brug – Digitalisering og IT</div>
+      </SidebarFooter>
+    )}
     </SidebarContainer>
   );
 };
