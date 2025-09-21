@@ -280,35 +280,15 @@ const SidebarFooter = styled.div`
 `;
 
 const VersionPanel = styled.div`
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(150deg, rgba(17, 24, 39, 0.94), rgba(30, 41, 59, 0.82))'
-    : 'linear-gradient(150deg, rgba(255, 255, 255, 0.97), rgba(244, 247, 252, 0.92))'};
+  background: transparent;
   border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.25)'
-    : 'rgba(148, 163, 184, 0.4)'};
+    ? 'rgba(148, 163, 184, 0.22)'
+    : 'rgba(148, 163, 184, 0.28)'};
   border-radius: ${props => props.theme.borderRadiusLarge};
-  box-shadow: ${props => props.theme.shadows.glass};
   padding: 1.1rem 1.15rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  position: relative;
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: ${props => props.theme.mode === 'dark'
-      ? 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 55%)'
-      : 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 45%)'};
-    pointer-events: none;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
 `;
 
 const VersionSummary = styled.button`
