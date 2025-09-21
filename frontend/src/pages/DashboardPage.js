@@ -259,7 +259,7 @@ const DashboardPage = () => {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun'],
     datasets: [
       {
-        label: 'Assessments',
+        label: 'Vurderinger',
         data: [12, 19, 8, 15, 25, 18],
         borderColor: '#1a365d',
         backgroundColor: 'rgba(26, 54, 93, 0.1)',
@@ -291,7 +291,7 @@ const DashboardPage = () => {
     labels: ['GDPR', 'AI Act', 'Dansk Lov', 'Sektorlov'],
     datasets: [
       {
-        label: 'Compliance Score',
+        label: 'Compliance-score',
         data: [85, 78, 92, 73],
         backgroundColor: [
           'rgba(26, 54, 93, 0.8)',
@@ -314,28 +314,28 @@ const DashboardPage = () => {
     {
       icon: FaChartBar,
       value: '47',
-      label: 'Total Assessments',
+      label: 'Samlede vurderinger',
       trend: '+12%',
       positive: true
     },
     {
       icon: FaCheckCircle,
       value: '32',
-      label: 'Approved (GO)',
+      label: 'Godkendt (GO)',
       trend: '+8%',
       positive: true
     },
     {
       icon: FaExclamationTriangle,
       value: '12',
-      label: 'Conditional (Betinget GO)',
+      label: 'Betinget godkendt',
       trend: '-3%',
       positive: false
     },
     {
       icon: FaTimesCircle,
       value: '3',
-      label: 'Rejected (NO-GO)',
+      label: 'Afvist (NO-GO)',
       trend: '+1',
       positive: false
     }
@@ -383,8 +383,8 @@ const DashboardPage = () => {
     return (
       <DashboardContainer>
         <PageHeader>
-          <h1><FaChartBar /> Compliance Dashboard</h1>
-          <p>Indlæser analytics data...</p>
+          <h1><FaChartBar /> Compliance-dashboard</h1>
+          <p>Indlæser analysedata...</p>
         </PageHeader>
 
         <StatsGrid>
@@ -406,8 +406,8 @@ const DashboardPage = () => {
   return (
     <DashboardContainer>
       <PageHeader>
-        <h1><FaChartBar /> Compliance Dashboard</h1>
-        <p>Oversigt over dine AI compliance analyser og trends</p>
+        <h1><FaChartBar /> Compliance-dashboard</h1>
+        <p>Overblik over AI-compliance vurderinger, status og tendenser</p>
       </PageHeader>
 
       <FilterSection>
@@ -460,7 +460,7 @@ const DashboardPage = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="chart-header">
-            <h3>Assessment Trends</h3>
+          <h3>Udvikling i vurderinger</h3>
             <div className="chart-actions">
               <ActionButton>
                 <FaDownload />
@@ -497,7 +497,7 @@ const DashboardPage = () => {
         transition={{ duration: 0.7 }}
       >
         <div className="chart-header">
-          <h3>Compliance Scores by Regulation</h3>
+          <h3>Compliance-score fordelt på regulering</h3>
           <div className="chart-actions">
             <ActionButton>
               <FaDownload />

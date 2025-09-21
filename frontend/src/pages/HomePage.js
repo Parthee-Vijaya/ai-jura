@@ -552,35 +552,35 @@ const HomePage = () => {
   const features = [
     {
       icon: FaShieldAlt,
-      title: 'EU AI Act Compliance',
-      description: 'Omfattende tjek af AI-systemer mod EU AI Act krav med automatisk risikoanalyse og implementeringsguide.'
+      title: 'EU AI Act-overholdelse',
+      description: 'Grundigt tjek af AI-systemer op imod EU AI Act-krav – med automatisk risikovurdering og klar handlingsguide.'
     },
     {
       icon: FaGlobeEurope,
-      title: 'GDPR & Dansk Lovgivning',
-      description: 'Specialiseret analyse af GDPR compliance for AI med fokus på danske implementeringsregler og Datatilsynets vejledninger.'
+      title: 'GDPR og danske krav',
+      description: 'Specialiserede analyser af databeskyttelse for AI – tilpasset danske implementeringsregler og Datatilsynets vejledninger.'
     },
     {
       icon: FaChartLine,
-      title: 'Juridisk Research',
-      description: 'Dyb research i relevante love og forordninger med præcise kildehenvisninger og opdaterede guidelines.'
+      title: 'Juridisk indsigt',
+      description: 'Målrettet research i love og forordninger med præcise kildehenvisninger og altid opdaterede guidelines.'
     }
   ];
 
   const quickStartSteps = [
     {
       title: 'Hurtig Tjek',
-      description: 'Få øjeblikkelig feedback på dit AI-systems compliance status',
+      description: 'Få øjeblikkelig feedback på om dit AI-system lever op til kravene',
       link: '/hurtig-tjek'
     },
     {
       title: 'Compliance Control',
-      description: 'Omfattende analyse med detaljeret rapport og handlingsplan',
+      description: 'Gennemfør en fuld analyse med detaljeret rapport og handlingsplan',
       link: '/fuld-vurdering'
     },
     {
       title: 'Se Resultater',
-      description: 'Analyser trends og følg compliance progress i dashboard',
+      description: 'Følg udviklingen og compliance-status i dashboardet',
       link: '/dashboard'
     }
   ];
@@ -589,28 +589,28 @@ const HomePage = () => {
     {
       icon: FaCheckCircle,
       value: '32',
-      label: 'Approved Assessments',
+      label: 'Godkendte vurderinger',
       type: 'success',
       trend: '+8%'
     },
     {
       icon: FaExclamationTriangle,
       value: '12',
-      label: 'Pending Reviews',
+      label: 'Under behandling',
       type: 'warning',
       trend: '+3'
     },
     {
       icon: FaTimesCircle,
       value: '3',
-      label: 'Rejected Systems',
+      label: 'Afviste systemer',
       type: 'danger',
       trend: '-1'
     },
     {
       icon: FaHistory,
       value: '47',
-      label: 'Total Assessments',
+      label: 'Samlede vurderinger',
       type: 'primary',
       trend: '+12%'
     }
@@ -620,29 +620,29 @@ const HomePage = () => {
     {
       type: 'assessment',
       icon: FaFileAlt,
-      title: 'AI Chatbot Assessment Complete',
-      description: 'Customer service chatbot received conditional approval',
+      title: 'AI-chatbot vurdering fuldført',
+      description: 'Chatbot til borgerservice fik en betinget godkendelse',
       time: '2 timer siden'
     },
     {
       type: 'research',
       icon: FaGlobeEurope,
-      title: 'Research: GDPR Article 22 Analysis',
-      description: 'Completed automated decision-making compliance research',
+      title: 'Research: Analyse af GDPR artikel 22',
+      description: 'Research om automatiske afgørelser er gennemført og dokumenteret',
       time: '5 timer siden'
     },
     {
       type: 'compliance',
       icon: FaShieldAlt,
-      title: 'Compliance Report Generated',
-      description: 'Document classification system approved for production',
+      title: 'Compliance-rapport genereret',
+      description: 'Dokumentklassificeringssystem godkendt til drift',
       time: '1 dag siden'
     },
     {
       type: 'assessment',
       icon: FaUsers,
-      title: 'Team Assessment Review',
-      description: 'HR automation system flagged for manual review',
+      title: 'Teamvurdering igangsat',
+      description: 'HR-automationssystem markeret til manuel gennemgang',
       time: '2 dage siden'
     }
   ];

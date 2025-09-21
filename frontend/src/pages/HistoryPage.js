@@ -523,8 +523,8 @@ const HistoryPage = () => {
   return (
     <HistoryContainer>
       <PageHeader>
-        <h1><FaHistory /> Assessment Historik</h1>
-        <p>Gennemse og administrer dine tidligere AI compliance analyser</p>
+        <h1><FaHistory /> Vurderingshistorik</h1>
+        <p>Gennemse og administrer dine tidligere AI-compliance analyser</p>
       </PageHeader>
 
       <ControlsSection>
