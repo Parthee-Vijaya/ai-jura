@@ -34,9 +34,10 @@ from src.agents import AgentConfig, get_agent_registry
 from src.agents.compliance_orchestrator import ComplianceOrchestrator
 from src.compliance.ai_act_checker import AIActComplianceChecker
 from src.compliance.gdpr_checker import GDPRComplianceChecker
-from src.research.web_searcher import WebSearcher
 from src.services import NewsService, TechTickerService
 from src.utils import get_version_info
+from src.agents import run_research_agent
+from urllib.parse import urlparse
 from src.compliance_engine import ComplianceController
 
 # Load environment variables from .env if present
@@ -482,24 +483,103 @@ async def juridisk_research(request: ResearchRequest):
     Udfører juridisk research med kildecitation
     """
     try:
-        logger.info(f"Starter juridisk research: {request.emne}")
+        logger.info(f"Starter juridisk research (agent): {request.emne}")
 
-        async with WebSearcher() as searcher:
-            resultat = await searcher.research_topic(
-                query=request.emne,
-                focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"]
-            )
+        agent_result = await asyncio.to_thread(
+            run_research_agent,
+            query=request.emne,
+            focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"],
+        )
+
+        formatted = _format_research_result(agent_result, request.emne, request.fokusområder)
 
         return {
             "success": True,
             "emne": request.emne,
-            "resultat": resultat,
-            "message": f"Research afsluttet - {len(resultat['sources'])} kilder fundet"
+            "resultat": formatted,
+            "message": f"Research afsluttet - {len(formatted['sources'])} kilder fundet"
         }
 
     except Exception as e:
         logger.error(f"Juridisk research fejlede: {e}")
         raise HTTPException(status_code=500, detail=f"Research fejl: {str(e)}")
+
+
+def _format_research_result(
+    raw: Dict[str, Any] | str,
+    query: str,
+    focus_areas: Optional[List[str]],
+) -> Dict[str, Any]:
+    if not isinstance(raw, dict):
+        return {
+            "query": query,
+            "focus_areas": focus_areas or [],
+            "summary": str(raw),
+            "key_findings": [],
+            "recommendations": [],
+            "sources": [],
+            "cross_references": [],
+        }
+
+    def _normalise_sources(sources: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        normalised: List[Dict[str, Any]] = []
+        for source in sources or []:
+            if not isinstance(source, dict):
+                continue
+            url = source.get("url") or ""
+            domain = source.get("domain")
+            if not domain and url:
+                domain = urlparse(url).netloc
+            normalised.append({
+                "title": source.get("title") or domain or "Ukendt kilde",
+                "url": url,
+                "authority": source.get("authority"),
+                "domain": domain,
+                "date_accessed": source.get("date_accessed"),
+                "relevance_score": source.get("relevance_score"),
+            })
+        return normalised
+
+    def _normalise_cross_refs(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        normalised: List[Dict[str, Any]] = []
+        for item in items or []:
+            statement = item.get("statement") if isinstance(item, dict) else None
+            if not statement:
+                continue
+            citations = []
+            for citation in item.get("citations", []):
+                if not isinstance(citation, dict):
+                    continue
+                citations.append({
+                    "title": citation.get("title"),
+                    "authority": citation.get("authority"),
+                    "url": citation.get("url"),
+                })
+            normalised.append({
+                "statement": statement,
+                "citations": citations,
+            })
+        return normalised
+
+    summary = raw.get("summary") or raw.get("answer") or raw.get("llm_answer")
+    key_findings = raw.get("key_findings") or []
+    recommendations = raw.get("recommended_actions") or raw.get("recommendations") or []
+    sources = _normalise_sources(raw.get("sources") or [])
+    cross_refs = _normalise_cross_refs(raw.get("cross_references") or raw.get("crossReferences") or [])
+    llm_answer = raw.get("answer") or raw.get("llm_answer")
+    llm_citations = raw.get("llm_answer_citations") or raw.get("citations", [])
+
+    return {
+        "query": query,
+        "focus_areas": focus_areas or [],
+        "summary": summary or "Ingen sammenfatning tilgængelig.",
+        "key_findings": key_findings,
+        "recommendations": recommendations,
+        "sources": sources,
+        "cross_references": cross_refs,
+        "llm_answer": llm_answer,
+        "llm_answer_citations": llm_citations,
+    }
 
 
 @app.post("/api/compliance/analyser", response_model=Dict[str, Any])

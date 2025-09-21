@@ -146,6 +146,22 @@ const ResultsHeader = styled.div`
     color: ${props => props.theme.colors.gray[600]};
     line-height: 1.6;
   }
+
+  .meta {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    color: ${props => props.theme.colors.gray[500]};
+    font-size: 0.9rem;
+
+    span {
+      background: ${props => props.theme.colors.gray[100]};
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      color: ${props => props.theme.colors.gray[700]};
+    }
+  }
 `;
 
 const AnswerCard = styled.div`
@@ -549,6 +565,13 @@ const ResearchPage = () => {
               <div className="summary">
                 {results.summary}
               </div>
+              {results.focus_areas && results.focus_areas.length > 0 && (
+                <div className="meta">
+                  {results.focus_areas.map((area, index) => (
+                    <span key={`focus-${index}`}>{area}</span>
+                  ))}
+                </div>
+              )}
             </ResultsHeader>
 
             {results.llm_answer && (
@@ -574,6 +597,28 @@ const ResearchPage = () => {
                   </CitationList>
                 )}
               </AnswerCard>
+            )}
+
+            {results.key_findings && results.key_findings.length > 0 && (
+              <DetailsSection>
+                <h3>Vigtige indsigter</h3>
+                <ul>
+                  {results.key_findings.map((finding, index) => (
+                    <li key={`finding-${index}`}>{finding}</li>
+                  ))}
+                </ul>
+              </DetailsSection>
+            )}
+
+            {results.recommendations && results.recommendations.length > 0 && (
+              <DetailsSection>
+                <h3>Anbefalinger</h3>
+                <ul>
+                  {results.recommendations.map((rec, index) => (
+                    <li key={`recommendation-${index}`}>{rec}</li>
+                  ))}
+                </ul>
+              </DetailsSection>
             )}
 
             {results.sources.length > 0 && (
