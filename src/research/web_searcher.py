@@ -557,9 +557,14 @@ class WebSearcher:
                 continue
             seen_urls.add(href)
             source = await self._fetch_source(href)
-            if source and self._is_relevant(source.content, query):
-                source.title = title or source.title
+            if not source:
+                continue
+            source.title = title or source.title
+            if self._is_relevant(source.content, query):
                 source.relevance_score = max(source.relevance_score, 0.6)
+                sources.append(source)
+            elif len(sources) < limit - 1:
+                source.relevance_score = max(source.relevance_score, 0.3)
                 sources.append(source)
             if len(sources) >= limit:
                 break
@@ -697,27 +702,27 @@ class WebSearcher:
 
     def _is_relevant(self, content: str, query: str) -> bool:
         """Kontroller om indhold er relevant for søgeforespørgslen"""
-        query_terms = query.lower().split()
+        query_terms = [term for term in re.split(r"\W+", query.lower()) if len(term) > 3]
         content_lower = content.lower()
 
-        # Tjek for relevante nøgleord
         relevance_keywords = [
             'ai', 'artificial intelligence', 'kunstig intelligens',
             'gdpr', 'databeskyttelse', 'personoplysninger',
             'automatiseret', 'automated', 'algoritme', 'algorithm',
-            'compliance', 'overholdelse', 'regulering', 'regulation'
+            'compliance', 'overholdelse', 'regulering', 'regulation',
+            'sag', 'klage', 'tilsyn', 'vejledning'
         ]
 
-        relevance_score = 0
-        for term in query_terms:
-            if term in content_lower:
-                relevance_score += 1
+        term_hits = sum(1 for term in query_terms if term and term in content_lower)
+        keyword_hits = sum(1 for keyword in relevance_keywords if keyword in content_lower)
 
-        for keyword in relevance_keywords:
-            if keyword in content_lower:
-                relevance_score += 0.5
-
-        return relevance_score >= 2
+        if term_hits >= 1:
+            return True
+        if keyword_hits >= 2:
+            return True
+        if term_hits >= 1 and keyword_hits >= 1:
+            return True
+        return False
 
     async def _generate_citations(self, query: str, sources: List[Source]) -> List[Citation]:
         """Generer præcise citationer fra kilder"""
