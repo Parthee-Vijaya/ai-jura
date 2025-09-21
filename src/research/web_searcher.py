@@ -491,7 +491,8 @@ class WebSearcher:
             # EU officielle dokumenter om AI
             official_docs = [
                 "https://commission.europa.eu/strategy-and-policy/priorities-2019-2024/europe-fit-digital-age/european-approach-artificial-intelligence_en",
-                "https://ec.europa.eu/info/strategy/priorities-2019-2024/europe-fit-digital-age/european-approach-artificial-intelligence/proposal-regulation-european-approach-artificial-intelligence_en"
+                "https://ec.europa.eu/info/strategy/priorities-2019-2024/europe-fit-digital-age/european-approach-artificial-intelligence/proposal-regulation-european-approach-artificial-intelligence_en",
+                "https://digital-strategy.ec.europa.eu/en/library/commission-publishes-guidelines-ai-system-definition-facilitate-first-ai-acts-rules-application"
             ]
 
             for url in official_docs:
