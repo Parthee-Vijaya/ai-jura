@@ -276,122 +276,179 @@ const SidebarFooter = styled.div`
   }
 `;
 
-const VersionToggleButton = styled.button`
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148,163,184,0.32)'
-    : 'rgba(148,163,184,0.45)'};
+const VersionPanel = styled.div`
   background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(30,41,59,0.6)'
-    : 'rgba(255,255,255,0.75)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
+    ? 'linear-gradient(150deg, rgba(17, 24, 39, 0.95), rgba(30, 41, 59, 0.85))'
+    : 'linear-gradient(150deg, rgba(255, 255, 255, 0.95), rgba(244, 247, 252, 0.9))'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.25)'
+    : 'rgba(148, 163, 184, 0.4)'};
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  box-shadow: ${props => props.theme.shadows.glass};
+  padding: 1.1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: ${props => props.theme.mode === 'dark'
+      ? 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 55%)'
+      : 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 45%)'};
+    pointer-events: none;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+`;
+
+const VersionSummary = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.9rem;
+  border: none;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
+  padding: 0;
+  text-align: left;
   transition: ${props => props.theme.animations.transitionFast};
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: ${props => props.theme.shadows.sm};
   }
 `;
 
-const VersionCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.1rem;
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.75))'
-    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.9))'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.25)'
-    : 'rgba(148, 163, 184, 0.35)'};
-  box-shadow: ${props => props.theme.shadows.glass};
-  backdrop-filter: blur(18px);
-`;
-
-const VersionHeader = styled.div`
+const SummaryIcon = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  justify-content: center;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(59, 130, 246, 0.25)'
+    : 'rgba(37, 99, 235, 0.12)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 `;
 
-const VersionMeta = styled.div`
+const VersionText = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
   flex: 1;
+
+  .title {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(226, 232, 240, 0.75)'
+      : props.theme.layout.sidebar.muted};
+  }
+
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: ${props => props.theme.mode === 'dark'
+      ? props.theme.colors.white
+      : props.theme.colors.primary};
+    letter-spacing: 0.02em;
+  }
 `;
 
-const VersionLabel = styled.span`
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: ${props => props.theme.layout.sidebar.muted};
-  font-weight: 600;
-`;
-
-const VersionValue = styled.span`
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-`;
-
-const ChangeTypeBadge = styled.span`
+const ChangeBadge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  align-self: flex-start;
-  padding: 0.25rem 0.6rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.22)'
-    : 'rgba(37, 99, 235, 0.15)'};
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.primary};
+    ? 'rgba(148, 163, 184, 0.24)'
+    : 'rgba(37, 99, 235, 0.18)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
+`;
+
+const SummaryChevron = styled.div`
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.28)'
+    : 'rgba(148, 163, 184, 0.35)'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(30, 41, 59, 0.7)'
+    : 'rgba(255, 255, 255, 0.8)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
 `;
 
 const VersionDetails = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.8rem 0.85rem;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: ${props => props.theme.borderRadius};
   background: ${props => props.theme.mode === 'dark'
     ? 'rgba(15, 23, 42, 0.72)'
-    : 'rgba(248, 250, 252, 0.9)'};
-  border-radius: ${props => props.theme.borderRadius};
+    : 'rgba(248, 250, 252, 0.92)'};
   border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.18)'
+    ? 'rgba(148, 163, 184, 0.2)'
     : 'rgba(148, 163, 184, 0.3)'};
   font-size: 0.75rem;
   color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.85)'
+    ? 'rgba(226, 232, 240, 0.9)'
     : props.theme.layout.sidebar.muted};
+`;
 
-  .relative {
-    font-size: 0.72rem;
-    opacity: 0.85;
+const MetaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  .label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(148, 163, 184, 0.65)'
+      : 'rgba(100, 116, 139, 0.9)'};
   }
 
-  .commit {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.72rem;
-    word-break: break-word;
+  .value {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: inherit;
+  }
+
+  .relative {
+    font-size: 0.7rem;
+    opacity: 0.8;
   }
 `;
 
@@ -518,46 +575,57 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {!collapsed && (
         <SidebarFooter>
-          <VersionCard>
-            <VersionHeader>
-              <FaInfoCircle size={12} />
-              <VersionMeta>
-                <VersionLabel>Platformsversion</VersionLabel>
-                <VersionValue>
+          <VersionPanel>
+            <VersionSummary
+              onClick={() => setShowVersionDetails(prev => !prev)}
+              aria-label={showVersionDetails ? 'Skjul versionsdetaljer' : 'Vis versionsdetaljer'}
+              aria-expanded={showVersionDetails}
+            >
+              <SummaryIcon>
+                <FaInfoCircle size={14} />
+              </SummaryIcon>
+              <VersionText>
+                <span className="title">Platformsversion</span>
+                <span className="value">
                   {versionLabel}
-                  {changeTypeLabel && (
-                    <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>
-                  )}
-                </VersionValue>
-              </VersionMeta>
-              <VersionToggleButton
-                onClick={() => setShowVersionDetails(prev => !prev)}
-                aria-label={showVersionDetails ? 'Skjul commitdetaljer' : 'Vis commitdetaljer'}
-                aria-expanded={showVersionDetails}
-              >
+                  {changeTypeLabel && <ChangeBadge>{changeTypeLabel}</ChangeBadge>}
+                </span>
+              </VersionText>
+              <SummaryChevron>
                 {showVersionDetails ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
-              </VersionToggleButton>
-            </VersionHeader>
+              </SummaryChevron>
+            </VersionSummary>
 
             {showVersionDetails && (
               <VersionDetails>
-                {lastUpdated ? (
-                  <>
-                    <span>Sidst opdateret: {lastUpdated.formatted}</span>
-                    {lastUpdated.relative && <span className="relative">{lastUpdated.relative}</span>}
-                  </>
-                ) : (
-                  <span>{versionError ? 'Sidst opdateret: ukendt' : 'Opdaterer versionsinfo...'}</span>
-                )}
+                <MetaRow>
+                  <span className="label">Sidst opdateret</span>
+                  {lastUpdated ? (
+                    <span className="value">
+                      {lastUpdated.formatted}
+                      {lastUpdated.relative && (
+                        <span className="relative">{lastUpdated.relative}</span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="value">
+                      {versionError ? 'Ukendt' : 'Opdaterer versionsinfo...'}
+                    </span>
+                  )}
+                </MetaRow>
+
                 {(lastUpdated?.shortHash || lastUpdated?.message) && (
-                  <div className="commit">
-                    {lastUpdated.shortHash && <span>Commit {lastUpdated.shortHash}</span>}
-                    {lastUpdated.message && <span>· {lastUpdated.message}</span>}
-                  </div>
+                  <MetaRow>
+                    <span className="label">Seneste commit</span>
+                    <span className="value">
+                      {lastUpdated.shortHash && <span>#{lastUpdated.shortHash}</span>}
+                      {lastUpdated.message && <span> – {lastUpdated.message}</span>}
+                    </span>
+                  </MetaRow>
                 )}
               </VersionDetails>
             )}
-          </VersionCard>
+          </VersionPanel>
 
           <div className="organization">Kun til internt brug – Digitalisering og IT</div>
         </SidebarFooter>

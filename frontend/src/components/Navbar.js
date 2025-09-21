@@ -140,7 +140,7 @@ const Navbar = () => {
         <NavBrand to="/">
           <BrandText>
             <span>Project Judge Dredd</span>
-            <span>AI Compliance Platform</span>
+            <span>AI-komplianceplatform</span>
           </BrandText>
         </NavBrand>
       </NavLeft>
