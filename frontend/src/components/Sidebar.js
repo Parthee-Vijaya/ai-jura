@@ -267,7 +267,16 @@ const SidebarFooter = styled.div`
 const VersionSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
+  padding: 1rem 1.1rem;
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88))'
+    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92))'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.32)'};
+  box-shadow: ${props => props.theme.shadows.glass};
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(226, 232, 240, 0.92)'
     : props.theme.layout.sidebar.text};
