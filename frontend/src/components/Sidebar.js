@@ -331,9 +331,9 @@ const VersionSummary = styled.button`
 `;
 
 const SummaryIcon = styled.div`
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -354,9 +354,9 @@ const VersionText = styled.div`
   min-width: 0;
 
   .title {
-    font-size: 0.7rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     font-weight: 600;
     color: ${props => props.theme.mode === 'dark'
       ? 'rgba(226, 232, 240, 0.85)'
@@ -368,7 +368,7 @@ const VersionText = styled.div`
     align-items: center;
     flex-wrap: wrap;
     gap: 0.55rem;
-    font-size: 1.02rem;
+    font-size: 0.94rem;
     font-weight: 700;
     color: ${props => props.theme.mode === 'dark'
       ? props.theme.colors.white
@@ -395,9 +395,9 @@ const ChangeBadge = styled.span`
 `;
 
 const SummaryChevron = styled.div`
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
   border: 1px solid ${props => props.theme.mode === 'dark'
     ? 'rgba(148, 163, 184, 0.28)'
     : 'rgba(148, 163, 184, 0.35)'};
@@ -595,14 +595,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
               aria-expanded={showVersionDetails}
             >
               <SummaryIcon>
-                <FaInfoCircle size={14} />
+                <FaInfoCircle size={12} />
               </SummaryIcon>
               <VersionText>
                 <span className="title">Platformsversion</span>
                 <span className="value">{versionLabel}</span>
               </VersionText>
               <SummaryChevron>
-                {showVersionDetails ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                {showVersionDetails ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
               </SummaryChevron>
             </VersionSummary>
 
