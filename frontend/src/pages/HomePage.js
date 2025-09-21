@@ -37,6 +37,26 @@ const HeroSection = styled.section`
   overflow: hidden;
   box-shadow: ${props => props.theme.shadows.xl};
 
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.35), transparent 55%);
+    opacity: ${props => props.theme.mode === 'dark' ? 0.1 : 0.4};
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    right: -20%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+    pointer-events: none;
+  }
+
   @media (max-width: 1024px) {
     padding: 2.5rem;
   }
