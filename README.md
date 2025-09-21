@@ -49,8 +49,16 @@ pip install -r requirements.txt
 4. **Konfigurer environment:**
 ```bash
 cp .env.example .env
-# Rediger .env filen med dine API nøgler
+# Rediger .env filen med dine API nøgler og mail-indstillinger
 ```
+
+Den indbyggede AI-sagsformular sender mails via SMTP. Udfyld følgende variabler i `.env`:
+
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_USE_TLS` – SMTP-server detaljer
+- `SMTP_FROM` og evt. `SMTP_REPLY_TO` – afsenderadresse
+- `AI_CASES_RECIPIENT` – hovedmodtager (standard: ServicePortalen@kalundborg.dk)
+- `AI_CASES_CC` – ekstra modtagere (standard inkluderer pavi@kalundborg.dk)
+- `APP_VERSION` – manuelt versionsnummer vist i UI'et (overstyrer automatisk git-version)
 
 5. **Start backend:**
 ```bash

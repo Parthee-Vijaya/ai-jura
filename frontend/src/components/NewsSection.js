@@ -5,11 +5,13 @@ import { NewsSkeletonLoader } from './SkeletonLoader';
 import { availableCategories, resolveSourceMeta } from '../utils/newsSourceMap';
 
 const NewsContainer = styled.div`
-  background: white;
-  border-radius: 12px;
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.borderRadiusLarge};
   padding: 24px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: ${props => props.theme.shadows.lg};
   margin-bottom: 24px;
+  border: 1px solid ${props => props.theme.colors.border};
+  transition: ${props => props.theme.animations.transition};
 `;
 
 const NewsHeader = styled.div`
@@ -20,7 +22,7 @@ const NewsHeader = styled.div`
 `;
 
 const NewsTitle = styled.h2`
-  color: #1a365d;
+  color: ${props => props.theme.colors.text};
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
@@ -33,25 +35,24 @@ const HeaderInfo = styled.div`
 `;
 
 const LastUpdated = styled.span`
-  color: #666;
+  color: ${props => props.theme.colors.textMuted};
   font-size: 0.9rem;
 `;
 
 const RefreshButton = styled.button`
-  background: #1a365d;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  background: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.white};
+  border-radius: 8px;
   padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
+  transition: ${props => props.theme.animations.transitionFast};
 
   &:hover {
-    background: #2c5282;
+    filter: brightness(1.05);
     transform: translateY(-1px);
   }
 
@@ -72,22 +73,22 @@ const RefreshButton = styled.button`
 `;
 
 const CategoryButton = styled.button`
-  padding: 6px 12px;
-  border: 1px solid #e2e8f0;
+  padding: 6px 14px;
+  border: 1px solid ${props => props.theme.colors.border};
   border-radius: 20px;
-  background: ${props => props.active ? '#3182ce' : 'white'};
-  color: ${props => props.active ? 'white' : '#4a5568'};
+  background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.surfaceAlt};
+  color: ${props => props.active ? props.theme.colors.white : props.theme.colors.text};
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: ${props => props.theme.animations.transitionFast};
 
   &:hover {
-    background: ${props => props.active ? '#2c5aa0' : '#f7fafc'};
+    background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.surface};
   }
 `;
 
 const NewsItem = styled.div`
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
   padding: 16px 0;
 
   &:last-child {
@@ -106,7 +107,7 @@ const NewsItemTitle = styled.h3`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2d3748;
+  color: ${props => props.theme.colors.text};
   line-height: 1.4;
   flex: 1;
 `;
@@ -136,8 +137,8 @@ const ImportanceBadge = styled.span`
 `;
 
 const NewsSource = styled.div`
-  font-size: 0.875rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: ${props => props.theme.colors.textMuted};
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -150,7 +151,7 @@ const SourceLogo = styled.img`
   height: 32px;
   border-radius: 8px;
   object-fit: cover;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const SourceMeta = styled.span`
@@ -161,11 +162,11 @@ const SourceMeta = styled.span`
 
 const SourceName = styled.span`
   font-weight: 600;
-  color: #1a365d;
+  color: ${props => props.theme.colors.text};
 `;
 
 const SourceExtra = styled.span`
-  color: #718096;
+  color: ${props => props.theme.colors.textMuted};
   font-size: 0.75rem;
 `;
 
@@ -183,13 +184,13 @@ const CategoryFilter = styled.div`
 
 const NewsSummary = styled.p`
   margin: 0;
-  color: #4a5568;
+  color: ${props => props.theme.colors.textMuted};
   line-height: 1.5;
   font-size: 0.95rem;
 `;
 
 const NewsLink = styled.a`
-  color: #3182ce;
+  color: ${props => props.theme.colors.primary};
   text-decoration: none;
   font-size: 0.875rem;
   margin-top: 8px;
@@ -219,15 +220,15 @@ const Keyword = styled.span`
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: ${props => props.theme.colors.textMuted};
 `;
 
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 40px;
-  color: #e53e3e;
-  background: #fed7d7;
-  border-radius: 8px;
+  color: ${props => props.theme.colors.danger};
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(248, 113, 113, 0.15)' : '#fed7d7'};
+  border-radius: 10px;
 `;
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';

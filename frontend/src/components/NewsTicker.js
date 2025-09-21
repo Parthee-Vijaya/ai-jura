@@ -11,15 +11,15 @@ const scroll = keyframes`
 `;
 
 const TickerWrapper = styled.div`
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #1f2937;
+  background: ${props => props.theme.layout.ticker.background};
+  color: ${props => props.theme.layout.ticker.text};
   display: flex;
   align-items: center;
   overflow: hidden;
   padding: 0.75rem 1rem;
   border-radius: 14px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 10px 25px -10px rgba(217, 119, 6, 0.6);
+  box-shadow: ${props => props.theme.shadows.lg};
 `;
 
 const TickerLabel = styled.div`
@@ -31,6 +31,7 @@ const TickerLabel = styled.div`
   margin-right: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: inherit;
 `;
 
 const TickerTrack = styled.div`
@@ -65,16 +66,16 @@ const SourceTag = styled.span`
   font-weight: 600;
   font-size: 0.75rem;
   text-transform: uppercase;
-  background: rgba(31, 41, 55, 0.12);
-  color: #1f2937;
-  padding: 0.15rem 0.55rem;
+  background: ${props => props.theme.layout.ticker.badgeBackground};
+  color: ${props => props.theme.layout.ticker.badgeText};
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
   letter-spacing: 0.05em;
 `;
 
 const HeadlineText = styled.span`
   font-size: 0.95rem;
-  color: #1f2937;
+  color: inherit;
   font-weight: 500;
 `;
 

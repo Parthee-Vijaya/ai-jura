@@ -1,38 +1,51 @@
 import React, { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaGavel, FaSearch } from 'react-icons/fa';
+import { FaSearch, FaSun, FaMoon } from 'react-icons/fa';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
 const NavbarContainer = styled.nav`
-  background: white;
+  background: ${props => props.theme.layout.nav.background};
   padding: 1rem 2rem;
-  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+  border-bottom: 1px solid ${props => props.theme.layout.nav.border};
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  color: ${props => props.theme.layout.nav.text};
+  transition: ${props => props.theme.animations.transition};
 `;
 
 const NavLeft = styled.div`
   display: flex;
   align-items: center;
+  gap: 0.75rem;
 `;
 
 const NavBrand = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   text-decoration: none;
+  color: ${props => props.theme.layout.nav.text};
+`;
 
-  h1 {
-    color: ${props => props.theme.colors.primary};
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
+const BrandText = styled.div`
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+
+  span:first-child {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: ${props => props.theme.layout.nav.text};
   }
 
-  .brand-icon {
-    color: ${props => props.theme.colors.juridical.gold};
+  span:last-child {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: ${props => props.theme.colors.textMuted};
+    letter-spacing: 0.02em;
   }
 `;
 
@@ -41,7 +54,7 @@ const NavCenter = styled.div`
   align-items: center;
   flex: 1;
   justify-content: center;
-  max-width: 400px;
+  max-width: 420px;
   margin: 0 2rem;
 `;
 
@@ -52,19 +65,22 @@ const SearchContainer = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  border: 1px solid ${props => props.theme.colors.gray[300]};
-  border-radius: 6px;
-  background: white;
-  font-size: 0.875rem;
+  padding: 0.55rem 1rem 0.55rem 2.5rem;
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 10px;
+  background: ${props => props.theme.colors.inputBackground};
+  font-size: 0.9rem;
+  color: ${props => props.theme.colors.text};
+  transition: ${props => props.theme.animations.transitionFast};
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.colors.primary};
+    box-shadow: ${props => props.theme.shadows.focus};
   }
 
   &::placeholder {
-    color: ${props => props.theme.colors.gray[500]};
+    color: ${props => props.theme.colors.textMuted};
   }
 `;
 
@@ -73,22 +89,39 @@ const SearchIcon = styled.div`
   left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: ${props => props.theme.colors.gray[400]};
+  color: ${props => props.theme.colors.textMuted};
   pointer-events: none;
 `;
-
 
 const NavActions = styled.div`
   display: flex;
   align-items: center;
-  color: ${props => props.theme.colors.gray[600]};
-  font-size: 0.875rem;
+  gap: 1rem;
+  color: ${props => props.theme.colors.textMuted};
+`;
+
+const ThemeToggleButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: ${props => props.theme.colors.surfaceAlt};
+  color: ${props => props.theme.colors.text};
+  border: 1px solid ${props => props.theme.colors.border};
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${props => props.theme.shadows.sm};
+  }
 `;
 
 const Navbar = () => {
   const [searchValue, setSearchValue] = useState('');
-
-
+  const { preferences, updatePreference } = useUserPreferences();
+  const isDark = preferences?.theme === 'dark';
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -97,13 +130,18 @@ const Navbar = () => {
     }
   };
 
+  const handleThemeToggle = () => {
+    updatePreference('theme', isDark ? 'light' : 'dark');
+  };
 
   return (
     <NavbarContainer>
       <NavLeft>
         <NavBrand to="/">
-          <FaGavel size={20} className="brand-icon" />
-          <h1>Judge Dredd</h1>
+          <BrandText>
+            <span>Project Judge Dredd</span>
+            <span>AI Compliance Platform</span>
+          </BrandText>
         </NavBrand>
       </NavLeft>
 
@@ -115,7 +153,7 @@ const Navbar = () => {
             </SearchIcon>
             <SearchInput
               type="text"
-              placeholder="Søg..."
+              placeholder="Søg i platformen..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -124,7 +162,9 @@ const Navbar = () => {
       </NavCenter>
 
       <NavActions>
-        Kalundborg Kommune
+        <ThemeToggleButton onClick={handleThemeToggle} aria-label="Skift tema">
+          {isDark ? <FaSun size={16} /> : <FaMoon size={16} />}
+        </ThemeToggleButton>
       </NavActions>
     </NavbarContainer>
   );

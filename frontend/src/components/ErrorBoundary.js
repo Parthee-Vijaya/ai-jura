@@ -273,7 +273,7 @@ Fejlbesked: ${error?.message || 'Ingen specifik fejlbesked'}
 Tak for jeres hjælp!
 
 Venlig hilsen,
-Kalundborg Kommune
+AI Compliance Platform
     `.trim();
 
     window.location.href = `mailto:support@judgedredd.dk?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

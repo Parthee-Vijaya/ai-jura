@@ -6,8 +6,8 @@ Dansk AI compliance platform med web research
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
-from pydantic import BaseModel
-from typing import Dict, Any, List, Optional
+from pydantic import BaseModel, Field
+from typing import Dict, Any, List, Optional, Literal
 import asyncio
 import uvicorn
 import logging
@@ -16,6 +16,11 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
+from uuid import uuid4
+import smtplib
+from email.message import EmailMessage
+
+from dotenv import load_dotenv
 
 from src.core.models import (
     ProjectInput,
@@ -31,6 +36,10 @@ from src.compliance.ai_act_checker import AIActComplianceChecker
 from src.compliance.gdpr_checker import GDPRComplianceChecker
 from src.research.web_searcher import WebSearcher
 from src.services import NewsService, TechTickerService
+from src.utils import get_version_info
+
+# Load environment variables from .env if present
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -65,6 +74,9 @@ ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "900"))  # 15 minutter
 TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS", "120"))
+
+AI_CASES_STORE = Path(os.getenv("AI_CASES_STORE", "data/ai_cases.json"))
+AI_CASES_LOCK = asyncio.Lock()
 
 
 async def _refresh_news_periodically() -> None:
@@ -144,6 +156,91 @@ async def shutdown_event() -> None:
 assessments_db: Dict[str, ComplianceAssessment] = {}
 
 
+def _ensure_case_store() -> None:
+    AI_CASES_STORE.parent.mkdir(parents=True, exist_ok=True)
+    if not AI_CASES_STORE.exists():
+        AI_CASES_STORE.write_text('[]', encoding='utf-8')
+
+
+async def _load_ai_cases() -> List[Dict[str, Any]]:
+    def _load() -> List[Dict[str, Any]]:
+        _ensure_case_store()
+        with AI_CASES_STORE.open('r', encoding='utf-8') as handle:
+            try:
+                data = json.load(handle)
+            except json.JSONDecodeError:
+                logger.warning("Kunde ikke parse AI sager filen - initialiserer ny liste")
+                data = []
+        return data
+
+    return await asyncio.to_thread(_load)
+
+
+async def _save_ai_cases(cases: List[Dict[str, Any]]) -> None:
+    def _save() -> None:
+        _ensure_case_store()
+        with AI_CASES_STORE.open('w', encoding='utf-8') as handle:
+            json.dump(cases, handle, ensure_ascii=False, indent=2)
+
+    await asyncio.to_thread(_save)
+
+
+def _dispatch_case_email(case: "AICase") -> str:
+    recipient = os.getenv('AI_CASES_RECIPIENT', 'ServicePortalen@kalundborg.dk')
+    cc_raw = os.getenv('AI_CASES_CC', 'pavi@kalundborg.dk')
+    cc_recipients = [addr.strip() for addr in cc_raw.split(',') if addr.strip()]
+
+    smtp_host = os.getenv('SMTP_HOST', 'localhost')
+    smtp_port = int(os.getenv('SMTP_PORT', '25'))
+    smtp_user = os.getenv('SMTP_USER')
+    smtp_password = os.getenv('SMTP_PASSWORD')
+    use_tls = os.getenv('SMTP_USE_TLS', 'false').lower() not in {'0', 'false', 'no'}
+    sender = os.getenv('SMTP_FROM') or smtp_user or 'no-reply@judgedredd.local'
+
+    message = EmailMessage()
+    message['Subject'] = f"Ny AI sag: {case.title}"
+    message['From'] = sender
+    message['To'] = recipient
+    if cc_recipients:
+        message['Cc'] = ', '.join(cc_recipients)
+    reply_to = os.getenv('SMTP_REPLY_TO')
+    if reply_to:
+        message['Reply-To'] = reply_to
+
+    created_at_local = case.created_at.astimezone(UTC)
+    created_at_text = created_at_local.strftime('%Y-%m-%d %H:%M:%S UTC')
+    body = (
+        f"Ny AI sag er indsendt via AI Compliance Platformen.\n\n"
+        f"Titel: {case.title}\n"
+        f"Indsendt: {created_at_text}\n"
+        f"Sags-ID: {case.id}\n\n"
+        f"Beskrivelse:\n{case.description}\n"
+    )
+    message.set_content(body)
+
+    recipients = [recipient, *cc_recipients]
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+            if use_tls:
+                server.starttls()
+            if smtp_user and smtp_password:
+                server.login(smtp_user, smtp_password)
+            server.send_message(message, from_addr=sender, to_addrs=recipients)
+        logger.info(
+            "Sendte AI sag email for %s til %s (cc=%s) via %s:%s",
+            case.id,
+            recipient,
+            ','.join(cc_recipients) if cc_recipients else 'ingen',
+            smtp_host,
+            smtp_port,
+        )
+        return 'sent'
+    except Exception as exc:  # pragma: no cover - robusthed
+        logger.exception("Kunne ikke sende email for AI sag %s: %s", case.id, exc)
+        return 'failed'
+
+
 class HealthCheck(BaseModel):
     status: str
     timestamp: datetime
@@ -156,6 +253,34 @@ class QuickCheckRequest(BaseModel):
     sektor: str
     behandler_persondata: bool = False
     automatiserede_beslutninger: bool = False
+
+
+class CommitMetadata(BaseModel):
+    hash: Optional[str]
+    shortHash: Optional[str]
+    message: Optional[str]
+    author: Optional[str]
+    timestamp: Optional[datetime]
+
+
+class VersionResponse(BaseModel):
+    version: str
+    lastChangeType: Literal['major', 'minor', 'patch']
+    lastCommit: Optional[CommitMetadata]
+    generatedAt: datetime
+
+
+class AICaseCreate(BaseModel):
+    title: str = Field(..., min_length=3, max_length=150)
+    description: str = Field(..., min_length=10, max_length=5000)
+
+
+class AICase(BaseModel):
+    id: str
+    title: str
+    description: str
+    created_at: datetime
+    email_status: Literal['sent', 'skipped', 'failed']
 
 
 class ResearchRequest(BaseModel):
@@ -194,6 +319,60 @@ async def health_check():
             "ticker_service": ticker_status
         }
     )
+
+
+@app.get("/api/version", response_model=VersionResponse)
+async def version_info() -> VersionResponse:
+    """Returnér live versionsinformation baseret på git."""
+    try:
+        info = get_version_info()
+        return VersionResponse(**info)
+    except Exception as exc:  # pragma: no cover - defensiv logning
+        logger.exception("Kunne ikke hente versionsoplysninger: %s", exc)
+        raise HTTPException(status_code=500, detail="Kunne ikke hente versionsoplysninger")
+
+
+@app.get("/api/ai-cases", response_model=List[AICase])
+async def list_ai_cases() -> List[AICase]:
+    """Returnér alle indsendte AI sager."""
+    raw_cases = await _load_ai_cases()
+    normalized: List[AICase] = []
+    for item in raw_cases:
+        if 'email_status' not in item:
+            item['email_status'] = 'skipped'
+        try:
+            normalized.append(AICase(**item))
+        except Exception as exc:  # pragma: no cover - robusthed
+            logger.warning("Springer ugyldig AI sag over: %s", exc)
+    return normalized
+
+
+@app.post("/api/ai-cases", response_model=AICase, status_code=201)
+async def create_ai_case(case_input: AICaseCreate) -> AICase:
+    """Opret en ny AI sag og send email-notifikation."""
+    trimmed_title = case_input.title.strip()
+    trimmed_description = case_input.description.strip()
+    if not trimmed_title or not trimmed_description:
+        raise HTTPException(status_code=400, detail="Titel og beskrivelse må ikke være tomme")
+
+    base_case = AICase(
+        id=str(uuid4()),
+        title=trimmed_title,
+        description=trimmed_description,
+        created_at=datetime.now(UTC),
+        email_status='pending',
+    )
+
+    email_status = _dispatch_case_email(base_case)
+    new_case = base_case.model_copy(update={'email_status': email_status})
+
+    async with AI_CASES_LOCK:
+        cases = await _load_ai_cases()
+        cases.append(new_case.model_dump(mode='json'))
+        await _save_ai_cases(cases)
+
+    logger.info("Oprettede AI sag %s med status %s", new_case.id, new_case.email_status)
+    return new_case
 
 
 @app.get("/api/news/latest", response_model=NewsFeedPayload)
