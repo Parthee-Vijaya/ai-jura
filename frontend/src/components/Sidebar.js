@@ -36,7 +36,12 @@ const buildApiUrl = (path) => {
 };
 
 const fetchVersionInfo = async () => {
-  const response = await fetch(buildApiUrl('/api/version'));
+  const response = await fetch(buildApiUrl('/api/version'), {
+    headers: {
+      'Cache-Control': 'no-cache',
+    },
+    cache: 'no-store',
+  });
   if (!response.ok) {
     throw new Error('Kunne ikke hente versionsdata');
   }
@@ -312,10 +317,13 @@ const SidebarFooter = styled.div`
 
   .commit {
     color: ${props => props.theme.layout.sidebar.muted};
-    font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    text-transform: none;
     margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
 
   .organization {
@@ -377,6 +385,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       }).format(commitDate),
       relative: formatRelativeTime(commitDate),
       shortHash: lastCommitMeta?.shortHash || null,
+      message: lastCommitMeta?.message || null,
     };
   }, [lastCommitMeta]);
 
@@ -465,8 +474,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
               <span>{versionError ? 'Sidst ændret: ukendt' : 'Opdaterer versionsinfo...'}</span>
             )}
           </div>
-          {lastUpdated?.shortHash && (
-            <div className="commit">Commit {lastUpdated.shortHash}</div>
+          {(lastUpdated?.shortHash || lastUpdated?.message) && (
+            <div className="commit">
+              {lastUpdated.shortHash && <span>Commit {lastUpdated.shortHash}</span>}
+              {lastUpdated.message && <span> · {lastUpdated.message}</span>}
+            </div>
           )}
           <div className="organization">Kun til internt brug – Digitalisering og IT</div>
         </SidebarFooter>
