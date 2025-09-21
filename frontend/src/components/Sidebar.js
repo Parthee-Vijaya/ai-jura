@@ -305,16 +305,6 @@ const VersionValue = styled.div`
   color: ${props => props.theme.mode === 'dark'
     ? props.theme.colors.white
     : props.theme.colors.primary};
-
-  .change {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.85)'
-      : 'rgba(37, 99, 235, 0.8)'};
-  }
 `;
 
 const VersionMeta = styled.div`
@@ -332,7 +322,7 @@ const VersionMeta = styled.div`
   }
 
   .change {
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -481,16 +471,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </VersionHeading>
             <VersionValue>
               {versionLabel}
-              {changeTypeLabel && <span className="change">{changeTypeLabel}</span>}
             </VersionValue>
             <VersionMeta>
               {lastUpdated ? (
                 <>
-                  Sidst opdateret: {lastUpdated.formatted}
+                  Senest opdateret: {lastUpdated.formatted}
                   {lastUpdated.relative && <span className="relative">({lastUpdated.relative})</span>}
                 </>
               ) : (
-                versionError ? 'Sidst opdateret: ukendt' : 'Opdaterer versionsinfo...'
+                versionError ? 'Senest opdateret: ukendt' : 'Opdaterer versionsinfo...'
               )}
             </VersionMeta>
             {(lastUpdated?.shortHash || lastUpdated?.message) && (
@@ -504,7 +493,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             )}
             {changeTypeLabel && (
               <VersionMeta>
-                Ændringstype: <span className="change">{changeTypeLabel}</span>
+                Ændret af: <span className="change">Parthee</span>
               </VersionMeta>
             )}
           </VersionSection>
