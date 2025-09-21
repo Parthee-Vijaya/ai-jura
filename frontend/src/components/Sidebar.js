@@ -35,14 +35,22 @@ const buildApiUrl = (path) => {
   return `${base.replace(/\/$/, '')}${path}`;
 };
 
-const fetchJsonNoCache = async (url) => {
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: {
-      'Cache-Control': 'no-cache',
-      Pragma: 'no-cache',
-    },
-  });
+const fetchJsonNoCache = async (url, { timeout = 4000 } = {}) => {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeout);
+  let response;
+  try {
+    response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timer);
+  }
   if (!response.ok) {
     throw new Error(`Kunne ikke hente data fra ${url}`);
   }
@@ -54,7 +62,7 @@ const fetchVersionInfo = async () => {
     return await fetchJsonNoCache(buildApiUrl('/api/version'));
   } catch (error) {
     console.warn('Version API utilgængelig – anvender fallback', error);
-    return fetchJsonNoCache('/fallback/version.json');
+    return fetchJsonNoCache('/fallback/version.json', { timeout: 1000 });
   }
 };
 
