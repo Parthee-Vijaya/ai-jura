@@ -73,7 +73,7 @@ agent_registry = get_agent_registry()
 compliance_controller = ComplianceController()
 ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
-NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "900"))  # 15 minutter
+NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "300"))  # 5 minutter
 TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS", "120"))
 
 AI_CASES_STORE = Path(os.getenv("AI_CASES_STORE", "data/ai_cases.json"))

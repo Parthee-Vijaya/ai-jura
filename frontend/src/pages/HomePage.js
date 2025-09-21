@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import {
   FaShieldAlt,
   FaGlobeEurope,
-  FaChartLine,
   FaArrowRight,
   FaCheckCircle,
   FaExclamationTriangle,
@@ -15,11 +14,14 @@ import {
   FaUsers,
   FaFileAlt,
   FaCalendarAlt,
-  FaBalanceScale
+  FaBalanceScale,
+  FaLightbulb,
+  FaExternalLinkAlt
 } from 'react-icons/fa';
 import NewsSection from '../components/NewsSection';
 import NewsTicker from '../components/NewsTicker';
 import { FeatureCardSkeletonLoader, StatCardSkeletonLoader } from '../components/SkeletonLoader';
+import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -180,7 +182,7 @@ const HeroStatCard = styled(motion.div)`
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: ${props => props.theme.colors.gray[500]};
+    color: ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : props.theme.colors.gray[500]};
   }
 
   .value {
@@ -215,11 +217,11 @@ const FeaturesGrid = styled.div`
 `;
 
 const FeatureCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.9);
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)'};
   backdrop-filter: blur(20px);
   padding: 2rem;
   border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   text-align: center;
   transition: ${props => props.theme.animations.transition};
@@ -273,27 +275,47 @@ const FeatureCard = styled(motion.div)`
   }
 
   h3 {
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
     margin-bottom: 1rem;
     font-weight: 700;
   }
 
   p {
-    color: ${props => props.theme.colors.gray[600]};
+    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
     line-height: 1.6;
+  }
+
+  .fact-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: ${props => props.theme.colors.primary};
+    text-decoration: none;
+    transition: ${props => props.theme.animations.transitionFast};
+
+    svg {
+      font-size: 0.75rem;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 `;
 
 
 const QuickStartSection = styled.section`
-  background: ${props => props.theme.colors.gray[50]};
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : props.theme.colors.gray[50]};
   padding: 3rem 2rem;
   border-radius: ${props => props.theme.borderRadius};
   text-align: center;
 `;
 
 const QuickStartTitle = styled.h2`
-  color: ${props => props.theme.colors.gray[800]};
+  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
   margin-bottom: 2rem;
 `;
 
@@ -305,14 +327,14 @@ const QuickStartGrid = styled.div`
 `;
 
 const QuickStartCard = styled(Link)`
-  background: rgba(255, 255, 255, 0.8);
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)'};
   backdrop-filter: blur(10px);
   padding: 1.5rem;
   border-radius: ${props => props.theme.borderRadius};
   text-decoration: none;
   color: inherit;
   transition: ${props => props.theme.animations.transition};
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(255, 255, 255, 0.3)'};
   position: relative;
   overflow: hidden;
 
@@ -365,13 +387,13 @@ const QuickStartCard = styled(Link)`
   }
 
   h4 {
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
     margin-bottom: 0.5rem;
     font-weight: 600;
   }
 
   p {
-    color: ${props => props.theme.colors.gray[600]};
+    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
     font-size: 0.875rem;
     line-height: 1.5;
   }
@@ -389,11 +411,11 @@ const StatusGrid = styled.div`
 `;
 
 const StatusCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(20px);
   padding: 1.5rem;
   border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   position: relative;
   overflow: hidden;
@@ -434,12 +456,12 @@ const StatusCard = styled(motion.div)`
   .value {
     font-size: 2rem;
     font-weight: 700;
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
     margin-bottom: 0.25rem;
   }
 
   .label {
-    color: ${props => props.theme.colors.gray[600]};
+    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
     font-size: 0.875rem;
     font-weight: 500;
   }
@@ -455,16 +477,16 @@ const StatusCard = styled(motion.div)`
 `;
 
 const RecentActivitySection = styled.section`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(20px);
   border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   padding: 2rem;
   margin-bottom: 3rem;
 
   h3 {
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
@@ -483,7 +505,7 @@ const ActivityItem = styled.div`
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: ${props => props.theme.colors.gray[50]};
+  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : props.theme.colors.gray[50]};
   border-radius: ${props => props.theme.borderRadius};
   border-left: 3px solid ${props => {
     switch(props.type) {
@@ -518,18 +540,18 @@ const ActivityItem = styled.div`
 
     .activity-title {
       font-weight: 600;
-      color: ${props => props.theme.colors.gray[800]};
+      color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
       margin-bottom: 0.25rem;
     }
 
     .activity-description {
-      color: ${props => props.theme.colors.gray[600]};
+      color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
       font-size: 0.875rem;
     }
   }
 
   .activity-time {
-    color: ${props => props.theme.colors.gray[500]};
+    color: ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : props.theme.colors.gray[500]};
     font-size: 0.75rem;
     display: flex;
     align-items: center;
@@ -537,8 +559,12 @@ const ActivityItem = styled.div`
   }
 `;
 
+const FACTS_PER_VIEW = 3;
+const FACT_ROTATION_INTERVAL_MS = 120000;
+
 const HomePage = () => {
   const [loading, setLoading] = useState(true);
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
   useEffect(() => {
     // Simulate loading time
@@ -549,23 +575,41 @@ const HomePage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const features = [
-    {
-      icon: FaShieldAlt,
-      title: 'EU AI Act-overholdelse',
-      description: 'Grundigt tjek af AI-systemer op imod EU AI Act-krav – med automatisk risikovurdering og klar handlingsguide.'
-    },
-    {
-      icon: FaGlobeEurope,
-      title: 'GDPR og danske krav',
-      description: 'Specialiserede analyser af databeskyttelse for AI – tilpasset danske implementeringsregler og Datatilsynets vejledninger.'
-    },
-    {
-      icon: FaChartLine,
-      title: 'Juridisk indsigt',
-      description: 'Målrettet research i love og forordninger med præcise kildehenvisninger og altid opdaterede guidelines.'
+  useEffect(() => {
+    const total = aiActDidYouKnowFacts.length;
+    if (!total) {
+      return;
     }
-  ];
+
+    const randomStart = Math.floor(Math.random() * total);
+    const normalised = randomStart - (randomStart % FACTS_PER_VIEW);
+    setCurrentFactIndex(normalised);
+  }, []);
+
+  useEffect(() => {
+    const total = aiActDidYouKnowFacts.length;
+    if (total <= FACTS_PER_VIEW) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      setCurrentFactIndex((prev) => (prev + FACTS_PER_VIEW) % total);
+    }, FACT_ROTATION_INTERVAL_MS);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const displayedFacts = useMemo(() => {
+    if (!aiActDidYouKnowFacts.length) {
+      return [];
+    }
+
+    const total = aiActDidYouKnowFacts.length;
+    return Array.from({ length: FACTS_PER_VIEW }, (_, offset) => {
+      const index = (currentFactIndex + offset) % total;
+      return aiActDidYouKnowFacts[index];
+    });
+  }, [currentFactIndex]);
 
   const quickStartSteps = [
     {
@@ -747,18 +791,27 @@ const HomePage = () => {
           ))
         ) : (
           // Show actual feature cards
-          features.map((feature, index) => (
+          displayedFacts.map((fact, index) => (
             <FeatureCard
-              key={index}
+              key={fact.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.2 }}
             >
               <div className="icon">
-                <feature.icon size={24} />
+                <FaLightbulb size={24} />
               </div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
+              <h3>{fact.title}</h3>
+              <p>{fact.text}</p>
+              <a
+                className="fact-source"
+                href={fact.source}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Se kilde
+                <FaExternalLinkAlt />
+              </a>
             </FeatureCard>
           ))
         )}
