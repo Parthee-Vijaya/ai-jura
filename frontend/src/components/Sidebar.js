@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
@@ -13,8 +13,6 @@ import {
   FaBalanceScale,
   FaChevronLeft,
   FaChevronRight,
-  FaChevronDown,
-  FaChevronUp,
   FaExternalLinkAlt,
   FaInfoCircle,
   FaCog
@@ -258,196 +256,95 @@ const NavContent = styled.div`
 `;
 
 const SidebarFooter = styled.div`
-  padding: 1.5rem 1.5rem 1.8rem;
+  padding: 1.4rem 1.5rem 1.3rem;
   border-top: 1px solid ${props => props.theme.layout.sidebar.border};
   margin-top: auto;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: ${props => props.theme.mode === 'dark'
-      ? 'linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.96) 100%)'
-      : 'linear-gradient(180deg, rgba(248,250,252,0.96) 0%, rgba(226,232,240,0.92) 100%)'};
-    z-index: 0;
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
-`;
-
-const VersionPanel = styled.div`
-  background: transparent;
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.22)'
-    : 'rgba(148, 163, 184, 0.28)'};
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 1.1rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const VersionSummary = styled.button`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
   gap: 0.9rem;
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    transform: translateY(-1px);
-  }
 `;
 
-const SummaryIcon = styled.div`
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(59, 130, 246, 0.25)'
-    : 'rgba(37, 99, 235, 0.12)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-`;
-
-const VersionText = styled.div`
+const VersionSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  flex: 1;
-  min-width: 0;
-
-  .title {
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(226, 232, 240, 0.85)'
-      : 'rgba(71, 85, 105, 0.85)'};
-  }
-
-  .value {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-    font-size: 0.94rem;
-    font-weight: 700;
-    color: ${props => props.theme.mode === 'dark'
-      ? props.theme.colors.white
-      : props.theme.colors.primary};
-    letter-spacing: 0.02em;
-  }
+  gap: 0.45rem;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(226, 232, 240, 0.92)'
+    : props.theme.layout.sidebar.text};
 `;
 
-const ChangeBadge = styled.span`
-  display: inline-flex;
+const VersionHeading = styled.div`
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 12px;
-  font-size: 0.66rem;
+  gap: 0.45rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : 'rgba(37, 99, 235, 0.12)'};
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(203, 213, 225, 0.85)'
+    : 'rgba(71, 85, 105, 0.85)'};
+`;
+
+const VersionValue = styled.div`
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
   color: ${props => props.theme.mode === 'dark'
     ? props.theme.colors.white
     : props.theme.colors.primary};
-`;
 
-const SummaryChevron = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.28)'
-    : 'rgba(148, 163, 184, 0.35)'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(30, 41, 59, 0.7)'
-    : 'rgba(255, 255, 255, 0.8)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-`;
-
-const VersionDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.3rem;
-  font-size: 0.75rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.9)'
-    : props.theme.layout.sidebar.muted};
-`;
-
-const MetaRow = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-
-  .label {
-    font-size: 0.66rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
+  .change {
+    font-size: 0.7rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.7)'
-      : 'rgba(100, 116, 139, 0.85)'};
+      ? 'rgba(148, 163, 184, 0.85)'
+      : 'rgba(37, 99, 235, 0.8)'};
   }
+`;
 
-  .value {
-    font-size: 0.74rem;
-    line-height: 1.45;
-    color: inherit;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    align-items: center;
-  }
+const VersionMeta = styled.div`
+  font-size: 0.72rem;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(203, 213, 225, 0.82)'
+    : 'rgba(71, 85, 105, 0.85)'};
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 
   .relative {
+    opacity: 0.75;
     font-size: 0.7rem;
-    opacity: 0.8;
+  }
+
+  .change {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(148, 163, 184, 0.85)'
+      : 'rgba(37, 99, 235, 0.8)'};
   }
 `;
 
 const FooterNote = styled.div`
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   line-height: 1.3;
-  letter-spacing: 0.04em;
   color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(203, 213, 225, 0.82)'
-    : 'rgba(71, 85, 105, 0.9)'};
-  margin-top: 1.1rem;
+    ? 'rgba(148, 163, 184, 0.78)'
+    : 'rgba(100, 116, 139, 0.85)'};
   font-style: italic;
+  letter-spacing: 0.03em;
 `;
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
-  const [showVersionDetails, setShowVersionDetails] = useState(false);
   const { data: versionData, isError: versionError } = useQuery(
     VERSION_QUERY_KEY,
     fetchVersionInfo,
@@ -538,7 +435,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           <BrandPrimary $collapsed={collapsed}>
             {collapsed ? 'JD' : 'Project Judge Dredd'}
           </BrandPrimary>
-          {!collapsed && <BrandSecondary>AI Compliance Platform</BrandSecondary>}
+        {!collapsed && <BrandSecondary>AI-komplianceplatform</BrandSecondary>}
         </BrandContainer>
       </SidebarHeader>
 
@@ -568,64 +465,42 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {!collapsed && (
         <SidebarFooter>
-          <VersionPanel>
-            <VersionSummary
-              onClick={() => setShowVersionDetails(prev => !prev)}
-              aria-label={showVersionDetails ? 'Skjul versionsdetaljer' : 'Vis versionsdetaljer'}
-              aria-expanded={showVersionDetails}
-            >
-              <SummaryIcon>
-                <FaInfoCircle size={12} />
-              </SummaryIcon>
-              <VersionText>
-                <span className="title">Platformsversion</span>
-                <span className="value">{versionLabel}</span>
-              </VersionText>
-              <SummaryChevron>
-                {showVersionDetails ? <FaChevronUp size={11} /> : <FaChevronDown size={11} />}
-              </SummaryChevron>
-            </VersionSummary>
-
-            {showVersionDetails && (
-              <VersionDetails>
-                <MetaRow>
-                  <span className="label">Sidst opdateret</span>
-                  {lastUpdated ? (
-                    <span className="value">
-                      {lastUpdated.formatted}
-                      {lastUpdated.relative && (
-                        <span className="relative">{lastUpdated.relative}</span>
-                      )}
-                    </span>
-                  ) : (
-                    <span className="value">
-                      {versionError ? 'Ukendt' : 'Opdaterer versionsinfo...'}
-                    </span>
-                  )}
-                </MetaRow>
-
-                {(lastUpdated?.shortHash || lastUpdated?.message) && (
-                  <MetaRow>
-                    <span className="label">Seneste commit</span>
-                    <span className="value">
-                      {lastUpdated.shortHash && <span>#{lastUpdated.shortHash}</span>}
-                      {lastUpdated.message && <span> – {lastUpdated.message}</span>}
-                    </span>
-                  </MetaRow>
+          <VersionSection>
+            <VersionHeading>
+              <FaInfoCircle size={11} />
+              <span>Platformsversion</span>
+            </VersionHeading>
+            <VersionValue>
+              {versionLabel}
+              {changeTypeLabel && <span className="change">{changeTypeLabel}</span>}
+            </VersionValue>
+            <VersionMeta>
+              {lastUpdated ? (
+                <>
+                  Sidst opdateret: {lastUpdated.formatted}
+                  {lastUpdated.relative && <span className="relative">({lastUpdated.relative})</span>}
+                </>
+              ) : (
+                versionError ? 'Sidst opdateret: ukendt' : 'Opdaterer versionsinfo...'
+              )}
+            </VersionMeta>
+            {(lastUpdated?.shortHash || lastUpdated?.message) && (
+              <VersionMeta>
+                Seneste commit:
+                {lastUpdated.shortHash && <span>#{lastUpdated.shortHash}</span>}
+                {lastUpdated.message && (
+                  <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
                 )}
-
-                {changeTypeLabel && (
-                  <MetaRow>
-                    <span className="label">Ændringstype</span>
-                    <span className="value">
-                      <ChangeBadge>{changeTypeLabel}</ChangeBadge>
-                    </span>
-                  </MetaRow>
-                )}
-              </VersionDetails>
+              </VersionMeta>
             )}
-            <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>
-          </VersionPanel>
+            {changeTypeLabel && (
+              <VersionMeta>
+                Ændringstype: <span className="change">{changeTypeLabel}</span>
+              </VersionMeta>
+            )}
+          </VersionSection>
+
+          <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>
         </SidebarFooter>
       )}
     </SidebarContainer>
