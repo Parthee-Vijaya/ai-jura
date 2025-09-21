@@ -6,6 +6,7 @@ Samler nyheder hver 15 minutter fra autoritative kilder
 import asyncio
 import aiohttp
 import json
+import os
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
@@ -14,6 +15,7 @@ import logging
 from urllib.parse import urljoin, urlparse
 import time
 import feedparser
+import httpx
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -125,6 +127,62 @@ class LiveNewsScraper:
                 'news_url': 'https://www.danskindustri.dk/nyheder/',
                 'category': 'danish_industry',
                 'keywords': ['industri', 'digitalisering', 'ai', 'innovation', 'produktion']
+            },
+            'reuters_ai': {
+                'display_name': 'Reuters',
+                'rss_feed': 'https://www.reuters.com/rssFeed/technologyNews',
+                'category': 'international_ai',
+                'keywords': ['artificial intelligence', 'ai', 'machine learning', 'algorithm', 'automation', 'robotics'],
+                'language': 'en'
+            },
+            'reuters_legal': {
+                'display_name': 'Reuters Legal',
+                'rss_feed': 'https://www.reuters.com/rssFeed/legalNews',
+                'category': 'international_law',
+                'keywords': ['artificial intelligence', 'ai', 'gdpr', 'privacy', 'data protection', 'regulation'],
+                'language': 'en'
+            },
+            'politico_ai': {
+                'display_name': 'POLITICO Europe',
+                'rss_feed': 'https://www.politico.eu/tag/artificial-intelligence/feed/',
+                'category': 'eu_news',
+                'keywords': ['ai act', 'artificial intelligence', 'digital policy', 'eu regulation'],
+                'language': 'en'
+            },
+            'euractiv_ai': {
+                'display_name': 'Euractiv AI',
+                'rss_feed': 'https://www.euractiv.com/topics/artificial-intelligence/feed/',
+                'category': 'eu_news',
+                'keywords': ['artificial intelligence', 'ai', 'eu policy', 'digital'],
+                'language': 'en'
+            },
+            'euractiv_gdpr': {
+                'display_name': 'Euractiv GDPR',
+                'rss_feed': 'https://www.euractiv.com/topics/gdpr/feed/',
+                'category': 'eu_news',
+                'keywords': ['gdpr', 'data protection', 'privacy', 'ai'],
+                'language': 'en'
+            },
+            'digital_strategy_eu': {
+                'display_name': 'EU Digital Strategy',
+                'rss_feed': 'https://digital-strategy.ec.europa.eu/en/news/rss.xml',
+                'category': 'eu_digital',
+                'keywords': ['artificial intelligence', 'digital', 'ai act', 'data'],
+                'language': 'en'
+            },
+            'bbc_ai': {
+                'display_name': 'BBC Technology',
+                'rss_feed': 'https://feeds.bbci.co.uk/news/technology/rss.xml',
+                'category': 'international_ai',
+                'keywords': ['artificial intelligence', 'ai', 'machine learning', 'regulation'],
+                'language': 'en'
+            },
+            'the_verge_ai': {
+                'display_name': 'The Verge AI',
+                'rss_feed': 'https://www.theverge.com/artificial-intelligence/rss/index.xml',
+                'category': 'international_ai',
+                'keywords': ['artificial intelligence', 'ai', 'policy', 'regulation'],
+                'language': 'en'
             }
         }
 
@@ -313,6 +371,176 @@ class LiveNewsScraper:
         except Exception as e:
             logger.warning(f"Error processing RSS entry from {source_name}: {e}")
             return None
+
+    def _needs_translation(self, text: str) -> bool:
+        if not text:
+            return False
+        normalized = text.lower()
+        return not any(char in normalized for char in ['æ', 'ø', 'å'])
+
+    async def _translate_batch_to_danish(self, texts: List[str]) -> List[Optional[str]]:
+        api_key = os.getenv('MISTRAL_API_KEY')
+        if not api_key or not texts:
+            return [None] * len(texts)
+
+        prompt_lines = '\n'.join(f"{idx + 1}. {text}" for idx, text in enumerate(texts))
+        payload = {
+            'model': os.getenv('MISTRAL_MODEL', 'mistral-small-latest'),
+            'temperature': 0.2,
+            'messages': [
+                {
+                    'role': 'system',
+                    'content': 'Du oversætter tekst til dansk og returnerer kun oversættelsen, én linje pr. punkt.'
+                },
+                {
+                    'role': 'user',
+                    'content': f"Oversæt følgende tekst til dansk og returner samme rækkefølge:\n{prompt_lines}"
+                }
+            ]
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=25) as client:
+                response = await client.post(
+                    'https://api.mistral.ai/v1/chat/completions',
+                    headers={
+                        'Authorization': f'Bearer {api_key}',
+                        'Content-Type': 'application/json'
+                    },
+                    json=payload
+                )
+                response.raise_for_status()
+                data = response.json()
+
+            choices = data.get('choices', [])
+            if not choices:
+                return [None] * len(texts)
+
+            content = choices[0].get('message', {}).get('content', '')
+            if not content:
+                return [None] * len(texts)
+
+            translated_lines = [line.strip() for line in content.splitlines() if line.strip()]
+            cleaned: List[Optional[str]] = []
+            for line in translated_lines:
+                if '. ' in line and line.split('. ', 1)[0].isdigit():
+                    cleaned.append(line.split('. ', 1)[1].strip())
+                else:
+                    cleaned.append(line)
+
+            if len(cleaned) < len(texts):
+                cleaned.extend([None] * (len(texts) - len(cleaned)))
+            return cleaned[:len(texts)]
+
+        except Exception as exc:  # pragma: no cover - netværk/timeout
+            logger.warning(f"Kunne ikke oversætte tekst til dansk: {exc}")
+            return [None] * len(texts)
+
+    async def _translate_news_items_to_danish(self, items: List[NewsItem]) -> None:
+        texts: List[str] = []
+        mapping: List[tuple[NewsItem, str]] = []
+
+        for item in items:
+            if self._needs_translation(item.title):
+                mapping.append((item, 'title'))
+                texts.append(item.title)
+            if self._needs_translation(item.summary):
+                mapping.append((item, 'summary'))
+                texts.append(item.summary)
+
+        if not texts:
+            return
+
+        batch_size = 8
+        for start in range(0, len(texts), batch_size):
+            batch = texts[start:start + batch_size]
+            translated = await self._translate_batch_to_danish(batch)
+            for idx, translation in enumerate(translated):
+                if translation:
+                    item, attr = mapping[start + idx]
+                    setattr(item, attr, translation)
+
+    async def _scrape_rss_source(
+        self,
+        source_key: str,
+        *,
+        limit: int = 12,
+        category: Optional[str] = None,
+        importance_override: Optional[str] = None
+    ) -> List[NewsItem]:
+        """Generic helper til at scrape en RSS-baseret kilde"""
+
+        source = self.sources.get(source_key)
+        if not source:
+            logger.warning(f"Ukendt RSS kilde: {source_key}")
+            return []
+
+        rss_candidates = [
+            source.get('rss_feed'),
+            source.get('alt_rss_feed')
+        ]
+
+        source_keywords = source.get('keywords', [])
+        display_name = source.get('display_name', source_key)
+        target_category = category or source.get('category', 'international_ai')
+
+        news_items: List[NewsItem] = []
+
+        for rss_url in rss_candidates:
+            if not rss_url:
+                continue
+
+            try:
+                entries = await self._fetch_rss_feed(rss_url)
+            except Exception as exc:  # pragma: no cover - defensiv logning
+                logger.warning(f"RSS fetch fejlede for {display_name}: {exc}")
+                continue
+
+            if not entries:
+                continue
+
+            for entry in entries[:limit]:
+                news_item = self._extract_rss_content(
+                    entry,
+                    display_name,
+                    target_category,
+                    source_keywords
+                )
+
+                if news_item:
+                    if importance_override:
+                        news_item.importance = importance_override
+                    news_items.append(news_item)
+
+            if news_items:
+                break  # stop når vi har fundet artikler fra primær feed
+
+        logger.info(f"Scraped {len(news_items)} artikler fra {display_name}")
+        return news_items
+
+    async def _scrape_reuters_ai(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('reuters_ai', limit=12, importance_override='medium')
+
+    async def _scrape_reuters_legal(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('reuters_legal', limit=10, importance_override='high')
+
+    async def _scrape_politico_ai(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('politico_ai', limit=10)
+
+    async def _scrape_euractiv_ai(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('euractiv_ai', limit=10)
+
+    async def _scrape_euractiv_gdpr(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('euractiv_gdpr', limit=8)
+
+    async def _scrape_digital_strategy(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('digital_strategy_eu', limit=10)
+
+    async def _scrape_bbc_ai(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('bbc_ai', limit=8)
+
+    async def _scrape_the_verge_ai(self) -> List[NewsItem]:
+        return await self._scrape_rss_source('the_verge_ai', limit=8)
 
     async def _fetch_html_page(self, url: str, max_retries: int = 3) -> Optional[BeautifulSoup]:
         """Fetch and parse HTML page with retry mechanism and enhanced error handling"""
@@ -550,7 +778,15 @@ class LiveNewsScraper:
             self._scrape_knews(),
             self._scrape_propria_ai(),
             self._scrape_dansk_erhverv(),
-            self._scrape_dansk_industri()
+            self._scrape_dansk_industri(),
+            self._scrape_reuters_ai(),
+            self._scrape_reuters_legal(),
+            self._scrape_politico_ai(),
+            self._scrape_euractiv_ai(),
+            self._scrape_euractiv_gdpr(),
+            self._scrape_digital_strategy(),
+            self._scrape_bbc_ai(),
+            self._scrape_the_verge_ai()
         ]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -560,6 +796,12 @@ class LiveNewsScraper:
                 all_news.extend(result)
             elif isinstance(result, Exception):
                 logger.warning(f"Scraping fejlede: {result}")
+
+        # Oversæt titler og resuméer til dansk hvis nødvendigt
+        try:
+            await self._translate_news_items_to_danish(all_news[:30])
+        except Exception as exc:  # pragma: no cover - defensiv logning
+            logger.warning(f"Kunne ikke oversætte nyheder til dansk: {exc}")
 
         # Sortér efter vigtighed og dato
         all_news.sort(key=lambda x: (
