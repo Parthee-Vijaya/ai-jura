@@ -69,8 +69,6 @@ news_service = NewsService()
 ticker_service = TechTickerService()
 agent_registry = get_agent_registry()
 ticker_refresh_task: Optional[asyncio.Task] = None
-ticker_refresh_task: Optional[asyncio.Task] = None
-ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "900"))  # 15 minutter
 TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS", "120"))
@@ -185,7 +183,7 @@ async def _save_ai_cases(cases: List[Dict[str, Any]]) -> None:
     await asyncio.to_thread(_save)
 
 
-def _dispatch_case_email(case: "AICase") -> str:
+def _send_case_email_sync(case: "AICase") -> str:
     recipient = os.getenv('AI_CASES_RECIPIENT', 'ServicePortalen@kalundborg.dk')
     cc_raw = os.getenv('AI_CASES_CC', 'pavi@kalundborg.dk')
     cc_recipients = [addr.strip() for addr in cc_raw.split(',') if addr.strip()]
@@ -239,6 +237,11 @@ def _dispatch_case_email(case: "AICase") -> str:
     except Exception as exc:  # pragma: no cover - robusthed
         logger.exception("Kunne ikke sende email for AI sag %s: %s", case.id, exc)
         return 'failed'
+
+
+async def _dispatch_case_email(case: "AICase") -> str:
+    """Kør e-mailafsendelse i baggrunden så API-tråden ikke blokeres."""
+    return await asyncio.to_thread(_send_case_email_sync, case)
 
 
 class HealthCheck(BaseModel):
@@ -363,7 +366,7 @@ async def create_ai_case(case_input: AICaseCreate) -> AICase:
         email_status='pending',
     )
 
-    email_status = _dispatch_case_email(base_case)
+    email_status = await _dispatch_case_email(base_case)
     new_case = base_case.model_copy(update={'email_status': email_status})
 
     async with AI_CASES_LOCK:

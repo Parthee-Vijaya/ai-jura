@@ -144,12 +144,39 @@ const NewsTicker = () => {
       }
     };
 
+    const startPolling = () => {
+      fetchFallback();
+      if (typeof window !== 'undefined') {
+        fallbackInterval = window.setInterval(fetchFallback, POLL_INTERVAL_MS);
+      }
+    };
+
+    const cleanup = () => {
+      if (source) {
+        source.close();
+      }
+      if (reconnectTimeout) {
+        window.clearTimeout(reconnectTimeout);
+      }
+      if (fallbackInterval) {
+        window.clearInterval(fallbackInterval);
+      }
+    };
+
+    const supportsEventSource = typeof window !== 'undefined' && 'EventSource' in window;
+
+    if (!supportsEventSource) {
+      console.warn('EventSource er ikke supporteret – anvender polling fallback');
+      startPolling();
+      return cleanup;
+    }
+
     const connect = () => {
       if (source) {
         source.close();
       }
 
-      source = new EventSource(streamUrl);
+      source = new window.EventSource(streamUrl);
 
       source.onmessage = (event) => {
         try {
@@ -170,20 +197,9 @@ const NewsTicker = () => {
     };
 
     connect();
-    fetchFallback();
-    fallbackInterval = window.setInterval(fetchFallback, POLL_INTERVAL_MS);
+    startPolling();
 
-    return () => {
-      if (source) {
-        source.close();
-      }
-      if (reconnectTimeout) {
-        window.clearTimeout(reconnectTimeout);
-      }
-      if (fallbackInterval) {
-        window.clearInterval(fallbackInterval);
-      }
-    };
+    return cleanup;
   }, []);
 
   const tickerItems = useMemo(() => {
@@ -200,9 +216,16 @@ const NewsTicker = () => {
   }, [items]);
 
   const duration = useMemo(() => {
-    const base = 60;
-    return Math.max(40, Math.min(base + tickerItems.length * 8, 110));
-  }, [tickerItems.length]);
+    const charCount = tickerItems.reduce((acc, item) => {
+      const titleLength = item?.title ? item.title.length : 0;
+      const sourceLength = item?.source ? item.source.length : 0;
+      return acc + titleLength + sourceLength;
+    }, 0);
+
+    const baseSeconds = 55;
+    const computed = baseSeconds + charCount * 0.05;
+    return Math.max(55, Math.min(computed, 140));
+  }, [tickerItems]);
 
   const displayItems = useMemo(() => {
     if (tickerItems.length <= 1) {

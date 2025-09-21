@@ -106,11 +106,13 @@ class NewsService:
         articles: List[NewsArticle] = []
         if items:
             articles = self._convert_items(items)
+            articles = self._sort_articles(articles)
             self._update_source_status(articles)
             await self._write_fallback_cache(articles)
         else:
             logger.info("Falling back to cached news file")
             articles = await self._load_fallback_articles()
+            articles = self._sort_articles(articles)
             self._update_source_status(articles, fallback=True)
 
         self._cache = articles[: self.max_items]
@@ -237,6 +239,19 @@ class NewsService:
             return list(scraper.sources.keys())
         except Exception:  # pragma: no cover - should never happen
             return []
+
+    def _sort_articles(self, articles: Sequence[NewsArticle]) -> List[NewsArticle]:
+        """Returner artikler sorteret efter nyeste udgivelses- eller scrape-tidspunkt."""
+        epoch = datetime.fromtimestamp(0, tz=UTC)
+
+        def authored_at(article: NewsArticle) -> datetime:
+            if article.published_at:
+                return article.published_at
+            if article.scraped_at:
+                return article.scraped_at
+            return epoch
+
+        return sorted(articles, key=authored_at, reverse=True)
 
 
 __all__ = ["NewsService"]

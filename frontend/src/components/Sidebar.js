@@ -307,6 +307,24 @@ const VersionValue = styled.div`
     : props.theme.colors.primary};
 `;
 
+const ChangeTypeBadge = styled.span`
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(59, 130, 246, 0.18)'
+    : 'rgba(29, 78, 216, 0.12)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(191, 219, 254, 0.95)'
+    : 'rgba(29, 78, 216, 0.85)'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(96, 165, 250, 0.35)'
+    : 'rgba(29, 78, 216, 0.2)'};
+`;
+
 const VersionMeta = styled.div`
   font-size: 0.72rem;
   color: ${props => props.theme.mode === 'dark'
@@ -329,6 +347,15 @@ const VersionMeta = styled.div`
     color: ${props => props.theme.mode === 'dark'
       ? 'rgba(148, 163, 184, 0.85)'
       : 'rgba(37, 99, 235, 0.8)'};
+  }
+
+  .author {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(191, 219, 254, 0.9)'
+      : 'rgba(30, 64, 175, 0.9)'};
   }
 `;
 
@@ -393,6 +420,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       relative: formatRelativeTime(commitDate),
       shortHash: lastCommitMeta?.shortHash || null,
       message: lastCommitMeta?.message || null,
+      author: lastCommitMeta?.author || null,
     };
   }, [lastCommitMeta]);
 
@@ -469,9 +497,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
               <FaInfoCircle size={11} />
               <span>Platformsversion</span>
             </VersionHeading>
-            <VersionValue>
-              {versionLabel}
-            </VersionValue>
+          <VersionValue>
+            {versionLabel}
+            {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
+          </VersionValue>
             <VersionMeta>
               {lastUpdated ? (
                 <>
@@ -491,11 +520,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 )}
               </VersionMeta>
             )}
-            {changeTypeLabel && (
-              <VersionMeta>
-                Ændret af: <span className="change">Parthee</span>
-              </VersionMeta>
-            )}
+            <VersionMeta>
+              Ændret af:{' '}
+              {lastUpdated?.author ? (
+                <span className="author">{lastUpdated.author}</span>
+              ) : (
+                'ukendt'
+              )}
+            </VersionMeta>
           </VersionSection>
 
           <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>
