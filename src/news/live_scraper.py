@@ -84,6 +84,7 @@ class LiveNewsScraper:
             'kl': {
                 'url': 'https://www.kl.dk',
                 'news_url': 'https://www.kl.dk/nyheder/',
+                'tagged_news_url': 'https://www.kl.dk/nyheder/?tag=338710a0e9a044968793f807bdf05826',
                 'rss_feed': 'https://www.kl.dk/rss.xml',
                 'alt_rss_feed': 'https://feeds.feedburner.com/kl-nyheder',
                 'category': 'danish_municipal',
@@ -1506,9 +1507,11 @@ class LiveNewsScraper:
             return news_items
 
         kl_pages = [
-            'https://www.kl.dk/nyheder/',
+            self.sources['kl'].get('tagged_news_url'),
+            self.sources['kl'].get('news_url'),
             'https://www.kl.dk/presse/'
         ]
+        kl_pages = [url for url in kl_pages if url]
 
         for page_url in kl_pages:
             try:
@@ -1575,7 +1578,7 @@ class LiveNewsScraper:
     def _create_kl_fallback(self) -> NewsItem:
         return NewsItem(
             title="KL: Seneste nyheder om kommunernes AI-arbejde",
-            url="https://www.kl.dk/nyheder/",
+            url=self.sources['kl'].get('tagged_news_url') or "https://www.kl.dk/nyheder/",
             source="KL",
             published_date=datetime.now() - timedelta(hours=6),
             category="danish_municipal",
@@ -2180,4 +2183,3 @@ async def get_news_scraper() -> LiveNewsScraper:
             importance='medium',
             scraped_at=datetime.now()
         )
-
