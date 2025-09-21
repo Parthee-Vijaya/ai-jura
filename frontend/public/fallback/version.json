@@ -1,12 +1,12 @@
 {
-  "version": "0.11.0",
-  "lastChangeType": "minor",
+  "version": "0.12.1",
+  "lastChangeType": "patch",
   "lastCommit": {
-    "hash": "564f67b28d9d7602c81ad5422409dadcb790c50c",
-    "shortHash": "564f67b",
-    "message": "fix: add research details section styling",
+    "hash": "406067a8abff6e2e1d7e3a9689595151bc82b371",
+    "shortHash": "406067a",
+    "message": "fix: timeout version fetch and fallback",
     "author": "Parthee-Vijaya",
-    "timestamp": "2025-09-21T15:21:59Z"
+    "timestamp": "2025-09-21T15:46:40Z"
   },
-  "generatedAt": "2025-09-21T15:21:59Z"
+  "generatedAt": "2025-09-21T15:58:48.307411Z"
 }

@@ -58,11 +58,16 @@ const fetchJsonNoCache = async (url, { timeout = 4000 } = {}) => {
 };
 
 const fetchVersionInfo = async () => {
+  const fallback = await fetchJsonNoCache('/fallback/version.json', { timeout: 1500 }).catch(() => null);
   try {
-    return await fetchJsonNoCache(buildApiUrl('/api/version'));
+    const live = await fetchJsonNoCache(buildApiUrl('/api/version'));
+    return live;
   } catch (error) {
     console.warn('Version API utilgængelig – anvender fallback', error);
-    return fetchJsonNoCache('/fallback/version.json', { timeout: 1000 });
+    if (fallback) {
+      return fallback;
+    }
+    throw error;
   }
 };
 

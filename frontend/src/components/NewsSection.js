@@ -244,11 +244,22 @@ const NewsSection = () => {
 
   const categories = useMemo(() => availableCategories(), []);
 
-  const fetchStaticNews = async () => {
-    const response = await fetch('/fallback/news.json', { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error('Ingen lokale nyheder tilgængelige');
+  const fetchWithTimeout = async (url, { timeout = 4000 } = {}) => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`Fejl ved fetch (${response.status})`);
+      }
+      return response;
+    } finally {
+      window.clearTimeout(timer);
     }
+  };
+
+  const fetchStaticNews = async () => {
+    const response = await fetchWithTimeout('/fallback/news.json', { timeout: 1500 });
     return response.json();
   };
 
@@ -260,16 +271,25 @@ const NewsSection = () => {
         setLoading(true);
       }
 
+      if (!forceRefresh && rawItems.length === 0) {
+        try {
+          const fallbackData = await fetchStaticNews();
+          if (fallbackData?.items?.length) {
+            setRawItems(fallbackData.items);
+            setLastUpdated(fallbackData.last_updated ? new Date(fallbackData.last_updated) : new Date());
+            setError('Viser cached nyheder – opdaterer...');
+          }
+        } catch (prefetchErr) {
+          console.warn('Kunne ikke indlæse statiske nyheder', prefetchErr);
+        }
+      }
+
       const params = new URLSearchParams({ limit: '24' });
       if (forceRefresh) {
         params.append('force_refresh', 'true');
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/news/latest?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Kunne ikke hente nyheder');
-      }
-
+      const response = await fetchWithTimeout(`${API_BASE_URL}/api/news/latest?${params.toString()}`);
       const data = await response.json();
       setRawItems(data.items || []);
       setLastUpdated(data.last_updated ? new Date(data.last_updated) : new Date());
@@ -290,7 +310,7 @@ const NewsSection = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [rawItems.length]);
 
   useEffect(() => {
     fetchNews();

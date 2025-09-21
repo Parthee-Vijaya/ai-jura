@@ -117,12 +117,23 @@ const HeadlineText = styled.span`
 const NewsTicker = () => {
   const [items, setItems] = useState([]);
 
+  const fetchWithTimeout = async (url, { timeout = 4000 } = {}) => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`Fejl ved fetch (${response.status})`);
+      }
+      return response;
+    } finally {
+      window.clearTimeout(timer);
+    }
+  };
+
   const fetchStaticTicker = async () => {
     try {
-      const response = await fetch('/fallback/ticker.json', { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error('Ingen lokale tickerdata tilgængelige');
-      }
+      const response = await fetchWithTimeout('/fallback/ticker.json', { timeout: 1500 });
       const data = await response.json();
       if (Array.isArray(data.items)) {
         setItems(data.items);
@@ -147,13 +158,11 @@ const NewsTicker = () => {
 
     const fetchFallback = async () => {
       try {
-        const res = await fetch(fallbackUrl);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.items) && data.items.length) {
-            setItems(data.items);
-            return;
-          }
+        const res = await fetchWithTimeout(fallbackUrl);
+        const data = await res.json();
+        if (Array.isArray(data.items) && data.items.length) {
+          setItems(data.items);
+          return;
         }
         throw new Error('Ingen data fra API fallback');
       } catch (err) {
@@ -189,6 +198,7 @@ const NewsTicker = () => {
 
     if (!supportsEventSource) {
       console.warn('EventSource er ikke supporteret – anvender polling fallback');
+      fetchStaticTicker();
       startPolling();
       return cleanup;
     }
@@ -218,11 +228,15 @@ const NewsTicker = () => {
       };
     };
 
+    if (!items.length) {
+      fetchStaticTicker();
+    }
+
     connect();
     startPolling();
 
     return cleanup;
-  }, []);
+  }, [items.length]);
 
   const tickerItems = useMemo(() => {
     if (!items.length) {
