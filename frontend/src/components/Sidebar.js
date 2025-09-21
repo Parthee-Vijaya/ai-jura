@@ -312,6 +312,7 @@ const VersionSummary = styled.button`
   display: flex;
   align-items: center;
   width: 100%;
+  min-width: 0;
   gap: 0.9rem;
   border: none;
   background: transparent;
@@ -347,6 +348,7 @@ const VersionText = styled.div`
   flex-direction: column;
   gap: 0.2rem;
   flex: 1;
+  min-width: 0;
 
   .title {
     font-size: 0.68rem;
@@ -361,7 +363,7 @@ const VersionText = styled.div`
   .value {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
     font-size: 1rem;
     font-weight: 700;
     color: ${props => props.theme.mode === 'dark'
@@ -375,14 +377,14 @@ const ChangeBadge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.68rem;
+  padding: 0.2rem 0.48rem;
+  border-radius: 10px;
+  font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.24)'
-    : 'rgba(37, 99, 235, 0.18)'};
+    ? 'rgba(148, 163, 184, 0.18)'
+    : 'rgba(37, 99, 235, 0.12)'};
   color: ${props => props.theme.mode === 'dark'
     ? props.theme.colors.white
     : props.theme.colors.primary};
@@ -411,14 +413,6 @@ const VersionDetails = styled.div`
   flex-direction: column;
   gap: 0.6rem;
   margin-top: 0.3rem;
-  padding: 0.85rem 0.95rem;
-  border-radius: ${props => props.theme.borderRadius};
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15, 23, 42, 0.72)'
-    : 'rgba(248, 250, 252, 0.92)'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : 'rgba(148, 163, 184, 0.3)'};
   font-size: 0.75rem;
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(226, 232, 240, 0.9)'
@@ -428,10 +422,18 @@ const VersionDetails = styled.div`
 const MetaRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.35rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: ${props => props.theme.borderRadius};
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15, 23, 42, 0.72)'
+    : 'rgba(248, 250, 252, 0.95)'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.3)'};
 
   .label {
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
     font-weight: 600;
@@ -441,8 +443,8 @@ const MetaRow = styled.div`
   }
 
   .value {
-    font-size: 0.75rem;
-    line-height: 1.35;
+    font-size: 0.74rem;
+    line-height: 1.4;
     color: inherit;
   }
 
