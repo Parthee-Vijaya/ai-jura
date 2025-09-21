@@ -35,8 +35,8 @@ const buildApiUrl = (path) => {
   return `${base.replace(/\/$/, '')}${path}`;
 };
 
-const fetchVersionInfo = async () => {
-  const response = await fetch(buildApiUrl('/api/version'), {
+const fetchJsonNoCache = async (url) => {
+  const response = await fetch(url, {
     cache: 'no-store',
     headers: {
       'Cache-Control': 'no-cache',
@@ -44,9 +44,18 @@ const fetchVersionInfo = async () => {
     },
   });
   if (!response.ok) {
-    throw new Error('Kunne ikke hente versionsdata');
+    throw new Error(`Kunne ikke hente data fra ${url}`);
   }
   return response.json();
+};
+
+const fetchVersionInfo = async () => {
+  try {
+    return await fetchJsonNoCache(buildApiUrl('/api/version'));
+  } catch (error) {
+    console.warn('Version API utilgængelig – anvender fallback', error);
+    return fetchJsonNoCache('/fallback/version.json');
+  }
 };
 
 const formatRelativeTime = (date) => {

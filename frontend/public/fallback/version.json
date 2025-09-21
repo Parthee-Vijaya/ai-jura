@@ -1,0 +1,12 @@
+{
+  "version": "0.11.0",
+  "lastChangeType": "minor",
+  "lastCommit": {
+    "hash": "564f67b28d9d7602c81ad5422409dadcb790c50c",
+    "shortHash": "564f67b",
+    "message": "fix: add research details section styling",
+    "author": "Parthee-Vijaya",
+    "timestamp": "2025-09-21T15:21:59Z"
+  },
+  "generatedAt": "2025-09-21T15:21:59Z"
+}

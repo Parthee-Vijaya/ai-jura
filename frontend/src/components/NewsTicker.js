@@ -117,6 +117,21 @@ const HeadlineText = styled.span`
 const NewsTicker = () => {
   const [items, setItems] = useState([]);
 
+  const fetchStaticTicker = async () => {
+    try {
+      const response = await fetch('/fallback/ticker.json', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error('Ingen lokale tickerdata tilgængelige');
+      }
+      const data = await response.json();
+      if (Array.isArray(data.items)) {
+        setItems(data.items);
+      }
+    } catch (error) {
+      console.error('Statisk ticker fallback mislykkedes', error);
+    }
+  };
+
   useEffect(() => {
     let source;
     let reconnectTimeout;
@@ -135,12 +150,19 @@ const NewsTicker = () => {
         const res = await fetch(fallbackUrl);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data.items)) {
+          if (Array.isArray(data.items) && data.items.length) {
             setItems(data.items);
+            return;
           }
         }
+        throw new Error('Ingen data fra API fallback');
       } catch (err) {
         console.warn('Fallback ticker fetch fejlede', err);
+        try {
+          await fetchStaticTicker();
+        } catch (staticErr) {
+          console.error('Statisk ticker fallback utilgængelig', staticErr);
+        }
       }
     };
 

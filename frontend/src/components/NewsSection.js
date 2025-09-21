@@ -244,6 +244,14 @@ const NewsSection = () => {
 
   const categories = useMemo(() => availableCategories(), []);
 
+  const fetchStaticNews = async () => {
+    const response = await fetch('/fallback/news.json', { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Ingen lokale nyheder tilgængelige');
+    }
+    return response.json();
+  };
+
   const fetchNews = useCallback(async ({ forceRefresh = false } = {}) => {
     try {
       if (forceRefresh) {
@@ -267,7 +275,17 @@ const NewsSection = () => {
       setLastUpdated(data.last_updated ? new Date(data.last_updated) : new Date());
       setError(null);
     } catch (err) {
-      setError(err.message || 'Uventet fejl');
+      console.warn('Nyheds-API utilgængelig – forsøger fallback', err);
+      try {
+        const fallbackData = await fetchStaticNews();
+        setRawItems(fallbackData.items || []);
+        setLastUpdated(fallbackData.last_updated ? new Date(fallbackData.last_updated) : new Date());
+        setError('Viser seneste tilgængelige nyheder (offline)');
+      } catch (fallbackError) {
+        console.error('Fallback nyheder utilgængelige', fallbackError);
+        setRawItems([]);
+        setError(fallbackError.message || 'Uventet fejl ved indlæsning af nyheder');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
