@@ -15,6 +15,7 @@ import {
   FaInfoCircle,
   FaLightbulb
 } from 'react-icons/fa';
+import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
 
 const Container = styled.div`
   max-width: 1000px;
@@ -334,8 +335,13 @@ const FullAssessmentPage = () => {
       const transformedData = {
         system_navn: formData.initial?.system_navn || '',
         system_beskrivelse: formData.initial?.system_beskrivelse || '',
-        organisation: formData.initial?.organisation || '',
+        organisation: formData.initial?.team
+          ? `Kalundborg Kommune - ${formData.initial.team}`
+          : 'Kalundborg Kommune',
         kontaktperson: formData.initial?.kontaktperson || '',
+        fagomraade: formData.initial?.fagomraade || '',
+        sektor: formData.initial?.fagomraade || '',
+        team: formData.initial?.team || '',
 
         // Punkt 1 data
         bruger_ml: formData.punkt1?.bruger_ml === 'ja',
@@ -729,13 +735,28 @@ const InitialStep = ({ formData, updateFormData }) => {
       </FormGroup>
 
       <FormGroup>
-        <Label>Organisation *</Label>
+        <Label>Team *</Label>
         <Input
           type="text"
-          value={formData.organisation || ''}
-          onChange={(e) => handleChange('organisation', e.target.value)}
-          placeholder="Dit firmanavn eller organisation"
+          value={formData.team || ''}
+          onChange={(e) => handleChange('team', e.target.value)}
+          placeholder="Teamnavn"
         />
+      </FormGroup>
+
+      <FormGroup>
+        <Label>Fagområde *</Label>
+        <Select
+          value={formData.fagomraade || ''}
+          onChange={(e) => handleChange('fagomraade', e.target.value)}
+        >
+          <option value="">Vælg fagområde...</option>
+          {FAGOMRAADE_OPTIONS.map(option => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </Select>
       </FormGroup>
 
       <FormGroup>

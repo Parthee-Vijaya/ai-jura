@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -11,6 +12,7 @@ import {
   FaSpinner
 } from 'react-icons/fa';
 import axios from 'axios';
+import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
 
 const QuickCheckContainer = styled.div`
   max-width: 800px;
@@ -264,6 +266,200 @@ const DetailsSection = styled.div`
   }
 `;
 
+const SummaryBanner = styled.div`
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(59, 130, 246, 0.25))'
+    : 'linear-gradient(135deg, rgba(219, 234, 254, 0.9), rgba(59, 130, 246, 0.18))'};
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 1.8rem 2.2rem;
+  border: 1px solid ${props => `${props.theme.colors.primary}29`};
+  margin: 0 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+`;
+
+const SummaryBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  background: ${props => props.$tone.background};
+  color: ${props => props.$tone.text};
+  border: 1px solid ${props => props.$tone.border};
+  width: fit-content;
+`;
+
+const SummaryMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  color: ${props => props.theme.colors.gray[700]};
+  font-size: 0.9rem;
+`;
+
+const SummaryMetaItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  span {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: ${props => props.theme.colors.gray[500]};
+  }
+
+  strong {
+    font-size: 0.95rem;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+`;
+
+const SummaryText = styled.p`
+  margin: 0;
+  line-height: 1.6;
+  max-width: 720px;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(226, 232, 240, 0.92)'
+    : '#1f2937'};
+`;
+
+const FindingsList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+`;
+
+const FindingItem = styled.li`
+  background: ${props => props.theme.colors.gray[50]};
+  border-radius: ${props => props.theme.borderRadius};
+  padding: 1rem 1.2rem;
+  border-left: 4px solid ${props => props.theme.colors.primary};
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  strong {
+    font-size: 0.9rem;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+
+  span {
+    color: ${props => props.theme.colors.gray[600]};
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+`;
+
+const SeverityBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  background: ${props => props.severity === 'hard_stop'
+    ? 'rgba(220, 38, 38, 0.15)'
+    : 'rgba(234, 179, 8, 0.18)'};
+  color: ${props => props.severity === 'hard_stop'
+    ? '#991b1b'
+    : '#92400e'};
+  border: 1px solid ${props => props.severity === 'hard_stop'
+    ? 'rgba(220, 38, 38, 0.35)'
+    : 'rgba(234, 179, 8, 0.35)'};
+  width: fit-content;
+`;
+
+const FlowList = styled.ol`
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const FlowItem = styled.li`
+  color: ${props => props.theme.colors.gray[700]};
+  line-height: 1.45;
+
+  strong {
+    display: block;
+    font-weight: 600;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+`;
+
+const ObligationList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+
+  li {
+    background: ${props => props.theme.colors.gray[50]};
+    border-radius: ${props => props.theme.borderRadius};
+    padding: 0.75rem 1rem;
+    color: ${props => props.theme.colors.gray[700]};
+  }
+`;
+
+const CTASection = styled.div`
+  margin-top: 2.5rem;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(135deg, rgba(30,41,59,0.75), rgba(59,130,246,0.2))'
+    : 'linear-gradient(135deg, rgba(219, 234, 254, 0.7), rgba(59, 130, 246, 0.12))'};
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 1.8rem 2.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid ${props => props.theme.colors.primary}1A;
+
+  h3 {
+    margin: 0 0 0.4rem;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+
+  p {
+    margin: 0;
+    color: ${props => props.theme.colors.gray[600]};
+    max-width: 520px;
+  }
+`;
+
+const CTAButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.9rem 1.8rem;
+  border-radius: 999px;
+  background: ${props => props.theme.colors.gradients.primary};
+  color: ${props => props.theme.colors.white};
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: ${props => props.theme.shadows.md};
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
+
 const QuickCheckPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -281,17 +477,36 @@ const QuickCheckPage = () => {
     { value: 'other', label: 'Andet' }
   ];
 
-  const sectors = [
-    'Sundhed',
-    'Finans',
-    'Uddannelse',
-    'Beskæftigelse',
-    'Offentlig sektor',
-    'Teknologi',
-    'Detail',
-    'Produktion',
-    'Andet'
-  ];
+  const classificationLabels = {
+    forbudt: 'Forbudt praksis',
+    høj_risiko: 'Højrisikosystem',
+    begrænset_risiko: 'Begrænset risiko',
+    minimal: 'Minimal risiko',
+    uden_for_scope: 'Uden for AI-forordningens anvendelsesområde'
+  };
+
+  const classificationDescriptions = {
+    forbudt: 'Systemet falder under artikel 5 og må ikke idriftsættes i sin nuværende form.',
+    høj_risiko: 'Systemet er omfattet af kapitel III/IV-krav og kræver omfattende dokumentation og konformitetsvurdering.',
+    begrænset_risiko: 'Systemet er omfattet af gennemsigtighedsforpligtelser i artikel 52.',
+    minimal: 'Systemet er omfattet af frivillig god praksis, men bør stadig følges op af governance og monitorering.',
+    uden_for_scope: 'Systemet er ikke omfattet, men andre reguleringer kan stadig være relevante.'
+  };
+
+  const classificationTone = {
+    forbudt: { background: 'rgba(220, 38, 38, 0.12)', text: '#991b1b', border: 'rgba(220, 38, 38, 0.4)' },
+    høj_risiko: { background: 'rgba(234, 179, 8, 0.15)', text: '#92400e', border: 'rgba(234, 179, 8, 0.4)' },
+    begrænset_risiko: { background: 'rgba(59, 130, 246, 0.12)', text: '#1d4ed8', border: 'rgba(59, 130, 246, 0.35)' },
+    minimal: { background: 'rgba(34, 197, 94, 0.12)', text: '#166534', border: 'rgba(34, 197, 94, 0.35)' },
+    uden_for_scope: { background: 'rgba(148, 163, 184, 0.2)', text: '#475569', border: 'rgba(148, 163, 184, 0.4)' }
+  };
+
+  const decisionLabels = {
+    go: 'Godkendt',
+    'betinget-go': 'Betinget godkendelse',
+    'no-go': 'Afvist'
+  };
+
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -309,7 +524,8 @@ const QuickCheckPage = () => {
       toast.success('Hurtig tjek gennemført!');
     } catch (error) {
       console.error('Hurtig tjek fejl:', error);
-      toast.error('Der opstod en fejl. Prøv igen.');
+      const message = error?.response?.data?.detail || 'Der opstod en fejl. Prøv igen.';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -400,12 +616,12 @@ const QuickCheckPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <label htmlFor="sektor">Branche/Sektor *</label>
-            <Select {...register('sektor', { required: 'Sektor er påkrævet' })}>
-              <option value="">Vælg sektor...</option>
-              {sectors.map(sector => (
-                <option key={sector} value={sector}>
-                  {sector}
+            <label htmlFor="sektor">Fagområde *</label>
+            <Select {...register('sektor', { required: 'Fagområde er påkrævet' })}>
+              <option value="">Vælg fagområde...</option>
+              {FAGOMRAADE_OPTIONS.map(fagomraade => (
+                <option key={fagomraade} value={fagomraade}>
+                  {fagomraade}
                 </option>
               ))}
             </Select>
@@ -468,6 +684,35 @@ const QuickCheckPage = () => {
             <p>Her er en øjeblikkelig analyse af dit AI-system</p>
           </ResultsHeader>
 
+          {results.rule_engine && (
+            <SummaryBanner>
+              <SummaryBadge $tone={classificationTone[results.rule_engine.classification] || classificationTone.minimal}>
+                {classificationLabels[results.rule_engine.classification] || 'Foreløbig vurdering'}
+              </SummaryBadge>
+              <SummaryText>
+                {classificationDescriptions[results.rule_engine.classification] || 'Den hurtige screening placerede systemet i den laveste risikokategori. Brug resultatet som udgangspunkt for videre arbejde.'}
+              </SummaryText>
+              <SummaryMeta>
+                <SummaryMetaItem>
+                  <span>Beslutning</span>
+                  <strong>{decisionLabels[results.rule_engine.decision] || 'Ikke vurderet'}</strong>
+                </SummaryMetaItem>
+                <SummaryMetaItem>
+                  <span>AI Act risikoniveau</span>
+                  <strong>{getRiskText(results.ai_act?.risk_level)}</strong>
+                </SummaryMetaItem>
+                <SummaryMetaItem>
+                  <span>Risikoscore</span>
+                  <strong>{results.rule_engine.risk_score ?? 0}</strong>
+                </SummaryMetaItem>
+                <SummaryMetaItem>
+                  <span>GDPR relevant</span>
+                  <strong>{results.gdpr?.relevant ? 'Ja' : 'Nej'}</strong>
+                </SummaryMetaItem>
+              </SummaryMeta>
+            </SummaryBanner>
+          )}
+
           <ResultsGrid>
             <ResultCard>
               <div className={getRiskClass(results.ai_act?.risk_level)}>
@@ -515,7 +760,7 @@ const QuickCheckPage = () => {
             </ResultCard>
           </ResultsGrid>
 
-          {results.ai_act?.reasons && (
+          {results.ai_act?.reasons && results.ai_act.reasons.length > 0 && (
             <DetailsSection>
               <h3>AI Act Analyse</h3>
               <ul>
@@ -526,7 +771,7 @@ const QuickCheckPage = () => {
             </DetailsSection>
           )}
 
-          {results.quick_recommendations && (
+          {results.quick_recommendations && results.quick_recommendations.length > 0 && (
             <DetailsSection>
               <h3>Hurtige Anbefalinger</h3>
               <ul>
@@ -535,6 +780,70 @@ const QuickCheckPage = () => {
                 ))}
               </ul>
             </DetailsSection>
+          )}
+
+          {results.rule_engine?.obligations && results.rule_engine.obligations.length > 0 && (
+            <DetailsSection>
+              <h3>Obligatoriske skridt (AI Act)</h3>
+              <ObligationList>
+                {results.rule_engine.obligations.map((item, index) => (
+                  <li key={`obligation-${index}`}>{item}</li>
+                ))}
+              </ObligationList>
+            </DetailsSection>
+          )}
+
+          {results.rule_engine?.flow && results.rule_engine.flow.length > 0 && (
+            <DetailsSection>
+              <h3>Beslutningsflow</h3>
+              <FlowList>
+                {results.rule_engine.flow.map((step, index) => (
+                  <FlowItem key={`flow-${index}`}>
+                    <strong>{index + 1}. {step.trin}</strong>
+                    <span>{step.resultat} – {step.forklaring}</span>
+                  </FlowItem>
+                ))}
+              </FlowList>
+            </DetailsSection>
+          )}
+
+          {results.rule_engine?.summary && (
+            <DetailsSection>
+              <h3>Regelmotorens vurdering</h3>
+              <p style={{ margin: 0, color: '#475569', lineHeight: 1.5 }}>
+                {results.rule_engine.summary}
+              </p>
+            </DetailsSection>
+          )}
+
+          {results.rule_engine?.findings && results.rule_engine.findings.length > 0 && (
+            <DetailsSection>
+              <h3>Udløste krav</h3>
+              <FindingsList>
+                {results.rule_engine.findings.map((finding, index) => (
+                  <FindingItem key={`${finding.regel_id}-${index}`}>
+                    <SeverityBadge severity={finding.alvorlighed}>
+                      {finding.alvorlighed === 'hard_stop' ? 'Kritisk krav' : 'Betinget krav'}
+                    </SeverityBadge>
+                    <strong>{finding.regel_id} · {String(finding.kategori || '').toUpperCase()}</strong>
+                    <span>{finding.anbefaling || finding.beskrivelse}</span>
+                  </FindingItem>
+                ))}
+              </FindingsList>
+            </DetailsSection>
+          )}
+
+          {results.prompt_full_assessment && (
+            <CTASection>
+              <div>
+                <h3>Tag næste skridt med en fuld compliance control</h3>
+                <p>
+                  Den hurtige screening viser forhold der bør undersøges nærmere. Fortsæt til den fulde
+                  compliance control for at få en dybdegående 7-punkts vurdering og konkrete handlingsplaner.
+                </p>
+              </div>
+              <CTAButton to="/fuld-vurdering">Start fuld compliance control</CTAButton>
+            </CTASection>
           )}
         </ResultsContainer>
       )}

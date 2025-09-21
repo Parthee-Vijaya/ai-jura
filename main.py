@@ -37,6 +37,7 @@ from src.compliance.gdpr_checker import GDPRComplianceChecker
 from src.research.web_searcher import WebSearcher
 from src.services import NewsService, TechTickerService
 from src.utils import get_version_info
+from src.compliance_engine import ComplianceController
 
 # Load environment variables from .env if present
 load_dotenv()
@@ -68,6 +69,7 @@ gdpr_checker = GDPRComplianceChecker()
 news_service = NewsService()
 ticker_service = TechTickerService()
 agent_registry = get_agent_registry()
+compliance_controller = ComplianceController()
 ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "900"))  # 15 minutter
@@ -556,8 +558,19 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
         # Run quick checks
         risk_level, risk_reasons = ai_act_checker.assess_risk_level(project)
 
-        gdpr_relevant = request.uses_personal_data
+        gdpr_relevant = request.behandler_persondata
         gdpr_high_risk = gdpr_checker._requires_dpia(project) if gdpr_relevant else False
+
+        rule_engine_result = compliance_controller.run_quick_checks({
+            "beskrivelse": request.beskrivelse,
+            "fagomraade": request.sektor,
+            "sector": request.sektor,
+            "ai_type": request.ai_type,
+            "ai_risk_level": risk_level.value,
+            "behandler_persondata": request.behandler_persondata,
+            "automatiserede_beslutninger": request.automatiserede_beslutninger,
+            "organisation": "Kalundborg Kommune",
+        })
 
         return {
             "ai_act": {
@@ -570,7 +583,9 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
                 "requires_dpia": gdpr_high_risk
             },
             "quick_recommendations": _generate_quick_recommendations(risk_level, gdpr_relevant, gdpr_high_risk),
-            "needs_full_assessment": risk_level in [RiskLevel.HIGH, RiskLevel.UNACCEPTABLE] or gdpr_high_risk
+            "needs_full_assessment": risk_level in [RiskLevel.HIGH, RiskLevel.UNACCEPTABLE] or gdpr_high_risk,
+            "rule_engine": rule_engine_result,
+            "prompt_full_assessment": rule_engine_result.get("recommend_full", False) or risk_level in [RiskLevel.HIGH, RiskLevel.UNACCEPTABLE] or gdpr_high_risk
         }
 
     except Exception as e:

@@ -148,11 +148,93 @@ const ResultsHeader = styled.div`
   }
 `;
 
+const AnswerCard = styled.div`
+  background: white;
+  border-radius: ${props => props.theme.borderRadius};
+  box-shadow: ${props => props.theme.shadows.md};
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+
+  h3 {
+    margin: 0;
+    color: ${props => props.theme.colors.gray[800]};
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    color: ${props => props.theme.colors.gray[700]};
+    line-height: 1.7;
+  }
+`;
+
+const CitationList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+
+  li {
+    background: ${props => props.theme.colors.gray[100]};
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    color: ${props => props.theme.colors.gray[700]};
+  }
+`;
+
 const SourcesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+`;
+
+const CrossReferenceList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+`;
+
+const CrossReferenceItem = styled.li`
+  background: white;
+  border-radius: ${props => props.theme.borderRadius};
+  border: 1px solid ${props => props.theme.colors.gray[200]};
+  padding: 1.25rem 1.5rem;
+  box-shadow: ${props => props.theme.shadows.sm};
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 0.75rem;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  li {
+    background: ${props => props.theme.colors.gray[100]};
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    color: ${props => props.theme.colors.gray[700]};
+  }
 `;
 
 const SourceCard = styled(motion.div)`
@@ -469,11 +551,62 @@ const ResearchPage = () => {
               </div>
             </ResultsHeader>
 
+            {results.llm_answer && (
+              <AnswerCard>
+                <h3>
+                  <FaBookOpen /> Samlet svar
+                </h3>
+                <p>{results.llm_answer}</p>
+                {results.llm_answer_citations && results.llm_answer_citations.length > 0 && (
+                  <CitationList>
+                    {results.llm_answer_citations.map((citation, index) => (
+                      <li key={`answer-citation-${index}`}>
+                        <a
+                          href={citation.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#1d4ed8', textDecoration: 'none' }}
+                        >
+                          {citation.authority || citation.title}
+                        </a>
+                      </li>
+                    ))}
+                  </CitationList>
+                )}
+              </AnswerCard>
+            )}
+
             {results.sources.length > 0 && (
               <>
                 <h3 style={{ marginBottom: '1rem', color: '#1e293b' }}>
                   Kilder ({results.sources.length})
                 </h3>
+                {results.cross_references && results.cross_references.length > 0 && (
+                  <>
+                    <h4 style={{ marginBottom: '0.75rem', color: '#334155' }}>Krydshenvisninger</h4>
+                    <CrossReferenceList>
+                      {results.cross_references.map((item, index) => (
+                        <CrossReferenceItem key={`cross-ref-${index}`}>
+                          <p>{item.statement}</p>
+                          <ul>
+                            {item.citations.map((citation, citationIndex) => (
+                              <li key={`citation-${citationIndex}`}>
+                                <a
+                                  href={citation.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: '#2563eb', textDecoration: 'none' }}
+                                >
+                                  {citation.authority || citation.title}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </CrossReferenceItem>
+                      ))}
+                    </CrossReferenceList>
+                  </>
+                )}
                 <SourcesGrid>
                   {results.sources.map((source, index) => {
                     const AuthorityIcon = getAuthorityIcon(source.authority);

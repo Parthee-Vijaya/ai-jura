@@ -595,14 +595,30 @@ class ComplianceController:
 
     def transform_assessment_data(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         """Transform rå vurderingsdata til regelmotor format"""
+        entity_tokens = [
+            str(raw_data.get("organisation", "")),
+            str(raw_data.get("fagomraade", "")),
+            str(raw_data.get("team", ""))
+        ]
+        if raw_data.get("fagomraade"):
+            entity_tokens.append("kommune")
+        entity_context = " ".join(token for token in entity_tokens if token).lower()
+
+        lawful_basis_raw = raw_data.get("juridisk_grundlag")
+        if lawful_basis_raw in (None, "", "ved_ikke"):
+            lawful_basis_value = None
+        else:
+            lawful_basis_value = True
+
         transformed = {
             # AI Act relaterede
             "uses_ai": raw_data.get("bruger_ml", False),
             "uses_subliminal": False,  # Skal udvides baseret på system beskrivelse
             "beyond_consciousness": False,
             "social_scoring": "social scoring" in raw_data.get("system_beskrivelse", "").lower(),
-            "by_public_authority": raw_data.get("organisation", "").lower().startswith("kommune") or
-                                  "myndighed" in raw_data.get("organisation", "").lower(),
+            "by_public_authority": any(keyword in entity_context for keyword in [
+                "kommune", "kommun", "jobcenter", "borgerservice", "myndighed"
+            ]),
 
             # Domæne og risiko
             "domain": self._determine_domain(raw_data),
@@ -610,7 +626,7 @@ class ComplianceController:
 
             # GDPR relaterede
             "processes_personal_data": raw_data.get("personoplysninger", False),
-            "lawful_basis": raw_data.get("juridisk_grundlag") not in [None, "", "ved_ikke"],
+            "lawful_basis": lawful_basis_value,
             "special_categories": any(cat in raw_data.get("persondata_typer", [])
                                      for cat in ["Sundhedsdata", "Biometriske data",
                                                 "Særlige kategorier (race, religion, etc.)"]),
@@ -628,8 +644,9 @@ class ComplianceController:
             "appropriate_safeguards": False,
 
             # Forvaltningsret
-            "public_authority": raw_data.get("organisation", "").lower().startswith("kommune") or
-                              "myndighed" in raw_data.get("organisation", "").lower(),
+            "public_authority": any(keyword in entity_context for keyword in [
+                "kommune", "kommun", "jobcenter", "borgerservice", "myndighed"
+            ]),
             "legal_basis_public": raw_data.get("juridisk_grundlag") == "offentlig_opgave",
             "affects_individual_rights": raw_data.get("kritiske_formaal", False),
             "hearing_process": raw_data.get("klage_procedurer", False),
@@ -639,6 +656,173 @@ class ComplianceController:
         }
 
         return transformed
+
+    def run_quick_checks(self, quick_payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Kør hurtig regelkontrol baseret på begrænset input."""
+
+        baseline_data = {
+            "system_beskrivelse": quick_payload.get("beskrivelse", ""),
+            "organisation": quick_payload.get("organisation", ""),
+            "team": quick_payload.get("team", ""),
+            "fagomraade": quick_payload.get("fagomraade", ""),
+            "ai_risiko_kategori": quick_payload.get("ai_risk_level", "minimal"),
+            "personoplysninger": quick_payload.get("behandler_persondata", False),
+            "autonome_beslutninger": quick_payload.get("automatiserede_beslutninger", False),
+            "menneskelig_overvaagning": quick_payload.get("human_in_loop", False),
+            "kritiske_formaal": quick_payload.get("har_retslige_konsekvenser", False),
+            "juridisk_grundlag": quick_payload.get("juridisk_grundlag"),
+            "persondata_typer": quick_payload.get("persondata_typer", []),
+        }
+
+        system_data = self.transform_assessment_data(baseline_data)
+        rule_results = self.rule_engine.evaluate_rules(system_data)
+        triggered_rules = [rule for rule, triggered in rule_results if triggered]
+
+        decision = self.rule_engine.determine_decision(triggered_rules)
+        risk_score = self.rule_engine.calculate_risk_score(triggered_rules)
+
+        findings = [
+            {
+                "regel_id": rule.rule_id,
+                "kategori": rule.category.value,
+                "alvorlighed": rule.severity,
+                "beskrivelse": rule.description,
+                "anbefaling": rule.outcomes.get("message"),
+            }
+            for rule in triggered_rules
+        ]
+
+        summary = self._generate_summary(
+            ComplianceAssessment(
+                decision=decision,
+                risk_score=risk_score,
+                hard_stops=[rule.outcomes.get("message") for rule in triggered_rules if rule.severity == "hard_stop"],
+                conditions=[rule.outcomes.get("message") for rule in triggered_rules if rule.severity == "soft_requirement"],
+                required_artifacts=[],
+                required_tests=[],
+                applied_rules=triggered_rules
+            )
+        ) if triggered_rules else "Ingen kritiske regler blev udløst, men verificer altid med fuld vurdering."
+
+        flow_steps: List[Dict[str, str]] = []
+        obligations: List[str] = []
+        classification = "minimal"
+
+        ai_type = quick_payload.get("ai_type")
+        sector = quick_payload.get("sector") or quick_payload.get("fagomraade")
+        description = (quick_payload.get("beskrivelse") or "").lower()
+
+        if not ai_type:
+            flow_steps.append({
+                "trin": "Er det et AI-system?",
+                "resultat": "Nej",
+                "forklaring": "Systemet falder uden for AI-forordningens anvendelsesområde."
+            })
+            classification = "uden_for_scope"
+        else:
+            flow_steps.append({
+                "trin": "Er det et AI-system?",
+                "resultat": "Ja",
+                "forklaring": "Systemet anvender AI-teknologi og er dermed omfattet af AI-forordningen."
+            })
+
+            prohibited_hits = []
+            prohibited_patterns = {
+                "real-time biometrisk overvågning": ["real-time", "biometr"],
+                "subliminal manipulation": ["subliminal", "manip"],
+                "social scoring": ["social scoring", "adfærds", "score"],
+            }
+            for label, tokens in prohibited_patterns.items():
+                if all(token in description for token in tokens):
+                    prohibited_hits.append(label)
+
+            if prohibited_hits:
+                classification = "forbudt"
+                flow_steps.append({
+                    "trin": "Er praksissen forbudt?",
+                    "resultat": "Ja",
+                    "forklaring": f"Identificeret forbudt praksis: {', '.join(prohibited_hits)} (AI Act artikel 5)."
+                })
+                obligations.append("Stop eller redesignet systemet – praksissen er forbudt under AI-forordningen.")
+            else:
+                flow_steps.append({
+                    "trin": "Er praksissen forbudt?",
+                    "resultat": "Nej",
+                    "forklaring": "Ingen forbudte AI-praksisser identificeret."
+                })
+
+                high_risk_reason = None
+                high_risk_map = {
+                    "Jobcenter": "Ansættelse og arbejdsformidling (Bilag III, punkt 4)",
+                    "Børn og Familie": "Adgang til sociale ydelser for borgere (Bilag III, punkt 5)",
+                    "Voksenspecialenheden": "Social- og sundhedsydelser (Bilag III, punkt 5)",
+                    "Sundhed og Myndighed": "Sundhedsydelser og triagering (Bilag III, punkt 1)",
+                    "Borgerservice og Biblioteker": "Offentlige myndighedsbeslutninger (Bilag III, punkt 5)",
+                    "Organisationsstaben": "Forvaltningsmæssige afgørelser (Bilag III, punkt 5)",
+                }
+
+                if sector in high_risk_map:
+                    high_risk_reason = high_risk_map[sector]
+                elif quick_payload.get("automatiserede_beslutninger") and quick_payload.get("behandler_persondata"):
+                    high_risk_reason = "Automatiserede afgørelser med betydning for borgeres rettigheder"
+
+                if high_risk_reason:
+                    classification = "høj_risiko"
+                    flow_steps.append({
+                        "trin": "Er systemet højrisiko?",
+                        "resultat": "Ja",
+                        "forklaring": high_risk_reason
+                    })
+                    obligations.extend([
+                        "Etabler kvalitetssystem, risikostyring og teknisk dokumentation.",
+                        "Gennemfør (intern/ekstern) konformitetsvurdering før idriftsættelse.",
+                        "Sikre menneskelig overvågning, logning og registrering i EU-databasen."
+                    ])
+                else:
+                    flow_steps.append({
+                        "trin": "Er systemet højrisiko?",
+                        "resultat": "Nej",
+                        "forklaring": "Ingen indikatorer på Annex III-højrisikoområder."
+                    })
+
+                    limited_reasons = []
+                    if ai_type in {"generative_ai", "nlp"}:
+                        limited_reasons.append("Generativ eller sprog-baseret AI kræver gennemsigtighed (AI Act artikel 52).")
+                    if "chatbot" in description or "assistant" in description:
+                        limited_reasons.append("Chatbots skal informere brugeren om, at de interagerer med AI.")
+
+                    if limited_reasons:
+                        classification = "begrænset_risiko"
+                        flow_steps.append({
+                            "trin": "Er systemet begrænset risiko?",
+                            "resultat": "Ja",
+                            "forklaring": " ".join(limited_reasons)
+                        })
+                        obligations.extend([
+                            "Informer tydeligt brugere om AI-interaktion.",
+                            "Tilbyd klare brugervejledninger og etikettering.",
+                        ])
+                    else:
+                        classification = "minimal"
+                        flow_steps.append({
+                            "trin": "Er systemet begrænset risiko?",
+                            "resultat": "Nej",
+                            "forklaring": "Klassificeret som minimal risiko – frivillig god praksis anbefales."
+                        })
+                        obligations.append("Følg frivillige kodekser for ansvarlig AI og overvåg fremtidige krav.")
+
+        recommend_full = classification in {"forbudt", "høj_risiko"}
+
+        return {
+            "decision": decision.value,
+            "risk_score": risk_score,
+            "findings": findings,
+            "summary": summary,
+            "flow": flow_steps,
+            "classification": classification,
+            "obligations": obligations,
+            "recommend_full": recommend_full or decision.value != ComplianceDecision.GO.value,
+        }
 
     def _determine_domain(self, data: Dict[str, Any]) -> str:
         """Bestem system domæne baseret på beskrivelse og anvendelse"""
