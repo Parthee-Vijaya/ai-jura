@@ -123,7 +123,7 @@ class WebSearcher:
             self._search_retsinformation(query),
             self._search_eu_official(query),
             self._search_edpb_guidelines(query),
-            self._search_duckduckgo(query)
+            self._search_duckduckgo(query, focus_areas=focus_areas)
         ]
 
         if self.mistral_api_key:
@@ -148,7 +148,7 @@ class WebSearcher:
                 logger.warning("Ekstra LLM søgning mislykkedes: %s", exc)
 
         if len(all_sources) < 3:
-            extra_sources = await self._search_duckduckgo(query, limit=10)
+            extra_sources = await self._search_duckduckgo(query, limit=12, focus_areas=focus_areas)
             all_sources.extend(extra_sources)
 
         all_sources = self._deduplicate_sources(all_sources)
@@ -522,50 +522,55 @@ class WebSearcher:
 
         return sources
 
-    async def _search_duckduckgo(self, query: str, limit: int = 8) -> List[Source]:
+    async def _search_duckduckgo(self, query: str, limit: int = 8, focus_areas: Optional[List[str]] = None) -> List[Source]:
         """Generisk søgning på nettet via DuckDuckGo."""
         sources: List[Source] = []
         if not self.session:
             return sources
 
-        params = urlencode({
-            "q": f"{query} artificial intelligence compliance",
-            "kl": "da-da"
-        })
-        url = f"https://duckduckgo.com/html/?{params}"
+        queries = [f"{query} artificial intelligence compliance"]
+        if focus_areas:
+            for area in focus_areas:
+                queries.append(f"{query} {area}")
 
-        try:
-            async with self.session.get(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; JudgeAI/1.0)'}) as response:
-                if response.status != 200:
-                    logger.warning("DuckDuckGo søgning fejlede: %s", response.status)
-                    return sources
-                html_text = await response.text()
-        except Exception as exc:
-            logger.warning("DuckDuckGo forespørgsel mislykkedes: %s", exc)
-            return sources
-
-        pattern = re.compile(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE)
         seen_urls = set()
+        pattern = re.compile(r'<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE)
 
-        for match in pattern.finditer(html_text):
-            href, title_html = match.groups()
-            href = html.unescape(href)
-            title = re.sub('<[^<]+?>', '', html.unescape(title_html)).strip()
-            if not href.startswith('http'):
+        for q in queries:
+            params = urlencode({"q": q, "kl": "da-da"})
+            url = f"https://duckduckgo.com/html/?{params}"
+
+            try:
+                async with self.session.get(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; JudgeAI/1.0)'}) as response:
+                    if response.status != 200:
+                        logger.warning("DuckDuckGo søgning fejlede: %s", response.status)
+                        continue
+                    html_text = await response.text()
+            except Exception as exc:
+                logger.warning("DuckDuckGo forespørgsel mislykkedes: %s", exc)
                 continue
-            if href in seen_urls:
-                continue
-            seen_urls.add(href)
-            source = await self._fetch_source(href)
-            if not source:
-                continue
-            source.title = title or source.title
-            if self._is_relevant(source.content, query):
-                source.relevance_score = max(source.relevance_score, 0.6)
-                sources.append(source)
-            elif len(sources) < limit - 1:
-                source.relevance_score = max(source.relevance_score, 0.3)
-                sources.append(source)
+
+            for match in pattern.finditer(html_text):
+                href, title_html = match.groups()
+                href = html.unescape(href)
+                title = re.sub('<[^<]+?>', '', html.unescape(title_html)).strip()
+                if not href.startswith('http'):
+                    continue
+                if href in seen_urls:
+                    continue
+                seen_urls.add(href)
+                source = await self._fetch_source(href)
+                if not source:
+                    continue
+                source.title = title or source.title
+                if self._is_relevant(source.content, query):
+                    source.relevance_score = max(source.relevance_score, 0.6)
+                    sources.append(source)
+                elif len(sources) < limit - 1:
+                    source.relevance_score = max(source.relevance_score, 0.3)
+                    sources.append(source)
+                if len(sources) >= limit:
+                    break
             if len(sources) >= limit:
                 break
 
