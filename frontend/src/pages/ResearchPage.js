@@ -266,6 +266,33 @@ const SourceCard = styled(motion.div)`
   }
 `;
 
+const DetailsSection = styled.section`
+  background: white;
+  border-radius: ${props => props.theme.borderRadius};
+  box-shadow: ${props => props.theme.shadows.sm};
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin: 0 0 1rem;
+    color: ${props => props.theme.colors.gray[800]};
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    li {
+      color: ${props => props.theme.colors.gray[700]};
+      line-height: 1.6;
+    }
+  }
+`;
+
 const SourceHeader = styled.div`
   padding: 1.5rem;
   border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
