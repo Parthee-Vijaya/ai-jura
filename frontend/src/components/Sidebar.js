@@ -283,9 +283,9 @@ const VersionToggleButton = styled.button`
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: 10px;
   border: 1px solid ${props => props.theme.layout.sidebar.border};
-  background: ${props => props.theme.layout.sidebar.badgeBackground};
+  background: ${props => props.theme.layout.sidebar.hoverBackground};
   color: ${props => props.theme.layout.sidebar.text};
   cursor: pointer;
   transition: ${props => props.theme.animations.transitionFast};
@@ -299,17 +299,17 @@ const VersionToggleButton = styled.button`
 const VersionCard = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  padding: 1rem;
-  border-radius: ${props => props.theme.borderRadius};
+  gap: 0.75rem;
+  padding: 1.1rem;
+  border-radius: ${props => props.theme.borderRadiusLarge};
   background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(30, 41, 59, 0.65)'
-    : 'rgba(255, 255, 255, 0.85)'};
+    ? 'linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.75))'
+    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 249, 0.9))'};
   border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.22)'
-    : 'rgba(148, 163, 184, 0.3)'};
-  box-shadow: ${props => props.theme.shadows.sm};
-  backdrop-filter: blur(12px);
+    ? 'rgba(148, 163, 184, 0.25)'
+    : 'rgba(148, 163, 184, 0.35)'};
+  box-shadow: ${props => props.theme.shadows.glass};
+  backdrop-filter: blur(18px);
 `;
 
 const VersionHeader = styled.div`
@@ -334,9 +334,11 @@ const VersionLabel = styled.span`
 `;
 
 const VersionValue = styled.span`
-  color: ${props => props.theme.colors.accent};
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
 `;
 
@@ -345,20 +347,21 @@ const ChangeTypeBadge = styled.span`
   align-items: center;
   gap: 0.3rem;
   align-self: flex-start;
-  padding: 0.2rem 0.55rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.18)' : 'rgba(37, 99, 235, 0.12)'};
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.22)'
+    : 'rgba(37, 99, 235, 0.15)'};
   color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.primary};
 `;
 
 const VersionDetails = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
   font-size: 0.75rem;
   color: ${props => props.theme.layout.sidebar.muted};
 
@@ -369,9 +372,10 @@ const VersionDetails = styled.div`
 
   .commit {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.25rem;
     font-size: 0.72rem;
+    word-break: break-word;
   }
 `;
 
