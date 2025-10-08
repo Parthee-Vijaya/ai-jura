@@ -16,12 +16,14 @@ import {
   FaCalendarAlt,
   FaBalanceScale,
   FaLightbulb,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaCode
 } from 'react-icons/fa';
 import NewsSection from '../components/NewsSection';
 import NewsTicker from '../components/NewsTicker';
 import { FeatureCardSkeletonLoader } from '../components/SkeletonLoader';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
+import packageJson from '../../package.json';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -216,6 +218,66 @@ const HeroStatCard = styled(motion.div)`
     color: ${props => props.theme.mode === 'dark'
       ? 'rgba(226, 232, 240, 0.7)'
       : props.theme.colors.gray[500]};
+  }
+`;
+
+const VersionCard = styled(motion.div)`
+  background: linear-gradient(135deg, rgba(160, 54, 18, 0.1) 0%, rgba(125, 43, 14, 0.05) 100%);
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 1rem 1.5rem;
+  border: 2px solid rgba(160, 54, 18, 0.3);
+  box-shadow: ${props => props.theme.shadows.md};
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+
+  .version-icon {
+    font-size: 1.8rem;
+    color: #A03612;
+  }
+
+  .version-info {
+    flex: 1;
+
+    .version-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: ${props => props.theme.colors.textMuted};
+      margin-bottom: 0.2rem;
+    }
+
+    .version-number {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #A03612;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .version-date {
+      font-size: 0.7rem;
+      color: ${props => props.theme.colors.textMuted};
+      margin-top: 0.2rem;
+    }
+  }
+
+  .changelog-link {
+    font-size: 0.75rem;
+    color: #A03612;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: 600;
+    transition: ${props => props.theme.animations.transitionFast};
+
+    &:hover {
+      color: #7d2b0e;
+      transform: translateX(2px);
+    }
   }
 `;
 
@@ -710,6 +772,29 @@ const HomePage = () => {
                 <span className="caption">Seneste status opdateret</span>
               </HeroStatCard>
             ))}
+
+            <VersionCard
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <div className="version-icon">
+                <FaCode />
+              </div>
+              <div className="version-info">
+                <div className="version-label">Platform Version</div>
+                <div className="version-number">
+                  v{packageJson.version}
+                  <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#059669' }}>
+                    • Kalundborg Branding
+                  </span>
+                </div>
+                <div className="version-date">Opdateret: Januar 2025</div>
+              </div>
+              <a href="https://github.com/Parthee-Vijaya/Judge_dredd" target="_blank" rel="noopener noreferrer" className="changelog-link">
+                Changelog <FaExternalLinkAlt size={10} />
+              </a>
+            </VersionCard>
           </HeroInsights>
         </HeroLayout>
       </HeroSection>
