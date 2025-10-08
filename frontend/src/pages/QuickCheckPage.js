@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
+import Select from 'react-select';
 import {
   FaRocket,
   FaCheckCircle,
@@ -451,7 +452,7 @@ const QuickCheckPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, control, formState: { errors } } = useForm();
 
   const aiTypes = [
     { value: 'generative_ai', label: 'Generativ AI' },
@@ -499,10 +500,15 @@ const QuickCheckPage = () => {
     setIsLoading(true);
 
     try {
+      // Konverter array af fagområder til string format
+      const sektorString = data.sektorer && data.sektorer.length > 0
+        ? data.sektorer.map(s => s.value).join(', ')
+        : '';
+
       const response = await axios.post('/api/compliance/hurtig-tjek', {
         beskrivelse: data.beskrivelse,
         ai_type: data.ai_type,
-        sektor: data.sektor,
+        sektor: sektorString,
         behandler_persondata: data.behandler_persondata || false,
         automatiserede_beslutninger: data.automatiserede_beslutninger || false
       });
@@ -564,7 +570,7 @@ const QuickCheckPage = () => {
   return (
     <QuickCheckContainer>
       <PageHeader>
-        <h1>⚡ Hurtig Compliance Tjek</h1>
+        <h1>Hurtig tjek</h1>
         <p>Få øjeblikkelig feedback på dit AI-systems compliance status</p>
       </PageHeader>
 
@@ -603,18 +609,32 @@ const QuickCheckPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <label htmlFor="sektor">Fagområde *</label>
-            <Select {...register('sektor', { required: 'Fagområde er påkrævet' })}>
-              <option value="">Vælg fagområde...</option>
-              {FAGOMRAADE_OPTIONS.map(fagomraade => (
-                <option key={fagomraade} value={fagomraade}>
-                  {fagomraade}
-                </option>
-              ))}
-            </Select>
-            {errors.sektor && (
+            <label htmlFor="sektorer">Fagområder * (vælg flere hvis relevant)</label>
+            <Controller
+              name="sektorer"
+              control={control}
+              rules={{ required: 'Mindst ét fagområde er påkrævet' }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  isMulti
+                  options={FAGOMRAADE_OPTIONS.map(opt => ({ value: opt, label: opt }))}
+                  placeholder="Vælg fagområder..."
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      padding: '0.25rem',
+                      borderColor: errors.sektorer ? 'red' : '#d1d5db',
+                      borderWidth: '2px',
+                      borderRadius: '0.375rem'
+                    })
+                  }}
+                />
+              )}
+            />
+            {errors.sektorer && (
               <span style={{ color: 'red', fontSize: '0.875rem' }}>
-                {errors.sektor.message}
+                {errors.sektorer.message}
               </span>
             )}
           </FormGroup>

@@ -20,6 +20,7 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "react-select": "^5.10.2",
     "react-tooltip": "^5.29.1",
     "styled-components": "^5.3.11",
     "web-vitals": "^2.1.4"
