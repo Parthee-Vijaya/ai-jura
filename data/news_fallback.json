@@ -5,14 +5,14 @@
     "source": "Council of EU",
     "category": "eu_council",
     "summary": "Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
-    "published_at": "2025-10-08T17:21:18.261193",
+    "published_at": "2025-10-08T18:25:18.673894",
     "importance": "medium",
     "keywords": [
       "digital agenda",
       "ai regulation",
       "digital policy"
     ],
-    "scraped_at": "2025-10-08T21:21:18.261207",
+    "scraped_at": "2025-10-08T22:25:18.673898",
     "content_snippet": null
   },
   {
@@ -21,14 +21,14 @@
     "source": "KL",
     "category": "danish_municipal",
     "summary": "Besøg KL's nyhedsside for aktuelle beslutninger, vejledninger og projekter om kommunernes brug af AI og data.",
-    "published_at": "2025-10-08T15:21:18.612455",
+    "published_at": "2025-10-08T16:25:18.741656",
     "importance": "medium",
     "keywords": [
       "kommuner",
       "ai",
       "digitalisering"
     ],
-    "scraped_at": "2025-10-08T21:21:18.612467",
+    "scraped_at": "2025-10-08T22:25:18.741661",
     "content_snippet": null
   },
   {
@@ -37,14 +37,14 @@
     "source": "Dansk Industri",
     "category": "danish_industry",
     "summary": "Hold dig opdateret på Dansk Industri's indblik i AI, industri 4.0 og digital innovation.",
-    "published_at": "2025-10-08T13:21:17.625378",
+    "published_at": "2025-10-08T14:25:17.788845",
     "importance": "medium",
     "keywords": [
       "industri",
       "innovation",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.625384",
+    "scraped_at": "2025-10-08T22:25:17.788854",
     "content_snippet": null
   },
   {
@@ -53,7 +53,7 @@
     "source": "European Court of Justice",
     "category": "court_cases",
     "summary": "Visit the European Court of Justice for the latest rulings on AI, automated decision-making, and data protection under GDPR.",
-    "published_at": "2025-10-08T13:21:17.574879",
+    "published_at": "2025-10-08T14:25:17.641163",
     "importance": "medium",
     "keywords": [
       "court decisions",
@@ -61,7 +61,7 @@
       "ai",
       "automated decisions"
     ],
-    "scraped_at": "2025-10-08T21:21:17.574886",
+    "scraped_at": "2025-10-08T22:25:17.641167",
     "content_snippet": null
   },
   {
@@ -70,14 +70,14 @@
     "source": "Dansk Erhverv",
     "category": "danish_business",
     "summary": "Følg Dansk Erhverv for analyser af erhvervslivets arbejde med AI, regulering og digitalisering.",
-    "published_at": "2025-10-08T11:21:17.446988",
+    "published_at": "2025-10-08T12:25:17.556729",
     "importance": "medium",
     "keywords": [
       "erhverv",
       "ai",
       "digitalisering"
     ],
-    "scraped_at": "2025-10-08T21:21:17.446991",
+    "scraped_at": "2025-10-08T22:25:17.556737",
     "content_snippet": null
   },
   {
@@ -86,14 +86,14 @@
     "source": "K-News",
     "category": "danish_media",
     "summary": "Følg K-News for analyser af teknologi, regulation og advokatbranchens arbejde med AI.",
-    "published_at": "2025-10-08T09:21:17.522592",
+    "published_at": "2025-10-08T10:25:17.602964",
     "importance": "medium",
     "keywords": [
       "karnov",
       "jura",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.522599",
+    "scraped_at": "2025-10-08T22:25:17.602968",
     "content_snippet": null
   },
   {
@@ -102,14 +102,14 @@
     "source": "JuraInfo",
     "category": "danish_law",
     "summary": "Besøg JuraInfo for analyser, domme og vejledninger om databeskyttelse, AI og compliance i Danmark.",
-    "published_at": "2025-10-08T09:21:17.337312",
+    "published_at": "2025-10-08T10:25:17.498900",
     "importance": "medium",
     "keywords": [
       "gdpr",
       "databeskyttelse",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.337318",
+    "scraped_at": "2025-10-08T22:25:17.498906",
     "content_snippet": null
   },
   {
@@ -118,29 +118,14 @@
     "source": "PropriaAI",
     "category": "ai_industry",
     "summary": "Læs PropriaAI's blog for governance-frameworks, audits og compliance i AI-projekter.",
-    "published_at": "2025-10-08T07:21:18.340442",
+    "published_at": "2025-10-08T08:25:19.516629",
     "importance": "medium",
     "keywords": [
       "responsible ai",
       "governance",
       "compliance"
     ],
-    "scraped_at": "2025-10-08T21:21:18.340454",
-    "content_snippet": null
-  },
-  {
-    "title": "Vejledning om GDPR",
-    "url": "https://www.datatilsynet.dk/regler-og-vejledning/lovgivning",
-    "source": "Datatilsynet",
-    "category": "datatilsynet",
-    "summary": "",
-    "published_at": "2025-10-08T07:21:17.775803",
-    "importance": "medium",
-    "keywords": [
-      "gdpr",
-      "vejledning"
-    ],
-    "scraped_at": "2025-10-08T21:21:17.775814",
+    "scraped_at": "2025-10-08T22:25:19.516661",
     "content_snippet": null
   },
   {
@@ -154,7 +139,7 @@
     "keywords": [
       "artificial intelligence"
     ],
-    "scraped_at": "2025-10-08T21:21:17.394070",
+    "scraped_at": "2025-10-08T22:25:17.546551",
     "content_snippet": "Commission to warn Europe’s slow embrace of artificial intelligence risks squandering economic growth."
   },
   {
@@ -163,13 +148,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-10-07T21:21:21.822850",
+    "published_at": "2025-10-07T22:25:22.624605",
     "importance": "medium",
     "keywords": [
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-10-08T21:21:21.822851",
+    "scraped_at": "2025-10-08T22:25:22.624606",
     "content_snippet": null
   },
   {
@@ -178,14 +163,14 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-10-07T21:21:21.822654",
+    "published_at": "2025-10-07T22:25:22.624416",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-10-08T21:21:21.822656",
+    "scraped_at": "2025-10-08T22:25:22.624418",
     "content_snippet": null
   },
   {
@@ -194,13 +179,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-10-07T21:21:21.822457",
+    "published_at": "2025-10-07T22:25:22.624228",
     "importance": "medium",
     "keywords": [
       "AI Act",
       "AI Act"
     ],
-    "scraped_at": "2025-10-08T21:21:21.822465",
+    "scraped_at": "2025-10-08T22:25:22.624236",
     "content_snippet": null
   },
   {
@@ -209,13 +194,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-10-07T21:21:19.430370",
+    "published_at": "2025-10-07T22:25:19.702852",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-10-08T21:21:19.430371",
+    "scraped_at": "2025-10-08T22:25:19.702853",
     "content_snippet": null
   },
   {
@@ -224,13 +209,13 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-10-07T21:21:19.430171",
+    "published_at": "2025-10-07T22:25:19.702656",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-10-08T21:21:19.430173",
+    "scraped_at": "2025-10-08T22:25:19.702658",
     "content_snippet": null
   },
   {
@@ -239,13 +224,28 @@
     "source": "EUR-Lex",
     "category": "eu_legislation",
     "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-10-07T21:21:19.429941",
+    "published_at": "2025-10-07T22:25:19.702432",
     "importance": "medium",
     "keywords": [
       "artificial intelligence",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-10-08T21:21:19.429950",
+    "scraped_at": "2025-10-08T22:25:19.702440",
+    "content_snippet": null
+  },
+  {
+    "title": "Vejledning om GDPR",
+    "url": "https://www.datatilsynet.dk/regler-og-vejledning/lovgivning",
+    "source": "Datatilsynet",
+    "category": "datatilsynet",
+    "summary": "",
+    "published_at": "2025-10-07T07:25:17.794466",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "vejledning"
+    ],
+    "scraped_at": "2025-10-08T22:25:17.794477",
     "content_snippet": null
   },
   {
@@ -257,7 +257,7 @@
     "published_at": "2025-09-26T11:37:10",
     "importance": "medium",
     "keywords": [],
-    "scraped_at": "2025-10-08T21:21:17.394344",
+    "scraped_at": "2025-10-08T22:25:17.546796",
     "content_snippet": "AI features on Google search, Instagram and elsewhere have to respect digital competition rules, EU executive says."
   },
   {
@@ -271,7 +271,7 @@
     "keywords": [
       "ai act"
     ],
-    "scraped_at": "2025-10-08T21:21:17.394378",
+    "scraped_at": "2025-10-08T22:25:17.546833",
     "content_snippet": "Concerns over AI Act have reached a head."
   },
   {
@@ -287,7 +287,7 @@
       "guidelines",
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.546034",
+    "scraped_at": "2025-10-08T22:25:17.579015",
     "content_snippet": "Brussels, 12 September - During its September plenary meeting, the European Data Protection Board (EDPB) has adopted guidelines on the interplay between the Digital Services Act (DSA) and the General ..."
   },
   {
@@ -302,7 +302,7 @@
       "privacy",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436408",
+    "scraped_at": "2025-10-08T22:25:18.636185",
     "content_snippet": "The French privacy watchdog also fined the ecommerce giant Shein €150 million fine for cookie breaches"
   },
   {
@@ -317,7 +317,7 @@
       "ai",
       "digital"
     ],
-    "scraped_at": "2025-10-08T21:21:17.466351",
+    "scraped_at": "2025-10-08T22:25:18.220226",
     "content_snippet": "The document, obtained by Euractiv, also stresses that the bloc must take steps to boost digital skills"
   },
   {
@@ -332,7 +332,7 @@
       "privacy",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436513",
+    "scraped_at": "2025-10-08T22:25:18.636301",
     "content_snippet": "But the decision by the Austrian authority comes more than five years after privacy group Noyb filed the data access complaint"
   },
   {
@@ -346,7 +346,7 @@
     "keywords": [
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.466454",
+    "scraped_at": "2025-10-08T22:25:18.220339",
     "content_snippet": "Lack of trust among healthcare professionals and patients is a major obstacle to the adoption of AI in healthcare, the report warns, calling for action to address concerns over reliability and ethics"
   },
   {
@@ -362,7 +362,7 @@
       "privacy",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436561",
+    "scraped_at": "2025-10-08T22:25:18.636349",
     "content_snippet": "TikTok, AliExpress and WeChat stand accused of failing to live up to the General Data Protection Regulation's rules on data access."
   },
   {
@@ -377,7 +377,7 @@
       "ai",
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.546294",
+    "scraped_at": "2025-10-08T22:25:17.579279",
     "content_snippet": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation ame..."
   },
   {
@@ -391,7 +391,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.546509",
+    "scraped_at": "2025-10-08T22:25:17.579496",
     "content_snippet": "A fundamental rights approach to innovation and competitiveness Helsinki, 3 July 2025 – At a high-level meeting in Helsinki on 1–2 July 2025, the European Data Protection Board (EDPB) adopted a landma..."
   },
   {
@@ -406,7 +406,7 @@
       "privacy",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436599",
+    "scraped_at": "2025-10-08T22:25:18.636390",
     "content_snippet": "DeepSeek's privacy issues in the EU are stacking up."
   },
   {
@@ -420,7 +420,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436632",
+    "scraped_at": "2025-10-08T22:25:18.636425",
     "content_snippet": "The law expected to apply in the second half of 2026 at the earliest."
   },
   {
@@ -437,7 +437,7 @@
       "gdpr",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-10-08T21:21:17.547124",
+    "scraped_at": "2025-10-08T22:25:17.579895",
     "content_snippet": "Brussels, 05 June - During its latest plenary, the European Data Protection Board (EDPB) adopted the final version of its guidelines on Art.48 GDPR about data transfers to third country authorities, a..."
   },
   {
@@ -452,7 +452,7 @@
       "privacy",
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.436726",
+    "scraped_at": "2025-10-08T22:25:18.636517",
     "content_snippet": "Debate on training AI systems developed by US tech majors with European posts is rumbling on."
   },
   {
@@ -466,7 +466,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.547601",
+    "scraped_at": "2025-10-08T22:25:17.580359",
     "content_snippet": "Brussels, 08 May - The European Data Protection Board (EDPB) and the European Data Protection Supervisor (EDPS) have adopted a letter, addressed to the European Commission, on the upcoming proposal on..."
   },
   {
@@ -480,7 +480,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-10-08T21:21:17.547964",
+    "scraped_at": "2025-10-08T22:25:17.582957",
     "content_snippet": "Brussels, 06 May - During its latest plenary, the European Data Protection Board (EDPB) adopted an opinion on the European Commission’s draft adequacy decision under the GDPR concerning the European P..."
   },
   {
@@ -494,7 +494,7 @@
     "keywords": [
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.466678",
+    "scraped_at": "2025-10-08T22:25:18.220579",
     "content_snippet": "The code is seen as a potential global standard-setter for this frontier technology."
   },
   {
@@ -508,7 +508,7 @@
     "keywords": [
       "ai"
     ],
-    "scraped_at": "2025-10-08T21:21:17.549057",
+    "scraped_at": "2025-10-08T22:25:17.584021",
     "content_snippet": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important mile..."
   },
   {
@@ -523,7 +523,7 @@
       "ai",
       "guidelines"
     ],
-    "scraped_at": "2025-10-08T21:21:17.549267",
+    "scraped_at": "2025-10-08T22:25:17.584226",
     "content_snippet": "Brussels, 14 April - During its April 2025 plenary, the European Data Protection Board (EDPB) has adopted guidelines on processing of personal data through blockchain technologies. A blockchain is a d..."
   },
   {
@@ -535,7 +535,7 @@
     "published_at": "2025-03-14T13:00:00",
     "importance": "high",
     "keywords": [],
-    "scraped_at": "2025-10-08T21:21:17.549520",
+    "scraped_at": "2025-10-08T22:25:17.584472",
     "content_snippet": "Brussels, 14 March - During its March 2025 plenary meeting, the European Data Protection Board (EDPB) adopted a statement on the implementation of the Passenger Name Record Directive (PNR) in light of..."
   }
 ]

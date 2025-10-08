@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
@@ -15,7 +15,9 @@ import {
   FaChevronRight,
   FaExternalLinkAlt,
   FaInfoCircle,
-  FaCog
+  FaCog,
+  FaChevronDown,
+  FaChevronUp
 } from 'react-icons/fa';
 
 const VERSION_QUERY_KEY = 'platform-version-info';
@@ -223,7 +225,11 @@ const NavLink = styled(Link)`
   }
 `;
 
-const SectionTitle = styled.h3`
+const SectionTitle = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 0.75rem;
   font-weight: 600;
   color: ${props => props.theme.layout.sidebar.muted};
@@ -231,12 +237,32 @@ const SectionTitle = styled.h3`
   letter-spacing: 0.05em;
   padding: 1rem 1.5rem 0.5rem;
   margin: 2rem 0 0.5rem;
+  border: none;
   border-top: 1px solid ${props => props.theme.layout.sidebar.border};
+  background: transparent;
+  cursor: pointer;
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    color: ${props => props.theme.layout.sidebar.hoverText};
+  }
 
   &:first-child {
     margin-top: 0;
     border-top: none;
   }
+
+  .chevron {
+    font-size: 0.65rem;
+    transition: ${props => props.theme.animations.transitionFast};
+  }
+`;
+
+const CollapsibleSection = styled.div`
+  max-height: ${props => props.$isOpen ? '1000px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  opacity: ${props => props.$isOpen ? '1' : '0'};
 `;
 
 const ToggleButton = styled.button`
@@ -289,16 +315,16 @@ const SidebarFooter = styled.div`
 const VersionSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  padding: 1rem 1.1rem;
-  border-radius: ${props => props.theme.borderRadiusLarge};
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: ${props => props.theme.borderRadius};
   background: ${props => props.theme.mode === 'dark'
     ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88))'
     : 'linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92))'};
   border: 1px solid ${props => props.theme.mode === 'dark'
     ? 'rgba(148, 163, 184, 0.2)'
     : 'rgba(148, 163, 184, 0.32)'};
-  box-shadow: ${props => props.theme.shadows.glass};
+  box-shadow: ${props => props.theme.shadows.md};
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(226, 232, 240, 0.92)'
     : props.theme.layout.sidebar.text};
@@ -307,10 +333,10 @@ const VersionSection = styled.div`
 const VersionHeading = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.72rem;
+  gap: 0.4rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(203, 213, 225, 0.85)'
@@ -321,8 +347,8 @@ const VersionValue = styled.div`
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  font-size: 0.9rem;
+  gap: 0.35rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: ${props => props.theme.mode === 'dark'
     ? props.theme.colors.white
@@ -348,37 +374,69 @@ const ChangeTypeBadge = styled.span`
 `;
 
 const VersionMeta = styled.div`
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(203, 213, 225, 0.82)'
     : 'rgba(71, 85, 105, 0.85)'};
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.3rem;
 
   .relative {
     opacity: 0.75;
-    font-size: 0.7rem;
-  }
-
-  .change {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.85)'
-      : 'rgba(37, 99, 235, 0.8)'};
+    font-size: 0.66rem;
   }
 
   .author {
-    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
     color: ${props => props.theme.mode === 'dark'
       ? 'rgba(191, 219, 254, 0.9)'
       : 'rgba(30, 64, 175, 0.9)'};
   }
+`;
+
+const VersionDetailsButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0;
+  margin-top: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.85)'
+    : 'rgba(100, 116, 139, 0.85)'};
+  cursor: pointer;
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(191, 219, 254, 0.95)'
+      : 'rgba(30, 64, 175, 0.95)'};
+  }
+
+  .chevron {
+    font-size: 0.6rem;
+    transition: ${props => props.theme.animations.transitionFast};
+  }
+`;
+
+const VersionDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: ${props => props.$isOpen ? '500px' : '0'};
+  overflow: hidden;
+  opacity: ${props => props.$isOpen ? '1' : '0'};
+  transition: all 0.3s ease-in-out;
+  margin-top: ${props => props.$isOpen ? '0.4rem' : '0'};
+  padding-top: ${props => props.$isOpen ? '0.4rem' : '0'};
+  border-top: ${props => props.$isOpen
+    ? `1px solid ${props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.25)'}`
+    : 'none'};
 `;
 
 const FooterNote = styled.div`
@@ -393,6 +451,19 @@ const FooterNote = styled.div`
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
+  const [expandedSections, setExpandedSections] = useState({
+    'viden': true,
+    'indstillinger': false
+  });
+  const [versionDetailsExpanded, setVersionDetailsExpanded] = useState(false);
+
+  const toggleSection = (sectionKey) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
+
   const { data: versionData, isError: versionError } = useQuery(
     VERSION_QUERY_KEY,
     fetchVersionInfo,
@@ -449,6 +520,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const menuItems = [
     {
       section: null,
+      sectionKey: null,
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
         { path: '/hurtig-tjek', icon: FaSearch, text: 'Hurtig Tjek' },
@@ -460,6 +532,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     },
     {
       section: 'Viden & Research',
+      sectionKey: 'viden',
       items: [
         { path: '/videnbase', icon: FaBook, text: 'Videnbase' },
         { path: '/research', icon: FaGlobeEurope, text: 'Juridisk Research' },
@@ -468,6 +541,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     },
     {
       section: 'Indstillinger',
+      sectionKey: 'indstillinger',
       items: [
         { path: '/indstillinger', icon: FaCog, text: 'Indstillinger' }
       ]
@@ -492,21 +566,49 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <nav>
           {menuItems.map((section, sectionIndex) => (
             <div key={sectionIndex}>
-              {!collapsed && section.section && <SectionTitle>{section.section}</SectionTitle>}
-              <NavList>
-                {section.items.map((item, itemIndex) => (
-                  <NavItem key={itemIndex}>
-                    <NavLink
-                      to={item.path}
-                      className={location.pathname === item.path ? 'active' : ''}
-                      title={collapsed ? item.text : ''}
-                    >
-                      <item.icon className="icon" />
-                      {!collapsed && <span className="text">{item.text}</span>}
-                    </NavLink>
-                  </NavItem>
-                ))}
-              </NavList>
+              {!collapsed && section.section && section.sectionKey ? (
+                <>
+                  <SectionTitle onClick={() => toggleSection(section.sectionKey)}>
+                    <span>{section.section}</span>
+                    {expandedSections[section.sectionKey] ? (
+                      <FaChevronUp className="chevron" />
+                    ) : (
+                      <FaChevronDown className="chevron" />
+                    )}
+                  </SectionTitle>
+                  <CollapsibleSection $isOpen={expandedSections[section.sectionKey]}>
+                    <NavList>
+                      {section.items.map((item, itemIndex) => (
+                        <NavItem key={itemIndex}>
+                          <NavLink
+                            to={item.path}
+                            className={location.pathname === item.path ? 'active' : ''}
+                            title={collapsed ? item.text : ''}
+                          >
+                            <item.icon className="icon" />
+                            {!collapsed && <span className="text">{item.text}</span>}
+                          </NavLink>
+                        </NavItem>
+                      ))}
+                    </NavList>
+                  </CollapsibleSection>
+                </>
+              ) : (
+                <NavList>
+                  {section.items.map((item, itemIndex) => (
+                    <NavItem key={itemIndex}>
+                      <NavLink
+                        to={item.path}
+                        className={location.pathname === item.path ? 'active' : ''}
+                        title={collapsed ? item.text : ''}
+                      >
+                        <item.icon className="icon" />
+                        {!collapsed && <span className="text">{item.text}</span>}
+                      </NavLink>
+                    </NavItem>
+                  ))}
+                </NavList>
+              )}
             </div>
           ))}
         </nav>
@@ -516,40 +618,61 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <SidebarFooter>
           <VersionSection>
             <VersionHeading>
-              <FaInfoCircle size={11} />
-              <span>Platformsversion</span>
+              <FaInfoCircle size={10} />
+              <span>Version</span>
             </VersionHeading>
-          <VersionValue>
-            {versionLabel}
-            {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
-          </VersionValue>
+            <VersionValue>
+              {versionLabel}
+              {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
+            </VersionValue>
             <VersionMeta>
               {lastUpdated ? (
                 <>
-                  Senest opdateret: {lastUpdated.formatted}
-                  {lastUpdated.relative && <span className="relative">({lastUpdated.relative})</span>}
+                  {lastUpdated.relative || lastUpdated.formatted}
                 </>
               ) : (
-                versionError ? 'Senest opdateret: ukendt' : 'Opdaterer versionsinfo...'
+                versionError ? 'Ukendt' : 'Henter...'
               )}
             </VersionMeta>
-            {(lastUpdated?.shortHash || lastUpdated?.message) && (
-              <VersionMeta>
-                Seneste commit:
-                {lastUpdated.shortHash && <span>#{lastUpdated.shortHash}</span>}
-                {lastUpdated.message && (
-                  <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
-                )}
-              </VersionMeta>
+
+            {(lastUpdated || changeTypeLabel) && (
+              <>
+                <VersionDetailsButton onClick={() => setVersionDetailsExpanded(!versionDetailsExpanded)}>
+                  <span>Se detaljer</span>
+                  {versionDetailsExpanded ? (
+                    <FaChevronUp className="chevron" />
+                  ) : (
+                    <FaChevronDown className="chevron" />
+                  )}
+                </VersionDetailsButton>
+
+                <VersionDetails $isOpen={versionDetailsExpanded}>
+                  {lastUpdated && (
+                    <>
+                      <VersionMeta>
+                        <strong>Opdateret:</strong> {lastUpdated.formatted}
+                      </VersionMeta>
+
+                      {(lastUpdated.shortHash || lastUpdated.message) && (
+                        <VersionMeta>
+                          <strong>Commit:</strong>
+                          {lastUpdated.shortHash && <span> #{lastUpdated.shortHash}</span>}
+                          {lastUpdated.message && (
+                            <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
+                          )}
+                        </VersionMeta>
+                      )}
+
+                      {lastUpdated.author && (
+                        <VersionMeta>
+                          <strong>Ændret af:</strong> <span className="author">{lastUpdated.author}</span>
+                        </VersionMeta>
+                      )}
+                    </>
+                  )}
+                </VersionDetails>
+              </>
             )}
-            <VersionMeta>
-              Ændret af:{' '}
-              {lastUpdated?.author ? (
-                <span className="author">{lastUpdated.author}</span>
-              ) : (
-                'ukendt'
-              )}
-            </VersionMeta>
           </VersionSection>
 
           <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>

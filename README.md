@@ -1,56 +1,80 @@
-# The Judge - AI Compliance Platform
+# Project Judge Dredd - AI Compliance Platform
 
-En omfattende løsning til AI compliance checking baseret på EU AI Act, GDPR og dansk lovgivning.
+**Kalundborg Kommune's officielle AI compliance platform** til vurdering af AI-systemer baseret på EU AI Act, GDPR og dansk lovgivning.
 
 ## 🚀 Features
 
 ### Kernefunktionalitet
-- **7-Punkts AI-Vurdering** - Struktureret, trinvis compliance vurdering (NYT!)
-- **AI Act Compliance Checker** - Automatisk risikovurdering og kravidentifikation
-- **GDPR Analysis** - Specialiseret GDPR analyse for AI systemer
-- **Dansk lovgivning** - Integration med danske regler og Datatilsynets vejledninger
+- **Hurtig Tjek** - Øjeblikkelig AI compliance screening med web research og præcedens
+- **7-Punkts AI-Vurdering** - Struktureret, trinvis compliance vurdering
+- **Compliance Control** - Omfattende fuld vurdering med detaljeret rapport
+- **AI Sager** - Registrering og tracking af AI-projekter med e-mail integration
+- **Dashboard** - Overblik over alle vurderinger og compliance status
+- **Vurderingshistorik** - Komplet historik over tidligere vurderinger
+
+### Viden & Research
+- **Videnbase** - Dynamisk knowledge base med automatisk opdatering
+  - Auto-generering af nye termer fra research queries
+  - LLM-baseret definition generering
+  - Daglig scheduled opdatering kl. 03:00
+  - Web search integration (EUR-Lex, Datatilsynet, EDPB, Retsinformation)
+- **Juridisk Research** - Real-time legal research med AI-powered søgning
+  - Multi-query web search
+  - Source citations og authority scoring
+  - LLM-based summaries
+- **Relevante Links** - Kurateret samling af compliance ressourcer
+
+### Tekniske Kapabiliteter
 - **Multi-agent arkitektur** - LangGraph-baserede agenter for intelligent analyse
 - **Automatisk dokumentation** - Generering af compliance rapporter
 - **DPIA & FRIA Integration** - Automatisk vurdering af impact assessments
-
-### Tekniske Kapabiliteter
-- Risk assessment (Unacceptable, High, Limited, Minimal)
-- Automated decision-making analysis
-- Data Protection Impact Assessment (DPIA) vurdering
-- Sector-specific compliance checking
-- Real-time legal research
-- Gap analysis og mitigation strategies
+- **Risk assessment** - Unacceptable, High, Limited, Minimal risk levels
+- **Automated decision-making analysis** - GDPR Artikel 22 compliance
+- **Sector-specific compliance** - Branchespecifikke krav og regler
+- **Real-time legal research** - Live web search og præcedens analyse
+- **Gap analysis** - Identificering af compliance gaps og mitigation strategies
+- **Knowledge Base Auto-updater** - Intelligent term extraction og definition generation
 
 ## 📋 Installation
 
 ### Forudsætninger
 - Python 3.11+
-- Docker og Docker Compose (valgfrit)
+- Node.js 18+ og npm 9+
 - OpenAI API nøgle eller Anthropic API nøgle
+- Docker og Docker Compose (valgfrit)
 
 ### Lokal Installation
 
 1. **Klon repository:**
 ```bash
-cd ai-compliance-platform
+git clone https://github.com/Parthee-Vijaya/Judge_dredd.git
+cd Judge_dredd
 ```
 
-2. **Opret virtual environment:**
+2. **Backend Setup:**
 ```bash
+# Opret virtual environment
 python -m venv venv
 source venv/bin/activate  # På Windows: venv\Scripts\activate
-```
 
-3. **Installer dependencies:**
-```bash
+# Installer dependencies
 pip install -r requirements.txt
+
+# Konfigurer environment
+cp .env.example .env
+# Rediger .env filen med dine API nøgler
 ```
 
-4. **Konfigurer environment:**
+3. **Frontend Setup:**
 ```bash
-cp .env.example .env
-# Rediger .env filen med dine API nøgler og mail-indstillinger
+# Installer NPM workspace dependencies
+npm install
+
+# Start frontend development server
+cd frontend && BROWSER=none npm start
 ```
+
+4. **SMTP Configuration:**
 
 Den indbyggede AI-sagsformular sender mails via SMTP. Udfyld følgende variabler i `.env`:
 
@@ -59,14 +83,23 @@ Den indbyggede AI-sagsformular sender mails via SMTP. Udfyld følgende variabler
 - `AI_CASES_RECIPIENT` – hovedmodtager (standard: ServicePortalen@kalundborg.dk)
 - `AI_CASES_CC` – ekstra modtagere (standard inkluderer pavi@kalundborg.dk)
 
-5. **Start backend:**
+5. **Start Services:**
 ```bash
+# Backend (port 8000)
 python main.py
+
+# Frontend (port 3000)
+cd frontend && npm start
 ```
 
-6. **Start frontend (i ny terminal):**
+### NPM Workspace Setup
+
+Projektet bruger NPM workspaces for optimal monorepo management:
+
 ```bash
-streamlit run streamlit_app.py
+# Root package.json indeholder workspace konfiguration
+# Clean install ved konflikter:
+npm run clean && npm install
 ```
 
 ### Docker Installation
@@ -78,7 +111,7 @@ docker-compose up --build
 
 Dette starter:
 - FastAPI backend på http://localhost:8000
-- Streamlit frontend på http://localhost:8501
+- React frontend på http://localhost:3000
 - PostgreSQL database
 - Qdrant vector database
 
@@ -155,28 +188,56 @@ curl -X POST http://localhost:8000/api/compliance/analyze \
 ### Komponenter
 
 ```
-ai-compliance-platform/
-├── src/
+Judge_dredd/
+├── frontend/               # React frontend application
+│   ├── src/
+│   │   ├── components/    # Reusable UI components
+│   │   │   ├── Sidebar.js          # Collapsible navigation
+│   │   │   ├── NewsSection.js      # Kalundborg news integration
+│   │   │   ├── NewsTicker.js       # Real-time news ticker
+│   │   │   └── SkeletonLoader.js   # Loading states
+│   │   ├── pages/         # Page components
+│   │   │   ├── HomePage.js         # Landing page
+│   │   │   ├── QuickCheckPage.js   # Quick compliance check
+│   │   │   ├── AISagerPage.js      # AI cases management
+│   │   │   ├── KnowledgeBasePage.js # Dynamic knowledge base
+│   │   │   ├── ResearchPage.js     # Legal research tool
+│   │   │   └── DashboardPage.js    # Analytics dashboard
+│   │   ├── data/          # Static data and configurations
+│   │   │   ├── statsData.js        # 100+ Kalundborg Kommune stats
+│   │   │   └── aiActDidYouKnow.js  # Educational content
+│   │   └── App.js         # Main app component
+│   └── package.json       # Frontend dependencies
+├── src/                   # Python backend
 │   ├── core/              # Core models og utilities
-│   │   └── models.py       # Pydantic data models
-│   ├── compliance/         # Compliance checkers
+│   │   └── models.py      # Pydantic data models
+│   ├── compliance/        # Compliance checkers
 │   │   ├── ai_act_checker.py
 │   │   └── gdpr_checker.py
-│   └── agents/            # LangGraph agents
-│       └── compliance_orchestrator.py
+│   ├── agents/            # LangGraph agents
+│   │   └── quick_check_agent.py
+│   ├── research/          # Research tools
+│   │   └── web_searcher.py         # Web search integration
+│   └── services/          # Background services
+│       └── knowledge_base_updater.py # Auto KB updates
+├── data/                  # Data storage
+│   ├── knowledge_base.json         # Dynamic knowledge base
+│   └── news_fallback.json          # News cache
 ├── main.py                # FastAPI backend
-├── streamlit_app.py       # Streamlit frontend
 ├── requirements.txt       # Python dependencies
+├── package.json           # NPM workspace configuration
 ├── docker-compose.yml     # Docker configuration
 └── README.md
 ```
 
 ### Tech Stack
-- **Backend:** FastAPI, LangGraph, LangChain
-- **Frontend:** Streamlit
+- **Backend:** FastAPI, LangGraph, LangChain, APScheduler
+- **Frontend:** React 18, React Router, Styled Components, Framer Motion
 - **AI/LLM:** OpenAI GPT-4, Anthropic Claude
-- **Database:** PostgreSQL, Qdrant (vector DB)
-- **Deployment:** Docker, Kubernetes-ready
+- **Database:** JSON-based storage (PostgreSQL ready)
+- **Web Search:** DuckDuckGo, authoritative legal sources
+- **Deployment:** Docker, NPM workspaces, Kubernetes-ready
+- **Scheduling:** APScheduler for automated tasks
 
 ## 📊 Compliance Frameworks
 
@@ -276,13 +337,93 @@ MIT License - se LICENSE fil for detaljer.
 - **API Docs:** http://localhost:8000/docs
 - **Issues:** GitHub Issues
 
-## 🔄 Opdateringer
+## 🔄 Version Historik
 
-Systemet opdateres løbende med:
-- Nye lovgivningsmæssige ændringer
-- Opdaterede compliance guidelines
-- Forbedrede AI modeller
-- Udvidede sektor-specifikke regler
+### v0.8.0 - Kalundborg Branding & UI Improvements (8. Oktober 2025)
+**UI/UX Forbedringer:**
+- ✅ Kompakt sidebar med sammenklappelige sektioner
+- ✅ Optimeret platform version kort med collapsible detaljer
+- ✅ Fjernet platform version fra hero sektion
+- ✅ Kalundborg red theme (#C94416) på tværs af komponenter
+- ✅ Smooth animations og hover effects
+- ✅ Responsive design forbedringer
+
+**Knowledge Base:**
+- ✅ Automatisk daglig opdatering kl. 03:00
+- ✅ LLM-baseret term extraction fra research queries
+- ✅ Auto-generering af definitioner med web search
+- ✅ Integration med EUR-Lex, Datatilsynet, EDPB, Retsinformation
+
+**Teknisk:**
+- ✅ APScheduler integration for scheduled tasks
+- ✅ WebSearcher async implementation
+- ✅ Query tracking (sidste 100 research queries)
+- ✅ Improved error handling
+
+### v0.7.0 - Hero Stats & Dynamic Content (7. Oktober 2025)
+**Features:**
+- ✅ 100+ real stats fra Kalundborg Kommune
+- ✅ Auto-rotation hvert minut (60s interval)
+- ✅ 20+ kategorier (Budget, Klima, Borgere, Sundhed, etc.)
+- ✅ FadeIn animations for smooth transitions
+- ✅ Responsive grid layout
+
+### v0.6.0 - Quick Check Web Research (6. Oktober 2025)
+**Features:**
+- ✅ Web search integration i quick check
+- ✅ Præcedens og afgørelser søgning
+- ✅ LLM-generated summaries med citations
+- ✅ Authority scoring for sources
+
+### v0.5.0 - Initial React Frontend (5. Oktober 2025)
+**Features:**
+- ✅ React + Vite frontend setup
+- ✅ NPM workspace monorepo struktur
+- ✅ React Router navigation
+- ✅ Styled Components design system
+- ✅ Core pages (Home, Quick Check, Dashboard, Knowledge Base)
+
+### v0.4.0 - Backend API Foundation (4. Oktober 2025)
+**Features:**
+- ✅ FastAPI backend struktur
+- ✅ Quick check endpoint
+- ✅ Full assessment endpoint
+- ✅ AI cases management med SMTP
+- ✅ Knowledge base API
+
+### v0.3.0 - Compliance Logic (3. Oktober 2025)
+**Features:**
+- ✅ AI Act risk assessment
+- ✅ GDPR compliance checker
+- ✅ DPIA requirements detection
+- ✅ Sector-specific rules
+
+### v0.2.0 - LangGraph Agents (2. Oktober 2025)
+**Features:**
+- ✅ Quick check agent implementation
+- ✅ Multi-agent architecture
+- ✅ LLM integration (OpenAI + Anthropic)
+
+### v0.1.0 - Project Kickoff (1. Oktober 2025)
+**Features:**
+- ✅ Initial project structure
+- ✅ Core models og data schemas
+- ✅ Basic compliance framework
+
+## 🔮 Roadmap
+
+**Q4 2025:**
+- 🔄 PostgreSQL database integration
+- 🔄 Qdrant vector database for semantic search
+- 🔄 Advanced dashboard analytics
+- 🔄 PDF export af compliance rapporter
+- 🔄 Multi-language support (DA, EN)
+
+**Q1 2026:**
+- 🔄 AI case workflow automation
+- 🔄 Integration med Kalundborg Kommune systemer
+- 🔄 Advanced compliance monitoring
+- 🔄 Automated alert system
 
 ## ⚠️ Disclaimer
 
@@ -290,6 +431,6 @@ Dette værktøj er designet som hjælp til compliance vurdering, men erstatter i
 
 ---
 
-**Version:** 0.1.0
-**Sidst opdateret:** September 2025
-**Udviklet af:** AI Compliance Team
+**Current Version:** v0.8.0 - Kalundborg Branding
+**Sidst opdateret:** 8. Oktober 2025
+**Udviklet af:** Kalundborg Kommune - Digitalisering og IT

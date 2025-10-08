@@ -433,7 +433,7 @@ const TermHeader = styled.div`
     background: ${props => {
       switch(props.category) {
         case 'legal': return props.theme.colors.juridical.navy;
-        case 'ai': return #C94416;
+        case 'ai': return '#C94416';
         case 'technical': return props.theme.colors.success;
         case 'compliance': return props.theme.colors.warning;
         case 'video': return props.theme.colors.danger;
