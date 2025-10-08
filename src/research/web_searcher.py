@@ -51,9 +51,8 @@ class WebSearcher:
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
         self.sources_cache: Dict[str, Source] = {}
-        default_key = "Szfm8pEVjf4nagSSLzHKjYS4WmXaWxA4"
-        self.mistral_api_key = os.getenv('MISTRAL_API_KEY', default_key)
-        self.mistral_model = os.getenv('MISTRAL_MODEL', 'mistral-large-latest')
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
+        self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
 
         # Autoritative domæner for juridisk information
         base_trusted = {
@@ -126,7 +125,7 @@ class WebSearcher:
             self._search_duckduckgo(query, focus_areas=focus_areas)
         ]
 
-        if self.mistral_api_key:
+        if self.openai_api_key:
             search_tasks.append(self._llm_discover_sources(query, focus_areas))
 
         # Kør søgninger parallelt
@@ -140,10 +139,10 @@ class WebSearcher:
             elif isinstance(result, Exception):
                 logger.warning(f"Søgning fejlede: {result}")
 
-        if len(all_sources) < 3 and self.mistral_api_key:
+        if len(all_sources) < 3 and self.openai_api_key:
             try:
-                mistral_sources = await self._llm_discover_sources(query, focus_areas)
-                all_sources.extend(mistral_sources)
+                llm_sources = await self._llm_discover_sources(query, focus_areas)
+                all_sources.extend(llm_sources)
             except Exception as exc:
                 logger.warning("Ekstra LLM søgning mislykkedes: %s", exc)
 
@@ -166,63 +165,73 @@ class WebSearcher:
         citations = await self._generate_citations(query, top_sources)
         results["citations"] = [self._citation_to_dict(c) for c in citations]
 
-        # Generer sammenfatning
+        # Generer sammenfatning og LLM svar
+        if self.openai_api_key:
+            llm_answer = await self._generate_llm_answer(query, top_sources)
+            if llm_answer:
+                results["llm_answer"] = llm_answer.get("answer")
+                results["llm_answer_citations"] = llm_answer.get("citations", [])
+
+            results["cross_references"] = await self._generate_cross_references(query, top_sources)
+            results["key_findings"] = await self._extract_key_findings_with_llm(query, top_sources)
+            results["recommendations"] = await self._generate_recommendations_with_llm(query, top_sources)
+        else:
+            results["key_findings"] = await self._extract_key_findings(top_sources)
+            results["recommendations"] = await self._generate_recommendations(query, citations)
+
         results["summary"] = await self._generate_summary(query, top_sources, citations)
-        results["key_findings"] = await self._extract_key_findings(top_sources)
-        results["recommendations"] = await self._generate_recommendations(query, citations)
-        results["llm_provider"] = "mistral" if self.mistral_api_key else None
-        results["cross_references"] = await self._generate_cross_references(query, top_sources)
-        llm_answer = await self._generate_llm_answer(query, top_sources)
-        if llm_answer:
-            results["llm_answer"] = llm_answer.get("answer")
-            results["llm_answer_citations"] = llm_answer.get("citations", [])
+        results["llm_provider"] = "openai" if self.openai_api_key else None
 
         logger.info(f"Research afsluttet: {len(top_sources)} kilder, {len(citations)} citationer")
         return results
 
     async def _llm_discover_sources(self, query: str, focus_areas: List[str]) -> List[Source]:
-        """Brug Mistral LLM til at foreslå relevante autoritative kilder."""
-        if not self.mistral_api_key or not self.session:
+        """Brug OpenAI LLM til at foreslå relevante autoritative kilder."""
+        if not self.openai_api_key or not self.session:
             return []
 
         system_prompt = (
-            "Du er en juridisk researcher der returnerer links til relevante kilder om AI-compliance. "
-            "Svar som JSON med nøglen 'urls' og valgfri 'notes'. Returner 5 stærke kilder på tværs af nettet." 
+            "Du er en juridisk researcher specialist i AI-compliance og EU lovgivning. "
+            "Returner ONLY valid JSON med 'urls' nøgle som array af strings. "
+            "Hver URL skal være en reel, eksisterende kilde fra autoritative domæner som "
+            "eur-lex.europa.eu, datatilsynet.dk, edpb.europa.eu, kl.dk, retsinformation.dk. "
+            "Find 3-5 specifikke, relevante dokumenter."
         )
 
         user_prompt = (
             f"Emne: {query}\n"
-            f"Fokusområder: {', '.join(focus_areas)}\n"
-            "Find de mest relevante officielle kilder (primært KL, Datatilsynet, EU, EDPB)."
+            f"Fokusområder: {', '.join(focus_areas)}\n\n"
+            "Find de mest relevante officielle kilder. Returner JSON format:\n"
+            '{"urls": ["https://...", "https://..."]}'
         )
 
         payload = {
-            "model": self.mistral_model,
+            "model": self.openai_model,
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             "temperature": 0.2,
-            "max_output_tokens": 1024,
+            "max_tokens": 512,
         }
 
         try:
             async with self.session.post(
-                "https://api.mistral.ai/v1/chat/completions",
+                "https://api.openai.com/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.mistral_api_key}",
+                    "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
                 },
                 json=payload
             ) as response:
                 if response.status != 200:
                     text = await response.text()
-                    logger.warning("Mistral forespørgsel fejlede: %s - %s", response.status, text)
+                    logger.warning("OpenAI forespørgsel fejlede: %s - %s", response.status, text)
                     return []
                 data = await response.json()
         except Exception as exc:
-            logger.warning("Mistral forespørgsel mislykkedes: %s", exc)
+            logger.warning("OpenAI forespørgsel mislykkedes: %s", exc)
             return []
 
         try:
@@ -230,7 +239,7 @@ class WebSearcher:
             llm_payload = json.loads(content)
             urls = llm_payload.get("urls", [])
         except (KeyError, json.JSONDecodeError, IndexError) as exc:
-            logger.warning("Kunne ikke tolke Mistral svar: %s", exc)
+            logger.warning("Kunne ikke tolke OpenAI svar: %s", exc)
             return []
 
         sources: List[Source] = []
@@ -240,15 +249,15 @@ class WebSearcher:
             domain = self._extract_domain(url)
             source = await self._fetch_source(url, authority=self.trusted_domains.get(domain, {}).get('authority'))
             if source and self._is_relevant(source.content, query):
-                source.relevance_score = max(source.relevance_score, 0.75)
+                source.relevance_score = max(source.relevance_score, 0.85)
                 sources.append(source)
 
-        logger.info("Mistral foreslog %d kilder", len(sources))
+        logger.info("OpenAI foreslog %d kilder", len(sources))
         return sources
 
     async def _generate_cross_references(self, query: str, sources: List[Source]) -> List[Dict[str, Any]]:
-        """Brug Mistral til at skabe krydsreferencer mellem kilder."""
-        if not self.mistral_api_key or not sources:
+        """Brug OpenAI til at skabe krydsreferencer mellem kilder."""
+        if not self.openai_api_key or not sources:
             return []
 
         docs = []
@@ -273,32 +282,32 @@ class WebSearcher:
         )
 
         payload = {
-            "model": self.mistral_model,
+            "model": self.openai_model,
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             "temperature": 0.2,
-            "max_output_tokens": 1024,
+            "max_tokens": 1024,
         }
 
         try:
             async with self.session.post(
-                "https://api.mistral.ai/v1/chat/completions",
+                "https://api.openai.com/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.mistral_api_key}",
+                    "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
                 },
                 json=payload
             ) as response:
                 if response.status != 200:
                     text = await response.text()
-                    logger.warning("Mistral krydsreference fejlede: %s - %s", response.status, text)
+                    logger.warning("OpenAI krydsreference fejlede: %s - %s", response.status, text)
                     return []
                 data = await response.json()
         except Exception as exc:
-            logger.warning("Mistral krydsreference forespørgsel mislykkedes: %s", exc)
+            logger.warning("OpenAI krydsreference forespørgsel mislykkedes: %s", exc)
             return []
 
         try:
@@ -306,7 +315,7 @@ class WebSearcher:
             parsed = json.loads(content)
             items = parsed.get("items", [])
         except (KeyError, json.JSONDecodeError, IndexError) as exc:
-            logger.warning("Kunne ikke tolke Mistral krydsreference svar: %s", exc)
+            logger.warning("Kunne ikke tolke OpenAI krydsreference svar: %s", exc)
             return []
 
         cross_refs: List[Dict[str, Any]] = []
@@ -335,66 +344,72 @@ class WebSearcher:
         return cross_refs
 
     async def _generate_llm_answer(self, query: str, sources: List[Source]) -> Optional[Dict[str, Any]]:
-        """Generer et samlet svar i stil med Perplexity med citationer."""
-        if not self.mistral_api_key or not sources:
+        """Generer et samlet koncist svar med citationer og confidence scores."""
+        if not self.openai_api_key or not sources:
             return None
 
         docs = []
-        for idx, source in enumerate(sources[:6], start=1):
+        for idx, source in enumerate(sources[:8], start=1):
             docs.append({
                 "index": idx,
                 "title": source.title,
                 "authority": source.authority or source.domain,
                 "url": source.url,
-                "snippet": source.content[:800]
+                "relevance_score": source.relevance_score,
+                "snippet": source.content[:1000]
             })
 
         system_prompt = (
-            "Du er en juridisk ekspert. Besvar spørgsmålet kortfattet (maks 5 sætninger) på dansk. "
-            "Indsæt citationer i slutningen af hver sætning i formatet [kildeIndex]. Brug kun de leverede kilder." 
+            "Du er en juridisk AI-compliance ekspert. Besvar spørgsmålet kortfattet og præcist på dansk (max 4-6 sætninger). "
+            "Returner JSON med 'answer' (svaret med [nummer] citationer efter relevante sætninger), "
+            "'confidence' (0.0-1.0), og 'citations' array med objects: {source_index: int, quote: string, relevance: string}. "
+            "Brug ALTID de leverede kilder - citér kun fakta der er verificerede i kilderne. "
+            "Inkluder confidence score baseret på kildernes autoritet og konsistens."
         )
 
         user_prompt = (
-            f"Spørgsmål: {query}\n"
-            "Kilder:\n" + json.dumps(docs, ensure_ascii=False)
+            f"Spørgsmål: {query}\n\n"
+            "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
+            "Besvar spørgsmålet baseret UDELUKKENDE på de leverede kilder."
         )
 
         payload = {
-            "model": self.mistral_model,
+            "model": self.openai_model,
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             "temperature": 0.1,
-            "max_output_tokens": 1024,
+            "max_tokens": 1500,
         }
 
         try:
             async with self.session.post(
-                "https://api.mistral.ai/v1/chat/completions",
+                "https://api.openai.com/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.mistral_api_key}",
+                    "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
                 },
                 json=payload
             ) as response:
                 if response.status != 200:
                     text = await response.text()
-                    logger.warning("Mistral svar fejlede: %s - %s", response.status, text)
+                    logger.warning("OpenAI svar fejlede: %s - %s", response.status, text)
                     return None
                 data = await response.json()
         except Exception as exc:
-            logger.warning("Mistral svar forespørgsel mislykkedes: %s", exc)
+            logger.warning("OpenAI svar forespørgsel mislykkedes: %s", exc)
             return None
 
         try:
             content = data["choices"][0]["message"]["content"]
             parsed = json.loads(content)
-            answer = parsed.get("answer")
+            answer = parsed.get("answer", "")
+            overall_confidence = parsed.get("confidence", 0.8)
             citations_map = parsed.get("citations", [])
         except (KeyError, json.JSONDecodeError, IndexError) as exc:
-            logger.warning("Kunne ikke tolke Mistral svar JSON: %s", exc)
+            logger.warning("Kunne ikke tolke OpenAI svar JSON: %s", exc)
             return None
 
         citation_details = []
@@ -404,16 +419,22 @@ class WebSearcher:
                 continue
             try:
                 source = sources[idx - 1]
+                citation_details.append({
+                    "snippet": entry.get("quote", ""),
+                    "title": source.title,
+                    "authority": source.authority or source.domain,
+                    "url": source.url,
+                    "relevance": entry.get("relevance", "supporting"),
+                    "confidence": source.relevance_score
+                })
             except (IndexError, TypeError):
                 continue
-            citation_details.append({
-                "snippet": entry.get("quote"),
-                "title": source.title,
-                "authority": source.authority or source.domain,
-                "url": source.url
-            })
 
-        return {"answer": answer, "citations": citation_details}
+        return {
+            "answer": answer,
+            "citations": citation_details,
+            "confidence": overall_confidence
+        }
 
     async def _search_eur_lex(self, query: str) -> List[Source]:
         """Søger i EUR-Lex databasen"""
@@ -875,6 +896,120 @@ class WebSearcher:
                     break
 
         return list(set(findings))  # Fjern dubletter
+
+    async def _extract_key_findings_with_llm(self, query: str, sources: List[Source]) -> List[str]:
+        """Udtrækker nøglefund med OpenAI LLM."""
+        if not self.openai_api_key or not sources:
+            return await self._extract_key_findings(sources)
+
+        docs = []
+        for idx, source in enumerate(sources[:6], start=1):
+            docs.append({
+                "index": idx,
+                "title": source.title,
+                "authority": source.authority or source.domain,
+                "content_snippet": source.content[:600]
+            })
+
+        system_prompt = (
+            "Du er en juridisk analytiker. Identificér 4-6 vigtige juridiske indsigter relateret til AI-compliance. "
+            "Returner JSON med 'findings' array af strings. Hver finding skal være koncis (1 sætning) og faktuel."
+        )
+
+        user_prompt = (
+            f"Emne: {query}\n\n"
+            "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
+            "Hvad er de vigtigste juridiske indsigter?"
+        )
+
+        payload = {
+            "model": self.openai_model,
+            "response_format": {"type": "json_object"},
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 800,
+        }
+
+        try:
+            async with self.session.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=payload
+            ) as response:
+                if response.status != 200:
+                    logger.warning("OpenAI key findings fejlede")
+                    return await self._extract_key_findings(sources)
+                data = await response.json()
+
+            content = data["choices"][0]["message"]["content"]
+            parsed = json.loads(content)
+            return parsed.get("findings", [])
+        except Exception as exc:
+            logger.warning(f"LLM key findings fejlede: {exc}")
+            return await self._extract_key_findings(sources)
+
+    async def _generate_recommendations_with_llm(self, query: str, sources: List[Source]) -> List[str]:
+        """Generer anbefalinger med OpenAI LLM."""
+        if not self.openai_api_key or not sources:
+            return []
+
+        docs = []
+        for idx, source in enumerate(sources[:6], start=1):
+            docs.append({
+                "index": idx,
+                "title": source.title,
+                "authority": source.authority or source.domain,
+                "content_snippet": source.content[:600]
+            })
+
+        system_prompt = (
+            "Du er en juridisk rådgiver. Baseret på de leverede kilder, generer 3-5 konkrete handlingsorienterede anbefalinger. "
+            "Returner JSON med 'recommendations' array af strings. Hver anbefaling skal være konkret og actionable."
+        )
+
+        user_prompt = (
+            f"Emne: {query}\n\n"
+            "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
+            "Hvad skal organisationen gøre for at sikre compliance?"
+        )
+
+        payload = {
+            "model": self.openai_model,
+            "response_format": {"type": "json_object"},
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.3,
+            "max_tokens": 800,
+        }
+
+        try:
+            async with self.session.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=payload
+            ) as response:
+                if response.status != 200:
+                    logger.warning("OpenAI recommendations fejlede")
+                    return []
+                data = await response.json()
+
+            content = data["choices"][0]["message"]["content"]
+            parsed = json.loads(content)
+            return parsed.get("recommendations", [])
+        except Exception as exc:
+            logger.warning(f"LLM recommendations fejlede: {exc}")
+            return []
 
     async def _generate_recommendations(self, query: str, citations: List[Citation]) -> List[str]:
         """Generer anbefalinger baseret på citationer"""

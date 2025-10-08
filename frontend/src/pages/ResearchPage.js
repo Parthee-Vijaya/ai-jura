@@ -345,7 +345,7 @@ const SourceContent = styled.div`
   .relevance-score {
     display: inline-block;
     background: ${props => props.score > 0.8 ? props.theme.colors.success :
-                         props.score > 0.6 ? props.theme.colors.warning :
+                         props.score > 0.6 ? '#C94416' :
                          props.theme.colors.danger};
     color: white;
     padding: 0.25rem 0.5rem;
@@ -419,8 +419,8 @@ const CitationItem = styled.div`
 
   .confidence {
     display: inline-block;
-    background: ${props => props.confidence > 0.8 ? props.theme.colors.success + '20' : props.theme.colors.warning + '20'};
-    color: ${props => props.confidence > 0.8 ? props.theme.colors.success : props.theme.colors.warning};
+    background: ${props => props.confidence > 0.8 ? props.theme.colors.success + '20' : 'rgba(201, 68, 22, 0.15)'};
+    color: ${props => props.confidence > 0.8 ? props.theme.colors.success : '#7f1d1d'};
     padding: 0.125rem 0.5rem;
     border-radius: 4px;
     font-size: 0.75rem;
@@ -456,7 +456,7 @@ const ResearchPage = () => {
   const [results, setResults] = useState(null);
   const [selectedFocusAreas, setSelectedFocusAreas] = useState(['EU AI Act', 'GDPR']);
 
-  const { register, handleSubmit, watch } = useForm();
+  const { register, handleSubmit } = useForm();
 
   const focusAreas = [
     'EU AI Act',
@@ -648,7 +648,7 @@ const ResearchPage = () => {
               </DetailsSection>
             )}
 
-            {results.sources.length > 0 && (
+            {results.sources && results.sources.length > 0 && (
               <>
                 <h3 style={{ marginBottom: '1rem', color: '#1e293b' }}>
                   Kilder ({results.sources.length})
@@ -723,7 +723,7 @@ const ResearchPage = () => {
               </>
             )}
 
-            {results.citations.length > 0 && (
+            {results.citations && results.citations.length > 0 && (
               <CitationsSection>
                 <CitationsHeader>
                   <h3>

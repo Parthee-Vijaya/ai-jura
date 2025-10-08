@@ -93,7 +93,13 @@ Thought:{agent_scratchpad}"""
     prompt = PromptTemplate.from_template(prompt_template)
 
     agent = create_react_agent(llm, tools, prompt)
-    return AgentExecutor(agent=agent, tools=tools, verbose=os.getenv("RESEARCH_AGENT_DEBUG") == "1")
+    return AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=os.getenv("RESEARCH_AGENT_DEBUG") == "1",
+        handle_parsing_errors=True,
+        max_iterations=3
+    )
 
 
 async def run_research_agent(

@@ -500,23 +500,25 @@ async def get_agent_config(agent_id: str):
 @app.post("/api/research/juridisk", response_model=Dict[str, Any])
 async def juridisk_research(request: ResearchRequest):
     """
-    Udfører juridisk research med kildecitation
+    Udfører juridisk research med kildecitation med OpenAI + Web Search
     """
     try:
-        logger.info(f"Starter juridisk research (agent): {request.emne}")
+        logger.info(f"Starter juridisk research (WebSearcher + OpenAI): {request.emne}")
 
-        agent_result = await run_research_agent(
-            query=request.emne,
-            focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"],
-        )
+        # Brug WebSearcher direkte i stedet for research_agent
+        from src.research.web_searcher import WebSearcher
 
-        formatted = _format_research_result(agent_result, request.emne, request.fokusområder)
+        async with WebSearcher() as searcher:
+            research_result = await searcher.research_topic(
+                query=request.emne,
+                focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"]
+            )
 
         return {
             "success": True,
             "emne": request.emne,
-            "resultat": formatted,
-            "message": f"Research afsluttet - {len(formatted['sources'])} kilder fundet"
+            "resultat": research_result,
+            "message": f"Research afsluttet - {len(research_result.get('sources', []))} kilder fundet"
         }
 
     except Exception as e:
