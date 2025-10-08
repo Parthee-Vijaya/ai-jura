@@ -76,7 +76,18 @@ class WebSearcher:
         self.allowed_llm_domains = None  # ingen whitelist – hent alle kilder
 
     async def __aenter__(self):
+        import ssl
+        import certifi
+
+        # Create SSL context that accepts self-signed certificates for development
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+
         self.session = aiohttp.ClientSession(
+            connector=connector,
             timeout=aiohttp.ClientTimeout(total=30),
             headers={
                 'User-Agent': 'The-Judge-AI-Compliance-Bot/1.0 (Research Purpose)'
