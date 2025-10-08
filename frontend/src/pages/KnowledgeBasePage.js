@@ -347,7 +347,7 @@ const SearchBox = styled.div`
     background: white;
 
     &:focus {
-      border-color: ${props => props.theme.colors.primary};
+      border-color: #C94416;
       outline: none;
     }
   }
@@ -369,7 +369,9 @@ const CategoryFilters = styled.div`
 
 const CategoryButton = styled.button`
   padding: 0.5rem 1rem;
-  background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.gray[100]};
+  background: ${props => props.active
+    ? 'linear-gradient(135deg, #C94416 0%, #E85A28 100%)'
+    : props.theme.colors.gray[100]};
   color: ${props => props.active ? 'white' : props.theme.colors.gray[700]};
   border: none;
   border-radius: 20px;
@@ -379,9 +381,14 @@ const CategoryButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  box-shadow: ${props => props.active ? '0 2px 8px rgba(201, 68, 22, 0.25)' : 'none'};
 
   &:hover {
-    background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.gray[200]};
+    background: ${props => props.active
+      ? 'linear-gradient(135deg, #A03612 0%, #C94416 100%)'
+      : props.theme.colors.gray[200]};
+    box-shadow: ${props => props.active ? '0 4px 12px rgba(201, 68, 22, 0.35)' : 'none'};
+    transform: ${props => props.active ? 'translateY(-1px)' : 'none'};
   }
 `;
 
@@ -401,7 +408,7 @@ const TermCard = styled(motion.div)`
   border-left: 4px solid ${props => {
     switch(props.category) {
       case 'legal': return props.theme.colors.juridical.navy;
-      case 'ai': return props.theme.colors.juridical.gold;
+      case 'ai': return '#C94416';
       case 'technical': return props.theme.colors.success;
       case 'compliance': return props.theme.colors.warning;
       case 'video': return props.theme.colors.danger;
@@ -426,7 +433,7 @@ const TermHeader = styled.div`
     background: ${props => {
       switch(props.category) {
         case 'legal': return props.theme.colors.juridical.navy;
-        case 'ai': return props.theme.colors.juridical.gold;
+        case 'ai': return #C94416;
         case 'technical': return props.theme.colors.success;
         case 'compliance': return props.theme.colors.warning;
         case 'video': return props.theme.colors.danger;
@@ -539,7 +546,7 @@ const TermFooter = styled.div`
   }
 
   .reference-link {
-    color: ${props => props.theme.colors.primary};
+    color: #C94416;
     text-decoration: none;
     font-size: 0.8rem;
     display: flex;
@@ -590,7 +597,7 @@ const StatsBar = styled.div`
     .number {
       font-size: 1.5rem;
       font-weight: 700;
-      color: ${props => props.theme.colors.primary};
+      color: #C94416;
     }
 
     .label {
@@ -602,7 +609,7 @@ const StatsBar = styled.div`
 `;
 
 const AddButton = styled.button`
-  background: ${props => props.theme.colors.juridical.gold};
+  background: linear-gradient(135deg, #C94416 0%, #E85A28 100%);
   color: white;
   border: none;
   border-radius: 20px;
@@ -611,6 +618,13 @@ const AddButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
+  box-shadow: 0 2px 8px rgba(201, 68, 22, 0.25);
+
+  &:hover {
+    background: linear-gradient(135deg, #A03612 0%, #C94416 100%);
+    box-shadow: 0 4px 12px rgba(201, 68, 22, 0.35);
+    transform: translateY(-1px);
+  }
   align-items: center;
   gap: 0.25rem;
   font-weight: 600;
@@ -696,7 +710,7 @@ const FormGroup = styled.div`
     background: white;
 
     &:focus {
-      border-color: ${props => props.theme.colors.primary};
+      border-color: #C94416;
       outline: none;
     }
   }
@@ -798,11 +812,11 @@ const ModalActions = styled.div`
     }
 
     &.save {
-      background: ${props => props.theme.colors.primary};
+      background: #C94416;
       color: white;
 
       &:hover {
-        background: ${props => props.theme.colors.primaryDark || '#1a365d'};
+        background: #A03612;
       }
     }
   }

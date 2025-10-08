@@ -42,9 +42,14 @@ from src.compliance_engine import ComplianceController
 from src.cache import warm_caches_on_startup, validate_cache_health
 from src.cache.disk_cache import get_cache_size
 from src.cache.memory_cache import get_cache_stats
+from src.services.knowledge_base_updater import run_knowledge_base_update, load_knowledge_base
 
 # Load environment variables from .env if present
 load_dotenv()
+
+# APScheduler for daglige opdateringer
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -82,6 +87,13 @@ TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS",
 AI_CASES_STORE = Path(os.getenv("AI_CASES_STORE", "data/ai_cases.json"))
 AI_CASES_LOCK = asyncio.Lock()
 
+# Initialize scheduler for knowledge base updates
+kb_scheduler = AsyncIOScheduler()
+
+# Store til recent queries (bruges til knowledge base updates)
+recent_research_queries: List[str] = []
+MAX_STORED_QUERIES = 100
+
 
 async def _refresh_news_periodically() -> None:
     """Baggrundsopgave der opdaterer nyheder hvert kvarter"""
@@ -115,6 +127,16 @@ async def _refresh_ticker_periodically() -> None:
         raise
 
 
+def scheduled_kb_update():
+    """Scheduled funktion til daglig vidensbase opdatering."""
+    try:
+        logger.info("Running scheduled knowledge base update...")
+        result = run_knowledge_base_update(recent_queries=recent_research_queries[-20:] if recent_research_queries else None)
+        logger.info(f"Knowledge base update completed: {result.get('message')}")
+    except Exception as e:
+        logger.error(f"Scheduled knowledge base update failed: {e}")
+
+
 @app.on_event("startup")
 async def startup_event() -> None:
     """Initialiser services ved opstart"""
@@ -146,6 +168,17 @@ async def startup_event() -> None:
     if not news_refresh_task or news_refresh_task.done():
         news_refresh_task = asyncio.create_task(_refresh_news_periodically())
 
+    # Setup knowledge base scheduler - daglig opdatering kl. 03:00
+    kb_scheduler.add_job(
+        scheduled_kb_update,
+        CronTrigger(hour=3, minute=0),  # Kører kl. 03:00 hver nat
+        id='kb_daily_update',
+        name='Daily Knowledge Base Update',
+        replace_existing=True
+    )
+    kb_scheduler.start()
+    logger.info("Knowledge base scheduler started - daily updates at 03:00")
+
     if not ticker_refresh_task or ticker_refresh_task.done():
         ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
 
@@ -167,6 +200,11 @@ async def shutdown_event() -> None:
             await ticker_refresh_task
         except asyncio.CancelledError:
             pass
+
+    # Shutdown knowledge base scheduler
+    if kb_scheduler.running:
+        kb_scheduler.shutdown(wait=False)
+        logger.info("Knowledge base scheduler stopped")
 
 # In-memory storage for assessments (use database in production)
 assessments_db: Dict[str, ComplianceAssessment] = {}
@@ -505,6 +543,11 @@ async def juridisk_research(request: ResearchRequest):
     try:
         logger.info(f"Starter juridisk research (WebSearcher + OpenAI): {request.emne}")
 
+        # Track query for knowledge base updates
+        recent_research_queries.append(request.emne)
+        if len(recent_research_queries) > MAX_STORED_QUERIES:
+            recent_research_queries.pop(0)
+
         # Brug WebSearcher direkte i stedet for research_agent
         from src.research.web_searcher import WebSearcher
 
@@ -602,6 +645,66 @@ def _format_research_result(
         "llm_answer_citations": llm_citations,
     }
 
+
+# ==================== Knowledge Base API ====================
+
+@app.get("/api/knowledge-base", response_model=List[Dict[str, Any]])
+async def get_knowledge_base():
+    """Hent alle items fra vidensbasen."""
+    try:
+        items = load_knowledge_base()
+        return items
+    except Exception as e:
+        logger.error(f"Failed to load knowledge base: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/knowledge-base/update", response_model=Dict[str, Any])
+async def trigger_kb_update(background_tasks: BackgroundTasks):
+    """Trigger manuel opdatering af vidensbasen."""
+    try:
+        # Import update_knowledge_base direkte (async version)
+        from src.services.knowledge_base_updater import update_knowledge_base
+
+        # Kør opdatering  (await fordi vi er i async context)
+        result = await update_knowledge_base(
+            recent_queries=recent_research_queries[-20:] if recent_research_queries else None
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Manual knowledge base update failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/knowledge-base/stats", response_model=Dict[str, Any])
+async def get_kb_stats():
+    """Hent statistik om vidensbasen."""
+    try:
+        items = load_knowledge_base()
+
+        # Count by category
+        categories = {}
+        auto_generated_count = 0
+
+        for item in items:
+            cat = item.get('category', 'unknown')
+            categories[cat] = categories.get(cat, 0) + 1
+            if item.get('auto_generated', False):
+                auto_generated_count += 1
+
+        return {
+            "total_items": len(items),
+            "auto_generated": auto_generated_count,
+            "manual": len(items) - auto_generated_count,
+            "categories": categories,
+            "recent_queries_count": len(recent_research_queries)
+        }
+    except Exception as e:
+        logger.error(f"Failed to get KB stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== Compliance API ====================
 
 @app.post("/api/compliance/analyser", response_model=Dict[str, Any])
 async def analyser_compliance(project: ProjectInput, background_tasks: BackgroundTasks):
