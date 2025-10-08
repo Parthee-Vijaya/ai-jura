@@ -642,51 +642,43 @@ async def analyser_compliance(project: ProjectInput, background_tasks: Backgroun
 @app.post("/api/compliance/hurtig-tjek", response_model=Dict[str, Any])
 async def hurtig_compliance_tjek(request: QuickCheckRequest):
     """
-    Quick compliance check without full analysis
+    Quick compliance check with web research and LLM summary
     """
     try:
-        # Create simplified project input
-        project = ProjectInput(
-            name="Hurtig Tjek",
+        from src.agents.quick_check_agent import run_quick_check_agent
+
+        # Run enhanced quick check with web research and LLM summary
+        agent_result = run_quick_check_agent(
             description=request.beskrivelse,
             ai_type=request.ai_type,
             sector=request.sektor,
-            personal_data=request.behandler_persondata,
-            automated_decision_making=request.automatiserede_beslutninger,
-            data_types=["generel"]
+            behandler_persondata=request.behandler_persondata,
+            automatiserede_beslutninger=request.automatiserede_beslutninger
         )
 
-        # Run quick checks
-        risk_level, risk_reasons = ai_act_checker.assess_risk_level(project)
-
-        gdpr_relevant = request.behandler_persondata
-        gdpr_high_risk = gdpr_checker._requires_dpia(project) if gdpr_relevant else False
-
+        # Get rule engine result for additional context
         rule_engine_result = compliance_controller.run_quick_checks({
             "beskrivelse": request.beskrivelse,
             "fagomraade": request.sektor,
             "sector": request.sektor,
             "ai_type": request.ai_type,
-            "ai_risk_level": risk_level.value,
+            "ai_risk_level": agent_result["ai_act"]["risk_level"],
             "behandler_persondata": request.behandler_persondata,
             "automatiserede_beslutninger": request.automatiserede_beslutninger,
             "organisation": "Kalundborg Kommune",
         })
 
+        # Merge agent result with rule engine result
         return {
-            "ai_act": {
-                "risk_level": risk_level.value,
-                "reasons": risk_reasons
-            },
-            "gdpr": {
-                "relevant": gdpr_relevant,
-                "high_risk": gdpr_high_risk,
-                "requires_dpia": gdpr_high_risk
-            },
-            "quick_recommendations": _generate_quick_recommendations(risk_level, gdpr_relevant, gdpr_high_risk),
-            "needs_full_assessment": risk_level in [RiskLevel.HIGH, RiskLevel.UNACCEPTABLE] or gdpr_high_risk,
+            "ai_act": agent_result["ai_act"],
+            "gdpr": agent_result["gdpr"],
+            "quick_recommendations": agent_result.get("recommendations", []),
+            "needs_full_assessment": agent_result["needs_full_assessment"],
             "rule_engine": rule_engine_result,
-            "prompt_full_assessment": rule_engine_result.get("recommend_full", False) or risk_level in [RiskLevel.HIGH, RiskLevel.UNACCEPTABLE] or gdpr_high_risk
+            "prompt_full_assessment": rule_engine_result.get("recommend_full", False) or agent_result["needs_full_assessment"],
+            "precedents": agent_result.get("precedents", []),
+            "precedents_summary": agent_result.get("precedents_summary", ""),
+            "short_summary": agent_result.get("short_summary", "")
         }
 
     except Exception as e:
