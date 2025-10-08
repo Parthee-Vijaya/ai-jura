@@ -1,12 +1,12 @@
 {
-  "version": "0.12.1",
-  "lastChangeType": "patch",
+  "version": "0.8.0",
+  "lastChangeType": "minor",
   "lastCommit": {
-    "hash": "406067a8abff6e2e1d7e3a9689595151bc82b371",
-    "shortHash": "406067a",
-    "message": "fix: timeout version fetch and fallback",
+    "hash": "6b8a184305454af256081ac9ac0ea36c16926952",
+    "shortHash": "6b8a184",
+    "message": "feat: Version Card v0.8.0 - Kalundborg Branding Release",
     "author": "Parthee-Vijaya",
-    "timestamp": "2025-09-21T15:46:40Z"
+    "timestamp": "2025-10-08T19:35:55+02:00"
   },
-  "generatedAt": "2025-09-21T15:58:48.307411Z"
+  "generatedAt": "2025-10-08T19:40:00Z"
 }

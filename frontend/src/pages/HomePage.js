@@ -784,12 +784,12 @@ const HomePage = () => {
               <div className="version-info">
                 <div className="version-label">Platform Version</div>
                 <div className="version-number">
-                  v{packageJson.version}
+                  v0.8.0
                   <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#059669' }}>
                     • Kalundborg Branding
                   </span>
                 </div>
-                <div className="version-date">Opdateret: Januar 2025</div>
+                <div className="version-date">Opdateret: 8. Okt 2025</div>
               </div>
               <a href="https://github.com/Parthee-Vijaya/Judge_dredd" target="_blank" rel="noopener noreferrer" className="changelog-link">
                 Changelog <FaExternalLinkAlt size={10} />

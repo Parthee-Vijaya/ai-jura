@@ -39,6 +39,9 @@ from src.utils import get_version_info
 from src.agents import run_research_agent
 from urllib.parse import urlparse
 from src.compliance_engine import ComplianceController
+from src.cache import warm_caches_on_startup, validate_cache_health
+from src.cache.disk_cache import get_cache_size
+from src.cache.memory_cache import get_cache_stats
 
 # Load environment variables from .env if present
 load_dotenv()
@@ -116,6 +119,18 @@ async def _refresh_ticker_periodically() -> None:
 async def startup_event() -> None:
     """Initialiser services ved opstart"""
     global news_refresh_task, ticker_refresh_task
+
+    # Warm caches on startup (in background)
+    logger.info("Warming caches on startup...")
+    warm_caches_on_startup(include_compliance=True, background=True)
+
+    # Validate cache health
+    cache_health = validate_cache_health()
+    if cache_health['status'] == 'healthy':
+        logger.info("Cache health check: OK")
+    else:
+        logger.warning(f"Cache health issues detected: {cache_health['issues']}")
+
     # Fetch nyheder med det samme så forsiden har data
     try:
         await news_service.get_latest_news(force_refresh=True)
@@ -313,6 +328,10 @@ async def health_check():
     ticker_payload = await ticker_service.get_latest()
     ticker_status = "operational" if ticker_payload.items else "degraded"
 
+    # Check cache health
+    cache_health = validate_cache_health()
+    cache_status = "operational" if cache_health['status'] == 'healthy' else "degraded"
+
     return HealthCheck(
         status="healthy",
         timestamp=datetime.now(),
@@ -322,7 +341,8 @@ async def health_check():
             "gdpr_checker": "operational",
             "orchestrator": "operational",
             "news_service": news_status,
-            "ticker_service": ticker_status
+            "ticker_service": ticker_status,
+            "cache": cache_status
         }
     )
 
@@ -485,8 +505,7 @@ async def juridisk_research(request: ResearchRequest):
     try:
         logger.info(f"Starter juridisk research (agent): {request.emne}")
 
-        agent_result = await asyncio.to_thread(
-            run_research_agent,
+        agent_result = await run_research_agent(
             query=request.emne,
             focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"],
         )
@@ -850,6 +869,49 @@ async def get_ai_act_requirements(risk_level: str):
 
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid risk level")
+
+
+@app.get("/api/cache/stats", response_model=Dict[str, Any])
+async def get_cache_statistics():
+    """
+    Get cache statistics and health information
+    """
+    try:
+        # Get disk cache stats
+        disk_stats = get_cache_size()
+
+        # Get memory cache stats
+        memory_stats = get_cache_stats()
+
+        # Calculate hit rates
+        memory_hit_rates = {}
+        for cache_name, stats in memory_stats.items():
+            total = stats['hits'] + stats['misses']
+            if total > 0:
+                memory_hit_rates[cache_name] = round(stats['hits'] / total * 100, 1)
+            else:
+                memory_hit_rates[cache_name] = 0.0
+
+        # Get cache health
+        cache_health = validate_cache_health()
+
+        return {
+            "disk_cache": {
+                "total_entries": disk_stats.get("total_entries", 0),
+                "total_size_mb": disk_stats.get("total_size_mb", 0),
+                "by_type": disk_stats.get("by_type", {}),
+            },
+            "memory_cache": {
+                "caches": memory_stats,
+                "hit_rates": memory_hit_rates,
+            },
+            "health": cache_health,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get cache statistics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def _generate_quick_recommendations(risk_level: RiskLevel, gdpr_relevant: bool, gdpr_high_risk: bool) -> List[str]:
