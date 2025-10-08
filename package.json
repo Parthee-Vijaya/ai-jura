@@ -1,0 +1,25 @@
+{
+  "name": "judge-dredd-monorepo",
+  "version": "0.7.9",
+  "private": true,
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "python main.py",
+    "dev:frontend": "cd frontend && BROWSER=none npm start",
+    "install:all": "npm install && pip install -r requirements.txt",
+    "install:frontend": "cd frontend && npm install",
+    "clean": "npm run clean:frontend && rm -rf node_modules package-lock.json",
+    "clean:frontend": "rm -rf frontend/node_modules frontend/package-lock.json",
+    "test": "npm run test:frontend",
+    "test:frontend": "cd frontend && npm test",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

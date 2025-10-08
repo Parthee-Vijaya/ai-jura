@@ -10,7 +10,9 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaTimesCircle,
-  FaSpinner
+  FaSpinner,
+  FaExternalLinkAlt,
+  FaBalanceScale
 } from 'react-icons/fa';
 import axios from 'axios';
 import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
@@ -451,6 +453,79 @@ const ObligationList = styled.ul`
   }
 `;
 
+const ShortSummaryBox = styled.div`
+  background: ${props => props.theme.colors.gray[50]};
+  border-left: 4px solid ${props => props.theme.colors.primary};
+  border-radius: ${props => props.theme.borderRadius};
+  padding: 1.5rem;
+  margin: 0 2rem 2rem;
+
+  h3 {
+    margin: 0 0 0.75rem;
+    color: ${props => props.theme.colors.gray[800]};
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    color: ${props => props.theme.colors.gray[700]};
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+`;
+
+const PrecedentsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const PrecedentItem = styled.a`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: ${props => props.theme.colors.gray[50]};
+  border-radius: ${props => props.theme.borderRadius};
+  border: 1px solid ${props => props.theme.colors.gray[200]};
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.theme.colors.gray[100]};
+    border-color: ${props => props.theme.colors.primary};
+    transform: translateX(2px);
+  }
+
+  .icon {
+    color: ${props => props.theme.colors.primary};
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .content {
+    flex: 1;
+
+    .title {
+      font-weight: 600;
+      color: ${props => props.theme.colors.gray[800]};
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .authority {
+      font-size: 0.875rem;
+      color: ${props => props.theme.colors.gray[600]};
+    }
+  }
+`;
+
 const CTASection = styled.div`
   margin-top: 2.5rem;
   background: ${props => props.theme.mode === 'dark'
@@ -783,6 +858,16 @@ const QuickCheckPage = () => {
             </SummaryBanner>
           )}
 
+          {results.short_summary && (
+            <ShortSummaryBox>
+              <h3>
+                <FaBalanceScale />
+                AI Compliance Vurdering
+              </h3>
+              <p>{results.short_summary}</p>
+            </ShortSummaryBox>
+          )}
+
           <ResultsGrid>
             <ResultCard>
               <div className={getRiskClass(results.ai_act?.risk_level)}>
@@ -829,6 +914,40 @@ const QuickCheckPage = () => {
               </div>
             </ResultCard>
           </ResultsGrid>
+
+          {results.precedents && results.precedents.length > 0 && (
+            <DetailsSection>
+              <h3>Relevante Præcedens & Afgørelser</h3>
+              {results.precedents_summary && (
+                <p style={{ marginBottom: '1rem', color: '#475569', lineHeight: 1.5 }}>
+                  {results.precedents_summary}
+                </p>
+              )}
+              <PrecedentsList>
+                {results.precedents.map((precedent, index) => (
+                  <PrecedentItem
+                    key={index}
+                    href={precedent.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div className="icon">
+                      <FaBalanceScale />
+                    </div>
+                    <div className="content">
+                      <div className="title">
+                        {precedent.title}
+                        <FaExternalLinkAlt size={12} />
+                      </div>
+                      {precedent.authority && (
+                        <div className="authority">{precedent.authority}</div>
+                      )}
+                    </div>
+                  </PrecedentItem>
+                ))}
+              </PrecedentsList>
+            </DetailsSection>
+          )}
 
           {results.ai_act?.reasons && results.ai_act.reasons.length > 0 && (
             <DetailsSection>
