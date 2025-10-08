@@ -872,13 +872,22 @@ class WebSearcher:
                 if response.status == 200:
                     content = await response.text()
 
-                    # Ekstraher titel
-                    title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
-                    title = title_match.group(1).strip() if title_match else url
+                    # Ekstraher titel og clean content med BeautifulSoup
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(content, 'html.parser')
 
-                    # Rens indhold (simpel HTML stripping)
-                    clean_content = re.sub(r'<[^>]+>', ' ', content)
-                    clean_content = ' '.join(clean_content.split())[:2000]  # Begræns længde
+                    # Fjern script og style tags
+                    for script in soup(["script", "style", "noscript"]):
+                        script.decompose()
+
+                    # Ekstraher titel
+                    title = soup.title.string.strip() if soup.title else url
+
+                    # Ekstraher ren tekst fra body
+                    clean_content = soup.get_text(separator=' ', strip=True)
+
+                    # Rens whitespace og begræns længde
+                    clean_content = ' '.join(clean_content.split())[:2000]
 
                     domain = self._extract_domain(url)
                     source_info = self.trusted_domains.get(domain, {})
@@ -943,14 +952,27 @@ class WebSearcher:
 
     def _extract_relevant_passages(self, content: str, query: str) -> List[str]:
         """Udtrækker relevante tekstpassager"""
+        if not content:
+            return []
+
         # Opdel i sætninger
         sentences = re.split(r'[.!?]+', content)
-        query_terms = query.lower().split()
+        query_terms = [term.lower() for term in query.split() if len(term) > 2]
 
         relevant_passages = []
         for sentence in sentences:
             sentence = sentence.strip()
-            if len(sentence) < 50:  # Spring korte sætninger over
+
+            # Filtrer ugyldige sætninger
+            if len(sentence) < 50 or len(sentence) > 500:
+                continue
+
+            # Tjek for JSON/JavaScript/HTML artefakter
+            if any(marker in sentence for marker in ['{', '}', '@type', '@id', 'JavaScript', 'script>', 'noscript']):
+                continue
+
+            # Tjek for URL fragments
+            if sentence.startswith('http') or '//' in sentence[:20]:
                 continue
 
             sentence_lower = sentence.lower()
