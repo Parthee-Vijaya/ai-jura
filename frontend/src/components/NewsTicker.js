@@ -12,12 +12,8 @@ const scroll = keyframes`
 
 const TickerWrapper = styled.div`
   position: relative;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(120deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9))'
-    : 'linear-gradient(120deg, rgba(253, 230, 138, 0.92), rgba(250, 204, 21, 0.85))'};
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : '#1f2937'};
+  background: #ffffff;
+  color: #252525;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -25,18 +21,7 @@ const TickerWrapper = styled.div`
   border-radius: 18px;
   margin-bottom: 1.8rem;
   box-shadow: ${props => props.theme.shadows.xl};
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.12)'
-      : 'rgba(255, 255, 255, 0.55)'};
-    mix-blend-mode: screen;
-    opacity: 0.35;
-    pointer-events: none;
-  }
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const TickerLabel = styled.div`
@@ -50,13 +35,9 @@ const TickerLabel = styled.div`
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15,23,42,0.6)'
-    : 'rgba(255,255,255,0.75)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+  background: rgba(160, 54, 18, 0.1);
+  color: #A03612;
+  border: 1px solid rgba(160, 54, 18, 0.2);
 `;
 
 const TickerTrack = styled.div`
@@ -91,18 +72,12 @@ const SourceTag = styled.span`
   font-weight: 600;
   font-size: 0.72rem;
   text-transform: uppercase;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(96, 165, 250, 0.25)'
-    : 'rgba(30, 64, 175, 0.15)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(191, 219, 254, 1)'
-    : '#1e3a8a'};
+  background: rgba(160, 54, 18, 0.12);
+  color: #A03612;
   padding: 0.25rem 0.65rem;
   border-radius: 12px;
   letter-spacing: 0.08em;
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(96, 165, 250, 0.35)'
-    : 'rgba(30, 64, 175, 0.25)'};
+  border: 1px solid rgba(160, 54, 18, 0.25);
 `;
 
 const HeadlineText = styled.span`
@@ -236,7 +211,9 @@ const NewsTicker = () => {
     startPolling();
 
     return cleanup;
-  }, [items.length]);
+    // Intentionally empty - only run on mount. fetchStaticTicker is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tickerItems = useMemo(() => {
     if (!items.length) {

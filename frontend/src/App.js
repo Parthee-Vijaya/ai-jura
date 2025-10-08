@@ -51,8 +51,8 @@ const commonThemeTokens = {
     lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
     xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)',
     glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-    glow: '0 0 24px rgba(26, 54, 93, 0.35)',
-    focus: '0 0 0 3px rgba(26, 54, 93, 0.18)',
+    glow: '0 0 24px rgba(201, 68, 22, 0.35)',
+    focus: '0 0 0 3px rgba(201, 68, 22, 0.18)',
   },
   animations: {
     transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -67,7 +67,9 @@ const lightTheme = {
   ...commonThemeTokens,
   mode: 'light',
   colors: {
-    primary: '#1a365d',
+    primary: '#A03612',
+    primaryDark: '#7d2b0e',
+    primaryLight: '#C94416',
     secondary: '#2d3748',
     accent: '#b8860b',
     success: '#2f855a',
@@ -108,9 +110,9 @@ const lightTheme = {
       platinum: '#e5e4e2',
     },
     gradients: {
-      primary: 'linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #3182ce 100%)',
+      primary: 'linear-gradient(135deg, #7d2b0e 0%, #A03612 50%, #C94416 100%)',
       gold: 'linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f6e05e 100%)',
-      hero: 'linear-gradient(135deg, #0f2238 0%, #1a365d 25%, #2c5282 75%, #3182ce 100%)',
+      hero: 'linear-gradient(135deg, #7d2b0e 0%, #A03612 25%, #C94416 75%, #E85A28 100%)',
       card: 'linear-gradient(145deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%)',
       glass: 'linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
       danger: 'linear-gradient(135deg, #c53030 0%, #e53e3e 50%, #f56565 100%)',
@@ -130,14 +132,14 @@ const lightTheme = {
       badgeBackground: 'rgba(26, 54, 93, 0.08)',
     },
     sidebar: {
-      background: 'linear-gradient(180deg, rgba(26,54,93,0.95) 0%, rgba(30,64,126,0.92) 100%)',
-      border: 'rgba(148, 163, 184, 0.15)',
+      background: 'linear-gradient(180deg, rgba(160,54,18,0.95) 0%, rgba(125,43,14,0.92) 100%)',
+      border: 'rgba(160, 54, 18, 0.15)',
       text: '#f8fafc',
-      muted: '#cbd5f5',
-      hoverBackground: 'rgba(255,255,255,0.08)',
+      muted: '#fed7aa',
+      hoverBackground: 'rgba(160, 54, 18, 0.15)',
       hoverText: '#ffffff',
-      activeBackground: 'linear-gradient(135deg, rgba(49,130,206,0.28) 0%, rgba(26,54,93,0.38) 100%)',
-      activeBorder: '#d4af37',
+      activeBackground: 'linear-gradient(135deg, rgba(160,54,18,0.28) 0%, rgba(125,43,14,0.38) 100%)',
+      activeBorder: '#A03612',
       activeText: '#ffffff',
       badgeBackground: 'rgba(255,255,255,0.12)',
     },
@@ -146,10 +148,10 @@ const lightTheme = {
       border: '#e2e8f0',
     },
     ticker: {
-      background: 'linear-gradient(135deg, #f97316 0%, #f59e0b 100%)',
-      text: '#1f2937',
-      badgeBackground: 'rgba(31, 41, 55, 0.12)',
-      badgeText: '#1f2937',
+      background: '#ffffff',
+      text: '#252525',
+      badgeBackground: 'rgba(201, 68, 22, 0.12)',
+      badgeText: '#C94416',
     },
   },
 };
@@ -158,7 +160,9 @@ const darkTheme = {
   ...commonThemeTokens,
   mode: 'dark',
   colors: {
-    primary: '#7aa2ff',
+    primary: '#A03612',
+    primaryDark: '#7d2b0e',
+    primaryLight: '#C94416',
     secondary: '#334155',
     accent: '#fbbf24',
     success: '#22c55e',
@@ -199,9 +203,9 @@ const darkTheme = {
       platinum: '#faf5ff',
     },
     gradients: {
-      primary: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #1d4ed8 100%)',
+      primary: 'linear-gradient(135deg, #7d2b0e 0%, #A03612 50%, #C94416 100%)',
       gold: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #facc15 100%)',
-      hero: 'linear-gradient(135deg, #0b1220 0%, #1e293b 40%, #1d4ed8 100%)',
+      hero: 'linear-gradient(135deg, #0b1220 0%, #1e293b 40%, #A03612 100%)',
       card: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(148, 163, 209, 0.05) 100%)',
       glass: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
       danger: 'linear-gradient(135deg, #ef4444 0%, #f97316 50%, #facc15 100%)',
@@ -221,31 +225,38 @@ const darkTheme = {
       badgeBackground: 'rgba(124, 189, 255, 0.15)',
     },
     sidebar: {
-      background: 'linear-gradient(180deg, rgba(17,24,39,0.94) 0%, rgba(11,18,32,0.95) 100%)',
-      border: 'rgba(15, 23, 42, 0.6)',
+      background: 'linear-gradient(180deg, rgba(160,54,18,0.85) 0%, rgba(125,43,14,0.88) 100%)',
+      border: 'rgba(160, 54, 18, 0.25)',
       text: '#f8fafc',
-      muted: '#94a3b8',
-      hoverBackground: 'rgba(124, 189, 255, 0.15)',
+      muted: '#fed7aa',
+      hoverBackground: 'rgba(160, 54, 18, 0.20)',
       hoverText: '#ffffff',
-      activeBackground: 'linear-gradient(135deg, rgba(59,130,246,0.28) 0%, rgba(14,116,144,0.38) 100%)',
-      activeBorder: '#fbbf24',
-      activeText: '#f8fafc',
-      badgeBackground: 'rgba(15, 23, 42, 0.4)',
+      activeBackground: 'linear-gradient(135deg, rgba(160,54,18,0.35) 0%, rgba(125,43,14,0.45) 100%)',
+      activeBorder: '#A03612',
+      activeText: '#ffffff',
+      badgeBackground: 'rgba(255, 255, 255, 0.12)',
     },
     card: {
       background: '#111827',
       border: '#1f2937',
     },
     ticker: {
-      background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-      text: '#0f172a',
-      badgeBackground: 'rgba(15, 23, 42, 0.35)',
-      badgeText: '#f8fafc',
+      background: '#ffffff',
+      text: '#252525',
+      badgeBackground: 'rgba(201, 68, 22, 0.12)',
+      badgeText: '#C94416',
     },
   },
 };
 
 const GlobalStyle = createGlobalStyle`
+  :root {
+    --kalundborg-primary: #A03612;
+    --kalundborg-primary-dark: #7d2b0e;
+    --kalundborg-primary-light: #C94416;
+    --kalundborg-primary-rgb: 160, 54, 18;
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -267,7 +278,18 @@ const GlobalStyle = createGlobalStyle`
 
   a {
     text-decoration: none;
-    color: inherit;
+    color: #A03612;
+    transition: color ${props => props.theme.animations.transitionFast};
+
+    &:hover {
+      color: #7d2b0e;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #A03612;
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
   }
 
   button {
@@ -276,6 +298,12 @@ const GlobalStyle = createGlobalStyle`
     outline: none;
     font-family: inherit;
     background: none;
+
+    &:focus-visible {
+      outline: 2px solid #A03612;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 3px rgba(160, 54, 18, 0.18);
+    }
   }
 
   input, textarea, select {
@@ -285,11 +313,21 @@ const GlobalStyle = createGlobalStyle`
     background-color: ${props => props.theme.colors.inputBackground};
     color: ${props => props.theme.colors.text};
     border: 1px solid ${props => props.theme.colors.border};
+
+    &:focus {
+      border-color: #A03612;
+      box-shadow: 0 0 0 3px rgba(160, 54, 18, 0.12);
+    }
   }
 
   ::selection {
-    background: ${props => props.theme.colors.primary};
-    color: ${props => props.theme.colors.white};
+    background: #A03612;
+    color: white;
+  }
+
+  ::-moz-selection {
+    background: #A03612;
+    color: white;
   }
 
   ::-webkit-scrollbar {
@@ -299,6 +337,10 @@ const GlobalStyle = createGlobalStyle`
   ::-webkit-scrollbar-thumb {
     background-color: ${props => props.theme.colors.gray[400]};
     border-radius: 999px;
+
+    &:hover {
+      background-color: #A03612;
+    }
   }
 
   ::-webkit-scrollbar-track {

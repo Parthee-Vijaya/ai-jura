@@ -20,7 +20,7 @@ import {
 } from 'react-icons/fa';
 import NewsSection from '../components/NewsSection';
 import NewsTicker from '../components/NewsTicker';
-import { FeatureCardSkeletonLoader, StatCardSkeletonLoader } from '../components/SkeletonLoader';
+import { FeatureCardSkeletonLoader } from '../components/SkeletonLoader';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
 
 const HomeContainer = styled.div`
@@ -82,6 +82,16 @@ const HeroContent = styled.div`
   flex-direction: column;
   gap: 1.5rem;
   color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.text};
+`;
+
+const HeroLogo = styled.img`
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    max-width: 160px;
+  }
 `;
 
 const HeroBadge = styled.span`
@@ -306,7 +316,6 @@ const FeatureCard = styled(motion.div)`
   }
 `;
 
-
 const QuickStartSection = styled.section`
   background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : props.theme.colors.gray[50]};
   padding: 3rem 2rem;
@@ -396,83 +405,6 @@ const QuickStartCard = styled(Link)`
     color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
     font-size: 0.875rem;
     line-height: 1.5;
-  }
-`;
-
-const StatusOverviewSection = styled.section`
-  margin-bottom: 3rem;
-`;
-
-const StatusGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-`;
-
-const StatusCard = styled(motion.div)`
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(20px);
-  padding: 1.5rem;
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
-  box-shadow: ${props => props.theme.shadows.glass};
-  position: relative;
-  overflow: hidden;
-  border-left: 4px solid ${props => {
-    switch(props.type) {
-      case 'success': return props.theme.colors.success;
-      case 'warning': return props.theme.colors.warning;
-      case 'danger': return props.theme.colors.danger;
-      default: return props.theme.colors.primary;
-    }
-  }};
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${props => props.theme.shadows.xl};
-  }
-
-  .icon {
-    background: ${props => {
-      switch(props.type) {
-        case 'success': return props.theme.colors.success;
-        case 'warning': return props.theme.colors.warning;
-        case 'danger': return props.theme.colors.danger;
-        default: return props.theme.colors.primary;
-      }
-    }};
-    color: white;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    transition: ${props => props.theme.animations.spring};
-  }
-
-  .value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-    margin-bottom: 0.25rem;
-  }
-
-  .label {
-    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-
-  .trend {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 0.75rem;
-    color: ${props => props.theme.colors.success};
-    font-weight: 600;
   }
 `;
 
@@ -704,6 +636,13 @@ const HomePage = () => {
       <HeroSection>
         <HeroLayout>
           <HeroContent>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <HeroLogo src="/kalundborg-logo.svg" alt="Kalundborg Kommune" />
+            </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}

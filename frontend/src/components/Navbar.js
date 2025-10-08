@@ -30,6 +30,16 @@ const NavBrand = styled(Link)`
   color: ${props => props.theme.layout.nav.text};
 `;
 
+const Logo = styled.img`
+  max-width: 150px;
+  height: auto;
+  transition: ${props => props.theme.animations.transition};
+
+  @media (max-width: 768px) {
+    max-width: 120px;
+  }
+`;
+
 const BrandText = styled.div`
   display: flex;
   flex-direction: column;
@@ -138,6 +148,10 @@ const Navbar = () => {
     <NavbarContainer>
       <NavLeft>
         <NavBrand to="/">
+          <Logo
+            src="/kalundborg-logo.svg"
+            alt="Kalundborg Kommune"
+          />
           <BrandText>
             <span>Project Judge Dredd</span>
             <span>AI-komplianceplatform</span>
