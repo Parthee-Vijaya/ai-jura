@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import {
   FaRocket,
   FaCheckCircle,
@@ -615,7 +615,7 @@ const QuickCheckPage = () => {
               control={control}
               rules={{ required: 'Mindst ét fagområde er påkrævet' }}
               render={({ field }) => (
-                <Select
+                <ReactSelect
                   {...field}
                   isMulti
                   options={FAGOMRAADE_OPTIONS.map(opt => ({ value: opt, label: opt }))}
