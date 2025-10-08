@@ -42,7 +42,7 @@ const CASE_STATUS_COLORS = {
   sent: '#10b981',
   failed: '#ef4444',
   skipped: '#6366f1',
-  pending: '#f59e0b'
+  pending: '#C94416'
 };
 
 const CASE_STATUS_LABELS = {
@@ -418,7 +418,7 @@ const CaseStatusBadge = styled.span`
       case 'skipped':
         return 'rgba(99, 102, 241, 0.18)';
       default:
-        return 'rgba(245, 158, 11, 0.18)';
+        return 'rgba(201, 68, 22, 0.15)';
     }
   }};
   color: ${props => CASE_STATUS_COLORS[props.status] || props.theme.colors.gray[700]};

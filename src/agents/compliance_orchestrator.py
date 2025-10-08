@@ -7,6 +7,7 @@ from typing import Dict, List, Any, TypedDict, Annotated, Sequence
 from datetime import datetime
 import operator
 from enum import Enum
+import time
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
@@ -20,6 +21,7 @@ from src.core.models import (
 )
 from src.compliance.ai_act_checker import AIActComplianceChecker
 from src.compliance.gdpr_checker import GDPRComplianceChecker
+from src.cache.disk_cache import cache_llm_response, get_cached_response
 
 import logging
 import os
@@ -42,6 +44,8 @@ class ComplianceState(TypedDict):
     final_report: Dict[str, Any]
     current_step: str
     errors: List[str]
+    timing_metrics: Dict[str, float]
+    parallel_execution_enabled: bool
 
 
 class WorkflowStep(str, Enum):
@@ -49,6 +53,7 @@ class WorkflowStep(str, Enum):
     INITIALIZATION = "initialization"
     AI_ACT_CHECK = "ai_act_check"
     GDPR_CHECK = "gdpr_check"
+    MERGE_CHECKS = "merge_checks"
     LEGAL_RESEARCH = "legal_research"
     RISK_ASSESSMENT = "risk_assessment"
     GAP_ANALYSIS = "gap_analysis"
@@ -62,8 +67,9 @@ class ComplianceOrchestrator:
     Using LangGraph for workflow management
     """
 
-    def __init__(self, llm_model: str = None):
+    def __init__(self, llm_model: str = None, enable_parallel_execution: bool = True):
         self.llm_model = llm_model or os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")
+        self.enable_parallel_execution = enable_parallel_execution
 
         # Initialize LLM
         if "claude" in self.llm_model.lower():
@@ -87,7 +93,7 @@ class ComplianceOrchestrator:
         self.workflow = self._build_workflow()
 
     def _build_workflow(self) -> StateGraph:
-        """Build the LangGraph workflow"""
+        """Build the LangGraph workflow with optional parallel execution"""
         workflow = StateGraph(ComplianceState)
 
         # Define nodes
@@ -99,12 +105,30 @@ class ComplianceOrchestrator:
         workflow.add_node("analyze_gaps", self._analyze_gaps_node)
         workflow.add_node("generate_report", self._generate_report_node)
 
-        # Define edges
+        # Define edges based on execution mode
         workflow.set_entry_point("initialize")
 
-        workflow.add_edge("initialize", "check_ai_act")
-        workflow.add_edge("check_ai_act", "check_gdpr")
-        workflow.add_edge("check_gdpr", "research_legal")
+        if self.enable_parallel_execution:
+            # Parallel execution: add merge node
+            workflow.add_node("merge_checks", self._merge_checks_node)
+
+            # Fan out: initialize -> both checks in parallel
+            workflow.add_edge("initialize", "check_ai_act")
+            workflow.add_edge("initialize", "check_gdpr")
+
+            # Fan in: both checks -> merge
+            workflow.add_edge("check_ai_act", "merge_checks")
+            workflow.add_edge("check_gdpr", "merge_checks")
+
+            # Continue sequential workflow after merge
+            workflow.add_edge("merge_checks", "research_legal")
+        else:
+            # Sequential execution (original workflow)
+            workflow.add_edge("initialize", "check_ai_act")
+            workflow.add_edge("check_ai_act", "check_gdpr")
+            workflow.add_edge("check_gdpr", "research_legal")
+
+        # Rest of workflow is always sequential
         workflow.add_edge("research_legal", "assess_risk")
         workflow.add_edge("assess_risk", "analyze_gaps")
         workflow.add_edge("analyze_gaps", "generate_report")
@@ -121,10 +145,22 @@ class ComplianceOrchestrator:
         )
         state["current_step"] = WorkflowStep.INITIALIZATION
 
+        # Initialize timing metrics
+        if "timing_metrics" not in state:
+            state["timing_metrics"] = {}
+        state["timing_metrics"]["workflow_start"] = time.time()
+
+        # Set parallel execution flag
+        state["parallel_execution_enabled"] = self.enable_parallel_execution
+
+        if self.enable_parallel_execution:
+            logger.info("Parallel execution mode enabled for AI Act and GDPR checks")
+
         return state
 
     def _check_ai_act_node(self, state: ComplianceState) -> ComplianceState:
         """Run AI Act compliance check"""
+        start_time = time.time()
         logger.info("Running AI Act compliance check")
         state["current_step"] = WorkflowStep.AI_ACT_CHECK
 
@@ -132,11 +168,17 @@ class ComplianceOrchestrator:
             ai_act_result = self.ai_act_checker.check_compliance(state["project_input"])
             state["ai_act_analysis"] = ai_act_result
 
+            execution_time = time.time() - start_time
+            state["timing_metrics"]["ai_act_check"] = execution_time
+            logger.info(f"AI Act check completed in {execution_time:.2f} seconds")
+
             state["messages"].append(
                 AIMessage(content=f"AI Act Analysis Complete: Risk Level = {ai_act_result['risk_level'].value}")
             )
         except Exception as e:
-            logger.error(f"AI Act check failed: {e}")
+            execution_time = time.time() - start_time
+            state["timing_metrics"]["ai_act_check"] = execution_time
+            logger.error(f"AI Act check failed after {execution_time:.2f} seconds: {e}")
             state["errors"].append(f"AI Act check error: {str(e)}")
             state["ai_act_analysis"] = {"error": str(e)}
 
@@ -144,6 +186,7 @@ class ComplianceOrchestrator:
 
     def _check_gdpr_node(self, state: ComplianceState) -> ComplianceState:
         """Run GDPR compliance check"""
+        start_time = time.time()
         logger.info("Running GDPR compliance check")
         state["current_step"] = WorkflowStep.GDPR_CHECK
 
@@ -151,13 +194,80 @@ class ComplianceOrchestrator:
             gdpr_result = self.gdpr_checker.assess_gdpr_compliance(state["project_input"])
             state["gdpr_analysis"] = gdpr_result
 
+            execution_time = time.time() - start_time
+            state["timing_metrics"]["gdpr_check"] = execution_time
+            logger.info(f"GDPR check completed in {execution_time:.2f} seconds")
+
             state["messages"].append(
                 AIMessage(content=f"GDPR Analysis Complete: Score = {gdpr_result['compliance_score']:.1f}%")
             )
         except Exception as e:
-            logger.error(f"GDPR check failed: {e}")
+            execution_time = time.time() - start_time
+            state["timing_metrics"]["gdpr_check"] = execution_time
+            logger.error(f"GDPR check failed after {execution_time:.2f} seconds: {e}")
             state["errors"].append(f"GDPR check error: {str(e)}")
             state["gdpr_analysis"] = {"error": str(e)}
+
+        return state
+
+    def _merge_checks_node(self, state: ComplianceState) -> ComplianceState:
+        """
+        Merge results from parallel AI Act and GDPR checks
+        This node waits for both checks to complete and combines their findings
+        """
+        logger.info("Merging AI Act and GDPR check results")
+        state["current_step"] = WorkflowStep.MERGE_CHECKS
+
+        # Verify both checks completed
+        ai_act_complete = bool(state.get("ai_act_analysis"))
+        gdpr_complete = bool(state.get("gdpr_analysis"))
+
+        if not ai_act_complete and not gdpr_complete:
+            error_msg = "Both AI Act and GDPR checks failed to complete"
+            logger.error(error_msg)
+            state["errors"].append(error_msg)
+        elif not ai_act_complete:
+            error_msg = "AI Act check failed to complete"
+            logger.warning(error_msg)
+            state["errors"].append(error_msg)
+        elif not gdpr_complete:
+            error_msg = "GDPR check failed to complete"
+            logger.warning(error_msg)
+            state["errors"].append(error_msg)
+        else:
+            logger.info("Both compliance checks completed successfully")
+
+        # Calculate parallel execution time savings
+        ai_act_time = state["timing_metrics"].get("ai_act_check", 0)
+        gdpr_time = state["timing_metrics"].get("gdpr_check", 0)
+
+        # In sequential execution, total would be sum
+        sequential_time = ai_act_time + gdpr_time
+        # In parallel execution, total is max
+        parallel_time = max(ai_act_time, gdpr_time)
+        time_saved = sequential_time - parallel_time
+
+        state["timing_metrics"]["checks_parallel_time"] = parallel_time
+        state["timing_metrics"]["checks_sequential_time"] = sequential_time
+        state["timing_metrics"]["time_saved_by_parallel"] = time_saved
+
+        logger.info(
+            f"Parallel execution completed in {parallel_time:.2f}s "
+            f"(would have taken {sequential_time:.2f}s sequentially, "
+            f"saved {time_saved:.2f}s or {(time_saved/sequential_time*100):.1f}%)"
+        )
+
+        # Create combined analysis summary
+        combined_summary = {
+            "ai_act_status": "completed" if ai_act_complete else "failed",
+            "gdpr_status": "completed" if gdpr_complete else "failed",
+            "parallel_execution_time": parallel_time,
+            "time_saved": time_saved
+        }
+
+        state["messages"].append(
+            AIMessage(content=f"Compliance checks merged: Time saved = {time_saved:.2f}s")
+        )
 
         return state
 
@@ -170,18 +280,30 @@ class ComplianceOrchestrator:
         research_prompt = self._create_legal_research_prompt(state)
 
         try:
-            response = self.llm.invoke([
-                SystemMessage(content="You are a legal research expert specializing in AI and data protection law."),
-                HumanMessage(content=research_prompt)
-            ])
+            # Check cache first
+            cache_key_prompt = f"legal_research|{research_prompt[:200]}"
+            cached_response = get_cached_response(cache_key_prompt, model=self.llm_model)
+
+            if cached_response:
+                logger.info("Using cached legal research response")
+                response_content = cached_response
+            else:
+                response = self.llm.invoke([
+                    SystemMessage(content="You are a legal research expert specializing in AI and data protection law."),
+                    HumanMessage(content=research_prompt)
+                ])
+                response_content = response.content
+
+                # Cache the response
+                cache_llm_response(cache_key_prompt, response_content, model=self.llm_model, ttl=7200)
 
             # Parse response
             legal_research = {
-                "relevant_laws": self._extract_relevant_laws(response.content),
-                "sector_specific": self._extract_sector_requirements(state["project_input"].sector, response.content),
-                "danish_requirements": self._extract_danish_requirements(response.content),
-                "additional_frameworks": self._extract_additional_frameworks(response.content),
-                "research_summary": response.content
+                "relevant_laws": self._extract_relevant_laws(response_content),
+                "sector_specific": self._extract_sector_requirements(state["project_input"].sector, response_content),
+                "danish_requirements": self._extract_danish_requirements(response_content),
+                "additional_frameworks": self._extract_additional_frameworks(response_content),
+                "research_summary": response_content
             }
 
             state["legal_research"] = legal_research
@@ -202,10 +324,22 @@ class ComplianceOrchestrator:
         risk_prompt = self._create_risk_assessment_prompt(state)
 
         try:
-            response = self.llm.invoke([
-                SystemMessage(content="You are a risk assessment expert for AI systems."),
-                HumanMessage(content=risk_prompt)
-            ])
+            # Check cache first
+            cache_key_prompt = f"risk_assessment|{risk_prompt[:200]}"
+            cached_response = get_cached_response(cache_key_prompt, model=self.llm_model)
+
+            if cached_response:
+                logger.info("Using cached risk assessment response")
+                response_content = cached_response
+            else:
+                response = self.llm.invoke([
+                    SystemMessage(content="You are a risk assessment expert for AI systems."),
+                    HumanMessage(content=risk_prompt)
+                ])
+                response_content = response.content
+
+                # Cache the response
+                cache_llm_response(cache_key_prompt, response_content, model=self.llm_model, ttl=7200)
 
             risk_assessment = {
                 "overall_risk_level": self._determine_overall_risk(state),
@@ -213,7 +347,7 @@ class ComplianceOrchestrator:
                 "operational_risks": self._identify_operational_risks(state),
                 "reputational_risks": self._identify_reputational_risks(state),
                 "mitigation_strategies": self._generate_mitigation_strategies(state),
-                "risk_summary": response.content
+                "risk_summary": response_content
             }
 
             state["risk_assessment"] = risk_assessment
@@ -267,6 +401,34 @@ class ComplianceOrchestrator:
         logger.info("Generating compliance report")
         state["current_step"] = WorkflowStep.REPORT_GENERATION
 
+        # Calculate total workflow time
+        workflow_start = state["timing_metrics"].get("workflow_start", time.time())
+        total_time = time.time() - workflow_start
+        state["timing_metrics"]["total_workflow_time"] = total_time
+
+        # Build performance metrics
+        performance_metrics = {
+            "total_workflow_time": total_time,
+            "parallel_execution_enabled": state.get("parallel_execution_enabled", False)
+        }
+
+        if state.get("parallel_execution_enabled"):
+            performance_metrics.update({
+                "ai_act_check_time": state["timing_metrics"].get("ai_act_check", 0),
+                "gdpr_check_time": state["timing_metrics"].get("gdpr_check", 0),
+                "parallel_execution_time": state["timing_metrics"].get("checks_parallel_time", 0),
+                "time_saved": state["timing_metrics"].get("time_saved_by_parallel", 0),
+                "efficiency_gain_percent": (
+                    state["timing_metrics"].get("time_saved_by_parallel", 0) /
+                    state["timing_metrics"].get("checks_sequential_time", 1) * 100
+                )
+            })
+
+            logger.info(
+                f"Workflow completed in {total_time:.2f}s with parallel execution "
+                f"(saved {performance_metrics['time_saved']:.2f}s on compliance checks)"
+            )
+
         report = {
             "project_name": state["project_input"].name,
             "assessment_date": datetime.now().isoformat(),
@@ -278,7 +440,8 @@ class ComplianceOrchestrator:
             "compliance_gaps": state.get("compliance_gaps", []),
             "recommendations": state.get("recommendations", []),
             "next_steps": self._generate_next_steps(state),
-            "errors": state.get("errors", [])
+            "errors": state.get("errors", []),
+            "performance_metrics": performance_metrics
         }
 
         state["final_report"] = report
@@ -529,7 +692,9 @@ class ComplianceOrchestrator:
             "recommendations": [],
             "final_report": {},
             "current_step": WorkflowStep.INITIALIZATION,
-            "errors": []
+            "errors": [],
+            "timing_metrics": {},
+            "parallel_execution_enabled": self.enable_parallel_execution
         }
 
         # Run workflow

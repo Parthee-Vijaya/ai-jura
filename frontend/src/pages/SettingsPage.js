@@ -17,8 +17,7 @@ import {
   FaCheck,
   FaTimes,
   FaToggleOn,
-  FaToggleOff,
-  FaLanguage
+  FaToggleOff
 } from 'react-icons/fa';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
@@ -117,21 +116,6 @@ const SettingGroup = styled.div`
   }
 `;
 
-const SettingLabel = styled.label`
-  display: block;
-  font-weight: 600;
-  color: ${props => props.theme.colors.gray[700]};
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-`;
-
-const SettingDescription = styled.p`
-  color: ${props => props.theme.colors.gray[600]};
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-`;
-
 const SettingRow = styled.div`
   display: flex;
   align-items: center;
@@ -193,20 +177,6 @@ const Select = styled.select`
   }
 `;
 
-const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
-  background: white;
-  font-size: 0.875rem;
-  min-width: 120px;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-  }
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
@@ -231,16 +201,18 @@ const Button = styled.button`
     color: white;
 
     &:hover {
-      background: ${props => props.theme.colors.primaryDark};
+      background: ${props => props.theme.colors.primaryDark || '#A03612'};
     }
   }
 
   &.secondary {
-    background: ${props => props.theme.colors.gray[200]};
-    color: ${props => props.theme.colors.gray[700]};
+    background: transparent;
+    color: ${props => props.theme.colors.primary};
+    border: 2px solid ${props => props.theme.colors.primary};
 
     &:hover {
-      background: ${props => props.theme.colors.gray[300]};
+      background: ${props => props.theme.colors.primary};
+      color: white;
     }
   }
 
@@ -249,7 +221,7 @@ const Button = styled.button`
     color: white;
 
     &:hover {
-      background: ${props => props.theme.colors.dangerDark};
+      background: ${props => props.theme.colors.dangerDark || '#991b1b'};
     }
   }
 

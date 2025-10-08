@@ -31,15 +31,23 @@ class QuickCheckToolInput(BaseModel):
     automatiserede_beslutninger: bool = Field(False, description="Om systemet træffer automatiserede beslutninger")
 
 
-@tool(name="quick_compliance_check", args_schema=QuickCheckToolInput)
-def quick_check_tool(
+@tool(args_schema=QuickCheckToolInput)
+def quick_compliance_check(
     description: str,
     ai_type: str,
     sector: str,
     behandler_persondata: bool = False,
     automatiserede_beslutninger: bool = False,
 ) -> str:
-    """Udfør hurtig vurdering af AI Act-risiko og GDPR-relevans."""
+    """Udfør hurtig vurdering af AI Act-risiko og GDPR-relevans.
+
+    Args:
+        description: Beskrivelse af AI-systemet
+        ai_type: AI-typen (fx generative_ai, nlp)
+        sector: Fagområde/forretningsområde
+        behandler_persondata: Om systemet behandler persondata
+        automatiserede_beslutninger: Om systemet træffer automatiserede beslutninger
+    """
 
     project = ProjectInput(
         name="Hurtig Agent Vurdering",
@@ -105,14 +113,14 @@ def create_quick_check_agent(model_name: Optional[str] = None) -> AgentExecutor:
     """Opret LangChain-agent til hurtig compliance screening."""
 
     llm = _default_chat_model(model_name)
-    tools = [quick_check_tool]
+    tools = [quick_compliance_check]
 
     prompt = ChatPromptTemplate.from_messages(
         [
             (
                 "system",
                 "Du er en AI-compliance assistent. Brug `quick_compliance_check` til at hente vurdering. "
-                "Svar KUN med JSON: {"risk_summary": "...", "ai_act": {...}, "gdpr": {...}, "recommendations": ["..."]}."
+                'Svar KUN med JSON: {"risk_summary": "...", "ai_act": {...}, "gdpr": {...}, "recommendations": ["..."]}.'
             ),
             ("user", "{input}"),
         ]

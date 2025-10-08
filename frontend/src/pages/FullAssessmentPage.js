@@ -5,15 +5,13 @@ import {
   FaArrowRight,
   FaArrowLeft,
   FaCheck,
-  FaExclamationTriangle,
   FaRobot,
   FaShieldAlt,
   FaBalanceScale,
   FaGraduationCap,
   FaQuestionCircle,
   FaListUl,
-  FaInfoCircle,
-  FaLightbulb
+  FaInfoCircle
 } from 'react-icons/fa';
 import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
 
@@ -192,19 +190,21 @@ const Button = styled.button`
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.2s ease;
+  border: none;
 
   ${props => props.primary ? `
     background: ${props.theme.colors.primary};
     color: white;
     &:hover {
-      background: ${props.theme.colors.primary};
-      filter: brightness(0.9);
+      background: ${props.theme.colors.primaryDark || '#A03612'};
     }
   ` : `
-    background: ${props.theme.colors.gray[200]};
-    color: ${props.theme.colors.gray[700]};
+    background: transparent;
+    color: ${props.theme.colors.primary};
+    border: 2px solid ${props.theme.colors.primary};
     &:hover {
-      background: ${props.theme.colors.gray[300]};
+      background: ${props.theme.colors.primary};
+      color: white;
     }
   `}
 
@@ -219,31 +219,6 @@ const ResultsContainer = styled.div`
   border-radius: ${props => props.theme.borderRadius};
   box-shadow: ${props => props.theme.shadows.lg};
   padding: 3rem;
-`;
-
-const RiskLevel = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 20px;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-
-  ${props => {
-    switch(props.level) {
-      case 'minimal':
-        return `background: #dcfce7; color: #166534;`;
-      case 'limited':
-        return `background: #fef3c7; color: #92400e;`;
-      case 'high':
-        return `background: #fee2e2; color: #dc2626;`;
-      case 'unacceptable':
-        return `background: #fecaca; color: #991b1b;`;
-      default:
-        return `background: #f3f4f6; color: #374151;`;
-    }
-  }}
 `;
 
 const steps = [

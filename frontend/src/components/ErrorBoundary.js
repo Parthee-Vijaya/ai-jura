@@ -257,7 +257,7 @@ class ErrorBoundary extends React.Component {
   };
 
   handleReportError = () => {
-    const { error, errorInfo, eventId } = this.state;
+    const { error, eventId } = this.state;
     const subject = `Fejlrapport - ${eventId}`;
     const body = `
 Hej Judge Dredd Support Team,

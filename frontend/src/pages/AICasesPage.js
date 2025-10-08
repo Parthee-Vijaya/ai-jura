@@ -268,7 +268,7 @@ const StatusBadge = styled.span`
       case 'skipped':
         return 'rgba(79, 70, 229, 0.15)';
       default:
-        return 'rgba(234, 179, 8, 0.18)';
+        return 'rgba(201, 68, 22, 0.15)';
     }
   }};
   color: ${props => {
@@ -280,7 +280,7 @@ const StatusBadge = styled.span`
       case 'skipped':
         return '#4338ca';
       default:
-        return '#92400e';
+        return '#7f1d1d';
     }
   }};
 `;

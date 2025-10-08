@@ -7,6 +7,7 @@ from enum import Enum
 from dataclasses import dataclass, field
 from datetime import datetime
 import json
+from functools import lru_cache
 
 class ComplianceDecision(Enum):
     """Compliance beslutningstyper"""
@@ -60,10 +61,17 @@ class ComplianceRuleEngine:
     """Deterministisk regelmotor for compliance kontrol"""
 
     def __init__(self):
-        self.rules = self._load_rules()
-        self.evidence_catalog = self._load_evidence_catalog()
+        self.rules = self._load_rules_cached()
+        self.evidence_catalog = self._load_evidence_catalog_cached()
 
-    def _load_rules(self) -> List[ComplianceRule]:
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _load_rules_cached() -> List[ComplianceRule]:
+        """Cached version of rule loading"""
+        return ComplianceRuleEngine._load_rules_internal()
+
+    @staticmethod
+    def _load_rules_internal() -> List[ComplianceRule]:
         """Indlæs compliance regler"""
         return [
             # AI Act - Forbudte praksisser
@@ -273,7 +281,18 @@ class ComplianceRuleEngine:
             )
         ]
 
-    def _load_evidence_catalog(self) -> Dict[str, EvidenceArtifact]:
+    def _load_rules(self) -> List[ComplianceRule]:
+        """Legacy method for compatibility - delegates to cached version"""
+        return self._load_rules_cached()
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def _load_evidence_catalog_cached() -> Dict[str, EvidenceArtifact]:
+        """Cached version of evidence catalog loading"""
+        return ComplianceRuleEngine._load_evidence_catalog_internal()
+
+    @staticmethod
+    def _load_evidence_catalog_internal() -> Dict[str, EvidenceArtifact]:
         """Indlæs evidens og artefakt katalog"""
         catalog = {
             # Juridiske artefakter
@@ -426,6 +445,10 @@ class ComplianceRuleEngine:
             )
         }
         return catalog
+
+    def _load_evidence_catalog(self) -> Dict[str, EvidenceArtifact]:
+        """Legacy method for compatibility - delegates to cached version"""
+        return self._load_evidence_catalog_cached()
 
     def evaluate_rules(self, system_data: Dict[str, Any]) -> List[Tuple[ComplianceRule, bool]]:
         """Evaluer alle regler mod system data"""

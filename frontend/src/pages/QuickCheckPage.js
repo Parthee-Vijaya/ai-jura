@@ -60,19 +60,6 @@ const FormGroup = styled.div`
   }
 `;
 
-const Input = styled.input`
-  padding: 0.75rem;
-  border: 2px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
-  font-size: 1rem;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    border-color: ${props => props.theme.colors.primary};
-    outline: none;
-  }
-`;
-
 const TextArea = styled.textarea`
   padding: 0.75rem;
   border: 2px solid ${props => props.theme.colors.gray[300]};
@@ -371,13 +358,13 @@ const SeverityBadge = styled.span`
   padding: 0.2rem 0.6rem;
   background: ${props => props.severity === 'hard_stop'
     ? 'rgba(220, 38, 38, 0.15)'
-    : 'rgba(234, 179, 8, 0.18)'};
+    : 'rgba(201, 68, 22, 0.15)'};
   color: ${props => props.severity === 'hard_stop'
     ? '#991b1b'
-    : '#92400e'};
+    : '#7f1d1d'};
   border: 1px solid ${props => props.severity === 'hard_stop'
     ? 'rgba(220, 38, 38, 0.35)'
-    : 'rgba(234, 179, 8, 0.35)'};
+    : 'rgba(201, 68, 22, 0.4)'};
   width: fit-content;
 `;
 
@@ -495,8 +482,8 @@ const QuickCheckPage = () => {
 
   const classificationTone = {
     forbudt: { background: 'rgba(220, 38, 38, 0.12)', text: '#991b1b', border: 'rgba(220, 38, 38, 0.4)' },
-    høj_risiko: { background: 'rgba(234, 179, 8, 0.15)', text: '#92400e', border: 'rgba(234, 179, 8, 0.4)' },
-    begrænset_risiko: { background: 'rgba(59, 130, 246, 0.12)', text: '#1d4ed8', border: 'rgba(59, 130, 246, 0.35)' },
+    høj_risiko: { background: 'rgba(201, 68, 22, 0.15)', text: '#7f1d1d', border: 'rgba(201, 68, 22, 0.4)' },
+    begrænset_risiko: { background: 'rgba(232, 90, 40, 0.12)', text: '#92400e', border: 'rgba(232, 90, 40, 0.35)' },
     minimal: { background: 'rgba(34, 197, 94, 0.12)', text: '#166534', border: 'rgba(34, 197, 94, 0.35)' },
     uden_for_scope: { background: 'rgba(148, 163, 184, 0.2)', text: '#475569', border: 'rgba(148, 163, 184, 0.4)' }
   };

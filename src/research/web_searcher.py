@@ -53,6 +53,8 @@ class WebSearcher:
         self.sources_cache: Dict[str, Source] = {}
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
+        self.google_api_key = os.getenv('GOOGLE_API_KEY')
+        self.google_cse_id = os.getenv('GOOGLE_CSE_ID')
 
         # Autoritative domæner for juridisk information
         base_trusted = {
@@ -133,6 +135,7 @@ class WebSearcher:
             self._search_retsinformation(query),
             self._search_eu_official(query),
             self._search_edpb_guidelines(query),
+            self._search_google(query, focus_areas=focus_areas),
             self._search_duckduckgo(query, focus_areas=focus_areas)
         ]
 
@@ -619,6 +622,104 @@ class WebSearcher:
                 break
 
         logger.info("DuckDuckGo fandt %d kilder", len(sources))
+        return sources
+
+    async def _search_google(self, query: str, limit: int = 10, focus_areas: Optional[List[str]] = None) -> List[Source]:
+        """Søg med Google Custom Search API for bedre, up-to-date resultater."""
+        sources: List[Source] = []
+
+        if not self.google_api_key or not self.google_cse_id or not self.session:
+            logger.info("Google Custom Search ikke konfigureret - springer over")
+            return sources
+
+        # Byg søgestreng med fokusområder
+        search_query = f"{query} AI compliance"
+        if focus_areas:
+            search_query += " " + " ".join(focus_areas)
+
+        # Tilføj site-specifikke søgninger for autoritative kilder
+        site_restrictions = [
+            "site:eur-lex.europa.eu OR site:datatilsynet.dk OR site:edpb.europa.eu",
+            "site:kl.dk OR site:retsinformation.dk",
+            ""  # Generel søgning uden site-restriction
+        ]
+
+        seen_urls = set()
+
+        for site_restriction in site_restrictions:
+            full_query = f"{search_query} {site_restriction}".strip()
+
+            # Google Custom Search JSON API endpoint
+            params = {
+                'key': self.google_api_key,
+                'cx': self.google_cse_id,
+                'q': full_query,
+                'num': min(10, limit),
+                'dateRestrict': 'y2',  # Sidste 2 år for up-to-date resultater
+                'lr': 'lang_da|lang_en',  # Dansk og engelsk
+            }
+
+            url = f"https://www.googleapis.com/customsearch/v1?{urlencode(params)}"
+
+            try:
+                async with self.session.get(url) as response:
+                    if response.status != 200:
+                        logger.warning("Google Search fejlede: %s", response.status)
+                        continue
+
+                    data = await response.json()
+                    items = data.get('items', [])
+
+                    for item in items:
+                        link = item.get('link')
+                        title = item.get('title', '')
+                        snippet = item.get('snippet', '')
+
+                        if not link or link in seen_urls:
+                            continue
+
+                        seen_urls.add(link)
+
+                        # Hent fuld kilde
+                        source = await self._fetch_source(link)
+                        if not source:
+                            # Fallback til snippet hvis fetch fejler
+                            domain = self._extract_domain(link)
+                            source = Source(
+                                title=title,
+                                url=link,
+                                content=snippet,
+                                domain=domain,
+                                date_accessed=datetime.now(),
+                                source_type='website',
+                                authority=self.trusted_domains.get(domain, {}).get('authority'),
+                                relevance_score=0.7  # Google ranker godt
+                            )
+                        else:
+                            source.title = title
+                            source.relevance_score = max(source.relevance_score, 0.7)
+
+                        # Øg relevans for trusted domæner
+                        if source.domain in self.trusted_domains:
+                            source.relevance_score = max(source.relevance_score, 0.85)
+
+                        if self._is_relevant(source.content or snippet, query):
+                            source.relevance_score = max(source.relevance_score, 0.8)
+                            sources.append(source)
+                        elif len(sources) < limit:
+                            sources.append(source)
+
+                        if len(sources) >= limit:
+                            break
+
+            except Exception as exc:
+                logger.warning("Google Search forespørgsel fejlede: %s", exc)
+                continue
+
+            if len(sources) >= limit:
+                break
+
+        logger.info("Google Custom Search fandt %d kilder", len(sources))
         return sources
 
     async def _fetch_eur_lex_document(self, search_query: str) -> Optional[Source]:

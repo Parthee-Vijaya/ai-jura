@@ -120,16 +120,16 @@ const ImportanceBadge = styled.span`
   margin-left: 12px;
   background: ${props => {
     switch(props.importance) {
-      case 'high': return '#fed7d7';
-      case 'medium': return '#feebc8';
+      case 'high': return 'rgba(201, 68, 22, 0.12)';
+      case 'medium': return 'rgba(232, 90, 40, 0.15)';
       case 'low': return '#c6f6d5';
       default: return '#e2e8f0';
     }
   }};
   color: ${props => {
     switch(props.importance) {
-      case 'high': return '#c53030';
-      case 'medium': return '#dd6b20';
+      case 'high': return '#7f1d1d';
+      case 'medium': return '#92400e';
       case 'low': return '#38a169';
       default: return '#4a5568';
     }
@@ -310,6 +310,8 @@ const NewsSection = () => {
       setLoading(false);
       setRefreshing(false);
     }
+    // fetchStaticNews is a stable function defined above and doesn't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawItems.length]);
 
   useEffect(() => {

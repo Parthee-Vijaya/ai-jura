@@ -4,16 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaBook,
   FaSearch,
-  FaFilter,
   FaGavel,
   FaRobot,
   FaGraduationCap,
-  FaBuilding,
   FaExternalLinkAlt,
-  FaChevronRight,
-  FaInfoCircle,
   FaTags,
-  FaLanguage,
   FaBalanceScale,
   FaShieldAlt,
   FaCogs,
@@ -968,12 +963,6 @@ const KnowledgeBasePage = () => {
   };
 
   const shouldShowVideoSection = videoItems.length > 0 && (activeCategory === 'video' || activeCategory === 'all');
-
-
-  const getCategoryIcon = (categoryId) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.icon : FaBook;
-  };
 
   return (
     <KnowledgeContainer>

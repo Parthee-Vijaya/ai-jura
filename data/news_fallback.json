@@ -1,5 +1,280 @@
 [
   {
+    "title": "Vejledning om GDPR",
+    "url": "https://www.datatilsynet.dk/regler-og-vejledning/lovgivning",
+    "source": "Datatilsynet",
+    "category": "datatilsynet",
+    "summary": "",
+    "published_at": "2025-10-08T18:46:35.033275",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "vejledning"
+    ],
+    "scraped_at": "2025-10-08T20:46:35.033286",
+    "content_snippet": null
+  },
+  {
+    "title": "Council of the European Union - Digital and AI Policy Updates",
+    "url": "https://www.consilium.europa.eu/en/policies/digital-agenda/",
+    "source": "Council of EU",
+    "category": "eu_council",
+    "summary": "Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
+    "published_at": "2025-10-08T16:46:35.567864",
+    "importance": "medium",
+    "keywords": [
+      "digital agenda",
+      "ai regulation",
+      "digital policy"
+    ],
+    "scraped_at": "2025-10-08T20:46:35.567883",
+    "content_snippet": null
+  },
+  {
+    "title": "KL: Seneste nyheder om kommunernes AI-arbejde",
+    "url": "https://www.kl.dk/nyheder/?tag=338710a0e9a044968793f807bdf05826",
+    "source": "KL",
+    "category": "danish_municipal",
+    "summary": "Besøg KL's nyhedsside for aktuelle beslutninger, vejledninger og projekter om kommunernes brug af AI og data.",
+    "published_at": "2025-10-08T14:46:35.750489",
+    "importance": "medium",
+    "keywords": [
+      "kommuner",
+      "ai",
+      "digitalisering"
+    ],
+    "scraped_at": "2025-10-08T20:46:35.750498",
+    "content_snippet": null
+  },
+  {
+    "title": "Dansk Industri – Digitalisering og AI",
+    "url": "https://www.danskindustri.dk/nyheder/",
+    "source": "Dansk Industri",
+    "category": "danish_industry",
+    "summary": "Hold dig opdateret på Dansk Industri's indblik i AI, industri 4.0 og digital innovation.",
+    "published_at": "2025-10-08T12:46:35.000839",
+    "importance": "medium",
+    "keywords": [
+      "industri",
+      "innovation",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:35.000846",
+    "content_snippet": null
+  },
+  {
+    "title": "Recent AI and Data Protection Court Decisions",
+    "url": "https://curia.europa.eu/jcms/jcms/j_6/en/",
+    "source": "European Court of Justice",
+    "category": "court_cases",
+    "summary": "Visit the European Court of Justice for the latest rulings on AI, automated decision-making, and data protection under GDPR.",
+    "published_at": "2025-10-08T12:46:34.827169",
+    "importance": "medium",
+    "keywords": [
+      "court decisions",
+      "gdpr",
+      "ai",
+      "automated decisions"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.827175",
+    "content_snippet": null
+  },
+  {
+    "title": "Dansk Erhverv – AI og digital regulering",
+    "url": "https://www.danskerhverv.dk/nyheder/",
+    "source": "Dansk Erhverv",
+    "category": "danish_business",
+    "summary": "Følg Dansk Erhverv for analyser af erhvervslivets arbejde med AI, regulering og digitalisering.",
+    "published_at": "2025-10-08T10:46:34.771963",
+    "importance": "medium",
+    "keywords": [
+      "erhverv",
+      "ai",
+      "digitalisering"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.771966",
+    "content_snippet": null
+  },
+  {
+    "title": "K-News – Seneste artikler om AI og jura",
+    "url": "https://www.k-news.dk/nyheder",
+    "source": "K-News",
+    "category": "danish_media",
+    "summary": "Følg K-News for analyser af teknologi, regulation og advokatbranchens arbejde med AI.",
+    "published_at": "2025-10-08T08:46:34.862249",
+    "importance": "medium",
+    "keywords": [
+      "karnov",
+      "jura",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.862256",
+    "content_snippet": null
+  },
+  {
+    "title": "JuraInfo – Seneste nyheder om GDPR og AI",
+    "url": "https://jurainfo.dk/nyheder",
+    "source": "JuraInfo",
+    "category": "danish_law",
+    "summary": "Besøg JuraInfo for analyser, domme og vejledninger om databeskyttelse, AI og compliance i Danmark.",
+    "published_at": "2025-10-08T08:46:34.671931",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "databeskyttelse",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.671934",
+    "content_snippet": null
+  },
+  {
+    "title": "PropriaAI – Insights om ansvarlig AI",
+    "url": "https://propria.ai/blog",
+    "source": "PropriaAI",
+    "category": "ai_industry",
+    "summary": "Læs PropriaAI's blog for governance-frameworks, audits og compliance i AI-projekter.",
+    "published_at": "2025-10-08T06:46:36.606300",
+    "importance": "medium",
+    "keywords": [
+      "responsible ai",
+      "governance",
+      "compliance"
+    ],
+    "scraped_at": "2025-10-08T20:46:36.606315",
+    "content_snippet": null
+  },
+  {
+    "title": "European businesses barely use AI. Brussels wants to fix that.",
+    "url": "https://www.politico.eu/article/europe-business-barely-use-artificial-intelligence-brussels-fix/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO Europe",
+    "category": "eu_news",
+    "summary": "Commission to warn Europe’s slow embrace of artificial intelligence risks squandering economic growth.",
+    "published_at": "2025-10-08T02:18:00",
+    "importance": "medium",
+    "keywords": [
+      "artificial intelligence"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.748017",
+    "content_snippet": "Commission to warn Europe’s slow embrace of artificial intelligence risks squandering economic growth."
+  },
+  {
+    "title": "Regulation (EU) 2024/2847 of the European Parliament and of the Council of 23 October 2024 on horizontal cybersecurity requirements for products with digital elements and amending Regulations (EU) No 168/2013 and (EU) 2019/1020 and Directive (EU) 2020/1828 (Cyber ResilienceAct) (Text with EEA relevance)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R2847&qid=1234567890&rid=3",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to AI Act",
+    "published_at": "2025-10-07T20:46:38.703615",
+    "importance": "medium",
+    "keywords": [
+      "AI Act",
+      "AI Act"
+    ],
+    "scraped_at": "2025-10-08T20:46:38.703616",
+    "content_snippet": null
+  },
+  {
+    "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (Artificial IntelligenceAct) (Text with EEA relevance)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R1689&qid=1234567890&rid=2",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to AI Act",
+    "published_at": "2025-10-07T20:46:38.703425",
+    "importance": "medium",
+    "keywords": [
+      "artificial intelligence",
+      "AI Act",
+      "AI Act"
+    ],
+    "scraped_at": "2025-10-08T20:46:38.703427",
+    "content_snippet": null
+  },
+  {
+    "title": "Regulation (EU) 2023/1781 of the European Parliament and of the Council of 13 September 2023 establishing a framework of measures for strengthening Europe’s semiconductor ecosystem and amending Regulation (EU) 2021/694 (ChipsAct) (Text with EEA relevance)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32023R1781&qid=1234567890&rid=1",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to AI Act",
+    "published_at": "2025-10-07T20:46:38.703231",
+    "importance": "medium",
+    "keywords": [
+      "AI Act",
+      "AI Act"
+    ],
+    "scraped_at": "2025-10-08T20:46:38.703239",
+    "content_snippet": null
+  },
+  {
+    "title": "Regulation (EU) 2025/38 of the European Parliament and of the Council of 19 December 2024 laying down measures to strengthen solidarity and capacities in the Union to detect, prepare for and respond to cyber threats and incidents and amending Regulation (EU) 2021/694 (Cyber Solidarity Act)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32025R0038&qid=1234567890&rid=3",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to artificial intelligence",
+    "published_at": "2025-10-07T20:46:36.703670",
+    "importance": "medium",
+    "keywords": [
+      "artificial intelligence",
+      "artificial intelligence"
+    ],
+    "scraped_at": "2025-10-08T20:46:36.703671",
+    "content_snippet": null
+  },
+  {
+    "title": "Regulation (EU) 2021/694 of the European Parliament and of the Council of 29 April 2021 establishing the Digital Europe Programme and repealing Decision (EU) 2015/2240 (Text with EEA relevance)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32021R0694&qid=1234567890&rid=2",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to artificial intelligence",
+    "published_at": "2025-10-07T20:46:36.703464",
+    "importance": "medium",
+    "keywords": [
+      "artificial intelligence",
+      "artificial intelligence"
+    ],
+    "scraped_at": "2025-10-08T20:46:36.703466",
+    "content_snippet": null
+  },
+  {
+    "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules onartificialintelligenceand amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (ArtificialIntelligenceAct) (Text with EEA relevance)",
+    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R1689&qid=1234567890&rid=1",
+    "source": "EUR-Lex",
+    "category": "eu_legislation",
+    "summary": "EUR-Lex document related to artificial intelligence",
+    "published_at": "2025-10-07T20:46:36.703250",
+    "importance": "medium",
+    "keywords": [
+      "artificial intelligence",
+      "artificial intelligence"
+    ],
+    "scraped_at": "2025-10-08T20:46:36.703257",
+    "content_snippet": null
+  },
+  {
+    "title": "Commission warns Big Tech over how it plugs AI into its services",
+    "url": "https://www.politico.eu/article/commission-warns-big-tech-over-ai-services/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO Europe",
+    "category": "eu_news",
+    "summary": "AI features on Google search, Instagram and elsewhere have to respect digital competition rules, EU executive says.",
+    "published_at": "2025-09-26T11:37:10",
+    "importance": "medium",
+    "keywords": [],
+    "scraped_at": "2025-10-08T20:46:34.748260",
+    "content_snippet": "AI features on Google search, Instagram and elsewhere have to respect digital competition rules, EU executive says."
+  },
+  {
+    "title": "EU readies for timeout on enforcing AI rules",
+    "url": "https://www.politico.eu/article/eu-prepares-ground-pause-artificial-intelligence-rules/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO Europe",
+    "category": "eu_news",
+    "summary": "Concerns over AI Act have reached a head.",
+    "published_at": "2025-09-23T02:30:00",
+    "importance": "medium",
+    "keywords": [
+      "ai act"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.748295",
+    "content_snippet": "Concerns over AI Act have reached a head."
+  },
+  {
     "title": "Interplay between the DSA and the GDPR: EDPB adopts guidelines",
     "url": "https://www.edpb.europa.eu/news/news/2025/interplay-between-dsa-and-gdpr-edpb-adopts-guidelines_en",
     "source": "EDPB",
@@ -12,8 +287,98 @@
       "guidelines",
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:56:18.252246",
+    "scraped_at": "2025-10-08T20:46:34.758077",
     "content_snippet": "Brussels, 12 September - During its September plenary meeting, the European Data Protection Board (EDPB) has adopted guidelines on the interplay between the Digital Services Act (DSA) and the General ..."
+  },
+  {
+    "title": "Google handed €325 million fine in France over Gmail ads and cookies",
+    "url": "https://www.euractiv.com/news/google-handed-e325-million-fine-in-france-over-gmail-ads-and-cookies/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "The French privacy watchdog also fined the ecommerce giant Shein €150 million fine for cookie breaches",
+    "published_at": "2025-09-04T09:26:27",
+    "importance": "medium",
+    "keywords": [
+      "privacy",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792028",
+    "content_snippet": "The French privacy watchdog also fined the ecommerce giant Shein €150 million fine for cookie breaches"
+  },
+  {
+    "title": "EXCLUSIVE: Council to call for EU to monitor competitiveness of cloud, AI",
+    "url": "https://www.euractiv.com/news/exclusive-council-to-call-for-eu-to-monitor-competitiveness-of-cloud-ai/",
+    "source": "Euractiv AI",
+    "category": "eu_news",
+    "summary": "The document, obtained by Euractiv, also stresses that the bloc must take steps to boost digital skills",
+    "published_at": "2025-09-02T12:49:04",
+    "importance": "medium",
+    "keywords": [
+      "ai",
+      "digital"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.809969",
+    "content_snippet": "The document, obtained by Euractiv, also stresses that the bloc must take steps to boost digital skills"
+  },
+  {
+    "title": "Austria’s privacy watchdog tells YouTube to give users access to their data",
+    "url": "https://www.euractiv.com/news/austrias-privacy-watchdog-tells-youtube-to-give-users-access-to-their-data/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "But the decision by the Austrian authority comes more than five years after privacy group Noyb filed the data access complaint",
+    "published_at": "2025-08-29T13:33:14",
+    "importance": "medium",
+    "keywords": [
+      "privacy",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792128",
+    "content_snippet": "But the decision by the Austrian authority comes more than five years after privacy group Noyb filed the data access complaint"
+  },
+  {
+    "title": "Commission study warns rules and mistrust stall AI in healthcare",
+    "url": "https://www.euractiv.com/news/commission-study-warns-rules-and-mistrust-stall-ai-in-healthcare/",
+    "source": "Euractiv AI",
+    "category": "eu_news",
+    "summary": "Lack of trust among healthcare professionals and patients is a major obstacle to the adoption of AI in healthcare, the report warns, calling for action to address concerns over reliability and ethics",
+    "published_at": "2025-08-18T08:10:10",
+    "importance": "medium",
+    "keywords": [
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.810068",
+    "content_snippet": "Lack of trust among healthcare professionals and patients is a major obstacle to the adoption of AI in healthcare, the report warns, calling for action to address concerns over reliability and ethics"
+  },
+  {
+    "title": "Privacy NGO Noyb targets three Chinese apps with data access complaints",
+    "url": "https://www.euractiv.com/news/privacy-ngo-noyb-targets-three-chinese-apps-with-data-access-complaints/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "TikTok, AliExpress and WeChat stand accused of failing to live up to the General Data Protection Regulation's rules on data access.",
+    "published_at": "2025-07-17T09:21:33",
+    "importance": "medium",
+    "keywords": [
+      "data protection",
+      "privacy",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792173",
+    "content_snippet": "TikTok, AliExpress and WeChat stand accused of failing to live up to the General Data Protection Regulation's rules on data access."
+  },
+  {
+    "title": "Targeted modifications of the GDPR: EDPB & EDPS welcome simplification of record keeping obligations and request further clarifications",
+    "url": "https://www.edpb.europa.eu/news/news/2025/targeted-modifications-gdpr-edpb-edps-welcome-simplification-record-keeping_en",
+    "source": "EDPB",
+    "category": "edpb",
+    "summary": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation amending certain regulations, including the GDPR. The Proposal, part of the fourth simplification Omnibus, aims to simplify EU rules and reduce administrative burden, extending certain mitigating measure...",
+    "published_at": "2025-07-09T14:00:00",
+    "importance": "medium",
+    "keywords": [
+      "ai",
+      "gdpr"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.758345",
+    "content_snippet": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation ame..."
   },
   {
     "title": "The Helsinki Statement on enhanced clarity, support and engagement",
@@ -26,8 +391,37 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:56:18.252801",
+    "scraped_at": "2025-10-08T20:46:34.758564",
     "content_snippet": "A fundamental rights approach to innovation and competitiveness Helsinki, 3 July 2025 – At a high-level meeting in Helsinki on 1–2 July 2025, the European Data Protection Board (EDPB) adopted a landma..."
+  },
+  {
+    "title": "German privacy watchdog asks for Chinese AI DeepSeek to be blocked from app stores",
+    "url": "https://www.euractiv.com/news/german-privacy-watchdog-asks-for-chinese-ai-deepseek-to-be-blocked-from-app-stores/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "DeepSeek's privacy issues in the EU are stacking up.",
+    "published_at": "2025-06-27T11:20:03",
+    "importance": "medium",
+    "keywords": [
+      "privacy",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792212",
+    "content_snippet": "DeepSeek's privacy issues in the EU are stacking up."
+  },
+  {
+    "title": "Council and Parliament reach agreement on law speeding up GDPR procedures",
+    "url": "https://www.euractiv.com/news/council-and-parliament-reach-agreement-on-law-speeding-up-gdpr-procedures/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "The law expected to apply in the second half of 2026 at the earliest.",
+    "published_at": "2025-06-16T16:57:41",
+    "importance": "medium",
+    "keywords": [
+      "gdpr"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792246",
+    "content_snippet": "The law expected to apply in the second half of 2026 at the earliest."
   },
   {
     "title": "EDPB publishes final version of guidelines on data transfers to third country authorities and SPE training material on AI and data protection",
@@ -43,8 +437,23 @@
       "gdpr",
       "artificial intelligence"
     ],
-    "scraped_at": "2025-09-20T21:56:18.253580",
+    "scraped_at": "2025-10-08T20:46:34.758978",
     "content_snippet": "Brussels, 05 June - During its latest plenary, the European Data Protection Board (EDPB) adopted the final version of its guidelines on Art.48 GDPR about data transfers to third country authorities, a..."
+  },
+  {
+    "title": "Privacy hangs in the balance as Meta fires up AI training in Europe",
+    "url": "https://www.euractiv.com/news/privacy-hangs-in-the-balance-as-meta-fires-up-ai-training-in-europe/",
+    "source": "Euractiv GDPR",
+    "category": "eu_news",
+    "summary": "Debate on training AI systems developed by US tech majors with European posts is rumbling on.",
+    "published_at": "2025-05-30T04:00:10",
+    "importance": "medium",
+    "keywords": [
+      "privacy",
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.792336",
+    "content_snippet": "Debate on training AI systems developed by US tech majors with European posts is rumbling on."
   },
   {
     "title": "Simplification of record-keeping obligation: EDPB and EDPS adopt letter to EU Commission",
@@ -57,7 +466,7 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:56:18.254168",
+    "scraped_at": "2025-10-08T20:46:34.759482",
     "content_snippet": "Brussels, 08 May - The European Data Protection Board (EDPB) and the European Data Protection Supervisor (EDPS) have adopted a letter, addressed to the European Commission, on the upcoming proposal on..."
   },
   {
@@ -71,8 +480,36 @@
     "keywords": [
       "gdpr"
     ],
-    "scraped_at": "2025-09-20T21:56:18.254583",
+    "scraped_at": "2025-10-08T20:46:34.759849",
     "content_snippet": "Brussels, 06 May - During its latest plenary, the European Data Protection Board (EDPB) adopted an opinion on the European Commission’s draft adequacy decision under the GDPR concerning the European P..."
+  },
+  {
+    "title": "Commission misses AI code of practice deadline",
+    "url": "https://www.euractiv.com/news/commission-misses-ai-code-of-practice-deadline/",
+    "source": "Euractiv AI",
+    "category": "eu_news",
+    "summary": "The code is seen as a potential global standard-setter for this frontier technology.",
+    "published_at": "2025-05-02T10:18:51",
+    "importance": "medium",
+    "keywords": [
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.810286",
+    "content_snippet": "The code is seen as a potential global standard-setter for this frontier technology."
+  },
+  {
+    "title": "EDPB annual report 2024: protecting personal data in a changing landscape",
+    "url": "https://www.edpb.europa.eu/news/news/2025/edpb-annual-report-2024-protecting-personal-data-changing-landscape_en",
+    "source": "EDPB",
+    "category": "edpb",
+    "summary": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important milestones, such as the adoption of the 2024-2027 strategy, the increase in Art. 64(2) consistency opinions and the continued efforts to provide guidance and legal advice. EDPB Chair Anu Talus said: “As I...",
+    "published_at": "2025-04-23T14:00:00",
+    "importance": "medium",
+    "keywords": [
+      "ai"
+    ],
+    "scraped_at": "2025-10-08T20:46:34.761101",
+    "content_snippet": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important mile..."
   },
   {
     "title": "EDPB adopts guidelines on processing personal data through blockchains and is ready to cooperate with AI office on guidelines on AI Act and EU data protection law",
@@ -86,7 +523,7 @@
       "ai",
       "guidelines"
     ],
-    "scraped_at": "2025-09-20T21:56:18.255955",
+    "scraped_at": "2025-10-08T20:46:34.761310",
     "content_snippet": "Brussels, 14 April - During its April 2025 plenary, the European Data Protection Board (EDPB) has adopted guidelines on processing of personal data through blockchain technologies. A blockchain is a d..."
   },
   {
@@ -98,191 +535,7 @@
     "published_at": "2025-03-14T13:00:00",
     "importance": "high",
     "keywords": [],
-    "scraped_at": "2025-09-20T21:56:18.256214",
+    "scraped_at": "2025-10-08T20:46:34.761561",
     "content_snippet": "Brussels, 14 March - During its March 2025 plenary meeting, the European Data Protection Board (EDPB) adopted a statement on the implementation of the Passenger Name Record Directive (PNR) in light of..."
-  },
-  {
-    "title": "Council of the European Union - Digital and AI Policy Updates",
-    "url": "https://www.consilium.europa.eu/en/policies/digital-agenda/",
-    "source": "Council of EU",
-    "category": "eu_council",
-    "summary": "Visit the Council's digital agenda page for the latest updates on AI regulation and digital policy developments.",
-    "published_at": "2025-09-20T17:56:18.913023",
-    "importance": "medium",
-    "keywords": [
-      "digital agenda",
-      "ai regulation",
-      "digital policy"
-    ],
-    "scraped_at": "2025-09-20T21:56:18.913093",
-    "content_snippet": null
-  },
-  {
-    "title": "KL: Seneste nyheder om kommunernes AI-arbejde",
-    "url": "https://www.kl.dk/nyheder/",
-    "source": "KL",
-    "category": "danish_municipal",
-    "summary": "Besøg KL's nyhedsside for aktuelle beslutninger, vejledninger og projekter om kommunernes brug af AI og data.",
-    "published_at": "2025-09-20T15:56:19.235578",
-    "importance": "medium",
-    "keywords": [
-      "kommuner",
-      "ai",
-      "digitalisering"
-    ],
-    "scraped_at": "2025-09-20T21:56:19.235588",
-    "content_snippet": null
-  },
-  {
-    "title": "Recent AI and Data Protection Court Decisions",
-    "url": "https://curia.europa.eu/jcms/jcms/j_6/en/",
-    "source": "European Court of Justice",
-    "category": "court_cases",
-    "summary": "Visit the European Court of Justice for the latest rulings on AI, automated decision-making, and data protection under GDPR.",
-    "published_at": "2025-09-20T13:56:18.292543",
-    "importance": "medium",
-    "keywords": [
-      "court decisions",
-      "gdpr",
-      "ai",
-      "automated decisions"
-    ],
-    "scraped_at": "2025-09-20T21:56:18.292556",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2024/2847 of the European Parliament and of the Council of 23 October 2024 on horizontal cybersecurity requirements for products with digital elements and amending Regulations (EU) No 168/2013 and (EU) 2019/1020 and Directive (EU) 2020/1828 (Cyber ResilienceAct) (Text with EEA relevance)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R2847&qid=1234567890&rid=3",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:56:22.201223",
-    "importance": "medium",
-    "keywords": [
-      "AI Act",
-      "AI Act"
-    ],
-    "scraped_at": "2025-09-20T21:56:22.201224",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (Artificial IntelligenceAct) (Text with EEA relevance)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R1689&qid=1234567890&rid=2",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:56:22.201097",
-    "importance": "medium",
-    "keywords": [
-      "artificial intelligence",
-      "AI Act",
-      "AI Act"
-    ],
-    "scraped_at": "2025-09-20T21:56:22.201099",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2023/1781 of the European Parliament and of the Council of 13 September 2023 establishing a framework of measures for strengthening Europe’s semiconductor ecosystem and amending Regulation (EU) 2021/694 (ChipsAct) (Text with EEA relevance)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32023R1781&qid=1234567890&rid=1",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to AI Act",
-    "published_at": "2025-09-19T21:56:22.200950",
-    "importance": "medium",
-    "keywords": [
-      "AI Act",
-      "AI Act"
-    ],
-    "scraped_at": "2025-09-20T21:56:22.200957",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2025/38 of the European Parliament and of the Council of 19 December 2024 laying down measures to strengthen solidarity and capacities in the Union to detect, prepare for and respond to cyber threats and incidents and amending Regulation (EU) 2021/694 (Cyber Solidarity Act)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32025R0038&qid=1234567890&rid=3",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:56:20.158227",
-    "importance": "medium",
-    "keywords": [
-      "artificial intelligence",
-      "artificial intelligence"
-    ],
-    "scraped_at": "2025-09-20T21:56:20.158228",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2021/694 of the European Parliament and of the Council of 29 April 2021 establishing the Digital Europe Programme and repealing Decision (EU) 2015/2240 (Text with EEA relevance)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32021R0694&qid=1234567890&rid=2",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:56:20.158095",
-    "importance": "medium",
-    "keywords": [
-      "artificial intelligence",
-      "artificial intelligence"
-    ],
-    "scraped_at": "2025-09-20T21:56:20.158097",
-    "content_snippet": null
-  },
-  {
-    "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules onartificialintelligenceand amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 (ArtificialIntelligenceAct) (Text with EEA relevance)",
-    "url": "https://eur-lex.europa.eu/legal-content/AUTO/?uri=CELEX:32024R1689&qid=1234567890&rid=1",
-    "source": "EUR-Lex",
-    "category": "eu_legislation",
-    "summary": "EUR-Lex document related to artificial intelligence",
-    "published_at": "2025-09-19T21:56:20.157909",
-    "importance": "medium",
-    "keywords": [
-      "artificial intelligence",
-      "artificial intelligence"
-    ],
-    "scraped_at": "2025-09-20T21:56:20.157917",
-    "content_snippet": null
-  },
-  {
-    "title": "Vejledning om GDPR",
-    "url": "https://www.datatilsynet.dk/regler-og-vejledning/lovgivning",
-    "source": "Datatilsynet",
-    "category": "datatilsynet",
-    "summary": "",
-    "published_at": "2025-09-19T17:56:18.420109",
-    "importance": "medium",
-    "keywords": [
-      "gdpr",
-      "vejledning"
-    ],
-    "scraped_at": "2025-09-20T21:56:18.420138",
-    "content_snippet": null
-  },
-  {
-    "title": "Targeted modifications of the GDPR: EDPB & EDPS welcome simplification of record keeping obligations and request further clarifications",
-    "url": "https://www.edpb.europa.eu/news/news/2025/targeted-modifications-gdpr-edpb-edps-welcome-simplification-record-keeping_en",
-    "source": "EDPB",
-    "category": "edpb",
-    "summary": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation amending certain regulations, including the GDPR. The Proposal, part of the fourth simplification Omnibus, aims to simplify EU rules and reduce administrative burden, extending certain mitigating measure...",
-    "published_at": "2025-07-09T14:00:00",
-    "importance": "medium",
-    "keywords": [
-      "ai",
-      "gdpr"
-    ],
-    "scraped_at": "2025-09-20T21:56:18.252569",
-    "content_snippet": "Brussels, 9 July 2025 - The European Data Protection Board (EDPB) and European Data Protection Supervisor (EDPS) issued today a Joint Opinion on the European Commission’s Proposal for a Regulation ame..."
-  },
-  {
-    "title": "EDPB annual report 2024: protecting personal data in a changing landscape",
-    "url": "https://www.edpb.europa.eu/news/news/2025/edpb-annual-report-2024-protecting-personal-data-changing-landscape_en",
-    "source": "EDPB",
-    "category": "edpb",
-    "summary": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important milestones, such as the adoption of the 2024-2027 strategy, the increase in Art. 64(2) consistency opinions and the continued efforts to provide guidance and legal advice. EDPB Chair Anu Talus said: “As I...",
-    "published_at": "2025-04-23T14:00:00",
-    "importance": "medium",
-    "keywords": [
-      "ai"
-    ],
-    "scraped_at": "2025-09-20T21:56:18.255743",
-    "content_snippet": "Brussels, 23 April - The European Data Protection Board (EDPB) has published its 2024 Annual Report. The report provides an overview of the EDPB work carried out in 2024 and reflects on important mile..."
   }
 ]

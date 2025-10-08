@@ -65,7 +65,7 @@ const Spinner = styled.div`
   }};
   border-top: ${props => {
     const thickness = props.size === 'small' ? '2px' : props.size === 'large' ? '4px' : '3px';
-    return `${thickness} solid ${props.theme.colors.primary}`;
+    return `${thickness} solid #C94416`;
   }};
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
@@ -84,7 +84,7 @@ const DotsSpinner = styled.div`
   .dot {
     width: ${props => props.size === 'small' ? '6px' : props.size === 'large' ? '12px' : '8px'};
     height: ${props => props.size === 'small' ? '6px' : props.size === 'large' ? '12px' : '8px'};
-    background: ${props => props.theme.colors.primary};
+    background: #C94416;
     border-radius: 50%;
     animation: ${pulse} 1.2s ease-in-out infinite;
 
@@ -111,7 +111,8 @@ const ProgressBar = styled.div`
 
   .progress-fill {
     height: 100%;
-    background: ${props => props.theme.colors.gradients.primary};
+    background: linear-gradient(90deg, #C94416 0%, #E85A28 50%, #C94416 100%);
+    background-size: 200% 100%;
     border-radius: 2px;
     animation: ${spin} 1.5s ease-in-out infinite;
     transform-origin: center;
@@ -167,7 +168,7 @@ const JuridicalSpinner = styled.div`
     width: 70%;
     height: 70%;
     border: ${props => props.size === 'small' ? '1px' : '2px'} solid transparent;
-    border-bottom: ${props => props.size === 'small' ? '1px' : '2px'} solid ${props => props.theme.colors.primary};
+    border-bottom: ${props => props.size === 'small' ? '1px' : '2px'} solid #C94416;
     border-radius: 50%;
     animation: ${spin} 1.5s linear infinite reverse;
   }

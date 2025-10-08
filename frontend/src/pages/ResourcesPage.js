@@ -7,12 +7,8 @@ import {
   FaGavel,
   FaEuroSign,
   FaSearch,
-  FaFilter,
-  FaShieldAlt,
   FaBalanceScale,
-  FaDatabase,
   FaGlobeEurope,
-  FaFileAlt,
   FaInfoCircle,
   FaPlus,
   FaTimes,
@@ -104,7 +100,7 @@ const CategoryButton = styled.button`
   gap: 0.25rem;
 
   &:hover {
-    background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.gray[200]};
+    background: ${props => props.active ? props.theme.colors.primaryDark || '#A03612' : props.theme.colors.gray[200]};
   }
 `;
 
@@ -487,7 +483,7 @@ const ModalActions = styled.div`
       color: white;
 
       &:hover {
-        background: ${props => props.theme.colors.primaryDark || '#1a365d'};
+        background: ${props => props.theme.colors.primaryDark || '#A03612'};
       }
     }
   }
@@ -592,7 +588,7 @@ const ResourcesPage = () => {
 
       return matchesCategory && matchesSearch;
     });
-  }, [searchTerm, activeCategory]);
+  }, [searchTerm, activeCategory, resources]);
 
   const totalResources = resources.length;
   const totalLinks = resources.reduce((sum, resource) => sum + resource.links.length, 0);
