@@ -309,6 +309,53 @@ const SummaryMetaItem = styled.div`
   }
 `;
 
+const RiskScoreDisplay = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+`;
+
+const RiskScoreValue = styled.div`
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.gray[800]};
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+
+  .score {
+    font-size: 1.5rem;
+    color: ${props => props.$scoreColor || props.theme.colors.gray[800]};
+  }
+
+  .max {
+    font-size: 0.9rem;
+    color: ${props => props.theme.colors.gray[600]};
+  }
+`;
+
+const RiskScoreBar = styled.div`
+  width: 100%;
+  height: 8px;
+  background: ${props => props.theme.colors.gray[200]};
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: ${props => props.$percentage || 0}%;
+    background: ${props => props.$barColor || props.theme.colors.primary};
+    border-radius: 999px;
+    transition: width 0.6s ease-out;
+  }
+`;
+
 const SummaryText = styled.p`
   margin: 0;
   line-height: 1.6;
@@ -567,6 +614,13 @@ const QuickCheckPage = () => {
     }
   };
 
+  const getRiskScoreColor = (score) => {
+    if (score >= 75) return '#dc2626'; // Red for high risk
+    if (score >= 50) return '#f59e0b'; // Orange for medium risk
+    if (score >= 25) return '#fbbf24'; // Yellow for moderate risk
+    return '#10b981'; // Green for low risk
+  };
+
   return (
     <QuickCheckContainer>
       <PageHeader>
@@ -708,10 +762,19 @@ const QuickCheckPage = () => {
                   <span>AI Act risikoniveau</span>
                   <strong>{getRiskText(results.ai_act?.risk_level)}</strong>
                 </SummaryMetaItem>
-                <SummaryMetaItem>
-                  <span>Risikoscore</span>
-                  <strong>{results.rule_engine.risk_score ?? 0}</strong>
-                </SummaryMetaItem>
+                <RiskScoreDisplay>
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b7280' }}>
+                    Risikoscore
+                  </span>
+                  <RiskScoreValue $scoreColor={getRiskScoreColor(results.rule_engine.risk_score ?? 0)}>
+                    <span className="score">{results.rule_engine.risk_score ?? 0}</span>
+                    <span className="max">ud af 100</span>
+                  </RiskScoreValue>
+                  <RiskScoreBar
+                    $percentage={results.rule_engine.risk_score ?? 0}
+                    $barColor={getRiskScoreColor(results.rule_engine.risk_score ?? 0)}
+                  />
+                </RiskScoreDisplay>
                 <SummaryMetaItem>
                   <span>GDPR relevant</span>
                   <strong>{results.gdpr?.relevant ? 'Ja' : 'Nej'}</strong>
