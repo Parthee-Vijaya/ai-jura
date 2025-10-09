@@ -570,6 +570,76 @@ const CTAButton = styled(Link)`
   }
 `;
 
+const PhaseContainer = styled(motion.div)`
+  background: white;
+  border-radius: ${props => props.theme.borderRadius};
+  box-shadow: ${props => props.theme.shadows.md};
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border-left: 4px solid ${props => props.$phaseColor || '#C94416'};
+`;
+
+const PhaseHeader = styled.div`
+  background: ${props => props.$phaseColor || '#C94416'}15;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+
+  h3 {
+    margin: 0;
+    color: ${props => props.theme.colors.gray[800]};
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    svg {
+      color: ${props => props.$phaseColor || '#C94416'};
+    }
+  }
+
+  p {
+    margin: 0.5rem 0 0;
+    color: ${props => props.theme.colors.gray[600]};
+    font-size: 0.9rem;
+  }
+`;
+
+const PhaseBody = styled.div`
+  padding: 1.5rem;
+`;
+
+const PhaseBanner = styled.div`
+  background: linear-gradient(135deg, rgba(201, 68, 22, 0.1), rgba(232, 90, 40, 0.08));
+  border: 1px solid rgba(201, 68, 22, 0.2);
+  border-radius: ${props => props.theme.borderRadius};
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .icon {
+    font-size: 2rem;
+    color: #C94416;
+  }
+
+  .content {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 0.5rem;
+      color: ${props => props.theme.colors.gray[800]};
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0;
+      color: ${props => props.theme.colors.gray[700]};
+      line-height: 1.5;
+    }
+  }
+`;
+
 const ProgressTracker = styled(motion.div)`
   background: ${props => props.theme.mode === 'dark'
     ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.85) 100%)'
@@ -723,6 +793,12 @@ const QuickCheckPage = () => {
   const [enableWebSearch, setEnableWebSearch] = useState(true);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState(null);
+  const [phaseResults, setPhaseResults] = useState({
+    phase1: null,
+    phase2: null,
+    phase3: null
+  });
+  const [currentPhase, setCurrentPhase] = useState(0);
 
   const { register, handleSubmit, control, formState: { errors } } = useForm();
 
@@ -797,10 +873,13 @@ const QuickCheckPage = () => {
     setResults(null);
     setStartTime(Date.now());
     setElapsedTime(0);
+    setPhaseResults({ phase1: null, phase2: null, phase3: null });
+    setCurrentPhase(0);
 
     // Generate client-side session ID
     const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     let pollInterval = null;
+    let intermediatePollInterval = null;
     let pollCount = 0;
     const maxPolls = 200; // Max 100 seconds (200 * 500ms)
 
@@ -823,6 +902,30 @@ const QuickCheckPage = () => {
         session_id: sessionId,
         enable_web_search: enableWebSearch
       });
+
+      // Poll for intermediate results every 500ms
+      intermediatePollInterval = setInterval(async () => {
+        try {
+          const intermediateResponse = await axios.get(`/api/compliance/intermediate/${sessionId}`);
+          const intermediateData = intermediateResponse.data;
+
+          // Update phase results when they become available
+          if (intermediateData.phase_1 && !phaseResults.phase1) {
+            setPhaseResults(prev => ({ ...prev, phase1: intermediateData.phase_1 }));
+            setCurrentPhase(1);
+          }
+          if (intermediateData.phase_2 && !phaseResults.phase2) {
+            setPhaseResults(prev => ({ ...prev, phase2: intermediateData.phase_2 }));
+            setCurrentPhase(2);
+          }
+          if (intermediateData.phase_3 && !phaseResults.phase3) {
+            setPhaseResults(prev => ({ ...prev, phase3: intermediateData.phase_3 }));
+            setCurrentPhase(3);
+          }
+        } catch (err) {
+          // Ignore polling errors
+        }
+      }, 500);
 
       // Poll for progress updates every 500ms
       pollInterval = setInterval(async () => {
@@ -854,6 +957,10 @@ const QuickCheckPage = () => {
         clearInterval(pollInterval);
         pollInterval = null;
       }
+      if (intermediatePollInterval) {
+        clearInterval(intermediatePollInterval);
+        intermediatePollInterval = null;
+      }
 
       // Final progress check
       try {
@@ -876,6 +983,9 @@ const QuickCheckPage = () => {
       // Stop polling on error
       if (pollInterval) {
         clearInterval(pollInterval);
+      }
+      if (intermediatePollInterval) {
+        clearInterval(intermediatePollInterval);
       }
       console.error('Hurtig tjek fejl:', error);
       const message = error?.response?.data?.detail || 'Der opstod en fejl. Prøv igen.';
@@ -1105,6 +1215,193 @@ const QuickCheckPage = () => {
             })}
           </ProgressList>
         </ProgressTracker>
+      )}
+
+      {/* Phase 1: Compliance Analyse */}
+      {phaseResults.phase1 && (
+        <PhaseContainer
+          $phaseColor="#10b981"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <PhaseHeader $phaseColor="#10b981">
+            <h3>
+              <FaCheckCircle />
+              Fase 1: Compliance Analyse Færdig
+            </h3>
+            <p>AI Act og GDPR vurdering gennemført</p>
+          </PhaseHeader>
+          <PhaseBody>
+            <ResultsGrid>
+              <ResultCard>
+                <div className={getRiskClass(phaseResults.phase1.ai_act?.risk_level)}>
+                  <div className="icon">
+                    {React.createElement(getRiskIcon(phaseResults.phase1.ai_act?.risk_level))}
+                  </div>
+                </div>
+                <h3>AI Act Risikoniveau</h3>
+                <div className="value">
+                  {getRiskText(phaseResults.phase1.ai_act?.risk_level)}
+                </div>
+                <div className="description">
+                  Klassifikation jf. EU AI Act
+                </div>
+              </ResultCard>
+
+              <ResultCard>
+                <div className={phaseResults.phase1.gdpr?.relevant ? 'high-risk' : 'low-risk'}>
+                  <div className="icon">
+                    {phaseResults.phase1.gdpr?.relevant ? <FaExclamationTriangle /> : <FaCheckCircle />}
+                  </div>
+                </div>
+                <h3>GDPR Anvendelig</h3>
+                <div className="value">
+                  {phaseResults.phase1.gdpr?.relevant ? 'Ja' : 'Nej'}
+                </div>
+                <div className="description">
+                  {phaseResults.phase1.gdpr?.requires_dpia ? 'DPIA påkrævet' : 'Behandling af personoplysninger'}
+                </div>
+              </ResultCard>
+
+              <ResultCard>
+                <div className={phaseResults.phase1.needs_full_assessment ? 'medium-risk' : 'low-risk'}>
+                  <div className="icon">
+                    {phaseResults.phase1.needs_full_assessment ? <FaExclamationTriangle /> : <FaCheckCircle />}
+                  </div>
+                </div>
+                <h3>Fuld Analyse Nødvendig</h3>
+                <div className="value">
+                  {phaseResults.phase1.needs_full_assessment ? 'Ja' : 'Nej'}
+                </div>
+                <div className="description">
+                  Omfattende analyse anbefalet
+                </div>
+              </ResultCard>
+            </ResultsGrid>
+
+            {phaseResults.phase1.ai_act?.reasons && phaseResults.phase1.ai_act.reasons.length > 0 && (
+              <DetailsSection>
+                <h3>AI Act Analyse</h3>
+                <ul>
+                  {phaseResults.phase1.ai_act.reasons.map((reason, index) => (
+                    <li key={index}>{reason}</li>
+                  ))}
+                </ul>
+              </DetailsSection>
+            )}
+
+            {phaseResults.phase1.recommendations && phaseResults.phase1.recommendations.length > 0 && (
+              <DetailsSection>
+                <h3>Hurtige Anbefalinger</h3>
+                <ul>
+                  {phaseResults.phase1.recommendations.map((rec, index) => (
+                    <li key={index}>{rec}</li>
+                  ))}
+                </ul>
+              </DetailsSection>
+            )}
+          </PhaseBody>
+        </PhaseContainer>
+      )}
+
+      {/* Phase 2: Web Research */}
+      {currentPhase >= 2 && !phaseResults.phase2 && enableWebSearch && (
+        <PhaseBanner>
+          <div className="icon">
+            <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+          </div>
+          <div className="content">
+            <h4>🌐 Søger efter præcedens og relevante afgørelser...</h4>
+            <p>Scanner juridiske databaser: EUR-Lex, Datatilsynet, EDPB, DuckDuckGo</p>
+          </div>
+        </PhaseBanner>
+      )}
+
+      {phaseResults.phase2 && phaseResults.phase2.precedents && phaseResults.phase2.precedents.length > 0 && (
+        <PhaseContainer
+          $phaseColor="#3b82f6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <PhaseHeader $phaseColor="#3b82f6">
+            <h3>
+              <FaBalanceScale />
+              Fase 2: Web Research Færdig
+            </h3>
+            <p>Fundet {phaseResults.phase2.precedents.length} relevante kilder</p>
+          </PhaseHeader>
+          <PhaseBody>
+            {phaseResults.phase2.precedents_summary && (
+              <p style={{ marginBottom: '1rem', color: '#475569', lineHeight: 1.5 }}>
+                {phaseResults.phase2.precedents_summary}
+              </p>
+            )}
+            <PrecedentsList>
+              {phaseResults.phase2.precedents.map((precedent, index) => (
+                <PrecedentItem
+                  key={index}
+                  href={precedent.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="icon">
+                    <FaBalanceScale />
+                  </div>
+                  <div className="content">
+                    <div className="title">
+                      {precedent.title}
+                      <FaExternalLinkAlt size={12} />
+                    </div>
+                    {precedent.authority && (
+                      <div className="authority">{precedent.authority}</div>
+                    )}
+                  </div>
+                </PrecedentItem>
+              ))}
+            </PrecedentsList>
+          </PhaseBody>
+        </PhaseContainer>
+      )}
+
+      {/* Phase 3: AI Summary */}
+      {currentPhase >= 3 && !phaseResults.phase3 && (
+        <PhaseBanner>
+          <div className="icon">
+            <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+          </div>
+          <div className="content">
+            <h4>🤖 Genererer AI-drevet sammenfatning...</h4>
+            <p>Analyserer fund og compliance data med avanceret LLM</p>
+          </div>
+        </PhaseBanner>
+      )}
+
+      {phaseResults.phase3 && phaseResults.phase3.short_summary && (
+        <PhaseContainer
+          $phaseColor="#8b5cf6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <PhaseHeader $phaseColor="#8b5cf6">
+            <h3>
+              <FaBalanceScale />
+              Fase 3: AI Sammenfatning
+            </h3>
+            <p>Baseret på compliance analyse og web research</p>
+          </PhaseHeader>
+          <PhaseBody>
+            <ShortSummaryBox>
+              <h3>
+                <FaBalanceScale />
+                AI Compliance Vurdering
+              </h3>
+              <p>{phaseResults.phase3.short_summary}</p>
+            </ShortSummaryBox>
+          </PhaseBody>
+        </PhaseContainer>
       )}
 
       {results && (
