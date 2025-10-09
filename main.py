@@ -339,6 +339,7 @@ class QuickCheckRequest(BaseModel):
     behandler_persondata: bool = False
     automatiserede_beslutninger: bool = False
     enable_web_search: bool = True
+    session_id: Optional[str] = None
 
 
 class CommitMetadata(BaseModel):
@@ -795,8 +796,8 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
     try:
         from src.agents.quick_check_agent import run_quick_check_agent
 
-        # Generate session ID for progress tracking
-        session_id = str(uuid4())
+        # Use session ID from request or generate new one
+        session_id = request.session_id or str(uuid4())
 
         # Create progress callback
         async def progress_callback(message: str, status: str):
