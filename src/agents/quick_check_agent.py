@@ -213,8 +213,13 @@ async def run_quick_check_agent(
     model_name: Optional[str] = None,
     progress_callback: Optional[callable] = None,
     enable_web_search: bool = True,
+    intermediate_callback: Optional[callable] = None,
 ) -> Dict[str, Any]:
-    """Kør agenten og returner JSON-output med web research."""
+    """Kør agenten og returner JSON-output med web research.
+
+    Args:
+        intermediate_callback: Callback der kaldes med delresultater efter hver fase
+    """
     import time
     start_time = time.time()
 
@@ -266,6 +271,25 @@ async def run_quick_check_agent(
         if automatiserede_beslutninger:
             await progress_callback("⚠ Automatiserede beslutninger - Artikel 22 gælder", "loading")
 
+    # Send intermediate result efter fase 1 (compliance analyse)
+    phase1_result = {
+        "phase": 1,
+        "phase_name": "Compliance Analyse",
+        "ai_act": {
+            "risk_level": risk_level.value,
+            "reasons": reasons,
+        },
+        "gdpr": {
+            "relevant": gdpr_relevant,
+            "requires_dpia": gdpr_high_risk,
+        },
+        "needs_full_assessment": risk_level in {"high", "unacceptable"} or gdpr_high_risk,
+        "recommendations": _generate_recommendations(risk_level.value, gdpr_relevant, gdpr_high_risk),
+    }
+
+    if intermediate_callback:
+        await intermediate_callback(phase1_result)
+
     # 2. Søg efter præcedens og afgørelser (async) - kun hvis enabled
     if enable_web_search:
         if progress_callback:
@@ -280,6 +304,18 @@ async def run_quick_check_agent(
             if progress_callback:
                 await progress_callback(f"✓ Web research færdig ({search_duration:.2f}s)", "success")
                 await progress_callback(f"📚 Fundet {len(precedents_data.get('precedents', []))} relevante kilder", "loading")
+
+            # Send intermediate result efter fase 2 (web research)
+            phase2_result = {
+                "phase": 2,
+                "phase_name": "Web Research",
+                "precedents": precedents_data.get("precedents", []),
+                "precedents_summary": precedents_data.get("summary", ""),
+            }
+
+            if intermediate_callback:
+                await intermediate_callback(phase2_result)
+
         except Exception as e:
             search_duration = time.time() - search_start
             logger.warning(f"Precedent search failed: {e}")
@@ -329,6 +365,17 @@ Svar kun med tekst, ingen overskrifter eller formatering."""
         if progress_callback:
             await progress_callback(f"✓ LLM sammenfatning genereret ({llm_duration:.2f}s)", "success")
             await progress_callback(f"→ Sammenfatning længde: {len(short_summary)} tegn", "loading")
+
+        # Send intermediate result efter fase 3 (LLM summary)
+        phase3_result = {
+            "phase": 3,
+            "phase_name": "AI Sammenfatning",
+            "short_summary": short_summary.strip(),
+        }
+
+        if intermediate_callback:
+            await intermediate_callback(phase3_result)
+
     except Exception as e:
         llm_duration = time.time() - llm_start
         logger.warning(f"LLM summary failed: {e}")

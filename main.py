@@ -86,6 +86,7 @@ TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS",
 
 # Global progress tracking storage
 progress_storage: Dict[str, List[Dict[str, Any]]] = {}
+intermediate_results_storage: Dict[str, Dict[str, Any]] = {}
 
 def get_progress(session_id: str) -> List[Dict[str, Any]]:
     """Get progress for a session."""
@@ -100,6 +101,14 @@ async def add_progress(session_id: str, message: str, status: str):
         "status": status,
         "timestamp": datetime.now(UTC).isoformat()
     })
+
+async def add_intermediate_result(session_id: str, phase_data: Dict[str, Any]):
+    """Store intermediate results for a phase."""
+    if session_id not in intermediate_results_storage:
+        intermediate_results_storage[session_id] = {}
+
+    phase = phase_data.get("phase")
+    intermediate_results_storage[session_id][f"phase_{phase}"] = phase_data
 
 AI_CASES_STORE = Path(os.getenv("AI_CASES_STORE", "data/ai_cases.json"))
 AI_CASES_LOCK = asyncio.Lock()
@@ -766,6 +775,18 @@ async def get_progress_updates(session_id: str):
     return {"progress": get_progress(session_id)}
 
 
+@app.get("/api/compliance/intermediate/{session_id}")
+async def get_intermediate_results(session_id: str):
+    """Get intermediate results for a quick check session."""
+    results = intermediate_results_storage.get(session_id, {})
+    return {
+        "session_id": session_id,
+        "phase_1": results.get("phase_1"),
+        "phase_2": results.get("phase_2"),
+        "phase_3": results.get("phase_3")
+    }
+
+
 @app.post("/api/compliance/hurtig-tjek", response_model=Dict[str, Any])
 async def hurtig_compliance_tjek(request: QuickCheckRequest):
     """
@@ -781,6 +802,10 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
         async def progress_callback(message: str, status: str):
             await add_progress(session_id, message, status)
 
+        # Create intermediate results callback
+        async def intermediate_callback(phase_data: Dict[str, Any]):
+            await add_intermediate_result(session_id, phase_data)
+
         # Run enhanced quick check with web research and LLM summary
         agent_result = await run_quick_check_agent(
             description=request.beskrivelse,
@@ -789,7 +814,8 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
             behandler_persondata=request.behandler_persondata,
             automatiserede_beslutninger=request.automatiserede_beslutninger,
             progress_callback=progress_callback,
-            enable_web_search=request.enable_web_search
+            enable_web_search=request.enable_web_search,
+            intermediate_callback=intermediate_callback
         )
 
         # Get rule engine result for additional context
