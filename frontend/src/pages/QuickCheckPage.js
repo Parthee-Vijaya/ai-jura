@@ -570,11 +570,174 @@ const CTAButton = styled(Link)`
   }
 `;
 
+const ProgressTracker = styled(motion.div)`
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.85) 100%)'
+    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.95) 100%)'};
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 2rem 2.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.15)'
+    : 'rgba(201, 68, 22, 0.12)'};
+  box-shadow: ${props => props.theme.mode === 'dark'
+    ? '0 10px 40px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)'
+    : '0 10px 40px rgba(201, 68, 22, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)'};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #C94416 0%, #E85A28 50%, #C94416 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 200% 0; }
+    50% { background-position: 0% 0; }
+  }
+`;
+
+const ProgressTitle = styled.h3`
+  font-size: 1rem;
+  font-weight: 700;
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.gray[100]
+    : props.theme.colors.gray[800]};
+  margin: 0 0 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  letter-spacing: -0.02em;
+
+  svg {
+    color: #C94416;
+  }
+`;
+
+const ProgressList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const ProgressItem = styled(motion.li)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 10px;
+  background: ${props => {
+    if (props.$status === 'success') return props.theme.mode === 'dark'
+      ? 'rgba(34, 197, 94, 0.12)'
+      : 'rgba(34, 197, 94, 0.06)';
+    if (props.$status === 'error') return props.theme.mode === 'dark'
+      ? 'rgba(239, 68, 68, 0.12)'
+      : 'rgba(239, 68, 68, 0.06)';
+    if (props.$status === 'loading') return props.theme.mode === 'dark'
+      ? 'rgba(59, 130, 246, 0.12)'
+      : 'rgba(59, 130, 246, 0.06)';
+    return props.theme.mode === 'dark'
+      ? 'rgba(148, 163, 184, 0.08)'
+      : 'rgba(148, 163, 184, 0.04)';
+  }};
+  border: 1px solid ${props => {
+    if (props.$status === 'success') return 'rgba(34, 197, 94, 0.25)';
+    if (props.$status === 'error') return 'rgba(239, 68, 68, 0.25)';
+    if (props.$status === 'loading') return 'rgba(59, 130, 246, 0.25)';
+    return 'rgba(148, 163, 184, 0.15)';
+  }};
+  transition: all 0.2s ease;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+    background: ${props => {
+      if (props.$status === 'success') return 'linear-gradient(180deg, #10b981 0%, #059669 100%)';
+      if (props.$status === 'error') return 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)';
+      if (props.$status === 'loading') return 'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)';
+      return 'linear-gradient(180deg, #94a3b8 0%, #64748b 100%)';
+    }};
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${props => {
+      if (props.$status === 'success') return '#10b981';
+      if (props.$status === 'error') return '#ef4444';
+      if (props.$status === 'loading') return '#3b82f6';
+      return '#94a3b8';
+    }};
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: ${props => props.theme.mode === 'dark'
+      ? props.theme.colors.gray[200]
+      : props.theme.colors.gray[700]};
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .duration {
+    font-size: 0.8rem;
+    color: ${props => props.theme.mode === 'dark'
+      ? props.theme.colors.gray[400]
+      : props.theme.colors.gray[500]};
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    background: ${props => props.theme.mode === 'dark'
+      ? 'rgba(148, 163, 184, 0.1)'
+      : 'rgba(148, 163, 184, 0.08)'};
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+  }
+`;
+
 const QuickCheckPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [progressSteps, setProgressSteps] = useState([]);
+  const [enableWebSearch, setEnableWebSearch] = useState(true);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [startTime, setStartTime] = useState(null);
 
   const { register, handleSubmit, control, formState: { errors } } = useForm();
+
+  // Timer effect
+  React.useEffect(() => {
+    let interval;
+    if (isLoading && startTime) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    } else if (!isLoading) {
+      setElapsedTime(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading, startTime]);
 
   const aiTypes = [
     { value: 'generative_ai', label: 'Generativ AI' },
@@ -618,8 +781,28 @@ const QuickCheckPage = () => {
   };
 
 
+  const updateProgress = (stepId, status, label) => {
+    setProgressSteps(prev => {
+      const existing = prev.find(s => s.id === stepId);
+      if (existing) {
+        return prev.map(s => s.id === stepId ? { ...s, status, endTime: Date.now() } : s);
+      }
+      return [...prev, { id: stepId, label, status, startTime: Date.now() }];
+    });
+  };
+
   const onSubmit = async (data) => {
     setIsLoading(true);
+    setProgressSteps([]);
+    setResults(null);
+    setStartTime(Date.now());
+    setElapsedTime(0);
+
+    // Generate client-side session ID
+    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    let pollInterval = null;
+    let pollCount = 0;
+    const maxPolls = 200; // Max 100 seconds (200 * 500ms)
 
     try {
       // Konverter array af fagområder til string format
@@ -627,20 +810,81 @@ const QuickCheckPage = () => {
         ? data.sektorer.map(s => s.value).join(', ')
         : '';
 
-      const response = await axios.post('/api/compliance/hurtig-tjek', {
+      // Start initial progress
+      updateProgress('init', 'loading', 'Starter compliance analyse...');
+
+      // Start API request (will take 30-60 seconds)
+      const responsePromise = axios.post('/api/compliance/hurtig-tjek', {
         beskrivelse: data.beskrivelse,
         ai_type: data.ai_type,
         sektor: sektorString,
         behandler_persondata: data.behandler_persondata || false,
-        automatiserede_beslutninger: data.automatiserede_beslutninger || false
+        automatiserede_beslutninger: data.automatiserede_beslutninger || false,
+        session_id: sessionId,
+        enable_web_search: enableWebSearch
       });
+
+      // Poll for progress updates every 500ms
+      pollInterval = setInterval(async () => {
+        pollCount++;
+
+        if (pollCount > maxPolls) {
+          clearInterval(pollInterval);
+          return;
+        }
+
+        try {
+          const progressResponse = await axios.get(`/api/compliance/progress/${sessionId}`);
+          const progressData = progressResponse.data.progress || [];
+
+          // Update progress steps with backend data
+          progressData.forEach((update, index) => {
+            updateProgress(`step-${index}`, update.status, update.message);
+          });
+        } catch (err) {
+          // Ignore polling errors (endpoint might not have data yet)
+        }
+      }, 500);
+
+      // Wait for main response
+      const response = await responsePromise;
+
+      // Stop polling
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+
+      // Final progress check
+      try {
+        const finalProgress = await axios.get(`/api/compliance/progress/${sessionId}`);
+        const progressData = finalProgress.data.progress || [];
+
+        progressData.forEach((update, index) => {
+          updateProgress(`step-${index}`, update.status, update.message);
+        });
+      } catch (err) {
+        console.warn('Final progress fetch error:', err);
+      }
+
+      // Mark as complete
+      updateProgress('complete', 'success', 'Analyse fuldført ✓');
 
       setResults(response.data);
       toast.success('Hurtig tjek gennemført!');
     } catch (error) {
+      // Stop polling on error
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
       console.error('Hurtig tjek fejl:', error);
       const message = error?.response?.data?.detail || 'Der opstod en fejl. Prøv igen.';
       toast.error(message);
+
+      // Mark current steps as error
+      setProgressSteps(prev => prev.map(s =>
+        s.status === 'loading' ? { ...s, status: 'error', endTime: Date.now() } : s
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -787,6 +1031,14 @@ const QuickCheckPage = () => {
                 />
                 <span>Træffer automatiserede beslutninger med juridiske eller betydelige konsekvenser</span>
               </CheckboxItem>
+              <CheckboxItem>
+                <input
+                  type="checkbox"
+                  checked={enableWebSearch}
+                  onChange={(e) => setEnableWebSearch(e.target.checked)}
+                />
+                <span>Inkluder web søgning efter relevante afgørelser og præcedens (anbefalet, men tager længere tid)</span>
+              </CheckboxItem>
             </CheckboxGroup>
           </FormGroup>
         </FormRow>
@@ -805,6 +1057,55 @@ const QuickCheckPage = () => {
           )}
         </SubmitButton>
       </CheckForm>
+
+      {progressSteps.length > 0 && (
+        <ProgressTracker
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ProgressTitle>
+            <FaSpinner style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
+            Analyse forløb
+            {isLoading && elapsedTime > 0 && (
+              <span style={{
+                marginLeft: 'auto',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                color: '#C94416',
+                fontVariantNumeric: 'tabular-nums'
+              }}>
+                {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+              </span>
+            )}
+          </ProgressTitle>
+          <ProgressList>
+            {progressSteps.map((step, index) => {
+              const duration = step.endTime && step.startTime
+                ? `${((step.endTime - step.startTime) / 1000).toFixed(1)}s`
+                : null;
+
+              return (
+                <ProgressItem
+                  key={step.id}
+                  $status={step.status}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <div className="icon">
+                    {step.status === 'loading' && <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />}
+                    {step.status === 'success' && <FaCheckCircle />}
+                    {step.status === 'error' && <FaTimesCircle />}
+                  </div>
+                  <span className="text">{step.label}</span>
+                  {duration && <span className="duration">{duration}</span>}
+                </ProgressItem>
+              );
+            })}
+          </ProgressList>
+        </ProgressTracker>
+      )}
 
       {results && (
         <ResultsContainer

@@ -84,6 +84,23 @@ news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "300"))  # 5 minutter
 TICKER_STREAM_INTERVAL_SECONDS = int(os.getenv("TICKER_STREAM_INTERVAL_SECONDS", "120"))
 
+# Global progress tracking storage
+progress_storage: Dict[str, List[Dict[str, Any]]] = {}
+
+def get_progress(session_id: str) -> List[Dict[str, Any]]:
+    """Get progress for a session."""
+    return progress_storage.get(session_id, [])
+
+async def add_progress(session_id: str, message: str, status: str):
+    """Add progress update for a session."""
+    if session_id not in progress_storage:
+        progress_storage[session_id] = []
+    progress_storage[session_id].append({
+        "message": message,
+        "status": status,
+        "timestamp": datetime.now(UTC).isoformat()
+    })
+
 AI_CASES_STORE = Path(os.getenv("AI_CASES_STORE", "data/ai_cases.json"))
 AI_CASES_LOCK = asyncio.Lock()
 
@@ -312,6 +329,7 @@ class QuickCheckRequest(BaseModel):
     sektor: str
     behandler_persondata: bool = False
     automatiserede_beslutninger: bool = False
+    enable_web_search: bool = True
 
 
 class CommitMetadata(BaseModel):
@@ -742,6 +760,12 @@ async def analyser_compliance(project: ProjectInput, background_tasks: Backgroun
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/compliance/progress/{session_id}")
+async def get_progress_updates(session_id: str):
+    """Get progress updates for a quick check session."""
+    return {"progress": get_progress(session_id)}
+
+
 @app.post("/api/compliance/hurtig-tjek", response_model=Dict[str, Any])
 async def hurtig_compliance_tjek(request: QuickCheckRequest):
     """
@@ -750,13 +774,22 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
     try:
         from src.agents.quick_check_agent import run_quick_check_agent
 
+        # Generate session ID for progress tracking
+        session_id = str(uuid4())
+
+        # Create progress callback
+        async def progress_callback(message: str, status: str):
+            await add_progress(session_id, message, status)
+
         # Run enhanced quick check with web research and LLM summary
-        agent_result = run_quick_check_agent(
+        agent_result = await run_quick_check_agent(
             description=request.beskrivelse,
             ai_type=request.ai_type,
             sector=request.sektor,
             behandler_persondata=request.behandler_persondata,
-            automatiserede_beslutninger=request.automatiserede_beslutninger
+            automatiserede_beslutninger=request.automatiserede_beslutninger,
+            progress_callback=progress_callback,
+            enable_web_search=request.enable_web_search
         )
 
         # Get rule engine result for additional context
@@ -773,6 +806,7 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
 
         # Merge agent result with rule engine result
         return {
+            "session_id": session_id,
             "ai_act": agent_result["ai_act"],
             "gdpr": agent_result["gdpr"],
             "quick_recommendations": agent_result.get("recommendations", []),

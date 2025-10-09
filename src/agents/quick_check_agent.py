@@ -82,22 +82,43 @@ def quick_compliance_check(
     return json.dumps(result, ensure_ascii=False)
 
 
-async def _search_precedents(description: str, ai_type: str, sector: str) -> Dict[str, Any]:
+async def _search_precedents(
+    description: str,
+    ai_type: str,
+    sector: str,
+    progress_callback: Optional[callable] = None
+) -> Dict[str, Any]:
     """Søg efter relevante præcedens og afgørelser på nettet."""
     try:
+        if progress_callback:
+            await progress_callback("🔍 Initialiserer web søgning...", "loading")
+            await progress_callback("→ Opretter WebSearcher klient...", "loading")
+
         async with WebSearcher() as searcher:
             # Byg søgequery med AI Act og GDPR fokus
             query = f"AI Act GDPR {ai_type} {sector} afgørelser præcedens compliance"
+
+            if progress_callback:
+                await progress_callback(f"→ Søgequery: '{query[:60]}...'", "loading")
+                await progress_callback("→ Starter parallelle søgninger...", "loading")
 
             # Søg med fokus på autoritative kilder
             search_results = await searcher.search(
                 query=query,
                 max_results=5,
-                focus_domains=['eur-lex.europa.eu', 'datatilsynet.dk', 'edpb.europa.eu', 'retsinformation.dk']
+                focus_domains=['eur-lex.europa.eu', 'datatilsynet.dk', 'edpb.europa.eu', 'retsinformation.dk'],
+                progress_callback=progress_callback
             )
 
             if not search_results:
+                if progress_callback:
+                    await progress_callback("⚠ Ingen præcedens fundet i databaser", "error")
                 return {"precedents": [], "summary": "Ingen relevante præcedens fundet"}
+
+            if progress_callback:
+                await progress_callback(f"✓ Web søgning komplet - {len(search_results)} kilder fundet", "loading")
+                await progress_callback("📝 Genererer LLM sammenfatning af kilder...", "loading")
+                await progress_callback(f"→ Analyserer top {min(len(search_results), 3)} kilder...", "loading")
 
             # Brug LLM til at opsummere findings
             summary = await searcher.summarize_with_citations(
@@ -105,6 +126,9 @@ async def _search_precedents(description: str, ai_type: str, sector: str) -> Dic
                 sources=search_results[:3],
                 max_length=200
             )
+
+            if progress_callback:
+                await progress_callback(f"✓ Sammenfatning genereret ({len(summary)} tegn)", "loading")
 
             precedents = [
                 {
@@ -122,6 +146,8 @@ async def _search_precedents(description: str, ai_type: str, sector: str) -> Dic
             }
     except Exception as e:
         logger.warning(f"Web search failed: {e}")
+        if progress_callback:
+            await progress_callback(f"Søgning fejlede: {str(e)[:50]}", "error")
         return {"precedents": [], "summary": "Søgning ikke tilgængelig"}
 
 
@@ -178,17 +204,25 @@ def create_quick_check_agent(model_name: Optional[str] = None) -> AgentExecutor:
     return AgentExecutor(agent=agent, tools=tools, verbose=os.getenv("QUICKCHECK_AGENT_DEBUG") == "1")
 
 
-def run_quick_check_agent(
+async def run_quick_check_agent(
     description: str,
     ai_type: str,
     sector: str,
     behandler_persondata: bool = False,
     automatiserede_beslutninger: bool = False,
     model_name: Optional[str] = None,
+    progress_callback: Optional[callable] = None,
+    enable_web_search: bool = True,
 ) -> Dict[str, Any]:
     """Kør agenten og returner JSON-output med web research."""
+    import time
+    start_time = time.time()
 
     # 1. Udfør grundlæggende compliance check
+    if progress_callback:
+        await progress_callback("🚀 Starter compliance analyse...", "loading")
+        await progress_callback("📋 Opretter projekt data struktur...", "loading")
+
     project = ProjectInput(
         name="Hurtig Agent Vurdering",
         description=description,
@@ -198,19 +232,78 @@ def run_quick_check_agent(
         automated_decision_making=automatiserede_beslutninger,
     )
 
-    risk_level, reasons = _ai_act_checker.assess_risk_level(project)
-    gdpr_relevant = behandler_persondata
-    gdpr_high_risk = _gdpr_checker._requires_dpia(project) if gdpr_relevant else False
+    if progress_callback:
+        await progress_callback(f"✓ Projekt oprettet: {ai_type} i {sector}", "loading")
+        await progress_callback("🔍 Analyserer AI Act forordning...", "loading")
+        await progress_callback("→ Tjekker forbudte praksisser (Art. 5)...", "loading")
 
-    # 2. Søg efter præcedens og afgørelser (async)
-    try:
-        precedents_data = asyncio.run(_search_precedents(description, ai_type, sector))
-    except Exception as e:
-        logger.warning(f"Precedent search failed: {e}")
-        precedents_data = {"precedents": [], "summary": "Søgning ikke tilgængelig"}
+    step_start = time.time()
+    risk_level, reasons = _ai_act_checker.assess_risk_level(project)
+    step_duration = time.time() - step_start
+
+    if progress_callback:
+        await progress_callback(f"✓ AI Act vurdering færdig ({step_duration:.2f}s)", "loading")
+        await progress_callback(f"📊 Risikoniveau identificeret: {risk_level.value.upper()}", "loading")
+        await progress_callback(f"→ Fundet {len(reasons)} risikofaktorer", "loading")
+
+    gdpr_relevant = behandler_persondata
+
+    if progress_callback:
+        await progress_callback("🔒 Analyserer GDPR krav...", "loading")
+        if behandler_persondata:
+            await progress_callback("→ System behandler persondata - fuld GDPR analyse...", "loading")
+        else:
+            await progress_callback("→ Ingen persondata - GDPR ikke relevant", "loading")
+
+    step_start = time.time()
+    gdpr_high_risk = _gdpr_checker._requires_dpia(project) if gdpr_relevant else False
+    step_duration = time.time() - step_start
+
+    if progress_callback:
+        await progress_callback(f"✓ GDPR analyse færdig ({step_duration:.2f}s)", "loading")
+        if gdpr_relevant:
+            await progress_callback(f"→ DPIA påkrævet: {'JA' if gdpr_high_risk else 'NEJ'}", "loading")
+        if automatiserede_beslutninger:
+            await progress_callback("⚠ Automatiserede beslutninger - Artikel 22 gælder", "loading")
+
+    # 2. Søg efter præcedens og afgørelser (async) - kun hvis enabled
+    if enable_web_search:
+        if progress_callback:
+            await progress_callback("🌐 Starter web research fase...", "loading")
+            await progress_callback("→ Forbereder søgning i juridiske databaser...", "loading")
+
+        search_start = time.time()
+        try:
+            precedents_data = await _search_precedents(description, ai_type, sector, progress_callback)
+            search_duration = time.time() - search_start
+
+            if progress_callback:
+                await progress_callback(f"✓ Web research færdig ({search_duration:.2f}s)", "success")
+                await progress_callback(f"📚 Fundet {len(precedents_data.get('precedents', []))} relevante kilder", "loading")
+        except Exception as e:
+            search_duration = time.time() - search_start
+            logger.warning(f"Precedent search failed: {e}")
+            if progress_callback:
+                await progress_callback(f"❌ Præcedens søgning fejlede efter {search_duration:.2f}s", "error")
+                await progress_callback(f"Fejl: {str(e)[:100]}", "error")
+            precedents_data = {"precedents": [], "summary": "Søgning ikke tilgængelig"}
+    else:
+        if progress_callback:
+            await progress_callback("⏩ Web søgning sprunget over (deaktiveret)", "success")
+        precedents_data = {"precedents": [], "summary": "Web søgning ikke aktiveret"}
 
     # 3. Generer kortfattet svar med LLM
+    if progress_callback:
+        await progress_callback("🤖 Genererer AI-drevet sammenfatning...", "loading")
+        await progress_callback("→ Initialiserer LLM model...", "loading")
+
+    llm_start = time.time()
     llm = _default_chat_model(model_name)
+
+    if progress_callback:
+        await progress_callback(f"→ LLM model klar: {model_name or 'gpt-4o-mini'}", "loading")
+        await progress_callback("→ Bygger prompt med compliance data...", "loading")
+
     summary_prompt = f"""Baseret på følgende compliance analyse, giv et KORT og PRÆCIST svar (max 3-4 linjer):
 
 AI System: {description}
@@ -225,14 +318,31 @@ Giv et kortfattet svar der:
 
 Svar kun med tekst, ingen overskrifter eller formatering."""
 
+    if progress_callback:
+        await progress_callback("→ Sender request til LLM...", "loading")
+
     try:
         llm_response = llm.invoke(summary_prompt)
+        llm_duration = time.time() - llm_start
         short_summary = llm_response.content if hasattr(llm_response, 'content') else str(llm_response)
+
+        if progress_callback:
+            await progress_callback(f"✓ LLM sammenfatning genereret ({llm_duration:.2f}s)", "success")
+            await progress_callback(f"→ Sammenfatning længde: {len(short_summary)} tegn", "loading")
     except Exception as e:
+        llm_duration = time.time() - llm_start
         logger.warning(f"LLM summary failed: {e}")
         short_summary = f"Systemet vurderes som {risk_level.value} risiko under AI Act."
 
+        if progress_callback:
+            await progress_callback(f"⚠ LLM fejlede efter {llm_duration:.2f}s - bruger fallback", "loading")
+            await progress_callback(f"Fejl: {str(e)[:80]}", "error")
+
     # 4. Byg komplet response
+    if progress_callback:
+        await progress_callback("📦 Bygger final rapport...", "loading")
+        await progress_callback("→ Sammensætter alle analyseresultater...", "loading")
+
     result = {
         "ai_act": {
             "risk_level": risk_level.value,
@@ -248,6 +358,12 @@ Svar kun med tekst, ingen overskrifter eller formatering."""
         "precedents_summary": precedents_data.get("summary", ""),
         "short_summary": short_summary.strip()
     }
+
+    total_duration = time.time() - start_time
+
+    if progress_callback:
+        await progress_callback(f"✓ Rapport komplet med {len(result['recommendations'])} anbefalinger", "loading")
+        await progress_callback(f"🎉 Analyse fuldført! Total tid: {total_duration:.2f}s", "success")
 
     return result
 

@@ -1185,3 +1185,177 @@ class WebSearcher:
             "section": citation.section,
             "confidence": citation.confidence
         }
+
+    async def search(
+        self,
+        query: str,
+        max_results: int = 5,
+        focus_domains: Optional[List[str]] = None,
+        progress_callback: Optional[callable] = None
+    ) -> List[Source]:
+        """Simpel søgemetode til quick check integration.
+
+        Args:
+            query: Søgeforespørgsel
+            max_results: Maksimalt antal resultater
+            focus_domains: Liste af prioriterede domæner
+            progress_callback: Optional callback for progress updates
+
+        Returns:
+            Liste af Source objekter
+        """
+        logger.info(f"Søger efter: {query} (max {max_results} resultater)")
+
+        all_sources = []
+
+        # Parallel søgning i forskellige kilder
+        search_tasks = []
+        search_names = []
+
+        # 1. DuckDuckGo (hurtigste, prioriteret først)
+        if progress_callback:
+            await progress_callback("Søger via DuckDuckGo...", "loading")
+        search_tasks.append(self._search_duckduckgo(query, limit=max_results, focus_areas=focus_domains))
+        search_names.append("DuckDuckGo")
+
+        # 2. Autoritative kilder (parallelt)
+        if progress_callback:
+            await progress_callback("Søger i EUR-Lex database...", "loading")
+        search_tasks.append(self._search_eur_lex(query))
+        search_names.append("EUR-Lex")
+
+        if progress_callback:
+            await progress_callback("Søger på Datatilsynet.dk...", "loading")
+        search_tasks.append(self._search_datatilsynet(query))
+        search_names.append("Datatilsynet")
+
+        if progress_callback:
+            await progress_callback("Søger EDPB guidelines...", "loading")
+        search_tasks.append(self._search_edpb_guidelines(query))
+        search_names.append("EDPB")
+
+        # 3. OpenAI source discovery (hvis tilgængelig)
+        if self.openai_api_key:
+            if progress_callback:
+                await progress_callback("AI-baseret kildeopdagelse...", "loading")
+            search_tasks.append(self._llm_discover_sources(query, ["AI Act", "GDPR", "compliance"]))
+            search_names.append("OpenAI Discovery")
+
+        # 4. Google Custom Search (kun hvis DuckDuckGo ikke finder nok)
+        if self.google_api_key and self.google_cse_id:
+            if progress_callback:
+                await progress_callback("Backup Google Custom Search...", "loading")
+            search_tasks.append(self._search_google(query, limit=max_results, focus_areas=focus_domains))
+            search_names.append("Google CSE")
+
+        # Kør alle søgninger parallelt
+        if progress_callback:
+            await progress_callback(f"Kører {len(search_tasks)} parallelle søgninger...", "loading")
+        results = await asyncio.gather(*search_tasks, return_exceptions=True)
+
+        # Saml resultater
+        for idx, result in enumerate(results):
+            source_name = search_names[idx] if idx < len(search_names) else "Unknown"
+            if isinstance(result, list):
+                all_sources.extend(result)
+                if progress_callback and len(result) > 0:
+                    await progress_callback(f"✓ {source_name}: {len(result)} resultater", "loading")
+            elif isinstance(result, Exception):
+                logger.warning(f"{source_name} fejlede: {result}")
+                if progress_callback:
+                    await progress_callback(f"⚠ {source_name} fejlede", "loading")
+
+        # Deduplicate og sorter
+        all_sources = self._deduplicate_sources(all_sources)
+        all_sources.sort(key=lambda x: x.relevance_score, reverse=True)
+
+        # Returner top resultater
+        top_sources = all_sources[:max_results]
+        logger.info(f"Fandt {len(top_sources)} kilder for: {query}")
+
+        if progress_callback:
+            await progress_callback(f"Fundet {len(top_sources)} unikke kilder (fra {len(all_sources)} totalt)", "loading")
+
+        return top_sources
+
+    async def summarize_with_citations(
+        self,
+        query: str,
+        sources: List[Source],
+        max_length: int = 200
+    ) -> str:
+        """Generer en kort sammenfatning med OpenAI LLM.
+
+        Args:
+            query: Spørgsmålet der skal besvares
+            sources: Liste af kilder
+            max_length: Maksimal længde i tegn
+
+        Returns:
+            Sammenfatning som string
+        """
+        if not sources:
+            return "Ingen relevante kilder fundet."
+
+        if not self.openai_api_key:
+            # Fallback uden LLM
+            return f"Fundet {len(sources)} relevante kilder fra {', '.join(set(s.authority or s.domain for s in sources[:3]))}."
+
+        # Brug LLM til at opsummere
+        docs = []
+        for idx, source in enumerate(sources[:5], start=1):
+            docs.append({
+                "index": idx,
+                "title": source.title,
+                "authority": source.authority or source.domain,
+                "snippet": source.content[:500]
+            })
+
+        system_prompt = (
+            f"Du er en juridisk AI-compliance ekspert. Besvar spørgsmålet KORT og PRÆCIST på dansk (max {max_length} tegn). "
+            "Brug kun information fra de leverede kilder. Nævn hvilke autoriteter der udtaler sig. "
+            "Returner KUN teksten, ingen JSON eller formatering."
+        )
+
+        user_prompt = (
+            f"Spørgsmål: {query}\n\n"
+            "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
+            "Besvar kort baseret på kilderne."
+        )
+
+        payload = {
+            "model": self.openai_model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": int(max_length * 0.8),  # Lidt buffer
+        }
+
+        try:
+            async with self.session.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json=payload
+            ) as response:
+                if response.status != 200:
+                    text = await response.text()
+                    logger.warning(f"OpenAI summary fejlede: {response.status} - {text}")
+                    return f"Fundet {len(sources)} kilder, men sammenfatning fejlede."
+
+                data = await response.json()
+                summary = data["choices"][0]["message"]["content"].strip()
+
+                # Trim til max length hvis nødvendigt
+                if len(summary) > max_length:
+                    summary = summary[:max_length-3] + "..."
+
+                return summary
+
+        except Exception as exc:
+            logger.warning(f"LLM summary exception: {exc}")
+            return f"Fundet {len(sources)} relevante kilder fra autoritative domæner."
