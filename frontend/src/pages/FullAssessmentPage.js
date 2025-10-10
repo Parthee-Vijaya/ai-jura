@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect } from 'react';
+import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaArrowRight,
@@ -11,9 +11,34 @@ import {
   FaGraduationCap,
   FaQuestionCircle,
   FaListUl,
-  FaInfoCircle
+  FaInfoCircle,
+  FaSpinner,
+  FaCheckCircle
 } from 'react-icons/fa';
 import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
+
+const resolvePhaseStatus = (props) => (props.$completed ? 'healthy' : props.$active ? 'degraded' : 'idle');
+
+const phasePalette = (theme, status) => {
+  const palette = theme.colors.status?.[status] || theme.colors.status?.idle;
+  if (palette) {
+    return palette;
+  }
+  return {
+    background: theme.colors.surfaceAlt,
+    border: theme.colors.border,
+    text: theme.colors.text,
+  };
+};
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
 
 const Container = styled.div`
   max-width: 1000px;
@@ -221,6 +246,77 @@ const ResultsContainer = styled.div`
   padding: 3rem;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+`;
+
+const PhaseItem = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: ${props => phasePalette(props.theme, resolvePhaseStatus(props)).background};
+  border-left: 4px solid ${props => phasePalette(props.theme, resolvePhaseStatus(props)).border};
+  border-radius: 8px;
+  box-shadow: ${props => props.$active ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none'};
+
+  .icon {
+    font-size: 1.5rem;
+    color: ${props => phasePalette(props.theme, resolvePhaseStatus(props)).border};
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .content {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 0.25rem 0;
+      color: ${props => phasePalette(props.theme, resolvePhaseStatus(props)).text};
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0;
+      color: ${props => phasePalette(props.theme, resolvePhaseStatus(props)).text};
+      opacity: 0.85;
+      font-size: 0.875rem;
+    }
+  }
+`;
+
+const ProgressBarContainer = styled.div`
+  margin: 2rem 0;
+`;
+
+const ProgressBarTrack = styled.div`
+  background: #e2e8f0;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const ProgressBarFill = styled(motion.div)`
+  background: linear-gradient(90deg, #C94416 0%, #059669 100%);
+  height: 100%;
+  border-radius: 6px;
+`;
+
+const ProgressText = styled.div`
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+`;
+
 const steps = [
   {
     id: 'initial',
@@ -281,8 +377,49 @@ const FullAssessmentPage = () => {
   const [formData, setFormData] = useState({});
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [analysisPhases, setAnalysisPhases] = useState([
+    { id: 1, title: 'Grundlæggende analyse', description: 'Behandler systemoplysninger og kontekst', completed: false, active: false },
+    { id: 2, title: 'Risikoscore beregning', description: 'Beregner risikoscore baseret på 7-punkts vurdering', completed: false, active: false },
+    { id: 3, title: 'AI Act & GDPR compliance', description: 'Vurderer EU AI Act risikokategori og GDPR krav', completed: false, active: false },
+    { id: 4, title: 'Hard stops & betingelser', description: 'Identificerer kritiske blokeringer og godkendelsesbetingelser', completed: false, active: false },
+    { id: 5, title: 'Artefakter & tests', description: 'Genererer liste over nødvendig dokumentation og tests', completed: false, active: false },
+    { id: 6, title: 'Beslutningslogik', description: 'Bestemmer endelig GO/BETINGET-GO/NO-GO beslutning', completed: false, active: false },
+    { id: 7, title: 'Anbefalinger & næste skridt', description: 'Opretter handlingsplan og intelligente anbefalinger', completed: false, active: false },
+  ]);
+  const [currentPhase, setCurrentPhase] = useState(0);
 
   const progress = ((currentStep + 1) / steps.length) * 100;
+
+  // Progressive phase animation effect
+  useEffect(() => {
+    if (loading && currentPhase < analysisPhases.length) {
+      const timer = setTimeout(() => {
+        setAnalysisPhases(prev => prev.map((phase, idx) => {
+          if (idx === currentPhase) {
+            return { ...phase, active: true };
+          } else if (idx < currentPhase) {
+            return { ...phase, completed: true, active: false };
+          }
+          return phase;
+        }));
+
+        // Move to next phase after marking current as active
+        const completeTimer = setTimeout(() => {
+          setAnalysisPhases(prev => prev.map((phase, idx) => {
+            if (idx === currentPhase) {
+              return { ...phase, completed: true, active: false };
+            }
+            return phase;
+          }));
+          setCurrentPhase(prev => prev + 1);
+        }, 1500); // Each phase takes 1.5 seconds
+
+        return () => clearTimeout(completeTimer);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading, currentPhase, analysisPhases.length]);
 
   const updateFormData = (stepId, data) => {
     setFormData(prev => ({
@@ -305,6 +442,10 @@ const FullAssessmentPage = () => {
 
   const submitAssessment = async () => {
     setLoading(true);
+    setCurrentPhase(0);
+    // Reset phases
+    setAnalysisPhases(prev => prev.map(phase => ({ ...phase, completed: false, active: false })));
+
     try {
       // Transform form data to match backend API structure
       const transformedData = {
@@ -362,7 +503,7 @@ const FullAssessmentPage = () => {
         yderligere_kommentarer: formData.punkt7?.yderligere_kommentarer || ''
       };
 
-      const response = await fetch('http://localhost:8000/api/compliance/7-punkts-vurdering', {
+      const response = await fetch('/api/compliance/7-punkts-vurdering', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -374,7 +515,7 @@ const FullAssessmentPage = () => {
         const data = await response.json();
 
         // Fetch contextual news based on assessment results
-        const newsResponse = await fetch(`http://localhost:8000/api/news/relevant?system=${encodeURIComponent(transformedData.system_navn)}&risk=${data.samlet_vurdering?.risikoniveau}`);
+        const newsResponse = await fetch(`/api/news/relevant?system=${encodeURIComponent(transformedData.system_navn)}&risk=${data.samlet_vurdering?.risikoniveau}`);
         const contextualNews = newsResponse.ok ? await newsResponse.json() : { nyheder: [] };
 
         setResults({
@@ -620,21 +761,86 @@ const FullAssessmentPage = () => {
         <ProgressFill progress={progress} />
       </ProgressBar>
 
-      <AnimatePresence mode="wait">
-        <StepContainer
-          key={currentStep}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.3 }}
-        >
-          <StepHeader>
-            <StepIcon>
-              {React.createElement(steps[currentStep].icon)}
-            </StepIcon>
-            <StepInfo>
-              <StepTitle>
-                {steps[currentStep].title}
+      {loading && (
+        <LoadingContainer>
+          <Header>
+            <Title>Analyserer dit AI-system</Title>
+            <Subtitle>Gennemfører omfattende compliance control vurdering...</Subtitle>
+          </Header>
+
+          <ProgressBarContainer>
+            <ProgressBarTrack>
+              <ProgressBarFill
+                initial={{ width: '0%' }}
+                animate={{ width: `${(currentPhase / analysisPhases.length) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </ProgressBarTrack>
+            <ProgressText>
+              {currentPhase} af {analysisPhases.length} faser gennemført
+            </ProgressText>
+          </ProgressBarContainer>
+
+          {/* Only show the currently active phase */}
+          {analysisPhases.map((phase, index) => {
+            if (phase.active || (phase.completed && index === currentPhase - 1)) {
+              return (
+                <PhaseItem
+                  key={phase.id}
+                  $completed={phase.completed}
+                  $active={phase.active}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="icon">
+                    {phase.completed ? (
+                      <FaCheckCircle />
+                    ) : (
+                      <FaSpinner style={{ animation: `${spin} 1s linear infinite` }} />
+                    )}
+                  </div>
+                  <div className="content">
+                    <h4>{phase.title}</h4>
+                    <p>{phase.description}</p>
+                  </div>
+                </PhaseItem>
+              );
+            }
+            return null;
+          })}
+
+          {/* Summary of completed phases */}
+          {currentPhase > 0 && (
+            <div style={{
+              textAlign: 'center',
+              padding: '1rem',
+              color: '#64748b',
+              fontSize: '0.875rem'
+            }}>
+              ✓ {currentPhase} {currentPhase === 1 ? 'fase' : 'faser'} gennemført
+            </div>
+          )}
+        </LoadingContainer>
+      )}
+
+      {!loading && (
+        <AnimatePresence mode="wait">
+          <StepContainer
+            key={currentStep}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <StepHeader>
+              <StepIcon>
+                {React.createElement(steps[currentStep].icon)}
+              </StepIcon>
+              <StepInfo>
+                <StepTitle>
+                  {steps[currentStep].title}
                 {steps[currentStep].helpText && (
                   <>
                     <FaInfoCircle
@@ -675,8 +881,9 @@ const FullAssessmentPage = () => {
               </Button>
             )}
           </NavigationButtons>
-        </StepContainer>
-      </AnimatePresence>
+          </StepContainer>
+        </AnimatePresence>
+      )}
     </Container>
   );
 };

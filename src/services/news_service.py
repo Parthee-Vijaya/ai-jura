@@ -96,12 +96,40 @@ class NewsService:
         logger.info("Refreshing news cache")
         items: Sequence[NewsItem] = []
 
+        # Først: Prøv LLM+RSS news search (kun EDPB, POLITICO, Euractiv osv.)
         try:
-            async with self._scraper_factory() as scraper:
-                items = await scraper.fetch_latest_news()
-        except Exception as exc:  # pragma: no cover - logging path
-            logger.warning("Live news scraping failed: %s", exc)
-            self._mark_sources_error(str(exc))
+            from src.news.llm_news_search import fetch_llm_news
+            logger.info("Attempting LLM+RSS news fetch...")
+            llm_news = await fetch_llm_news()
+
+            if llm_news:
+                # Konverter LLM news til NewsItem format
+                for news_dict in llm_news:
+                    news_item = NewsItem(
+                        title=news_dict.get('title', ''),
+                        url=news_dict.get('url', ''),
+                        source=news_dict.get('source', 'LLM News'),
+                        published_date=None,  # LLM news har ikke altid dato
+                        category=news_dict.get('category', 'ai_gdpr'),
+                        summary=news_dict.get('summary', ''),
+                        keywords=news_dict.get('keywords', []),
+                        importance=news_dict.get('importance', 'medium'),
+                        scraped_at=datetime.now(UTC),
+                        content_snippet=news_dict.get('relevance_reason', '')
+                    )
+                    items.append(news_item)
+                logger.info(f"Successfully fetched {len(items)} LLM+RSS news items")
+        except Exception as exc:
+            logger.warning("LLM+RSS news fetch failed: %s", exc)
+
+        # Fallback: Prøv regular live scraping hvis LLM ikke gav resultater
+        if not items:
+            try:
+                async with self._scraper_factory() as scraper:
+                    items = await scraper.fetch_latest_news()
+            except Exception as exc:  # pragma: no cover - logging path
+                logger.warning("Live news scraping failed: %s", exc)
+                self._mark_sources_error(str(exc))
 
         articles: List[NewsArticle] = []
         if items:

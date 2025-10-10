@@ -54,6 +54,7 @@ class GitVersionInfo:
     last_commit_message: Optional[str]
     last_commit_author: Optional[str]
     last_commit_timestamp: Optional[datetime]
+    branch: Optional[str]
 
     def as_dict(self) -> dict[str, object]:
         """Serialize to JSON-friendly payload."""
@@ -68,6 +69,7 @@ class GitVersionInfo:
                 'author': self.last_commit_author,
                 'timestamp': timestamp_iso,
             },
+            'branch': self.branch,
             'generatedAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         }
 
@@ -153,10 +155,17 @@ def _get_last_commit_details() -> tuple[Optional[str], Optional[str], Optional[s
     return full_hash, short_hash, author, message, last_commit_timestamp
 
 
+def _get_current_branch() -> Optional[str]:
+    """Get the current git branch name."""
+    branch = _run_git_command(['branch', '--show-current'])
+    return branch if branch else None
+
+
 def get_version_info() -> dict[str, object]:
     """Return git-driven version information suitable for APIs."""
     version, last_change = _calculate_semver()
     commit_hash, short_hash, author, message, timestamp = _get_last_commit_details()
+    branch = _get_current_branch()
 
     info = GitVersionInfo(
         version=version,
@@ -166,5 +175,6 @@ def get_version_info() -> dict[str, object]:
         last_commit_message=message,
         last_commit_author=author,
         last_commit_timestamp=timestamp,
+        branch=branch,
     )
     return info.as_dict()

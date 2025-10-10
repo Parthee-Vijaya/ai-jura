@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { useQuery } from 'react-query';
+import axios from 'axios';
 import {
   FaShieldAlt,
   FaGlobeEurope,
@@ -16,26 +18,66 @@ import {
   FaCalendarAlt,
   FaBalanceScale,
   FaLightbulb,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaMoon,
+  FaSun,
+  FaInfoCircle,
+  FaChevronDown,
+  FaChevronUp,
+  FaServer,
+  FaDatabase,
+  FaSearch,
+  FaRobot,
+  FaSpinner
 } from 'react-icons/fa';
 import NewsSection from '../components/NewsSection';
-import NewsTicker from '../components/NewsTicker';
+import LiveNewsCard from '../components/LiveNewsCard';
+import ComplianceTips from '../components/ComplianceTips';
 import { FeatureCardSkeletonLoader } from '../components/SkeletonLoader';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
-import SystemHealthCard from '../components/SystemHealthCard';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
 `;
 
+const DarkModeToggle = styled.button`
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(255,255,255,0.1)'
+    : 'rgba(0,0,0,0.05)'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(255,255,255,0.2)'
+    : 'rgba(0,0,0,0.1)'};
+  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.text};
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+
+  &:hover {
+    transform: scale(1.1);
+    background: ${props => props.theme.mode === 'dark'
+      ? 'rgba(255,255,255,0.15)'
+      : 'rgba(0,0,0,0.08)'};
+  }
+`;
+
 const HeroSection = styled.section`
   background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))'
-    : 'linear-gradient(135deg, rgba(241,245,249,1), rgba(226,232,240,0.85))'};
-  padding: 3.5rem;
+    ? 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.92) 100%)'
+    : 'linear-gradient(135deg, rgba(241,245,249,0.98) 0%, rgba(226,232,240,0.95) 100%)'};
+  padding: 2.5rem;
   border-radius: ${props => props.theme.borderRadiusLarge};
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   position: relative;
   overflow: hidden;
   box-shadow: ${props => props.theme.shadows.xl};
@@ -44,54 +86,53 @@ const HeroSection = styled.section`
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at top right, rgba(255,255,255,0.35), transparent 55%);
-    opacity: ${props => props.theme.mode === 'dark' ? 0.1 : 0.4};
-    pointer-events: none;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -30%;
-    right: -20%;
-    width: 60%;
-    height: 60%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+    background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.08), transparent 60%);
     pointer-events: none;
   }
 
   @media (max-width: 1024px) {
-    padding: 2.5rem;
+    padding: 2rem;
   }
 
   @media (max-width: 768px) {
-    padding: 2rem;
+    padding: 1.5rem;
   }
 `;
 
 const HeroLayout = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 3rem;
-  align-items: center;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: start;
   z-index: 1;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const HeroContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.text};
 `;
 
+const HeroSidebar = styled.div`
+  width: 380px;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+  }
+`;
+
 const HeroLogo = styled.img`
-  max-width: 200px;
+  max-width: 180px;
   height: auto;
-  margin-bottom: 0.5rem;
 
   @media (max-width: 768px) {
-    max-width: 160px;
+    max-width: 140px;
   }
 `;
 
@@ -109,16 +150,16 @@ const HeroBadge = styled.span`
 `;
 
 const HeroTitle = styled.h1`
-  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-size: clamp(2rem, 4vw, 2.8rem);
   font-weight: 700;
   line-height: 1.1;
   margin: 0;
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.05rem;
-  line-height: 1.6;
-  max-width: 520px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 600px;
   margin: 0;
   color: ${props => props.theme.mode === 'dark'
     ? 'rgba(226, 232, 240, 0.8)'
@@ -169,56 +210,6 @@ const SecondaryCTA = styled(Link)`
   }
 `;
 
-const HeroInsights = styled.div`
-  display: grid;
-  gap: 1rem;
-  position: relative;
-`;
-
-const HeroStatCard = styled(motion.div)`
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15, 23, 42, 0.6)'
-    : 'rgba(255, 255, 255, 0.9)'};
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 1.25rem 1.5rem;
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.25)'
-    : 'rgba(148, 163, 184, 0.2)'};
-  box-shadow: ${props => props.theme.shadows.lg};
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-
-  .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : props.theme.colors.gray[500]};
-  }
-
-  .value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: ${props => props.theme.mode === 'dark'
-      ? props.theme.colors.white
-      : props.theme.colors.primary};
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-  }
-
-  .trend {
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-
-  .caption {
-    font-size: 0.8rem;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(226, 232, 240, 0.7)'
-      : props.theme.colors.gray[500]};
-  }
-`;
 
 const FeaturesGrid = styled.div`
   display: grid;
@@ -492,12 +483,529 @@ const ActivityItem = styled.div`
   }
 `;
 
+const VersionSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: ${props => props.theme.borderRadius};
+  background: ${props => props.theme.mode === 'dark'
+    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88))'
+    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92))'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.32)'};
+  box-shadow: ${props => props.theme.shadows.md};
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(226, 232, 240, 0.92)'
+    : props.theme.layout.sidebar.text};
+`;
+
+const VersionHeading = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(203, 213, 225, 0.85)'
+    : 'rgba(71, 85, 105, 0.85)'};
+`;
+
+const VersionValue = styled.div`
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: ${props => props.theme.mode === 'dark'
+    ? props.theme.colors.white
+    : props.theme.colors.primary};
+`;
+
+const ChangeTypeBadge = styled.span`
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(59, 130, 246, 0.18)'
+    : 'rgba(29, 78, 216, 0.12)'};
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(191, 219, 254, 0.95)'
+    : 'rgba(29, 78, 216, 0.85)'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(96, 165, 250, 0.35)'
+    : 'rgba(29, 78, 216, 0.2)'};
+`;
+
+const VersionMeta = styled.div`
+  font-size: 0.68rem;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(203, 213, 225, 0.82)'
+    : 'rgba(71, 85, 105, 0.85)'};
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+
+  .relative {
+    opacity: 0.75;
+    font-size: 0.66rem;
+  }
+
+  .author {
+    font-weight: 600;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(191, 219, 254, 0.9)'
+      : 'rgba(30, 64, 175, 0.9)'};
+  }
+`;
+
+const VersionDetailsButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0;
+  margin-top: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.85)'
+    : 'rgba(100, 116, 139, 0.85)'};
+  cursor: pointer;
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(191, 219, 254, 0.95)'
+      : 'rgba(30, 64, 175, 0.95)'};
+  }
+
+  .chevron {
+    font-size: 0.6rem;
+    transition: ${props => props.theme.animations.transitionFast};
+  }
+`;
+
+const VersionDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: ${props => props.$isOpen ? '500px' : '0'};
+  overflow: hidden;
+  opacity: ${props => props.$isOpen ? '1' : '0'};
+  transition: all 0.3s ease-in-out;
+  margin-top: ${props => props.$isOpen ? '0.4rem' : '0'};
+  padding-top: ${props => props.$isOpen ? '0.4rem' : '0'};
+  border-top: ${props => props.$isOpen
+    ? `1px solid ${props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.25)'}`
+    : 'none'};
+`;
+
+const SystemStatusSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.2)'
+    : 'rgba(148, 163, 184, 0.25)'};
+`;
+
+const SystemStatusGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+`;
+
+const ServiceStatus = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.5rem;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15, 23, 42, 0.4)'
+    : 'rgba(255, 255, 255, 0.5)'};
+  border-radius: 4px;
+  border: 1px solid ${props => {
+    if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.25)';
+    if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.25)';
+    if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.25)';
+    return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.15)';
+  }};
+
+  .service-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(226, 232, 240, 0.85)'
+      : 'rgba(71, 85, 105, 0.85)'};
+
+    svg {
+      font-size: 0.85rem;
+      color: ${props => props.theme.mode === 'dark'
+        ? 'rgba(148, 163, 184, 0.7)'
+        : 'rgba(100, 116, 139, 0.7)'};
+    }
+  }
+
+  .service-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: ${props => {
+      if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(134, 239, 172, 0.95)' : 'rgba(22, 163, 74, 0.95)';
+      if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(253, 224, 71, 0.95)' : 'rgba(202, 138, 4, 0.95)';
+      if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(252, 165, 165, 0.95)' : 'rgba(220, 38, 38, 0.95)';
+      return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : 'rgba(100, 116, 139, 0.8)';
+    }};
+
+    svg {
+      font-size: 0.7rem;
+      ${props => props.$status === 'checking' && `
+        animation: spin 1s linear infinite;
+      `}
+    }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const SystemStatusDetailsButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0;
+  margin-top: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.85)'
+    : 'rgba(100, 116, 139, 0.85)'};
+  cursor: pointer;
+  transition: ${props => props.theme.animations.transitionFast};
+
+  &:hover {
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(191, 219, 254, 0.95)'
+      : 'rgba(30, 64, 175, 0.95)'};
+  }
+
+  .chevron {
+    font-size: 0.6rem;
+    transition: ${props => props.theme.animations.transitionFast};
+  }
+`;
+
+const SystemStatusDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: ${props => props.$isOpen ? '800px' : '0'};
+  overflow: hidden;
+  opacity: ${props => props.$isOpen ? '1' : '0'};
+  transition: all 0.3s ease-in-out;
+  margin-top: ${props => props.$isOpen ? '0.5rem' : '0'};
+`;
+
+const ServiceDetailCard = styled.div`
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15, 23, 42, 0.6)'
+    : 'rgba(255, 255, 255, 0.7)'};
+  border: 1px solid ${props => {
+    if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.25)';
+    if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.25)';
+    if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.25)';
+    return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.15)';
+  }};
+  border-radius: 6px;
+  padding: 0.6rem;
+
+  .service-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    svg {
+      font-size: 1rem;
+      color: ${props => props.theme.mode === 'dark'
+        ? 'rgba(148, 163, 184, 0.8)'
+        : 'rgba(100, 116, 139, 0.8)'};
+    }
+
+    h5 {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: ${props => props.theme.mode === 'dark'
+        ? props.theme.colors.white
+        : props.theme.colors.gray[800]};
+    }
+  }
+
+  .service-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(226, 232, 240, 0.85)'
+      : 'rgba(71, 85, 105, 0.85)'};
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .label {
+        font-weight: 500;
+        opacity: 0.8;
+      }
+
+      .value {
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+        color: ${props => props.theme.mode === 'dark'
+          ? props.theme.colors.white
+          : props.theme.colors.primary};
+      }
+    }
+
+    .error-message {
+      color: ${props => props.theme.mode === 'dark'
+        ? 'rgba(252, 165, 165, 0.95)'
+        : 'rgba(220, 38, 38, 0.95)'};
+      font-size: 0.65rem;
+      padding: 0.3rem;
+      background: ${props => props.theme.mode === 'dark'
+        ? 'rgba(239, 68, 68, 0.1)'
+        : 'rgba(239, 68, 68, 0.05)'};
+      border-radius: 4px;
+      margin-top: 0.2rem;
+    }
+  }
+`;
+
 const FACTS_PER_VIEW = 3;
 const FACT_ROTATION_INTERVAL_MS = 120000;
 
+const VERSION_QUERY_KEY = 'platform-version-info';
+const VERSION_REFRESH_INTERVAL = 60 * 1000;
+
+const CHANGE_TYPE_LABELS = {
+  major: 'Stor ændring',
+  minor: 'Mellem ændring',
+  patch: 'Mindre ændring'
+};
+
+const buildApiUrl = (path) => {
+  const base = process.env.REACT_APP_API_BASE_URL || '';
+  if (!base) {
+    return path;
+  }
+  return `${base.replace(/\/$/, '')}${path}`;
+};
+
+const fetchJsonNoCache = async (url, { timeout = 4000 } = {}) => {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeout);
+  let response;
+  try {
+    response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timer);
+  }
+  if (!response.ok) {
+    throw new Error(`Kunne ikke hente data fra ${url}`);
+  }
+  return response.json();
+};
+
+const fetchVersionInfo = async () => {
+  const fallback = await fetchJsonNoCache('/fallback/version.json', { timeout: 1500 }).catch(() => null);
+  try {
+    const live = await fetchJsonNoCache(buildApiUrl('/api/version'));
+    return live;
+  } catch (error) {
+    console.warn('Version API utilgængelig – anvender fallback', error);
+    if (fallback) {
+      return fallback;
+    }
+    throw error;
+  }
+};
+
+const formatRelativeTime = (date) => {
+  const diffMs = date.getTime() - Date.now();
+  const diffMinutes = Math.round(diffMs / 60000);
+
+  if (Math.abs(diffMinutes) < 1) {
+    return 'lige nu';
+  }
+
+  const formatter = new Intl.RelativeTimeFormat('da', { numeric: 'auto' });
+
+  if (Math.abs(diffMinutes) < 60) {
+    return formatter.format(diffMinutes, 'minute');
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return formatter.format(diffHours, 'hour');
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  if (Math.abs(diffDays) < 7) {
+    return formatter.format(diffDays, 'day');
+  }
+
+  const diffWeeks = Math.round(diffDays / 7);
+  if (Math.abs(diffWeeks) < 5) {
+    return formatter.format(diffWeeks, 'week');
+  }
+
+  const diffMonths = Math.round(diffDays / 30);
+  if (Math.abs(diffMonths) < 12) {
+    return formatter.format(diffMonths, 'month');
+  }
+
+  const diffYears = Math.round(diffDays / 365);
+  return formatter.format(diffYears, 'year');
+};
+
 const HomePage = () => {
+  const { preferences, updatePreferences } = useUserPreferences();
   const [loading, setLoading] = useState(true);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [versionDetailsExpanded, setVersionDetailsExpanded] = useState(false);
+  const [systemStatusExpanded, setSystemStatusExpanded] = useState(false);
+  const [services, setServices] = useState({
+    backend: { status: 'checking', responseTime: null, version: null },
+    database: { status: 'checking', responseTime: null, records: null },
+    websearch: { status: 'checking', responseTime: null, resultsFound: null },
+    llm: { status: 'checking', responseTime: null, model: null }
+  });
+
+  const toggleDarkMode = () => {
+    updatePreferences({ theme: preferences?.theme === 'dark' ? 'light' : 'dark' });
+  };
+
+  const checkHealth = useCallback(async () => {
+    const results = {};
+
+    // Check Backend
+    try {
+      const start = Date.now();
+      const response = await axios.get('/api/version', { timeout: 5000 });
+      const responseTime = Date.now() - start;
+      results.backend = {
+        status: response.status === 200 ? 'healthy' : 'degraded',
+        responseTime,
+        version: response.data.version,
+        error: null
+      };
+    } catch (error) {
+      results.backend = {
+        status: 'down',
+        responseTime: null,
+        version: null,
+        error: error.message
+      };
+    }
+
+    // Check Database
+    try {
+      const start = Date.now();
+      const response = await axios.get('/api/health/database', { timeout: 5000 });
+      const responseTime = Date.now() - start;
+      results.database = {
+        status: response.data.healthy ? 'healthy' : 'degraded',
+        responseTime,
+        records: response.data.record_count,
+        error: null
+      };
+    } catch (error) {
+      results.database = {
+        status: 'down',
+        responseTime: null,
+        records: null,
+        error: error.message
+      };
+    }
+
+    // Check Web Search
+    try {
+      const start = Date.now();
+      const response = await axios.post('/api/compliance/test-search', {
+        query: 'GDPR test'
+      }, { timeout: 10000 });
+      const responseTime = Date.now() - start;
+      results.websearch = {
+        status: response.data.success ? 'healthy' : 'degraded',
+        responseTime,
+        resultsFound: response.data.results_count,
+        error: null
+      };
+    } catch (error) {
+      results.websearch = {
+        status: 'down',
+        responseTime: null,
+        resultsFound: null,
+        error: error.message
+      };
+    }
+
+    // Check LLM
+    try {
+      const start = Date.now();
+      const response = await axios.post('/api/compliance/test-llm', {
+        prompt: 'Test'
+      }, { timeout: 15000 });
+      const responseTime = Date.now() - start;
+      results.llm = {
+        status: response.data.success ? 'healthy' : 'degraded',
+        responseTime,
+        model: response.data.model,
+        error: null
+      };
+    } catch (error) {
+      results.llm = {
+        status: 'down',
+        responseTime: null,
+        model: null,
+        error: error.message
+      };
+    }
+
+    setServices(results);
+  }, []);
 
   useEffect(() => {
     // Simulate loading time
@@ -507,6 +1015,12 @@ const HomePage = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    checkHealth();
+    const interval = setInterval(checkHealth, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [checkHealth]);
 
   useEffect(() => {
     const total = aiActDidYouKnowFacts.length;
@@ -544,6 +1058,59 @@ const HomePage = () => {
     });
   }, [currentFactIndex]);
 
+  const { data: versionData, isError: versionError } = useQuery(
+    VERSION_QUERY_KEY,
+    fetchVersionInfo,
+    {
+      refetchInterval: VERSION_REFRESH_INTERVAL,
+      staleTime: VERSION_REFRESH_INTERVAL / 2,
+      retry: 1,
+    }
+  );
+
+  const versionLabel = useMemo(() => {
+    if (versionData?.version) {
+      return `v${versionData.version}`;
+    }
+    if (versionError) {
+      return 'v--';
+    }
+    return 'Henter...';
+  }, [versionData, versionError]);
+
+  const changeTypeLabel = useMemo(() => {
+    if (!versionData?.lastChangeType) {
+      return null;
+    }
+    return CHANGE_TYPE_LABELS[versionData.lastChangeType] || null;
+  }, [versionData]);
+
+  const lastCommitMeta = versionData?.lastCommit;
+
+  const lastUpdated = useMemo(() => {
+    if (!lastCommitMeta?.timestamp) {
+      return null;
+    }
+    const commitDate = new Date(lastCommitMeta.timestamp);
+    if (Number.isNaN(commitDate.getTime())) {
+      return null;
+    }
+
+    return {
+      formatted: new Intl.DateTimeFormat('da-DK', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(commitDate),
+      relative: formatRelativeTime(commitDate),
+      shortHash: lastCommitMeta?.shortHash || null,
+      message: lastCommitMeta?.message || null,
+      author: lastCommitMeta?.author || null,
+    };
+  }, [lastCommitMeta]);
+
   const quickStartSteps = [
     {
       title: 'Hurtig Tjek',
@@ -562,74 +1129,28 @@ const HomePage = () => {
     }
   ];
 
-  const statusData = [
-    {
-      icon: FaCheckCircle,
-      value: '32',
-      label: 'Godkendte vurderinger',
-      type: 'success',
-      trend: '+8%'
-    },
-    {
-      icon: FaExclamationTriangle,
-      value: '12',
-      label: 'Under behandling',
-      type: 'warning',
-      trend: '+3'
-    },
-    {
-      icon: FaTimesCircle,
-      value: '3',
-      label: 'Afviste systemer',
-      type: 'danger',
-      trend: '-1'
-    },
-    {
-      icon: FaHistory,
-      value: '47',
-      label: 'Samlede vurderinger',
-      type: 'primary',
-      trend: '+12%'
-    }
-  ];
 
-  const recentActivities = [
-    {
-      type: 'assessment',
-      icon: FaFileAlt,
-      title: 'AI-chatbot vurdering fuldført',
-      description: 'Chatbot til borgerservice fik en betinget godkendelse',
-      time: '2 timer siden'
-    },
-    {
-      type: 'research',
-      icon: FaGlobeEurope,
-      title: 'Research: Analyse af GDPR artikel 22',
-      description: 'Research om automatiske afgørelser er gennemført og dokumenteret',
-      time: '5 timer siden'
-    },
-    {
-      type: 'compliance',
-      icon: FaShieldAlt,
-      title: 'Compliance-rapport genereret',
-      description: 'Dokumentklassificeringssystem godkendt til drift',
-      time: '1 dag siden'
-    },
-    {
-      type: 'assessment',
-      icon: FaUsers,
-      title: 'Teamvurdering igangsat',
-      description: 'HR-automationssystem markeret til manuel gennemgang',
-      time: '2 dage siden'
-    }
-  ];
+  const getStatusIcon = (status) => {
+    if (status === 'healthy') return <FaCheckCircle />;
+    if (status === 'degraded') return <FaExclamationTriangle />;
+    if (status === 'down') return <FaTimesCircle />;
+    return <FaSpinner />;
+  };
 
-  const heroHighlights = statusData.slice(0, 3);
-  const trendColors = {
-    success: '#16a34a',
-    warning: '#f59e0b',
-    danger: '#ef4444',
-    primary: '#2563eb'
+  const getServiceIcon = (serviceName) => {
+    if (serviceName === 'backend') return <FaServer />;
+    if (serviceName === 'database') return <FaDatabase />;
+    if (serviceName === 'websearch') return <FaSearch />;
+    if (serviceName === 'llm') return <FaRobot />;
+    return <FaServer />;
+  };
+
+  const getServiceLabel = (serviceName) => {
+    if (serviceName === 'backend') return 'Backend';
+    if (serviceName === 'database') return 'Database';
+    if (serviceName === 'websearch') return 'Søgning';
+    if (serviceName === 'llm') return 'LLM';
+    return serviceName;
   };
 
   return (
@@ -637,13 +1158,6 @@ const HomePage = () => {
       <HeroSection>
         <HeroLayout>
           <HeroContent>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <HeroLogo src="/kalundborg-logo.svg" alt="Kalundborg Kommune" />
-            </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -689,41 +1203,162 @@ const HomePage = () => {
                 </SecondaryCTA>
               </motion.div>
             </HeroActions>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              style={{ marginTop: '2rem' }}
+            >
+              <HeroLogo src="/kalundborg-logo.svg" alt="Kalundborg Kommune" />
+            </motion.div>
           </HeroContent>
 
-          <HeroInsights>
-            {heroHighlights.map((item, index) => (
-              <HeroStatCard
-                key={item.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-              >
-                <span className="label">{item.label}</span>
-                <span className="value">
-                  {item.value}
-                  {item.trend && (
-                    <span className="trend" style={{ color: trendColors[item.type] || trendColors.primary }}>
-                      {item.trend}
-                    </span>
+          <HeroSidebar>
+            <VersionSection>
+              <VersionHeading>
+                <FaInfoCircle size={10} />
+                <span>Version</span>
+              </VersionHeading>
+              <VersionValue>
+                {versionLabel}
+                {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
+              </VersionValue>
+              <VersionMeta>
+                {lastUpdated ? (
+                  <>
+                    {lastUpdated.relative || lastUpdated.formatted}
+                  </>
+                ) : (
+                  versionError ? 'Ukendt' : 'Henter...'
+                )}
+              </VersionMeta>
+
+              {(lastUpdated || changeTypeLabel) && (
+                <>
+                  <VersionDetailsButton onClick={() => setVersionDetailsExpanded(!versionDetailsExpanded)}>
+                    <span>Se detaljer</span>
+                    {versionDetailsExpanded ? (
+                      <FaChevronUp className="chevron" />
+                    ) : (
+                      <FaChevronDown className="chevron" />
+                    )}
+                  </VersionDetailsButton>
+
+                  <VersionDetails $isOpen={versionDetailsExpanded}>
+                    {lastUpdated && (
+                      <>
+                        {versionData?.branch && (
+                          <VersionMeta>
+                            <strong>Branch:</strong> <span>{versionData.branch === 'main' ? '🏠 main' : `🔧 ${versionData.branch}`}</span>
+                          </VersionMeta>
+                        )}
+
+                        <VersionMeta>
+                          <strong>Opdateret:</strong> {lastUpdated.formatted}
+                        </VersionMeta>
+
+                        {(lastUpdated.shortHash || lastUpdated.message) && (
+                          <VersionMeta>
+                            <strong>Commit:</strong>
+                            {lastUpdated.shortHash && <span> #{lastUpdated.shortHash}</span>}
+                            {lastUpdated.message && (
+                              <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
+                            )}
+                          </VersionMeta>
+                        )}
+
+                        {lastUpdated.author && (
+                          <VersionMeta>
+                            <strong>Ændret af:</strong> <span className="author">{lastUpdated.author}</span>
+                          </VersionMeta>
+                        )}
+                      </>
+                    )}
+                  </VersionDetails>
+                </>
+              )}
+
+              <SystemStatusSection>
+                <VersionHeading>
+                  <FaServer size={9} />
+                  <span>System Status</span>
+                </VersionHeading>
+                <SystemStatusGrid>
+                  {Object.entries(services).map(([name, service]) => (
+                    <ServiceStatus key={name} $status={service.status}>
+                      <div className="service-label">
+                        {getServiceIcon(name)}
+                        <span>{getServiceLabel(name)}</span>
+                      </div>
+                      <div className="service-indicator">
+                        {getStatusIcon(service.status)}
+                      </div>
+                    </ServiceStatus>
+                  ))}
+                </SystemStatusGrid>
+
+                <SystemStatusDetailsButton onClick={() => setSystemStatusExpanded(!systemStatusExpanded)}>
+                  <span>Se detaljer</span>
+                  {systemStatusExpanded ? (
+                    <FaChevronUp className="chevron" />
+                  ) : (
+                    <FaChevronDown className="chevron" />
                   )}
-                </span>
-                <span className="caption">Seneste status opdateret</span>
-              </HeroStatCard>
-            ))}
-          </HeroInsights>
+                </SystemStatusDetailsButton>
+
+                <SystemStatusDetails $isOpen={systemStatusExpanded}>
+                  {Object.entries(services).map(([name, service]) => (
+                    <ServiceDetailCard key={name} $status={service.status}>
+                      <div className="service-detail-header">
+                        {getServiceIcon(name)}
+                        <h5>{getServiceLabel(name)}</h5>
+                      </div>
+                      <div className="service-detail-content">
+                        {service.responseTime !== null && (
+                          <div className="detail-row">
+                            <span className="label">Responstid:</span>
+                            <span className="value">{service.responseTime}ms</span>
+                          </div>
+                        )}
+                        {service.version && (
+                          <div className="detail-row">
+                            <span className="label">Version:</span>
+                            <span className="value">{service.version}</span>
+                          </div>
+                        )}
+                        {service.model && (
+                          <div className="detail-row">
+                            <span className="label">Model:</span>
+                            <span className="value">{service.model}</span>
+                          </div>
+                        )}
+                        {service.records !== null && service.records !== undefined && (
+                          <div className="detail-row">
+                            <span className="label">Records:</span>
+                            <span className="value">{service.records}</span>
+                          </div>
+                        )}
+                        {service.resultsFound !== null && service.resultsFound !== undefined && (
+                          <div className="detail-row">
+                            <span className="label">Resultater fundet:</span>
+                            <span className="value">{service.resultsFound}</span>
+                          </div>
+                        )}
+                        {service.error && (
+                          <div className="error-message">
+                            <strong>Fejl:</strong> {service.error}
+                          </div>
+                        )}
+                      </div>
+                    </ServiceDetailCard>
+                  ))}
+                </SystemStatusDetails>
+              </SystemStatusSection>
+            </VersionSection>
+          </HeroSidebar>
         </HeroLayout>
       </HeroSection>
-
-      <SystemHealthCard />
-
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <NewsTicker />
-      </motion.div>
 
       <FeaturesGrid>
         {loading ? (
@@ -758,30 +1393,24 @@ const HomePage = () => {
           ))
         )}
       </FeaturesGrid>
- 
-      <RecentActivitySection>
-        <h3>
-          <FaClock />
-          Seneste Aktivitet
-        </h3>
-        <ActivityList>
-          {recentActivities.map((activity, index) => (
-            <ActivityItem key={index} type={activity.type}>
-              <div className="activity-icon">
-                <activity.icon />
-              </div>
-              <div className="activity-content">
-                <div className="activity-title">{activity.title}</div>
-                <div className="activity-description">{activity.description}</div>
-              </div>
-              <div className="activity-time">
-                <FaCalendarAlt />
-                {activity.time}
-              </div>
-            </ActivityItem>
-          ))}
-        </ActivityList>
-      </RecentActivitySection>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <LiveNewsCard />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <ComplianceTips />
+        </motion.div>
+      </div>
 
       <NewsSection />
 

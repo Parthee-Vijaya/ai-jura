@@ -201,9 +201,6 @@ const AppInner = () => {
                 },
               }}
             />
-            <PageErrorBoundary title="Navbar fejl" message="Der opstod en fejl i navigation. Siden kan stadig fungere.">
-              <Navbar />
-            </PageErrorBoundary>
             <PageErrorBoundary title="Side indlæsningsfejl" message="Der opstod en fejl ved indlæsning af siden.">
               <Suspense fallback={<SectionLoader text="Indlæser side..." />}>
                 <Routes>

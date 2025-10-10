@@ -325,7 +325,7 @@ project = ProjectInput(
 
 ## 🤝 Bidrag
 
-Vi modtager gerne bidrag! Se CONTRIBUTING.md for guidelines.
+Vi modtager gerne bidrag! Se CONTRIBUTING.md og AGENTS.md for guidelines.
 
 ## 📄 Licens
 

@@ -16,107 +16,159 @@ import {
 } from 'react-icons/fa';
 import axios from 'axios';
 
+const statusPalette = (theme, status) => {
+  const normalized = ['healthy', 'degraded', 'down'].includes(status) ? status : 'idle';
+  const fallback = theme.colors.status?.idle || {
+    background: theme.colors.surfaceAlt,
+    border: theme.colors.border,
+    text: theme.colors.text,
+  };
+  const palette = theme.colors.status?.[normalized] || fallback;
+  return {
+    background: palette.background || fallback.background,
+    border: palette.border || fallback.border,
+    text: palette.text || fallback.text,
+  };
+};
+
 const Card = styled(motion.div)`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.borderRadius};
-  box-shadow: ${props => props.theme.shadows.md};
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  background: transparent;
+  padding: 0;
+  margin-top: 1.5rem;
 `;
 
 const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  user-select: none;
-
-  h3 {
-    margin: 0;
-    color: ${props => props.theme.colors.gray[800]};
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+  display: none;
 `;
 
 const StatusGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const ServiceCard = styled(motion.div)`
-  background: ${props => {
-    if (props.$status === 'healthy') return '#d1fae5';
-    if (props.$status === 'degraded') return '#fef3c7';
-    if (props.$status === 'down') return '#fee2e2';
-    return '#f8fafc';
-  }};
-  border-left: 4px solid ${props => {
-    if (props.$status === 'healthy') return '#059669';
-    if (props.$status === 'degraded') return '#f59e0b';
-    if (props.$status === 'down') return '#dc2626';
-    return '#cbd5e1';
-  }};
-  border-radius: 8px;
-  padding: 1rem;
+  background: ${props => props.theme.mode === 'dark'
+    ? 'rgba(15, 23, 42, 0.5)'
+    : 'rgba(255, 255, 255, 0.7)'};
+  border: 1px solid ${props => props.theme.mode === 'dark'
+    ? 'rgba(148, 163, 184, 0.15)'
+    : 'rgba(148, 163, 184, 0.2)'};
+  border-radius: ${props => props.theme.borderRadius};
+  padding: 0.75rem;
   position: relative;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadows.md};
+    border-color: ${props => statusPalette(props.theme, props.$status).border};
+  }
+
+  .service-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: ${props => statusPalette(props.theme, props.$status).border};
+    min-width: 2.5rem;
+  }
+
+  .service-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    flex: 1;
+  }
 
   .service-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-
-    .icon {
-      font-size: 1.5rem;
-      color: ${props => {
-        if (props.$status === 'healthy') return '#059669';
-        if (props.$status === 'degraded') return '#f59e0b';
-        if (props.$status === 'down') return '#dc2626';
-        return '#64748b';
-      }};
-    }
+    justify-content: space-between;
+    gap: 0.5rem;
 
     h4 {
       margin: 0;
-      font-size: 1rem;
-      color: ${props => props.theme.colors.gray[800]};
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: ${props => props.theme.mode === 'dark'
+        ? props.theme.colors.white
+        : props.theme.colors.gray[800]};
     }
   }
 
   .service-details {
-    font-size: 0.875rem;
-    color: ${props => props.theme.colors.gray[600]};
-    margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.7rem;
+    color: ${props => props.theme.mode === 'dark'
+      ? 'rgba(226, 232, 240, 0.6)'
+      : 'rgba(71, 85, 105, 0.7)'};
 
-    .detail-row {
+    .detail-item {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.25rem;
+      gap: 0.25rem;
 
       .label {
-        font-weight: 600;
+        font-weight: 500;
+        opacity: 0.7;
       }
 
       .value {
+        font-weight: 600;
         font-family: 'Courier New', monospace;
       }
     }
   }
 
   .error-message {
-    background: rgba(220, 38, 38, 0.1);
-    border-radius: 4px;
-    padding: 0.5rem;
-    font-size: 0.75rem;
-    color: #991b1b;
-    margin-top: 0.5rem;
-    font-family: 'Courier New', monospace;
+    display: none;
+  }
+`;
+
+const StatusValue = styled.span`
+  color: ${props => statusPalette(props.theme, props.$status).border};
+  font-family: 'Courier New', monospace;
+`;
+
+const StatusBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: ${props => statusPalette(props.theme, props.$status).background};
+  color: ${props => statusPalette(props.theme, props.$status).text};
+  border: 1px solid ${props => statusPalette(props.theme, props.$status).border};
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: ${props => statusPalette(props.theme, props.$status).border};
+    box-shadow: 0 0 0 2px ${props => statusPalette(props.theme, props.$status).background},
+                0 0 6px ${props => statusPalette(props.theme, props.$status).border};
+    animation: ${props => props.$status === 'healthy' ? 'pulse 2s ease-in-out infinite' : 'none'};
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
   }
 `;
 
@@ -380,7 +432,7 @@ const SystemHealthCard = () => {
             Object.values(services).every(s => s.status === 'healthy') ? 'healthy' :
             Object.values(services).some(s => s.status === 'down') ? 'down' : 'degraded'
           )}
-          System Sundhedstjek
+          System Status
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <RefreshButton onClick={(e) => { e.stopPropagation(); checkHealth(); }} disabled={checking}>
@@ -391,138 +443,59 @@ const SystemHealthCard = () => {
         </div>
       </CardHeader>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+      <StatusGrid>
+        {Object.entries(services).map(([name, service]) => (
+          <ServiceCard
+            key={name}
+            $status={service.status}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
           >
-            <StatusGrid>
-              {Object.entries(services).map(([name, service]) => (
-                <ServiceCard
-                  key={name}
-                  $status={service.status}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="service-header">
-                    <div className="icon">
-                      {getServiceIcon(name)}
-                    </div>
-                    <h4>{name.charAt(0).toUpperCase() + name.slice(1)}</h4>
-                  </div>
+            <div className="service-icon">
+              {getServiceIcon(name)}
+            </div>
 
-                  <div className="service-details">
-                    <div className="detail-row">
-                      <span className="label">Status:</span>
-                      <span className="value" style={{
-                        color: service.status === 'healthy' ? '#059669' :
-                               service.status === 'degraded' ? '#f59e0b' : '#dc2626'
-                      }}>
-                        {service.status === 'healthy' ? '✓ Healthy' :
-                         service.status === 'degraded' ? '⚠ Degraded' :
-                         service.status === 'down' ? '✗ Down' : '⟳ Checking'}
-                      </span>
-                    </div>
+            <div className="service-info">
+              <div className="service-header">
+                <h4>{name.charAt(0).toUpperCase() + name.slice(1)}</h4>
+                <StatusBadge $status={service.status}>
+                  {service.status === 'healthy' ? 'Online' :
+                   service.status === 'degraded' ? 'Degraded' :
+                   service.status === 'down' ? 'Offline' : 'Checking'}
+                </StatusBadge>
+              </div>
 
-                    {service.responseTime && (
-                      <div className="detail-row">
-                        <span className="label">Response:</span>
-                        <span className="value">{service.responseTime}ms</span>
-                      </div>
-                    )}
-
-                    {service.version && (
-                      <div className="detail-row">
-                        <span className="label">Version:</span>
-                        <span className="value">{service.version}</span>
-                      </div>
-                    )}
-
-                    {service.records !== undefined && (
-                      <div className="detail-row">
-                        <span className="label">Records:</span>
-                        <span className="value">{service.records}</span>
-                      </div>
-                    )}
-
-                    {service.model && (
-                      <div className="detail-row">
-                        <span className="label">Model:</span>
-                        <span className="value">{service.model}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {service.error && (
-                    <div className="error-message">
-                      ⚠ {service.error}
-                    </div>
-                  )}
-                </ServiceCard>
-              ))}
-            </StatusGrid>
-
-            {/* AI Solution Panel */}
-            {(loadingSolution || aiSolution) && (
-              <SolutionPanel
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="solution-header">
-                  <FaLightbulb />
-                  <h4>AI-baseret Løsningsforslag</h4>
-                </div>
-
-                {loadingSolution ? (
-                  <div className="loading">
-                    <FaSpinner />
-                    <span>Analyserer problem og søger efter løsninger online...</span>
-                  </div>
-                ) : aiSolution && (
-                  <div className="solution-content">
-                    <h5>📊 Diagnose:</h5>
-                    <p>{aiSolution.diagnosis}</p>
-
-                    <h5>🔧 Løsningsskridt:</h5>
-                    <ul>
-                      {aiSolution.steps?.map((step, idx) => (
-                        <li key={idx}>{step}</li>
-                      ))}
-                    </ul>
-
-                    {aiSolution.command && (
-                      <>
-                        <h5>💻 Kommando:</h5>
-                        <pre>{aiSolution.command}</pre>
-                      </>
-                    )}
-
-                    {aiSolution.resources && aiSolution.resources.length > 0 && (
-                      <>
-                        <h5>🔗 Relevante Ressourcer:</h5>
-                        <ul>
-                          {aiSolution.resources.map((resource, idx) => (
-                            <li key={idx}>
-                              <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                                {resource.title}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
+              <div className="service-details">
+                {service.responseTime && (
+                  <div className="detail-item">
+                    <span className="label">Respons:</span>
+                    <span className="value">{service.responseTime}ms</span>
                   </div>
                 )}
-              </SolutionPanel>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                {service.model && (
+                  <div className="detail-item">
+                    <span className="label">Model:</span>
+                    <span className="value">{service.model}</span>
+                  </div>
+                )}
+                {service.version && (
+                  <div className="detail-item">
+                    <span className="label">Ver:</span>
+                    <span className="value">{service.version}</span>
+                  </div>
+                )}
+                {service.records !== undefined && (
+                  <div className="detail-item">
+                    <span className="label">Records:</span>
+                    <span className="value">{service.records}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </ServiceCard>
+        ))}
+      </StatusGrid>
     </Card>
   );
 };

@@ -1,12 +1,14 @@
 {
-  "version": "0.8.0",
-  "lastChangeType": "minor",
+  "version": "0.6.7",
+  "build": 2,
+  "lastChangeType": "patch",
   "lastCommit": {
-    "hash": "6b8a184305454af256081ac9ac0ea36c16926952",
-    "shortHash": "6b8a184",
-    "message": "feat: Version Card v0.8.0 - Kalundborg Branding Release",
+    "hash": "9069994f7d7d721e57fb995e94409259a0c0709c",
+    "shortHash": "9069994",
+    "message": "feat: Move version card to hero section with integrated system status",
     "author": "Parthee-Vijaya",
-    "timestamp": "2025-10-08T19:35:55+02:00"
+    "timestamp": "2025-10-10T21:18:00Z"
   },
-  "generatedAt": "2025-10-08T19:40:00Z"
+  "branch": "main",
+  "generatedAt": "2025-10-10T21:18:00Z"
 }

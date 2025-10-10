@@ -1,723 +1,224 @@
 const aiActDidYouKnowFacts = [
+  // AI Teknologi & Koncepter
   {
-    "id": "fact-001",
-    "title": "AI Act fakta #1",
-    "text": "EU AI-forordningen (AI Act) er den første horisontale lovgivning, der regulerer kunstig intelligens på tværs af alle sektorer i EU.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "ai-001",
+    "title": "MCP - Model Context Protocol",
+    "text": "Model Context Protocol (MCP) er en ny åben standard fra Anthropic, der gør det muligt for AI-assistenter at forbinde til datakilde og værktøjer på en sikker måde. MCP erstatter behovet for custom integrationer med et universelt protokol, der fungerer på tværs af forskellige AI-systemer og platforme. Dette muliggør bedre kontekstbevidsthed og mere præcise AI-interaktioner.",
+    "source": "https://www.anthropic.com/news/model-context-protocol"
   },
   {
-    "id": "fact-002",
-    "title": "AI Act fakta #2",
-    "text": "AI Act bygger på en risikobaseret tilgang, hvor kravene afhænger af hvor stor indvirkning et AI-system kan have på mennesker.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "ai-002",
+    "title": "AI Agenter",
+    "text": "AI-agenter er autonome systemer, der kan udføre opgaver på vegne af brugere ved at kombinere LLM'er, værktøjer og eksterne API'er. Moderne agenter kan træffe beslutninger, anvende værktøjer, huske kontekst og tilpasse sig dynamisk. Frameworks som LangGraph og AutoGen gør det muligt at bygge komplekse multi-agent workflows med koordineret beslutningstagning og specialiserede roller.",
+    "source": "https://www.langchain.com/langgraph"
   },
   {
-    "id": "fact-003",
-    "title": "AI Act fakta #3",
-    "text": "Forordningen introducerer fire risikoniveauer: minimal risiko, begrænset risiko, høj risiko og uacceptabel risiko.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "ai-003",
+    "title": "RAG - Retrieval-Augmented Generation",
+    "text": "RAG kombinerer information retrieval med text generation for at give AI-systemer adgang til opdateret, domænespecifik viden. Systemet henter relevant information fra en vidensbase og bruger det som kontekst for at generere præcise svar. Dette reducerer hallucinations og gør AI-systemer mere pålidelige til faktabaserede opgaver som juridisk rådgivning og compliance-checks.",
+    "source": "https://arxiv.org/abs/2005.11401"
   },
   {
-    "id": "fact-004",
-    "title": "AI Act fakta #4",
-    "text": "AI-systemer med uacceptabel risiko bliver forbudt, fordi de anses for at krænke borgernes grundlæggende rettigheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "ai-004",
+    "title": "Large Language Models (LLM)",
+    "text": "LLM'er som GPT-4, Claude og Gemini er trænet på massive mængder tekst og kan forstå og generere naturligt sprog på ekspertniveau. De bruges til alt fra kodegenerering til juridisk analyse. Med context windows på op til 200.000 tokens kan moderne LLM'er analysere hele lovtekster, kontrakter og regulatoriske dokumenter i en enkelt query, hvilket revolutionerer juridisk arbejde.",
+    "source": "https://www.anthropic.com/claude"
   },
   {
-    "id": "fact-005",
-    "title": "AI Act fakta #5",
-    "text": "Social scoring af borgere over længere tid er eksplicit forbudt under AI Act.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "ai-005",
+    "title": "Embeddings og Vektor Databaser",
+    "text": "Embeddings konverterer tekst til numeriske vektorer, der repræsenterer semantisk mening. Dette gør det muligt at finde lignende dokumenter, clustere information og bygge intelligente søgesystemer. Vektor databaser som Qdrant, Pinecone og Weaviate optimerer lagring og søgning af embeddings, hvilket er fundamentet for RAG-systemer og semantisk søgning i compliance-platforme.",
+    "source": "https://qdrant.tech/documentation/"
   },
+
+  // EU AI Act
   {
-    "id": "fact-006",
-    "title": "AI Act fakta #6",
-    "text": "Biometrisk fjernidentifikation i realtid i det offentlige rum er som hovedregel forbudt, med få snævre undtagelser.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "aiact-001",
+    "title": "Højrisiko AI-systemer",
+    "text": "AI Act definerer højrisiko AI-systemer som dem, der kan påvirke sikkerhed eller grundlæggende rettigheder. Dette inkluderer: biometrisk identifikation, kritisk infrastruktur, uddannelse og jobrekruttering, adgang til offentlige ydelser, retshåndhævelse, migrationsforvaltning og retsvæsen. Sådanne systemer skal gennemgå konformitetsvurdering, have CE-mærkning og registreres i EU-database før markedsføring.",
+    "source": "https://artificialintelligenceact.eu/high-risk/"
   },
   {
-    "id": "fact-007",
-    "title": "AI Act fakta #7",
-    "text": "Højrisiko AI-systemer skal gennemgå en konformitetsvurdering før de må sættes på EU-markedet.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "aiact-002",
+    "title": "Forbudt AI - Uacceptabel risiko",
+    "text": "AI Act forbyder AI-systemer med uacceptabel risiko: Social scoring af borgere, real-time biometrisk fjernidentifikation i offentligt rum (med snævre undtagelser), AI der manipulerer adfærd gennem subliminal påvirkning, AI der udnytter sårbare grupper, og emotion recognition på arbejdspladser/skoler. Overtrædelse kan føre til bøder på op til €35 millioner eller 7% af global omsætning.",
+    "source": "https://artificialintelligenceact.eu/article/5/"
   },
   {
-    "id": "fact-008",
-    "title": "AI Act fakta #8",
-    "text": "Udbydere af højrisiko AI skal etablere et kvalitetsstyringssystem, der dækker hele livscyklussen.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "aiact-003",
+    "title": "General Purpose AI (GPAI)",
+    "text": "GPAI-modeller som GPT-4 og Claude får særlige krav om dokumentation af træningsdata, energiforbrug, modelkort og risikohåndtering. Systemisk risiko GPAI (>10²⁵ FLOPs) skal gennemgå model evaluations, red-teaming og cybersikkerhedstests. Udbydere skal dele teknisk dokumentation med downstream-brugere, så de kan vurdere compliance-risici for deres specifikke anvendelser.",
+    "source": "https://artificialintelligenceact.eu/title-iii/"
   },
   {
-    "id": "fact-009",
-    "title": "AI Act fakta #9",
-    "text": "Datasæt til træning og test af højrisiko AI skal være relevante, repræsentative og frie for diskriminerende skævheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "aiact-004",
+    "title": "Gennemsigtighed og menneskeligt tilsyn",
+    "text": "Højrisiko AI skal designes med human oversight - evnen til at forstå, overvåge og gribe ind i AI-beslutninger. Brugere skal informeres når de interagerer med AI (chatbots, deepfakes). AI-genereret indhold skal tydeligt mærkes. Systemer skal dokumentere deres begrænsninger, så mennesker kan træffe informerede beslutninger om at stole på eller overstyre AI-anbefalinger.",
+    "source": "https://artificialintelligenceact.eu/article/13/"
   },
   {
-    "id": "fact-010",
-    "title": "AI Act fakta #10",
-    "text": "Højrisiko AI skal automatisk logge hændelser, så myndigheder kan efterprøve systemets beslutninger.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "aiact-005",
+    "title": "Risikobaseret tilgang",
+    "text": "AI Act bruger 4 risikoniveauer: Uacceptabel (forbudt), Høj (strenge krav), Begrænset (transparenskrav) og Minimal (frivillige guidelines). Denne tilgang balancerer innovation med beskyttelse - lavrisiko AI-værktøjer kan udvikles frit, mens højrisiko systemer skal opfylde omfattende dokumentations-, test- og tilsynskrav før og efter markedsføring.",
+    "source": "https://artificialintelligenceact.eu/"
   },
+
+  // GDPR
   {
-    "id": "fact-011",
-    "title": "AI Act fakta #11",
-    "text": "Iterationer af højrisiko AI skal dokumenteres, så man kan spore ændringer i modellen over tid.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "gdpr-001",
+    "title": "Artikel 6 - Lovlig behandling",
+    "text": "GDPR Artikel 6 definerer 6 lovlige grundlag for databehandling: (a) Samtykke, (b) Kontraktopfyldelse, (c) Lovpligt, (d) Vitale interesser, (e) Offentlig opgave, (f) Legitim interesse. AI-systemer skal identificere hvilket grundlag de bruger. Samtykke skal være frit, specifikt, informeret og utvetydigt. Legitim interesse kræver balancetest mod den registreredes rettigheder.",
+    "source": "https://gdpr-info.eu/art-6-gdpr/"
   },
   {
-    "id": "fact-012",
-    "title": "AI Act fakta #12",
-    "text": "Brugere skal informeres, når de interagerer med et AI-system, eksempelvis ved chatbots eller deepfakes.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "gdpr-002",
+    "title": "Artikel 22 - Automatiserede beslutninger",
+    "text": "GDPR Artikel 22 giver borgere ret til ikke at være underlagt udelukkende automatiserede beslutninger med retlig eller tilsvarende betydelig effekt. Dette omfatter AI-baseret kreditvurdering, jobrekruttering og forsikringspræmier. Undtagelser kræver eksplicit samtykke eller kontraktuel nødvendighed, plus passende sikkerhedsforanstaltninger som human review og ret til forklaring.",
+    "source": "https://gdpr-info.eu/art-22-gdpr/"
   },
   {
-    "id": "fact-013",
-    "title": "AI Act fakta #13",
-    "text": "Højrisiko AI-systemer skal designes med passende menneskelig overblik og mulighed for manuel overstyring.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "gdpr-003",
+    "title": "Privacy by Design",
+    "text": "GDPR Artikel 25 kræver Privacy by Design og Default - databeskyttelse skal integreres fra projektets start, ikke tilføjes bagefter. AI-systemer skal bruge dataminimering, pseudonymisering og kryptering som standard. Kun nødvendige personoplysninger må behandles, og brugere skal have maximale privatlivsindstillinger som default. Dette påvirker AI-træning, inferens og dataopbevaring.",
+    "source": "https://gdpr-info.eu/art-25-gdpr/"
   },
   {
-    "id": "fact-014",
-    "title": "AI Act fakta #14",
-    "text": "Udbydere skal opstille klare procedurer for menneskelig overvågning af højrisiko AI.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "gdpr-004",
+    "title": "DPIA - Data Protection Impact Assessment",
+    "text": "Ved højrisiko databehandling (systematisk monitoring, store mængder følsomme data, automatiserede beslutninger) kræver GDPR en DPIA før implementering. For AI betyder dette: beskrivelse af behandlingen, nødvendighedsvurdering, risikovurdering for rettigheder, og afhjælpende foranstaltninger. EDPB's guidelines specificerer at AI-profilering og ML-modeller ofte kræver DPIA.",
+    "source": "https://gdpr-info.eu/art-35-gdpr/"
   },
   {
-    "id": "fact-015",
-    "title": "AI Act fakta #15",
-    "text": "EU etablerer et centralt AI-kontor, der skal koordinere tilsyn og vejledning på tværs af medlemsstaterne.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "gdpr-005",
+    "title": "Dataportabilitet og indsigt",
+    "text": "GDPR giver borgere ret til at modtage deres data i struktureret, almindeligt anvendt format (portabilitet) og ret til indsigt i behandlingen. For AI-systemer betyder dette: brugere kan anmode om de data AI'en har om dem, hvordan data bruges til træning/inferens, og logik bag automatiserede beslutninger. Dette udfordrer 'black box' ML-modeller og kræver forklarbare AI-systemer.",
+    "source": "https://gdpr-info.eu/art-15-gdpr/"
   },
+
+  // Data Act
   {
-    "id": "fact-016",
-    "title": "AI Act fakta #16",
-    "text": "Medlemsstaterne skal udpege nationale tilsynsmyndigheder, der håndhæver AI Act lokalt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "dataact-001",
+    "title": "Data Act - Datadeling",
+    "text": "EU's Data Act (2024) giver brugere og virksomheder ret til adgang til data genereret af IoT-enheder og connected products. For AI betyder dette adgang til træningsdata fra smart devices. Virksomheder skal designe produkter med data portability, så brugere kan dele data med tredjeparts AI-tjenester. Dette fremmer konkurrence og innovation i AI-økosystemet.",
+    "source": "https://digital-strategy.ec.europa.eu/en/policies/data-act"
   },
   {
-    "id": "fact-017",
-    "title": "AI Act fakta #17",
-    "text": "Et europæisk AI-råd skal sikre en ensartet fortolkning og anvendelse af reglerne i hele EU.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "dataact-002",
+    "title": "B2B datadeling",
+    "text": "Data Act regulerer B2B datadeling og forbyder unfair kontraktvilkår. SMV'er kan ikke tvinges til at dele data eksklusivt. For AI-platforme betyder dette: fair vilkår for datadeling med partnere, transparens om hvordan delt data bruges til AI-træning, og ret til at afslutte datadelingsaftaler. Cloud providers får særlige forpligtelser om data switching og interoperabilitet.",
+    "source": "https://digital-strategy.ec.europa.eu/en/policies/data-act"
   },
+
+  // Compliance & Best Practices
   {
-    "id": "fact-018",
-    "title": "AI Act fakta #18",
-    "text": "AI Act gør det muligt at oprette reguleringssandkasser for at teste nye AI-løsninger under myndighedstilsyn.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "comp-001",
+    "title": "AI Governance Framework",
+    "text": "En robust AI governance inkluderer: AI-styregruppe med tværfaglig ekspertise, AI-politikker og standarder, risikoregister for AI-systemer, godkendelsesprocesser for nye AI-projekter, incident response procedures, og løbende monitoring. Best practice er at etablere en AI Ethics Board med repræsentation fra jura, IT-sikkerhed, HR, compliance og forretning til at evaluere AI-risici.",
+    "source": "https://www.iso.org/standard/81230.html"
   },
   {
-    "id": "fact-019",
-    "title": "AI Act fakta #19",
-    "text": "Udbydere af højrisiko AI skal registrere systemet i en central EU-database inden markedsføring.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "comp-002",
+    "title": "Modelkort og dokumentation",
+    "text": "Modelkort dokumenterer: formål, træningsdata, arkitektur, performance metrics, begrænsninger, bias tests og use cases. For compliance skal modelkort omfatte: retligt grundlag for databehandling, DPIA-resultater, sikkerhedsforanstaltninger, human oversight procedures og incident logs. Google's Model Cards og Hugging Face's Model Cards sætter industristandarden for transparent AI-dokumentation.",
+    "source": "https://arxiv.org/abs/1810.03993"
   },
   {
-    "id": "fact-020",
-    "title": "AI Act fakta #20",
-    "text": "CE-mærkning bliver et krav for højrisiko AI som bevis på, at systemet opfylder harmoniserede standarder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "comp-003",
+    "title": "Bias detection og fairness",
+    "text": "AI-systemer skal testes for bias across protected characteristics (køn, alder, etnicitet). Tekniske metoder inkluderer: Demographic Parity, Equal Opportunity, Disparate Impact Ratio. For højrisiko AI kræver EU standarder bias testing på repræsentative datasæt. Tools som IBM AI Fairness 360, Microsoft Fairlearn og Google What-If Tool hjælper med at detektere og mitigere bias.",
+    "source": "https://www.iso.org/standard/77607.html"
   },
   {
-    "id": "fact-021",
-    "title": "AI Act fakta #21",
-    "text": "Brugere af højrisiko AI skal have tilstrækkelig uddannelse til at forstå systemets begrænsninger og krav.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "comp-004",
+    "title": "Explainable AI (XAI)",
+    "text": "Explainable AI teknikker gør 'black box' modeller forståelige: SHAP values viser feature importance, LIME giver local explanations, Attention mechanisms visualiserer hvad modellen fokuserer på. For GDPR Artikel 22 compliance skal automatiserede beslutninger kunne forklares. EU standarder kræver at forklaringer er meningsfulde for den registrerede, ikke kun for teknikere.",
+    "source": "https://christophm.github.io/interpretable-ml-book/"
   },
   {
-    "id": "fact-022",
-    "title": "AI Act fakta #22",
-    "text": "Højrisiko AI-systemer skal være robuste over for cyberangreb og have dokumenterede sikkerhedsforanstaltninger.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "comp-005",
+    "title": "Incident respons og monitoring",
+    "text": "Højrisiko AI skal have logging af: input/output, beslutningsparametre, human interventions og anomalies. Incident response omfatter: detection af model drift/bias, escalation procedures, corrective actions og myndighedsrapportering (15 dage for alvorlige hændelser). MLOps best practice inkluderer continuous monitoring dashboards med alerts for performance degradation og fairness metrics.",
+    "source": "https://artificialintelligenceact.eu/article/61/"
   },
+
+  // Fun Facts & Trends
   {
-    "id": "fact-023",
-    "title": "AI Act fakta #23",
-    "text": "AI Act kræver fail-safe mekanismer, når AI indgår i produkter, der kan påvirke sikkerhed og sundhed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "fun-001",
+    "title": "AI's energiforbrug",
+    "text": "Træning af GPT-3 brugte ~1,287 MWh elektricitet - nok til at drive en gennemsnits dansk husstand i 107 år! EU AI Act kræver rapportering af energiforbrug for store GPAI-modeller. Virksomheder optimerer nu med teknikker som model pruning, quantization og efficient architectures (MobileNet, DistilBERT) for at reducere carbon footprint og opfylde ESG-mål.",
+    "source": "https://arxiv.org/abs/2104.10350"
   },
   {
-    "id": "fact-024",
-    "title": "AI Act fakta #24",
-    "text": "Udbydere skal løbende overvåge deres AI-systemer efter markedsintroduktion og registrere alvorlige hændelser.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "fun-002",
+    "title": "AI i retsvæsenet",
+    "text": "Danske domstole eksperimenterer med AI til juridisk research og dokumentanalyse, men AI må ikke træffe retlige afgørelser selv (GDPR Art. 22). Estland planlagde en 'robot dommer' til småsager under €7000, men projektet blev suspenderet grundet etiske bekymringer. AI Act klassificerer AI i retshåndhævelse og domstole som højrisiko, hvilket kræver streng human oversight og appeals-mekanismer.",
+    "source": "https://www.domstol.dk/"
   },
   {
-    "id": "fact-025",
-    "title": "AI Act fakta #25",
-    "text": "Alvorlige hændelser med højrisiko AI skal rapporteres til myndighederne inden for 15 dage.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "fun-003",
+    "title": "Størrelsen af AI-modeller",
+    "text": "GPT-3 har 175 milliarder parametre, GPT-4 angiveligt over 1 trillion, mens Claude 3 Opus konkurrerer i samme liga. Til sammenligning har den menneskelige hjerne ~86 milliarder neuroner. Men antal parametre ≠ intelligens - mindre, specialiserede modeller kan outperform store generalist modeller på specifikke opgaver. Trends går mod 'mixture of experts' arkitekturer der aktiverer kun relevante dele af modellen.",
+    "source": "https://arxiv.org/abs/2005.14165"
   },
   {
-    "id": "fact-026",
-    "title": "AI Act fakta #26",
-    "text": "Udbydere skal sikre, at tredjepartsleverandører og underleverandører følger AI Act-krav gennem kontrakter.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "fun-004",
+    "title": "AI Hallucinations",
+    "text": "LLM'er kan hallucinate - generere plausibel men forkert information, inklusive fake lovparagraffer og ikke-eksisterende retssager! En New York advokat blev sanktioneret for at citere AI-opfundne sager i retten. For juridisk AI er hallucination detection kritisk. Teknikker inkluderer: citation verification, confidence scoring, RAG for faktabaserede svar, og human review af AI-genereret juridisk arbejde.",
+    "source": "https://www.nytimes.com/2023/05/27/nyregion/avianca-airline-lawsuit-chatgpt.html"
   },
   {
-    "id": "fact-027",
-    "title": "AI Act fakta #27",
-    "text": "Datasæt, modelkort og teknisk dokumentation skal være tilgængelige for tilsynsmyndighederne ved kontrol.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "fun-005",
+    "title": "Multimodal AI",
+    "text": "Moderne AI kan nu behandle tekst, billeder, lyd og video samtidig! GPT-4V, Claude 3 og Gemini kan analysere juridiske dokumenter med diagrammer, screenshots af kontrakter og selv videodepositions. For compliance betyder dette mulighed for at analysere security footage for GDPR-overtrædelser, OCR af scannede kontrakter og accessibility improvements. EU AI Act's definition af AI-systemer omfatter alle modaliteter.",
+    "source": "https://www.anthropic.com/claude"
   },
+
+  // Datatilsynet & Dansk kontekst
   {
-    "id": "fact-028",
-    "title": "AI Act fakta #28",
-    "text": "AI Act fremmer brugen af standardiserede modelkort til at beskrive formål, performance og begrænsninger.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "dk-001",
+    "title": "Datatilsynet og AI",
+    "text": "Datatilsynet er Danmarks databeskyttelsesmyndighed og vil også håndhæve EU AI Act i Danmark. Tilsynet har udstedt guidelines om GDPR-compliance for AI, inklusive krav til transparens i automatiserede beslutninger. I 2024 iværksatte Datatilsynet fokuskampagner om AI i rekruttering og kreditvurdering. Virksomheder kan søge vejledning hos Datatilsynet før implementering af højrisiko AI-systemer.",
+    "source": "https://www.datatilsynet.dk/"
   },
   {
-    "id": "fact-029",
-    "title": "AI Act fakta #29",
-    "text": "Generelle AI-systemer (GPAI) får særskilte krav om dokumentation af træningsdata og energiforbrug.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "dk-002",
+    "title": "AI i dansk offentlig sektor",
+    "text": "Danske kommuner og regioner anvender AI til: sagsbehandling, chatbots, forudsigelse af socialt udsatte børn, og ressourceoptimering. Digitaliseringsstyrelsen og KL (Kommunernes Landsforening) har udgivet guidelines for ansvarlig AI i det offentlige. Offentlige AI-systemer skal overholde både AI Act og forvaltningsloven, hvilket stiller ekstra krav til begrundelser og klageadgang.",
+    "source": "https://www.kl.dk/"
   },
+
+  // Tekniske detaljer
   {
-    "id": "fact-030",
-    "title": "AI Act fakta #30",
-    "text": "Udbydere af GPAI skal dele teknisk dokumentation med downstream-brugere, så de kan efterleve loven.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "tech-001",
+    "title": "Fine-tuning vs RAG",
+    "text": "Fine-tuning træner en eksisterende LLM på domænespecifik data for at specialisere dens evner (f.eks. juridisk sprog). RAG holder modellen generel men giver den adgang til opdateret knowledge base. For compliance: RAG er ofte bedre fordi juridiske regler ændrer sig, RAG tillader citation af kilder, og RAG kræver ikke gentagende model-træning. Hybrid approaches kombinerer begge teknikker.",
+    "source": "https://arxiv.org/abs/2005.11401"
   },
   {
-    "id": "fact-031",
-    "title": "AI Act fakta #31",
-    "text": "AI Act kræver gennemsigtighed om energiforbrug, så AI-løsninger kan optimeres bæredygtigt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "tech-002",
+    "title": "Prompt Engineering",
+    "text": "Prompt engineering optimerer hvordan vi kommunikerer med LLM'er for bedre resultater. Teknikker inkluderer: few-shot examples, chain-of-thought reasoning, role prompting, og system instructions. For juridisk AI: strukturerede prompts med clear instructions, inclusion af relevant precedents, step-by-step reasoning for komplekse spørgsmål. Good prompts kan forbedre accuracy med 20-40% uden model changes.",
+    "source": "https://www.promptingguide.ai/"
   },
   {
-    "id": "fact-032",
-    "title": "AI Act fakta #32",
-    "text": "Forordningen opmuntrer til åbne standarder og open source, hvis sikkerheds- og compliancekrav opfyldes.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "tech-003",
+    "title": "Token limits og chunking",
+    "text": "LLM'er har context window limits (GPT-4: 128k tokens, Claude: 200k tokens, ~1 token ≈ 0.75 ord). For lange juridiske dokumenter kræves chunking strategies: semantic chunking (split ved paragraffer), sliding windows med overlap, eller hierarchical summarization. For compliance docs skal chunking bevare juridisk kontekst - f.eks. ikke splitte Artikel 6's underpunkter.",
+    "source": "https://www.anthropic.com/index/claude-2-1"
   },
+
+  // Fremtidige trends
   {
-    "id": "fact-033",
-    "title": "AI Act fakta #33",
-    "text": "AI Act supplerer eksisterende EU-regler som GDPR, NIS2 og produktansvarsdirektivet uden at erstatte dem.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "future-001",
+    "title": "AI Agents evolution",
+    "text": "Næste generation AI-agents kan: booke møder, analysere kontrakter, udarbejde DPIA'er og koordinere med andre agents uden human intervention. AutoGPT, BabyAGI og LangGraph demonstrerer autonomous workflows. For virksomheder betyder dette AI-drevne compliance assistants der proaktivt identificerer risici. Men EU AI Act kræver at kritiske beslutninger har human oversight - agents kan anbefale, ikke afgøre.",
+    "source": "https://www.langchain.com/langgraph"
   },
   {
-    "id": "fact-034",
-    "title": "AI Act fakta #34",
-    "text": "Kliniske AI-systemer skal overholde både AI Act og reglerne for medicinsk udstyr (MDR).",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-035",
-    "title": "AI Act fakta #35",
-    "text": "AI til kreditvurdering betragtes som højrisiko, fordi beslutningerne kan få store konsekvenser for borgerne.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-036",
-    "title": "AI Act fakta #36",
-    "text": "AI i HR-processer som rekruttering skal leve op til højrisikokrav for at beskytte fairness og ikke-diskrimination.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-037",
-    "title": "AI Act fakta #37",
-    "text": "AI i uddannelsesmiljøer, der vurderer studerende, klassificeres som højrisiko af hensyn til elevers rettigheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-038",
-    "title": "AI Act fakta #38",
-    "text": "Organisationer, der anvender AI, forventes at udarbejde interne politikker for ansvarlig brug og governance.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-039",
-    "title": "AI Act fakta #39",
-    "text": "AI Act opfordrer til, at organisationer etablerer risikoregistre over deres AI-systemer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-040",
-    "title": "AI Act fakta #40",
-    "text": "Koncerner skal sikre, at alle datterselskaber overholder AI Act, hvis de deler AI-platforme.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-041",
-    "title": "AI Act fakta #41",
-    "text": "Brugere skal kunne forstå de vigtigste parametre og begrænsninger ved et højrisiko AI-system, før det tages i brug.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-042",
-    "title": "AI Act fakta #42",
-    "text": "AI Act stiller krav om forklarlige resultater, så mennesker kan forstå, hvordan et AI-system når frem til sin beslutning.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-043",
-    "title": "AI Act fakta #43",
-    "text": "Højrisiko AI skal dokumentere nøjagtighed, robusthed og cybersikkerhed som målbare kvalitetskriterier.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-044",
-    "title": "AI Act fakta #44",
-    "text": "AI Act kræver, at organisationer har nødprocedurer til at stoppe et AI-system, hvis noget går galt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-045",
-    "title": "AI Act fakta #45",
-    "text": "Udbydere skal gennemføre risikovurderinger, der dækker hele AI-systemets livscyklus.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-046",
-    "title": "AI Act fakta #46",
-    "text": "Ændringer i et AI-system skal vurderes for at se, om de medfører en ny konformitetsvurdering.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-047",
-    "title": "AI Act fakta #47",
-    "text": "Myndigheder kan kræve adgang til kildekode eller modelparametre i særlige tilfælde af mistanke.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-048",
-    "title": "AI Act fakta #48",
-    "text": "AI Act giver mulighed for tilbagekaldelse af AI-produkter, hvis de udgør en alvorlig risiko.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-049",
-    "title": "AI Act fakta #49",
-    "text": "AI Act indfører bøder, der er sammenlignelige med GDPR for at sikre effektiv håndhævelse.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-050",
-    "title": "AI Act fakta #50",
-    "text": "Udbydere skal udarbejde handlingsplaner for menneskelig oversight med klare roller og ansvarsområder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-051",
-    "title": "AI Act fakta #51",
-    "text": "AI Act kræver, at brugere registrerer og analyserer near-miss hændelser for at forbedre sikkerheden.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-052",
-    "title": "AI Act fakta #52",
-    "text": "Organisationer opfordres til at gennemføre interne audits af deres AI-systemer mindst én gang årligt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-053",
-    "title": "AI Act fakta #53",
-    "text": "AI Act gør det muligt for borgere at klage over AI-systemer, der krænker deres rettigheder, til nationale myndigheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-054",
-    "title": "AI Act fakta #54",
-    "text": "Reglerne forbyder AI, der manipulerer menneskers adfærd ved at udnytte sårbare grupper som børn og ældre.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-055",
-    "title": "AI Act fakta #55",
-    "text": "Emotion recognition på arbejdspladsen og i uddannelse er stærkt begrænset af hensyn til privatliv og værdighed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-056",
-    "title": "AI Act fakta #56",
-    "text": "AI Act kræver, at organisationer dokumenterer kompetencekrav og træningsprogrammer for brugere af AI.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-057",
-    "title": "AI Act fakta #57",
-    "text": "Der skal foreligge plan for krisehåndtering og eskalation, hvis et AI-system fejler kritisk.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-058",
-    "title": "AI Act fakta #58",
-    "text": "Reguleringen fremmer brugen af tværfaglige teams med jura, etik og teknik for at sikre helhedsorienteret compliance.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-059",
-    "title": "AI Act fakta #59",
-    "text": "AI Act etablerer samarbejde mellem tilsynsmyndigheder på tværs af lande, når AI bruges grænseoverskridende.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-060",
-    "title": "AI Act fakta #60",
-    "text": "Myndighederne kan udstede påbud om forbedringer, hvis et AI-system kun delvist lever op til kravene.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-061",
-    "title": "AI Act fakta #61",
-    "text": "Udbydere skal informere brugerne om nødvendige datakvalitetskrav, før systemet tages i drift.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-062",
-    "title": "AI Act fakta #62",
-    "text": "AI Act kræver, at data governance-processer er dokumenteret, inklusive indsamling, lagring og oprydning.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-063",
-    "title": "AI Act fakta #63",
-    "text": "Loven understreger, at compliance er en løbende proces, ikke en engangsøvelse.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-064",
-    "title": "AI Act fakta #64",
-    "text": "AI Act foreskriver, at organisatoriske procedurer skal understøtte ansvarlig innovation og etik.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-065",
-    "title": "AI Act fakta #65",
-    "text": "AI-systemer, der genererer syntetisk indhold, skal tydeligt markere, at materialet er AI-skabt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-066",
-    "title": "AI Act fakta #66",
-    "text": "Udbydere skal sikre, at bias-tests udføres og dokumenteres som en del af kvalitetssikringen.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-067",
-    "title": "AI Act fakta #67",
-    "text": "Højrisiko AI-systemer skal være kompatible med relevante harmoniserede europæiske standarder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-068",
-    "title": "AI Act fakta #68",
-    "text": "AI Act pålægger, at data og modeller kan spores for at understøtte gennemsigtighed og ansvarlighed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-069",
-    "title": "AI Act fakta #69",
-    "text": "Medlemsstaterne kan oprette rådgivningsenheder, der hjælper især SMV’er med at efterleve AI Act.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-070",
-    "title": "AI Act fakta #70",
-    "text": "AI Act giver mulighed for frivillige kodekser for udbydere, der ønsker at gå ud over minimumskravene.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-071",
-    "title": "AI Act fakta #71",
-    "text": "Udbydere skal sætte klare grænser for, hvad et AI-system må bruges til, for at undgå misbrug.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-072",
-    "title": "AI Act fakta #72",
-    "text": "AI Act stiller krav om, at brugere kan pause eller stoppe et AI-system uden tekniske hindringer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-073",
-    "title": "AI Act fakta #73",
-    "text": "Loven kræver, at AI-systemer er interoperable med eksisterende rapporterings- og auditværktøjer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-074",
-    "title": "AI Act fakta #74",
-    "text": "Kritiske anvendelser som biometrisk kategorisering kan kun anvendes, hvis de er lovligt hjemlet og stærkt kontrolleret.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-075",
-    "title": "AI Act fakta #75",
-    "text": "AI Act gør ansvarlighed til en konkurrencefordel ved at give virksomheder klare spilleregler.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-076",
-    "title": "AI Act fakta #76",
-    "text": "Udbydere skal sikre, at data fra tredjepart ikke indfører ulovlige eller diskriminerende elementer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-077",
-    "title": "AI Act fakta #77",
-    "text": "AI Act kræver dokumentation for, hvordan systemet reagerer under driftsforstyrrelser og edge cases.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-078",
-    "title": "AI Act fakta #78",
-    "text": "Organisationer skal evaluere, om AI-systemet arbejder efter sit tiltænkte formål i praksis.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-079",
-    "title": "AI Act fakta #79",
-    "text": "Udbydere skal være i stand til at genskabe de resultater, som AI-systemet genererer, for at sikre sporbarhed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-080",
-    "title": "AI Act fakta #80",
-    "text": "AI Act anerkender, at høj kvalitet i data er afgørende for at undgå diskrimination og fejl.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-081",
-    "title": "AI Act fakta #81",
-    "text": "Udbydere af højrisiko AI skal have politikker for datasletning og anonymisering, hvor det er relevant.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-082",
-    "title": "AI Act fakta #82",
-    "text": "Administration af adgang til AI-modeller og logfiler er en vigtig del af compliance-kravene.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-083",
-    "title": "AI Act fakta #83",
-    "text": "AI Act forventer, at organisationer kan redegøre for deres AI-strategi over for interessenter og myndigheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-084",
-    "title": "AI Act fakta #84",
-    "text": "Udbydere skal beskrive de begrænsninger, der gør sig gældende for AI-systemets anvendelighed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-085",
-    "title": "AI Act fakta #85",
-    "text": "Brugere skal instrueres i at overvåge for falske positive og falske negative for at sikre kvaliteten.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-086",
-    "title": "AI Act fakta #86",
-    "text": "AI Act kræver, at organisationer vurderer AI-systemets påvirkning på grundlæggende rettigheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-087",
-    "title": "AI Act fakta #87",
-    "text": "Udbydere skal dokumentere, hvordan de sikrer fairness i beslutningsprocessen for deres AI-systemer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-088",
-    "title": "AI Act fakta #88",
-    "text": "Dataflowet mellem komponenter i et AI-system skal være kortlagt og dokumenteret.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-089",
-    "title": "AI Act fakta #89",
-    "text": "Medlemsstaterne kan udstede vejledninger, der supplerer forordningen med nationale specifikationer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-090",
-    "title": "AI Act fakta #90",
-    "text": "AI Act forventer, at organisationer definerer klare ansvarsområder for AI-governance på ledelsesniveau.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-091",
-    "title": "AI Act fakta #91",
-    "text": "Udbydere skal planlægge for sikker udfasning af AI-systemer, når de ikke længere opfylder kravene.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-092",
-    "title": "AI Act fakta #92",
-    "text": "AI Act understreger, at et AI-system ikke må erstatte menneskelig vurdering i situationer med væsentlig retslig betydning uden safeguards.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-093",
-    "title": "AI Act fakta #93",
-    "text": "Organisationer skal kunne forklare, hvilke datasæt der er brugt til at udvikle og vedligeholde AI-systemet.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-094",
-    "title": "AI Act fakta #94",
-    "text": "AI Act kræver, at brugere får information om de eventuelle risici, der er forbundet med AI-systemet.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-095",
-    "title": "AI Act fakta #95",
-    "text": "Udbydere skal sørge for, at AI-systemer kan fungere trygt, selv når inputdata ændrer sig over tid.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-096",
-    "title": "AI Act fakta #96",
-    "text": "AI Act fremmer udviklingen af fælles værktøjer og standarder, så compliance ikke skal opfindes fra bunden hver gang.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-097",
-    "title": "AI Act fakta #97",
-    "text": "Højrisiko AI i myndighedsbeslutninger kræver særlig dokumentation for retssikkerhed og klagemuligheder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-098",
-    "title": "AI Act fakta #98",
-    "text": "AI Act kræver, at der føres logbøger over, hvem der har tilgået og justeret AI-modeller i driftsmiljøet.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-099",
-    "title": "AI Act fakta #99",
-    "text": "Udbydere skal sikre, at AI-systemet ikke udsætter brugere for urimelig fysisk eller psykisk skade.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-100",
-    "title": "AI Act fakta #100",
-    "text": "Organisationer bør etablere en klar eskalationsvej, når AI-systemet giver uventede anbefalinger.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-101",
-    "title": "AI Act fakta #101",
-    "text": "AI Act gør det nødvendigt at etablere KPI’er for løbende at måle, om et AI-system performer ansvarligt.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-102",
-    "title": "AI Act fakta #102",
-    "text": "AI Act skal skabe tillid til, at AI i EU udvikles og anvendes med respekt for menneskers værdighed.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-103",
-    "title": "AI Act fakta #103",
-    "text": "Organisationer, der tidligt aligner med AI Act, kan opnå hurtigere markedsadgang og bedre omdømme.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-104",
-    "title": "AI Act fakta #104",
-    "text": "AI Act fremmer internationalt samarbejde ved at sætte en global reference for etisk AI-regulering.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-105",
-    "title": "AI Act fakta #105",
-    "text": "EU forventer, at AI Act vil være en katalysator for investeringer i ansvarlig og sikker AI.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-106",
-    "title": "AI Act fakta #106",
-    "text": "Forordningen understreger, at innovation og beskyttelse af rettigheder kan gå hånd i hånd gennem klare regler.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-107",
-    "title": "AI Act fakta #107",
-    "text": "AI Act kræver, at udviklere dokumenterer, hvordan bias og diskrimination identificeres og behandles.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-108",
-    "title": "AI Act fakta #108",
-    "text": "Udbydere skal sikre, at deres AI-systemer kan integreres ansvarligt i eksisterende organisatoriske workflows.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-109",
-    "title": "AI Act fakta #109",
-    "text": "Loven fremhæver, at borgernes tillid er afgørende for udbredelsen af AI-teknologier.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-110",
-    "title": "AI Act fakta #110",
-    "text": "AI Act gør det lettere for offentlige institutioner at stille krav til leverandører om ansvarlig AI.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-111",
-    "title": "AI Act fakta #111",
-    "text": "Organisationer bør oprette en AI-styregruppe, der følger op på ændringer i lovgivning og standarder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-112",
-    "title": "AI Act fakta #112",
-    "text": "AI Act kræver, at organisationer kan forklare, hvilke metrics der bruges til at evaluere systemets performance.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-113",
-    "title": "AI Act fakta #113",
-    "text": "Udbydere skal planlægge, hvordan de håndterer support og brugerfeedback på deres AI-løsninger.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-114",
-    "title": "AI Act fakta #114",
-    "text": "AI Act forventer, at AI-systemer dokumenterer, hvordan de håndterer usikkerhed og mangelfuld data.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-115",
-    "title": "AI Act fakta #115",
-    "text": "Forordningen betyder, at AI ikke længere kan implementeres uden struktureret governance fra dag ét.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-116",
-    "title": "AI Act fakta #116",
-    "text": "AI Act giver virksomheder mulighed for at vise ansvarlighed gennem certificering og dokumentation.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-117",
-    "title": "AI Act fakta #117",
-    "text": "Organisationer bør integrere AI Act-krav i deres eksisterende compliance- og risikostyringsrammer.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-118",
-    "title": "AI Act fakta #118",
-    "text": "AI Act understøtter et indre marked, hvor ansvarlige AI-produkter kan skaleres på tværs af landegrænser.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-119",
-    "title": "AI Act fakta #119",
-    "text": "Virksomheder, der investerer i AI Act-compliance, positionerer sig som troværdige partnere for offentlige og private kunder.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
-  },
-  {
-    "id": "fact-120",
-    "title": "AI Act fakta #120",
-    "text": "AI Act er designet til at kunne opdateres, så lovgivningen følger den teknologiske udvikling.",
-    "source": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai"
+    "id": "future-002",
+    "title": "Federated Learning",
+    "text": "Federated Learning træner AI-modeller på decentraliserede data uden at dele rå data - perfekt til privacy-sensitive anvendelser. Hospitaler kan samarbejde om AI-diagnostik uden at dele patientjournaler. For GDPR minimerer dette databehandling og risiko. Google bruger federated learning til keyboard predictions. EU AI Act fremmer privacy-enhancing technologies som federated learning til højrisiko systemer.",
+    "source": "https://arxiv.org/abs/1602.05629"
   }
 ];
 

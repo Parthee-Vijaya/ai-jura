@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
 import {
   FaHome,
   FaSearch,
@@ -14,102 +13,12 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaExternalLinkAlt,
-  FaInfoCircle,
   FaCog,
   FaChevronDown,
   FaChevronUp
 } from 'react-icons/fa';
 
-const VERSION_QUERY_KEY = 'platform-version-info';
-const VERSION_REFRESH_INTERVAL = 60 * 1000;
-
-const CHANGE_TYPE_LABELS = {
-  major: 'Stor ændring',
-  minor: 'Mellem ændring',
-  patch: 'Mindre ændring'
-};
-
-const buildApiUrl = (path) => {
-  const base = process.env.REACT_APP_API_BASE_URL || '';
-  if (!base) {
-    return path;
-  }
-  return `${base.replace(/\/$/, '')}${path}`;
-};
-
-const fetchJsonNoCache = async (url, { timeout = 4000 } = {}) => {
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeout);
-  let response;
-  try {
-    response = await fetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
-      },
-      signal: controller.signal,
-    });
-  } finally {
-    window.clearTimeout(timer);
-  }
-  if (!response.ok) {
-    throw new Error(`Kunne ikke hente data fra ${url}`);
-  }
-  return response.json();
-};
-
-const fetchVersionInfo = async () => {
-  const fallback = await fetchJsonNoCache('/fallback/version.json', { timeout: 1500 }).catch(() => null);
-  try {
-    const live = await fetchJsonNoCache(buildApiUrl('/api/version'));
-    return live;
-  } catch (error) {
-    console.warn('Version API utilgængelig – anvender fallback', error);
-    if (fallback) {
-      return fallback;
-    }
-    throw error;
-  }
-};
-
-const formatRelativeTime = (date) => {
-  const diffMs = date.getTime() - Date.now();
-  const diffMinutes = Math.round(diffMs / 60000);
-
-  if (Math.abs(diffMinutes) < 1) {
-    return 'lige nu';
-  }
-
-  const formatter = new Intl.RelativeTimeFormat('da', { numeric: 'auto' });
-
-  if (Math.abs(diffMinutes) < 60) {
-    return formatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return formatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  if (Math.abs(diffDays) < 7) {
-    return formatter.format(diffDays, 'day');
-  }
-
-  const diffWeeks = Math.round(diffDays / 7);
-  if (Math.abs(diffWeeks) < 5) {
-    return formatter.format(diffWeeks, 'week');
-  }
-
-  const diffMonths = Math.round(diffDays / 30);
-  if (Math.abs(diffMonths) < 12) {
-    return formatter.format(diffMonths, 'month');
-  }
-
-  const diffYears = Math.round(diffDays / 365);
-  return formatter.format(diffYears, 'year');
-};
+const NAVIGATION_ID = 'sidebar-navigation';
 
 const SidebarContainer = styled.aside`
   width: ${props => props.collapsed ? '80px' : '250px'};
@@ -312,139 +221,12 @@ const SidebarFooter = styled.div`
   gap: 0.9rem;
 `;
 
-const VersionSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: ${props => props.theme.borderRadius};
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88))'
-    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92))'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : 'rgba(148, 163, 184, 0.32)'};
-  box-shadow: ${props => props.theme.shadows.md};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.92)'
-    : props.theme.layout.sidebar.text};
-`;
-
-const VersionHeading = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(203, 213, 225, 0.85)'
-    : 'rgba(71, 85, 105, 0.85)'};
-`;
-
-const VersionValue = styled.div`
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-`;
-
-const ChangeTypeBadge = styled.span`
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(59, 130, 246, 0.18)'
-    : 'rgba(29, 78, 216, 0.12)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(191, 219, 254, 0.95)'
-    : 'rgba(29, 78, 216, 0.85)'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(96, 165, 250, 0.35)'
-    : 'rgba(29, 78, 216, 0.2)'};
-`;
-
-const VersionMeta = styled.div`
-  font-size: 0.68rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(203, 213, 225, 0.82)'
-    : 'rgba(71, 85, 105, 0.85)'};
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-
-  .relative {
-    opacity: 0.75;
-    font-size: 0.66rem;
-  }
-
-  .author {
-    font-weight: 600;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(191, 219, 254, 0.9)'
-      : 'rgba(30, 64, 175, 0.9)'};
-  }
-`;
-
-const VersionDetailsButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: transparent;
-  border: none;
-  padding: 0.4rem 0;
-  margin-top: 0.2rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.85)'
-    : 'rgba(100, 116, 139, 0.85)'};
-  cursor: pointer;
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(191, 219, 254, 0.95)'
-      : 'rgba(30, 64, 175, 0.95)'};
-  }
-
-  .chevron {
-    font-size: 0.6rem;
-    transition: ${props => props.theme.animations.transitionFast};
-  }
-`;
-
-const VersionDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  max-height: ${props => props.$isOpen ? '500px' : '0'};
-  overflow: hidden;
-  opacity: ${props => props.$isOpen ? '1' : '0'};
-  transition: all 0.3s ease-in-out;
-  margin-top: ${props => props.$isOpen ? '0.4rem' : '0'};
-  padding-top: ${props => props.$isOpen ? '0.4rem' : '0'};
-  border-top: ${props => props.$isOpen
-    ? `1px solid ${props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.25)'}`
-    : 'none'};
-`;
-
 const FooterNote = styled.div`
   font-size: 0.68rem;
   line-height: 1.3;
   color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.78)'
-    : 'rgba(100, 116, 139, 0.85)'};
+    ? 'rgba(255, 255, 255, 0.9)'
+    : 'rgba(255, 255, 255, 0.95)'};
   font-style: italic;
   letter-spacing: 0.03em;
 `;
@@ -455,7 +237,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
     'viden': true,
     'indstillinger': false
   });
-  const [versionDetailsExpanded, setVersionDetailsExpanded] = useState(false);
+  const sidebarRef = useRef(null);
+  const [isMobileView, setIsMobileView] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
 
   const toggleSection = (sectionKey) => {
     setExpandedSections(prev => ({
@@ -464,58 +252,84 @@ const Sidebar = ({ collapsed, onToggle }) => {
     }));
   };
 
-  const { data: versionData, isError: versionError } = useQuery(
-    VERSION_QUERY_KEY,
-    fetchVersionInfo,
-    {
-      refetchInterval: VERSION_REFRESH_INTERVAL,
-      staleTime: VERSION_REFRESH_INTERVAL / 2,
-      retry: 1,
-    }
-  );
-
-  const versionLabel = useMemo(() => {
-    if (versionData?.version) {
-      return `v${versionData.version}`;
-    }
-    if (versionError) {
-      return 'v--';
-    }
-    return 'Henter...';
-  }, [versionData, versionError]);
-
-  const changeTypeLabel = useMemo(() => {
-    if (!versionData?.lastChangeType) {
-      return null;
-    }
-    return CHANGE_TYPE_LABELS[versionData.lastChangeType] || null;
-  }, [versionData]);
-
-  const lastCommitMeta = versionData?.lastCommit;
-
-  const lastUpdated = useMemo(() => {
-    if (!lastCommitMeta?.timestamp) {
-      return null;
-    }
-    const commitDate = new Date(lastCommitMeta.timestamp);
-    if (Number.isNaN(commitDate.getTime())) {
-      return null;
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
     }
 
-    return {
-      formatted: new Intl.DateTimeFormat('da-DK', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(commitDate),
-      relative: formatRelativeTime(commitDate),
-      shortHash: lastCommitMeta?.shortHash || null,
-      message: lastCommitMeta?.message || null,
-      author: lastCommitMeta?.author || null,
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handleChange = (event) => setIsMobileView(event.matches);
+
+    setIsMobileView(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const sidebarNode = sidebarRef.current;
+    if (!sidebarNode) {
+      return undefined;
+    }
+
+    const shouldTrapFocus = !collapsed && isMobileView;
+    if (!shouldTrapFocus) {
+      return undefined;
+    }
+
+    const focusableSelectors = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea';
+    const focusableElements = Array.from(sidebarNode.querySelectorAll(focusableSelectors))
+      .filter((element) => !element.hasAttribute('aria-hidden') && element.offsetParent !== null);
+
+    if (!focusableElements.length) {
+      return undefined;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onToggle();
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else if (document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
-  }, [lastCommitMeta]);
+
+    const handleFocusIn = (event) => {
+      if (!sidebarNode.contains(event.target)) {
+        firstElement.focus();
+      }
+    };
+
+    firstElement.focus();
+
+    sidebarNode.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn);
+
+    return () => {
+      sidebarNode.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn);
+    };
+  }, [collapsed, isMobileView, onToggle]);
 
   const menuItems = [
     {
@@ -548,10 +362,24 @@ const Sidebar = ({ collapsed, onToggle }) => {
     }
   ];
 
+  const toggleLabel = collapsed ? 'Åbn navigation' : 'Luk navigation';
+
   return (
-    <SidebarContainer collapsed={collapsed}>
+    <SidebarContainer
+      ref={sidebarRef}
+      collapsed={collapsed}
+      role="navigation"
+      aria-label="Primær navigation"
+      aria-hidden={collapsed && isMobileView ? 'true' : 'false'}
+    >
       <SidebarHeader>
-        <ToggleButton onClick={onToggle}>
+        <ToggleButton
+          type="button"
+          onClick={onToggle}
+          aria-label={toggleLabel}
+          aria-expanded={!collapsed}
+          aria-controls={NAVIGATION_ID}
+        >
           {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </ToggleButton>
         <BrandContainer $collapsed={collapsed}>
@@ -562,7 +390,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         </BrandContainer>
       </SidebarHeader>
 
-      <NavContent>
+      <NavContent id={NAVIGATION_ID}>
         <nav>
           {menuItems.map((section, sectionIndex) => (
             <div key={sectionIndex}>
@@ -616,65 +444,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {!collapsed && (
         <SidebarFooter>
-          <VersionSection>
-            <VersionHeading>
-              <FaInfoCircle size={10} />
-              <span>Version</span>
-            </VersionHeading>
-            <VersionValue>
-              {versionLabel}
-              {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
-            </VersionValue>
-            <VersionMeta>
-              {lastUpdated ? (
-                <>
-                  {lastUpdated.relative || lastUpdated.formatted}
-                </>
-              ) : (
-                versionError ? 'Ukendt' : 'Henter...'
-              )}
-            </VersionMeta>
-
-            {(lastUpdated || changeTypeLabel) && (
-              <>
-                <VersionDetailsButton onClick={() => setVersionDetailsExpanded(!versionDetailsExpanded)}>
-                  <span>Se detaljer</span>
-                  {versionDetailsExpanded ? (
-                    <FaChevronUp className="chevron" />
-                  ) : (
-                    <FaChevronDown className="chevron" />
-                  )}
-                </VersionDetailsButton>
-
-                <VersionDetails $isOpen={versionDetailsExpanded}>
-                  {lastUpdated && (
-                    <>
-                      <VersionMeta>
-                        <strong>Opdateret:</strong> {lastUpdated.formatted}
-                      </VersionMeta>
-
-                      {(lastUpdated.shortHash || lastUpdated.message) && (
-                        <VersionMeta>
-                          <strong>Commit:</strong>
-                          {lastUpdated.shortHash && <span> #{lastUpdated.shortHash}</span>}
-                          {lastUpdated.message && (
-                            <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
-                          )}
-                        </VersionMeta>
-                      )}
-
-                      {lastUpdated.author && (
-                        <VersionMeta>
-                          <strong>Ændret af:</strong> <span className="author">{lastUpdated.author}</span>
-                        </VersionMeta>
-                      )}
-                    </>
-                  )}
-                </VersionDetails>
-              </>
-            )}
-          </VersionSection>
-
           <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>
         </SidebarFooter>
       )}

@@ -333,3 +333,354 @@ class LegalDocumentRecord(Base):
 
     def __repr__(self) -> str:
         return f"<LegalDocumentRecord(id={self.id}, title='{self.title}')>"
+
+
+# ===================================================================
+# COMPLIANCE CONTROL (7-PUNKTS VURDERING) MODELS
+# ===================================================================
+
+class ComplianceControlAssessment(Base):
+    """
+    7-punkts compliance control vurdering.
+
+    Gemmer resultaterne af en fuld 7-punkts compliance control vurdering
+    inkl. beslutning, risikoscore, hard stops, betingelser og anbefalinger.
+    """
+    __tablename__ = 'compliance_control_assessments'
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # UUID
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+
+    # System information
+    system_navn: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    system_beskrivelse: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    fagomraade: Mapped[Optional[str]] = mapped_column(String(100), index=True)
+    organisation: Mapped[str] = mapped_column(String(255), default="Kalundborg Kommune")
+    team: Mapped[Optional[str]] = mapped_column(String(100))
+    kontaktperson: Mapped[Optional[str]] = mapped_column(String(255))
+
+    # Beslutning og risiko
+    beslutning: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # go, betinget-go, no-go
+    beslutning_beskrivelse: Mapped[Optional[str]] = mapped_column(Text)
+    risiko_score: Mapped[int] = mapped_column(Integer, nullable=False)  # 0-100
+    risiko_niveau: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # Lav, Medium, Høj, Kritisk
+
+    # AI system characteristics
+    bruger_ml: Mapped[bool] = mapped_column(Boolean, default=False)
+    autonome_beslutninger: Mapped[bool] = mapped_column(Boolean, default=False)
+    ai_risiko_kategori: Mapped[Optional[str]] = mapped_column(String(50))  # unacceptable, high, limited, minimal
+
+    # GDPR relevans
+    behandler_persondata: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    persondata_typer: Mapped[Optional[List[str]]] = mapped_column(JSON)  # Array of data types
+    juridisk_grundlag: Mapped[Optional[str]] = mapped_column(String(100))
+    kraever_dpia: Mapped[bool] = mapped_column(Boolean, default=False)
+    dpia_udfoert: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    # Form data (komplet JSON storage af alle 7 punkter)
+    form_data: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+    # Punkt-specifikke vurderinger
+    punkt_vurderinger: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
+
+    # Relationer til related tables
+    hard_stops: Mapped[List["ComplianceHardStop"]] = relationship(
+        "ComplianceHardStop",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+    betingelser: Mapped[List["ComplianceBetingelse"]] = relationship(
+        "ComplianceBetingelse",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+    anbefalinger: Mapped[List["ComplianceAnbefaling"]] = relationship(
+        "ComplianceAnbefaling",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+    artefakter: Mapped[List["ComplianceArtefakt"]] = relationship(
+        "ComplianceArtefakt",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+    tests: Mapped[List["ComplianceTest"]] = relationship(
+        "ComplianceTest",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+    naeste_skridt: Mapped[List["ComplianceNaesteSkridt"]] = relationship(
+        "ComplianceNaesteSkridt",
+        back_populates="assessment",
+        cascade="all, delete-orphan"
+    )
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_beslutning_risiko", "beslutning", "risiko_niveau"),
+        Index("idx_organisation_fagomraade", "organisation", "fagomraade"),
+        Index("idx_created_at_cc", "created_at"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ComplianceControlAssessment(id={self.id}, system='{self.system_navn}', beslutning={self.beslutning})>"
+
+
+class ComplianceHardStop(Base):
+    """
+    Kritiske blokeringer der forhindrer GO beslutning.
+    """
+    __tablename__ = 'compliance_hard_stops'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    artikel_reference: Mapped[Optional[str]] = mapped_column(String(100))  # e.g., "AI Act Art. 5"
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="hard_stops")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceHardStop(id={self.id}, assessment_id={self.assessment_id})>"
+
+
+class ComplianceBetingelse(Base):
+    """
+    Betingelser der skal opfyldes for godkendelse.
+    """
+    __tablename__ = 'compliance_betingelser'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    kategori: Mapped[Optional[str]] = mapped_column(String(100))  # e.g., "GDPR", "AI Act"
+    prioritet: Mapped[int] = mapped_column(Integer, default=0)  # 0=low, 1=medium, 2=high
+    status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, completed, blocked
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="betingelser")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceBetingelse(id={self.id}, status={self.status})>"
+
+
+class ComplianceAnbefaling(Base):
+    """
+    Anbefalinger til forbedring af compliance.
+    """
+    __tablename__ = 'compliance_anbefalinger'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    kategori: Mapped[Optional[str]] = mapped_column(String(100))
+    prioritet: Mapped[int] = mapped_column(Integer, default=0)
+    implementeret: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="anbefalinger")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceAnbefaling(id={self.id}, implementeret={self.implementeret})>"
+
+
+class ComplianceArtefakt(Base):
+    """
+    Nødvendige dokumenter og artefakter.
+    """
+    __tablename__ = 'compliance_artefakter'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    navn: Mapped[str] = mapped_column(String(255), nullable=False)
+    beskrivelse: Mapped[Optional[str]] = mapped_column(Text)
+    kategori: Mapped[Optional[str]] = mapped_column(String(100))
+    paakraevet: Mapped[bool] = mapped_column(Boolean, default=False)
+    fuldfoert: Mapped[bool] = mapped_column(Boolean, default=False)
+    template_url: Mapped[Optional[str]] = mapped_column(String(512))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="artefakter")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceArtefakt(id={self.id}, navn='{self.navn}')>"
+
+
+class ComplianceTest(Base):
+    """
+    Nødvendige tests før deployment.
+    """
+    __tablename__ = 'compliance_tests'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    kategori: Mapped[Optional[str]] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(50), default="pending")  # pending, passed, failed
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="tests")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceTest(id={self.id}, status={self.status})>"
+
+
+class ComplianceNaesteSkridt(Base):
+    """
+    Næste skridt og action items.
+    """
+    __tablename__ = 'compliance_naeste_skridt'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assessment_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey('compliance_control_assessments.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    skridt_nummer: Mapped[int] = mapped_column(Integer, nullable=False)
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    fuldfoert: Mapped[bool] = mapped_column(Boolean, default=False)
+    fuldfoert_dato: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+
+    assessment: Mapped["ComplianceControlAssessment"] = relationship("ComplianceControlAssessment", back_populates="naeste_skridt")
+
+    def __repr__(self) -> str:
+        return f"<ComplianceNaesteSkridt(id={self.id}, skridt_nummer={self.skridt_nummer})>"
+
+
+class ComplianceBeslutningsTrae(Base):
+    """
+    Beslutningsregler for automated recommendations.
+
+    Dette er en regelbase der kan udvides over tid baseret på historiske data.
+    Bruges til at give intelligente anbefalinger baseret på tidligere vurderinger.
+    """
+    __tablename__ = 'compliance_beslutningstrae'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    regel_navn: Mapped[str] = mapped_column(String(255), nullable=False)
+    regel_beskrivelse: Mapped[Optional[str]] = mapped_column(Text)
+    betingelse: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)  # Conditions that must be met
+    anbefaling: Mapped[str] = mapped_column(Text, nullable=False)
+    anbefaling_type: Mapped[str] = mapped_column(String(100))  # warning, action, best_practice
+    prioritet: Mapped[int] = mapped_column(Integer, default=0)
+    aktiv: Mapped[bool] = mapped_column(Boolean, default=True)
+    anvendelser: Mapped[int] = mapped_column(Integer, default=0)  # How many times triggered
+    success_rate: Mapped[Optional[float]] = mapped_column(Float)  # Success rate if feedback implemented
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
+
+    __table_args__ = (
+        Index("idx_aktiv_prioritet", "aktiv", "prioritet"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<ComplianceBeslutningsTrae(id={self.id}, regel='{self.regel_navn}')>"
+
+
+class QuickCheckHistory(Base):
+    """
+    Historie for hurtige compliance checks (hurtig-tjek).
+    """
+    __tablename__ = 'quick_check_history'
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # UUID
+    session_id: Mapped[Optional[str]] = mapped_column(String(100), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True
+    )
+
+    # Input data
+    beskrivelse: Mapped[str] = mapped_column(Text, nullable=False)
+    ai_type: Mapped[Optional[str]] = mapped_column(String(100))
+    sektor: Mapped[Optional[str]] = mapped_column(String(255))
+    behandler_persondata: Mapped[bool] = mapped_column(Boolean, default=False)
+    automatiserede_beslutninger: Mapped[bool] = mapped_column(Boolean, default=False)
+    enable_web_search: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # Results
+    ai_act_risk_level: Mapped[Optional[str]] = mapped_column(String(50))
+    gdpr_relevant: Mapped[Optional[bool]] = mapped_column(Boolean)
+    gdpr_requires_dpia: Mapped[Optional[bool]] = mapped_column(Boolean)
+    needs_full_assessment: Mapped[Optional[bool]] = mapped_column(Boolean)
+    classification: Mapped[Optional[str]] = mapped_column(String(100))
+    decision: Mapped[Optional[str]] = mapped_column(String(50))
+    risk_score: Mapped[Optional[int]] = mapped_column(Integer)
+
+    # Full response data
+    response_data: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
+
+    __table_args__ = (
+        Index("idx_qc_created_risk", "created_at", "risk_score"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<QuickCheckHistory(id={self.id}, risk_level={self.ai_act_risk_level})>"

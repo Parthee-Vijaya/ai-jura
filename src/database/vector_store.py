@@ -20,7 +20,7 @@ from qdrant_client.models import (
 from openai import OpenAI
 from loguru import logger
 
-from .qdrant_client import (
+from .qdrant_service import (
     get_qdrant_client,
     LEGAL_DOCUMENTS_COLLECTION,
     COMPLIANCE_KNOWLEDGE_COLLECTION,

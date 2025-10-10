@@ -123,6 +123,14 @@ export const lightThemeColors = {
   surface: '#ffffff',
   surfaceAlt: '#f1f5f9',
 
+  // Status palettes
+  status: {
+    healthy: { background: '#d1fae5', border: '#059669', text: '#03543f' },
+    degraded: { background: '#fef3c7', border: '#d97706', text: '#92400e' },
+    down: { background: '#fee2e2', border: '#dc2626', text: '#991b1b' },
+    idle: { background: '#f8fafc', border: '#cbd5e1', text: '#475569' },
+  },
+
   // Text colors
   text: '#1a202c',
   textMuted: '#64748b',
@@ -198,6 +206,14 @@ export const darkThemeColors = {
   background: '#0b1220',
   surface: '#111827',
   surfaceAlt: '#1e293b',
+
+  // Status palettes
+  status: {
+    healthy: { background: 'rgba(16, 185, 129, 0.15)', border: '#34d399', text: '#a7f3d0' },
+    degraded: { background: 'rgba(234, 179, 8, 0.12)', border: '#facc15', text: '#fde68a' },
+    down: { background: 'rgba(248, 113, 113, 0.15)', border: '#f87171', text: '#fecaca' },
+    idle: { background: 'rgba(148, 163, 184, 0.12)', border: '#475569', text: '#cbd5f5' },
+  },
 
   // Text colors
   text: '#e2e8f0',

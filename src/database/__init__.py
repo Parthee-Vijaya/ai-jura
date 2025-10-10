@@ -7,9 +7,23 @@ for both PostgreSQL (relational data) and Qdrant (vector embeddings).
 
 from .connection import engine, SessionLocal, get_db, init_db
 from .models import Base, AssessmentRecord, ComplianceCheck, UserSession, LegalDocumentRecord
-from .qdrant_client import get_qdrant_client, init_qdrant
-from .repository import AssessmentRepository
-from .vector_store import VectorStore
+
+# Optional imports (may not be available in all environments)
+try:
+    from .qdrant_service import get_qdrant_client, init_qdrant
+except ImportError:
+    get_qdrant_client = None
+    init_qdrant = None
+
+try:
+    from .repository import AssessmentRepository
+except ImportError:
+    AssessmentRepository = None
+
+try:
+    from .vector_store import VectorStore
+except ImportError:
+    VectorStore = None
 
 __all__ = [
     # Database connection
