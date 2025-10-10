@@ -377,57 +377,67 @@ class ResearchRequest(BaseModel):
 
 class SevenPointAssessmentRequest(BaseModel):
     """Request model for 7-punkts compliance control assessment."""
-    # Initial information
+    # Initial information (required)
     system_navn: str
     system_beskrivelse: str
-    organisation: str
-    kontaktperson: str
-    fagomraade: str
-    sektor: str
-    team: str
+    organisation: Optional[str] = "Ikke angivet"
+    kontaktperson: Optional[str] = "Ikke angivet"
+    fagomraade: Optional[str] = "Ikke angivet"
+    sektor: Optional[str] = "Ikke angivet"
+    team: Optional[str] = "Ikke angivet"
 
-    # Punkt 1: AI System Identification
-    bruger_ml: bool
-    autonome_beslutninger: bool
-    behandler_data: bool
-    system_funktionalitet: str
+    # Punkt 1: AI System Identification (optional for flexibility)
+    bruger_ml: Optional[bool] = False
+    autonome_beslutninger: Optional[bool] = False
+    behandler_data: Optional[bool] = False
+    behandler_persondata: Optional[bool] = False  # Alias for behandler_data
+    system_funktionalitet: Optional[str] = ""
 
     # Punkt 2: Personal Data Processing
-    personoplysninger: bool
-    persondata_typer: List[str] = []
-    behandlings_formaal: str
-    juridisk_grundlag: str
+    personoplysninger: Optional[bool] = False
+    persondata_typer: Optional[List[str]] = []
+    behandlings_formaal: Optional[str] = ""
+    juridisk_grundlag: Optional[str] = ""
 
     # Punkt 3: GDPR Compliance
-    dpia_udfoert: bool
-    privacy_by_design: bool
-    databehandleraftaler: bool
-    sikkerhedsforanstaltninger: str
+    dpia_udfoert: Optional[bool] = False
+    privacy_by_design: Optional[bool] = False
+    databehandleraftaler: Optional[bool] = False
+    sikkerhedsforanstaltninger: Optional[str] = ""
+    kraever_dpia: Optional[bool] = False
 
     # Punkt 4: AI Act Compliance
-    ai_risiko_kategori: str
-    kritiske_formaal: bool
-    transparens: bool
-    menneskelig_overvaagning: bool
-    anvendelsesomraade: str
+    ai_risiko_kategori: Optional[str] = "minimal"
+    kritiske_formaal: Optional[bool] = False
+    transparens: Optional[bool] = False
+    menneskelig_overvaagning: Optional[bool] = False
+    menneske_i_loop: Optional[bool] = False  # Alias
+    anvendelsesomraade: Optional[str] = ""
+    målgruppe: Optional[str] = ""
 
     # Punkt 5: Employee Training
-    medarbejder_uddannelse: bool
-    rettigheder_ansvar: bool
-    ansvarlig_person: bool
-    uddannelsesbehov: str
+    medarbejder_uddannelse: Optional[bool] = False
+    rettigheder_ansvar: Optional[bool] = False
+    ansvarlig_person: Optional[bool] = False
+    uddannelsesbehov: Optional[str] = ""
 
     # Punkt 6: External Resources
-    juridisk_raadgivning: bool
-    teknisk_ekspertise: bool
-    certificering_behov: bool
-    stoerste_udfordringer: str
+    juridisk_raadgivning: Optional[bool] = False
+    teknisk_ekspertise: Optional[bool] = False
+    certificering_behov: Optional[bool] = False
+    stoerste_udfordringer: Optional[str] = ""
 
     # Punkt 7: Specific Requirements
-    beslutningslogik_dokumentation: bool
-    bias_testing: bool
-    klage_procedurer: bool
-    yderligere_kommentarer: str
+    beslutningslogik_dokumentation: Optional[bool] = False
+    bias_testing: Optional[bool] = False
+    klage_procedurer: Optional[bool] = False
+    yderligere_kommentarer: Optional[str] = ""
+
+    # Additional fields that might be sent
+    påvirker_individer: Optional[bool] = False
+    profiling: Optional[bool] = False
+    automatisk_beslutning: Optional[bool] = False
+    antal_registrerede: Optional[str] = ""
 
 
 @app.get("/", response_model=Dict[str, str])
@@ -477,6 +487,165 @@ async def version_info() -> VersionResponse:
     except Exception as exc:  # pragma: no cover - defensiv logning
         logger.exception("Kunne ikke hente versionsoplysninger: %s", exc)
         raise HTTPException(status_code=500, detail="Kunne ikke hente versionsoplysninger")
+
+
+# Detailed Health Check Endpoints
+@app.get("/api/health/database")
+async def check_database_health():
+    """Check database connection and count records."""
+    try:
+        from src.database.connection import check_db_connection, SessionLocal
+        from src.database.models import ComplianceControlAssessment
+
+        # Test connection
+        is_connected = check_db_connection()
+
+        if not is_connected:
+            return JSONResponse(
+                status_code=503,
+                content={"healthy": False, "error": "Database connection failed", "record_count": 0}
+            )
+
+        # Count records
+        db = SessionLocal()
+        try:
+            record_count = db.query(ComplianceControlAssessment).count()
+        finally:
+            db.close()
+
+        return {"healthy": True, "record_count": record_count}
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={"healthy": False, "error": str(e), "record_count": 0}
+        )
+
+
+@app.post("/api/compliance/test-search")
+async def test_web_search(request: Dict[str, Any]):
+    """Test web search functionality."""
+    try:
+        from duckduckgo_search import DDGS
+
+        query = request.get("query", "GDPR test")
+        ddgs = DDGS()
+        results = list(ddgs.text(query, max_results=1))
+
+        return {
+            "success": True,
+            "results_count": len(results),
+            "sample": results[0] if results else None
+        }
+    except Exception as e:
+        logger.error(f"Web search test failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={"success": False, "error": str(e), "results_count": 0}
+        )
+
+
+@app.post("/api/compliance/test-llm")
+async def test_llm(request: Dict[str, Any]):
+    """Test LLM connectivity."""
+    try:
+        from langchain_openai import ChatOpenAI
+
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        response = llm.invoke("Say 'OK' if you can read this.")
+
+        return {
+            "success": True,
+            "model": "gpt-4o-mini",
+            "response": response.content
+        }
+    except Exception as e:
+        logger.error(f"LLM test failed: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={"success": False, "error": str(e), "model": None}
+        )
+
+
+@app.post("/api/ai/diagnose-issue")
+async def diagnose_system_issue(request: Dict[str, Any]):
+    """Use AI with web search to diagnose system issues and provide solutions."""
+    try:
+        from langchain_openai import ChatOpenAI
+        from langchain_community.tools import DuckDuckGoSearchRun
+        from langchain.agents import initialize_agent, AgentType
+
+        services = request.get("services", "")
+        errors = request.get("errors", "")
+        context = request.get("context", "")
+
+        # Create LLM and search tool
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        search = DuckDuckGoSearchRun()
+
+        # Create agent with search capability
+        tools = [search]
+        agent = initialize_agent(
+            tools,
+            llm,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+            verbose=False
+        )
+
+        # Construct diagnosis prompt
+        prompt = f"""
+        System: {context}
+        Failing Services: {services}
+        Errors: {errors}
+
+        Please diagnose the issue and provide:
+        1. Root cause analysis
+        2. Step-by-step solution
+        3. Relevant commands if applicable
+        4. Links to documentation
+
+        Search online for recent issues and solutions related to these errors.
+        Provide practical, actionable advice.
+        """
+
+        # Run agent
+        response = agent.run(prompt)
+
+        # Parse response into structured format
+        solution = {
+            "diagnosis": response[:500],  # First part as diagnosis
+            "steps": [
+                "Review the error messages above",
+                "Check service logs for more details",
+                "Verify environment configuration",
+                "Restart affected services"
+            ],
+            "command": None,
+            "resources": []
+        }
+
+        # Try to extract more structured info from response
+        if "```" in response:
+            # Extract code blocks
+            code_blocks = response.split("```")
+            if len(code_blocks) > 1:
+                solution["command"] = code_blocks[1].strip()
+
+        return solution
+
+    except Exception as e:
+        logger.error(f"AI diagnosis failed: {e}")
+        return {
+            "diagnosis": f"Kunne ikke generere AI-diagnose: {str(e)}",
+            "steps": [
+                "Tjek service logs manuelt",
+                "Verificer netværksforbindelse",
+                "Genstart services",
+                "Kontakt support hvis problemet fortsætter"
+            ],
+            "command": None,
+            "resources": []
+        }
 
 
 @app.get("/api/ai-cases", response_model=List[AICase])
@@ -924,6 +1093,8 @@ async def syv_punkts_compliance_vurdering(request: SevenPointAssessmentRequest):
         logger.info(f"Starting 7-point assessment for: {request.system_navn}")
 
         from src.compliance.compliance_control_engine import ComplianceControlEngine
+        from src.database.compliance_service import ComplianceService
+        from src.compliance.recommendation_engine import get_recommendations_from_form
 
         # Initialize compliance control engine
         engine = ComplianceControlEngine()
@@ -933,6 +1104,31 @@ async def syv_punkts_compliance_vurdering(request: SevenPointAssessmentRequest):
 
         logger.info(f"Assessment complete: {result['compliance_control']['beslutning']} "
                    f"(Risk Score: {result['compliance_control']['risiko_score']})")
+
+        # Save assessment to database and get historical recommendations
+        from src.database.connection import SessionLocal
+
+        db = SessionLocal()
+        try:
+            service = ComplianceService(db)
+
+            # Save the assessment
+            assessment_id = service.save_assessment(result)
+            logger.info(f"Assessment saved to database with ID: {assessment_id}")
+
+            # Get recommendations from similar historical assessments
+            historical_recommendations = service.get_recommendations_from_history(request.dict())
+        finally:
+            db.close()
+
+        # Generate intelligent recommendations based on form answers
+        intelligent_recommendations = get_recommendations_from_form(request.dict())
+        logger.info(f"Generated {len(intelligent_recommendations)} intelligent recommendations")
+
+        # Add insights to result
+        result['historical_insights'] = historical_recommendations
+        result['intelligent_recommendations'] = intelligent_recommendations
+        result['assessment_id'] = assessment_id
 
         return result
 

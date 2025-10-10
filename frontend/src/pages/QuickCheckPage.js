@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import axios from 'axios';
 import { FAGOMRAADE_OPTIONS } from '../utils/fagomraadeOptions';
+import Tooltip from '../components/Tooltip';
 
 const QuickCheckContainer = styled.div`
   max-width: 800px;
@@ -61,6 +62,13 @@ const FormGroup = styled.div`
     font-weight: 600;
     color: ${props => props.theme.colors.gray[700]};
   }
+`;
+
+const LabelWithTooltip = styled.div`
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: ${props => props.theme.colors.gray[700]};
 `;
 
 const TextArea = styled.textarea`
@@ -109,10 +117,12 @@ const CheckboxItem = styled.label`
     width: 18px;
     height: 18px;
     accent-color: ${props => props.theme.colors.primary};
+    flex-shrink: 0;
   }
 
   span {
     color: ${props => props.theme.colors.gray[700]};
+    flex: 1;
   }
 `;
 
@@ -1060,7 +1070,13 @@ const QuickCheckPage = () => {
       <CheckForm onSubmit={handleSubmit(onSubmit)}>
         <FormRow>
           <FormGroup>
-            <label htmlFor="beskrivelse">Beskriv dit AI-system *</label>
+            <LabelWithTooltip>
+              Beskriv dit AI-system *
+              <Tooltip>
+                Giv en kort beskrivelse af hvad dit AI-system gør, hvilken funktionalitet det har,
+                og hvordan det bruges. F.eks.: type af algoritme, primære opgaver, og målgruppe.
+              </Tooltip>
+            </LabelWithTooltip>
             <TextArea
               {...register('beskrivelse', { required: 'Beskrivelse er påkrævet' })}
               placeholder="F.eks. AI-drevet rekrutteringsværktøj der screener CV'er og rangerer kandidater"
@@ -1075,7 +1091,13 @@ const QuickCheckPage = () => {
 
         <FormRow columns="1fr 1fr">
           <FormGroup>
-            <label htmlFor="ai_type">AI System Type *</label>
+            <LabelWithTooltip>
+              AI System Type *
+              <Tooltip>
+                Vælg den kategori der bedst beskriver dit AI-system. Generativ AI skaber nyt indhold,
+                Prædiktiv AI forudsiger outcomes, Klassifikation kategoriserer data, etc.
+              </Tooltip>
+            </LabelWithTooltip>
             <Select {...register('ai_type', { required: 'AI type er påkrævet' })}>
               <option value="">Vælg type...</option>
               {aiTypes.map(type => (
@@ -1092,7 +1114,13 @@ const QuickCheckPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <label htmlFor="sektorer">Fagområder * (vælg flere hvis relevant)</label>
+            <LabelWithTooltip>
+              Fagområder * (vælg flere hvis relevant)
+              <Tooltip>
+                Vælg det eller de fagområder hvor dit AI-system anvendes. Dette hjælper med at identificere
+                relevante compliance krav og branche-specifikke reguleringer.
+              </Tooltip>
+            </LabelWithTooltip>
             <Controller
               name="sektorer"
               control={control}
@@ -1125,7 +1153,13 @@ const QuickCheckPage = () => {
 
         <FormRow>
           <FormGroup>
-            <label>Databehandling</label>
+            <LabelWithTooltip>
+              Databehandling
+              <Tooltip>
+                Angiv om dit AI-system behandler personoplysninger eller træffer automatiserede beslutninger.
+                Dette påvirker GDPR-vurderingen og hjælper med at identificere om en DPIA er påkrævet.
+              </Tooltip>
+            </LabelWithTooltip>
             <CheckboxGroup>
               <CheckboxItem>
                 <input
@@ -1133,6 +1167,10 @@ const QuickCheckPage = () => {
                   {...register('behandler_persondata')}
                 />
                 <span>Behandler personoplysninger</span>
+                <Tooltip icon="question">
+                  Markér hvis systemet behandler data der direkte eller indirekte kan identificere personer
+                  (navn, CPR-nr, e-mail, IP-adresse, etc.). Dette udløser GDPR-krav og kræver særlig opmærksomhed.
+                </Tooltip>
               </CheckboxItem>
               <CheckboxItem>
                 <input
@@ -1140,6 +1178,11 @@ const QuickCheckPage = () => {
                   {...register('automatiserede_beslutninger')}
                 />
                 <span>Træffer automatiserede beslutninger med juridiske eller betydelige konsekvenser</span>
+                <Tooltip icon="question">
+                  Markér hvis systemet træffer beslutninger uden menneskelig involvering, der har juridiske eller
+                  væsentlige konsekvenser (f.eks. afslag på lån, jobansøgning, forsikring). Dette er højrisiko under
+                  både GDPR og AI Act.
+                </Tooltip>
               </CheckboxItem>
               <CheckboxItem>
                 <input
@@ -1148,6 +1191,10 @@ const QuickCheckPage = () => {
                   onChange={(e) => setEnableWebSearch(e.target.checked)}
                 />
                 <span>Inkluder web søgning efter relevante afgørelser og præcedens (anbefalet, men tager længere tid)</span>
+                <Tooltip icon="question">
+                  Aktivér for at søge i juridiske databaser (EUR-Lex, Datatilsynet, EDPB) efter relevante afgørelser
+                  og præcedens. Dette giver mere dybdegående analyse, men øger behandlingstiden med 20-30 sekunder.
+                </Tooltip>
               </CheckboxItem>
             </CheckboxGroup>
           </FormGroup>
@@ -1175,22 +1222,54 @@ const QuickCheckPage = () => {
           transition={{ duration: 0.3 }}
         >
           <ProgressTitle>
-            <FaSpinner style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
-            Analyse forløb
-            {isLoading && elapsedTime > 0 && (
+            {results ? <FaCheckCircle style={{ color: '#059669' }} /> : <FaSpinner style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />}
+            {results ? 'Analyse gennemført' : 'Analyse forløb'}
+            {elapsedTime > 0 && (
               <span style={{
                 marginLeft: 'auto',
                 fontSize: '0.9rem',
                 fontWeight: '600',
-                color: '#C94416',
+                color: results ? '#059669' : '#C94416',
                 fontVariantNumeric: 'tabular-nums'
               }}>
                 {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
               </span>
             )}
           </ProgressTitle>
+          {/* Progress bar */}
+          <div style={{
+            width: '100%',
+            height: '8px',
+            background: '#e2e8f0',
+            borderRadius: '4px',
+            overflow: 'hidden',
+            marginBottom: '1rem'
+          }}>
+            <div style={{
+              width: results ? '100%' : `${(progressSteps.filter(s => s.status === 'success').length / Math.max(progressSteps.length, 1)) * 100}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, #C94416 0%, #059669 100%)',
+              transition: 'width 0.3s ease'
+            }} />
+          </div>
+
+          {/* Compact summary */}
+          <div style={{
+            textAlign: 'center',
+            fontSize: '0.875rem',
+            color: results ? '#059669' : '#64748b',
+            fontWeight: results ? '600' : '400',
+            marginBottom: '1rem'
+          }}>
+            {results
+              ? '✓ Alle trin gennemført'
+              : `${progressSteps.filter(s => s.status === 'success').length} af ${progressSteps.length} trin gennemført`
+            }
+          </div>
+
+          {/* Show only last 3 steps */}
           <ProgressList>
-            {progressSteps.map((step, index) => {
+            {progressSteps.slice(-3).map((step, index) => {
               const duration = step.endTime && step.startTime
                 ? `${((step.endTime - step.startTime) / 1000).toFixed(1)}s`
                 : null;
@@ -1220,12 +1299,12 @@ const QuickCheckPage = () => {
       {/* Phase 1: Compliance Analyse */}
       {phaseResults.phase1 && (
         <PhaseContainer
-          $phaseColor="#10b981"
+          $phaseColor="#059669"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <PhaseHeader $phaseColor="#10b981">
+          <PhaseHeader $phaseColor="#059669">
             <h3>
               <FaCheckCircle />
               Fase 1: Compliance Analyse Færdig
@@ -1320,12 +1399,12 @@ const QuickCheckPage = () => {
 
       {phaseResults.phase2 && phaseResults.phase2.precedents && phaseResults.phase2.precedents.length > 0 && (
         <PhaseContainer
-          $phaseColor="#3b82f6"
+          $phaseColor="#0284c7"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <PhaseHeader $phaseColor="#3b82f6">
+          <PhaseHeader $phaseColor="#0284c7">
             <h3>
               <FaBalanceScale />
               Fase 2: Web Research Færdig
@@ -1380,12 +1459,12 @@ const QuickCheckPage = () => {
 
       {phaseResults.phase3 && phaseResults.phase3.short_summary && (
         <PhaseContainer
-          $phaseColor="#8b5cf6"
+          $phaseColor="#7c3aed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <PhaseHeader $phaseColor="#8b5cf6">
+          <PhaseHeader $phaseColor="#7c3aed">
             <h3>
               <FaBalanceScale />
               Fase 3: AI Sammenfatning

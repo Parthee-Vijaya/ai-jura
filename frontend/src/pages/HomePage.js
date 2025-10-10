@@ -22,6 +22,7 @@ import NewsSection from '../components/NewsSection';
 import NewsTicker from '../components/NewsTicker';
 import { FeatureCardSkeletonLoader } from '../components/SkeletonLoader';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
+import SystemHealthCard from '../components/SystemHealthCard';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -713,6 +714,8 @@ const HomePage = () => {
           </HeroInsights>
         </HeroLayout>
       </HeroSection>
+
+      <SystemHealthCard />
 
       <motion.div
         initial={{ opacity: 0, y: -20 }}
