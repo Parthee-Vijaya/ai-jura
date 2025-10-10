@@ -31,6 +31,7 @@ import {
 } from 'react-icons/fa';
 
 import fallbackKnowledgeItems from '../data/knowledgeBaseFallback.json';
+import rapporterData from '../data/rapporterFallback.json';
 
 
 const ICON_MAP = {
@@ -380,6 +381,106 @@ const VideoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
   gap: 2rem;
+`;
+
+const RapporterGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+`;
+
+const RapportCard = styled(motion.a)`
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: ${props => props.theme.shadows.glass};
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid #C94416;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: ${props => props.theme.shadows.xl};
+    border-left-color: ${props => props.theme.colors.juridical.lightGold};
+  }
+`;
+
+const RapportYear = styled.div`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #C94416 0%, #E85A28 100%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+`;
+
+const RapportTitle = styled.h3`
+  color: ${props => props.theme.colors.gray[800]};
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  padding-right: 3.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const RapportResume = styled.p`
+  color: ${props => props.theme.colors.gray[600]};
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const RapportMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+`;
+
+const RapportBadge = styled.span`
+  padding: 0.25rem 0.65rem;
+  background: ${props => props.theme.colors.gray[100]};
+  color: ${props => props.theme.colors.gray[600]};
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+`;
+
+const RapportLink = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #C94416;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+
+  svg {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+
+  ${RapportCard}:hover & svg {
+    transform: translateX(4px);
+  }
 `;
 
 const StatsBar = styled.div`
@@ -987,6 +1088,41 @@ const KnowledgeBasePage = () => {
           <VideoGrid>
             {videoItems.map(item => renderTermCard(item))}
           </VideoGrid>
+        </VideoSection>
+      )}
+
+      {(activeCategory === 'all') && (
+        <VideoSection>
+          <VideoHeading>
+            <FaFileAlt />
+            Relevante Rapporter & Publikationer
+          </VideoHeading>
+          <RapporterGrid>
+            {rapporterData.map(rapport => (
+              <RapportCard
+                key={rapport.id}
+                as="a"
+                href={rapport.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <RapportYear>{rapport.aar}</RapportYear>
+                <RapportTitle>{rapport.titel}</RapportTitle>
+                <RapportResume>{rapport.resume}</RapportResume>
+                <RapportMeta>
+                  <RapportBadge>{rapport.udgiver}</RapportBadge>
+                  <RapportBadge>{rapport.omraade}</RapportBadge>
+                </RapportMeta>
+                <RapportLink>
+                  Læs rapport
+                  <FaExternalLinkAlt />
+                </RapportLink>
+              </RapportCard>
+            ))}
+          </RapporterGrid>
         </VideoSection>
       )}
 

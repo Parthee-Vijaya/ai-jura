@@ -29,6 +29,7 @@ const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const ResourcesPage = React.lazy(() => import('./pages/ResourcesPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
+const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -211,6 +212,7 @@ const AppInner = () => {
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/historik" element={<HistoryPage />} />
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />
+                  <Route path="/ai-losninger" element={<AIProjectsPage />} />
                   <Route path="/research" element={<ResearchPage />} />
                   <Route path="/ressourcer" element={<ResourcesPage />} />
                   <Route path="/indstillinger" element={<SettingsPage />} />

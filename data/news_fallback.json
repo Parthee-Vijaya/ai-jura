@@ -1,20 +1,5 @@
 [
   {
-    "title": "Dutch chips star exec slams EU for overregulating AI",
-    "url": "https://www.politico.eu/article/dutch-chips-giant-asml-executive-roger-dassen-slams-eu-ai-overregulation/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
-    "source": "POLITICO AI",
-    "category": "gdpr",
-    "summary": "EU policies mean top artificial intelligence talent is 'buying a ticket to Silicon Valley,’ says ASML chief financial officer.",
-    "published_at": null,
-    "importance": "medium",
-    "keywords": [
-      "gdpr",
-      "compliance"
-    ],
-    "scraped_at": "2025-10-10T21:19:18.467198Z",
-    "content_snippet": null
-  },
-  {
     "title": "Germany hands top general more power in defense ministry shake-up",
     "url": "https://www.politico.eu/article/germany-top-general-more-power-defense-ministry-shake-up/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
     "source": "POLITICO AI",
@@ -26,7 +11,22 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467198Z",
+    "scraped_at": "2025-10-10T21:39:44.785723Z",
+    "content_snippet": null
+  },
+  {
+    "title": "Dutch chips star exec slams EU for overregulating AI",
+    "url": "https://www.politico.eu/article/dutch-chips-giant-asml-executive-roger-dassen-slams-eu-ai-overregulation/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO AI",
+    "category": "gdpr",
+    "summary": "EU policies mean top artificial intelligence talent is 'buying a ticket to Silicon Valley,’ says ASML chief financial officer.",
+    "published_at": null,
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "compliance"
+    ],
+    "scraped_at": "2025-10-10T21:39:44.785721Z",
     "content_snippet": null
   },
   {
@@ -41,7 +41,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467196Z",
+    "scraped_at": "2025-10-10T21:39:44.785719Z",
     "content_snippet": null
   },
   {
@@ -56,7 +56,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467195Z",
+    "scraped_at": "2025-10-10T21:39:44.785716Z",
     "content_snippet": null
   },
   {
@@ -71,7 +71,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467194Z",
+    "scraped_at": "2025-10-10T21:39:44.785715Z",
     "content_snippet": null
   },
   {
@@ -86,7 +86,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467193Z",
+    "scraped_at": "2025-10-10T21:39:44.785712Z",
     "content_snippet": null
   },
   {
@@ -101,7 +101,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467192Z",
+    "scraped_at": "2025-10-10T21:39:44.785709Z",
     "content_snippet": null
   },
   {
@@ -116,7 +116,7 @@
       "gdpr",
       "compliance"
     ],
-    "scraped_at": "2025-10-10T21:19:18.467183Z",
+    "scraped_at": "2025-10-10T21:39:44.785690Z",
     "content_snippet": null
   }
 ]

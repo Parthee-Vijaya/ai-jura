@@ -15,7 +15,8 @@ import {
   FaExternalLinkAlt,
   FaCog,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaRobot
 } from 'react-icons/fa';
 
 const NAVIGATION_ID = 'sidebar-navigation';
@@ -349,6 +350,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       sectionKey: 'viden',
       items: [
         { path: '/videnbase', icon: FaBook, text: 'Videnbase' },
+        { path: '/ai-losninger', icon: FaRobot, text: 'AI Løsninger' },
         { path: '/research', icon: FaGlobeEurope, text: 'Juridisk Research' },
         { path: '/ressourcer', icon: FaExternalLinkAlt, text: 'Relevante Links' }
       ]
