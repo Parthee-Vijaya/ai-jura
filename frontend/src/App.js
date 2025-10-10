@@ -346,6 +346,15 @@ const GlobalStyle = createGlobalStyle`
   ::-webkit-scrollbar-track {
     background-color: ${props => props.theme.colors.surfaceAlt};
   }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 const AppContainer = styled.div`

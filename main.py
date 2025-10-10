@@ -375,6 +375,61 @@ class ResearchRequest(BaseModel):
     fokusområder: List[str] = None
 
 
+class SevenPointAssessmentRequest(BaseModel):
+    """Request model for 7-punkts compliance control assessment."""
+    # Initial information
+    system_navn: str
+    system_beskrivelse: str
+    organisation: str
+    kontaktperson: str
+    fagomraade: str
+    sektor: str
+    team: str
+
+    # Punkt 1: AI System Identification
+    bruger_ml: bool
+    autonome_beslutninger: bool
+    behandler_data: bool
+    system_funktionalitet: str
+
+    # Punkt 2: Personal Data Processing
+    personoplysninger: bool
+    persondata_typer: List[str] = []
+    behandlings_formaal: str
+    juridisk_grundlag: str
+
+    # Punkt 3: GDPR Compliance
+    dpia_udfoert: bool
+    privacy_by_design: bool
+    databehandleraftaler: bool
+    sikkerhedsforanstaltninger: str
+
+    # Punkt 4: AI Act Compliance
+    ai_risiko_kategori: str
+    kritiske_formaal: bool
+    transparens: bool
+    menneskelig_overvaagning: bool
+    anvendelsesomraade: str
+
+    # Punkt 5: Employee Training
+    medarbejder_uddannelse: bool
+    rettigheder_ansvar: bool
+    ansvarlig_person: bool
+    uddannelsesbehov: str
+
+    # Punkt 6: External Resources
+    juridisk_raadgivning: bool
+    teknisk_ekspertise: bool
+    certificering_behov: bool
+    stoerste_udfordringer: str
+
+    # Punkt 7: Specific Requirements
+    beslutningslogik_dokumentation: bool
+    bias_testing: bool
+    klage_procedurer: bool
+    yderligere_kommentarer: str
+
+
 @app.get("/", response_model=Dict[str, str])
 async def root():
     """Root endpoint"""
@@ -848,6 +903,42 @@ async def hurtig_compliance_tjek(request: QuickCheckRequest):
     except Exception as e:
         logger.error(f"Quick check failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/compliance/7-punkts-vurdering", response_model=Dict[str, Any])
+async def syv_punkts_compliance_vurdering(request: SevenPointAssessmentRequest):
+    """
+    Comprehensive 7-point compliance control assessment.
+
+    Returns detailed compliance report with:
+    - GO/NO-GO/BETINGET-GO decision
+    - Risk score and level (0-100)
+    - Critical blockers (hard stops)
+    - Conditional requirements (betingelser)
+    - Required documentation (artefakter)
+    - Required tests (bias testing, security audit, etc.)
+    - Next steps recommendations
+    - Detailed assessment of each point
+    """
+    try:
+        logger.info(f"Starting 7-point assessment for: {request.system_navn}")
+
+        from src.compliance.compliance_control_engine import ComplianceControlEngine
+
+        # Initialize compliance control engine
+        engine = ComplianceControlEngine()
+
+        # Run comprehensive assessment
+        result = engine.vurder_system(request.dict())
+
+        logger.info(f"Assessment complete: {result['compliance_control']['beslutning']} "
+                   f"(Risk Score: {result['compliance_control']['risiko_score']})")
+
+        return result
+
+    except Exception as e:
+        logger.error(f"7-point assessment failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Assessment failed: {str(e)}")
 
 
 @app.get("/api/compliance/assessment/{assessment_id}", response_model=Dict[str, Any])
