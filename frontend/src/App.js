@@ -25,6 +25,7 @@ const FullAssessmentPage = React.lazy(() => import('./pages/FullAssessmentPage')
 const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
+const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const ResourcesPage = React.lazy(() => import('./pages/ResourcesPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
@@ -214,6 +215,7 @@ const AppInner = () => {
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />
                   <Route path="/ai-losninger" element={<AIProjectsPage />} />
                   <Route path="/research" element={<ResearchPage />} />
+                  <Route path="/lov-assistent" element={<LawAssistantPage />} />
                   <Route path="/ressourcer" element={<ResourcesPage />} />
                   <Route path="/indstillinger" element={<SettingsPage />} />
                 </Routes>

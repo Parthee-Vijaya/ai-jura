@@ -48,6 +48,7 @@ class GitVersionInfo:
     """Structured representation of git version data."""
 
     version: str
+    build_number: int
     last_change_type: CommitSize
     last_commit_hash: Optional[str]
     last_commit_short_hash: Optional[str]
@@ -61,6 +62,7 @@ class GitVersionInfo:
         timestamp_iso = self.last_commit_timestamp.isoformat().replace('+00:00', 'Z') if self.last_commit_timestamp else None
         return {
             'version': self.version,
+            'buildNumber': self.build_number,
             'lastChangeType': self.last_change_type,
             'lastCommit': {
                 'hash': self.last_commit_hash,
@@ -161,14 +163,27 @@ def _get_current_branch() -> Optional[str]:
     return branch if branch else None
 
 
+def _get_build_number() -> int:
+    """Get total commit count as build number."""
+    count_output = _run_git_command(['rev-list', '--count', 'HEAD'])
+    if not count_output:
+        return 1
+    try:
+        return int(count_output)
+    except ValueError:
+        return 1
+
+
 def get_version_info() -> dict[str, object]:
     """Return git-driven version information suitable for APIs."""
     version, last_change = _calculate_semver()
     commit_hash, short_hash, author, message, timestamp = _get_last_commit_details()
     branch = _get_current_branch()
+    build_number = _get_build_number()
 
     info = GitVersionInfo(
         version=version,
+        build_number=build_number,
         last_change_type=last_change,
         last_commit_hash=commit_hash,
         last_commit_short_hash=short_hash,

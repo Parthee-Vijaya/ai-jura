@@ -111,7 +111,9 @@ const PageHeader = styled.div`
   margin-bottom: 2rem;
 
   h1 {
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -119,17 +121,23 @@ const PageHeader = styled.div`
   }
 
   p {
-    color: ${props => props.theme.colors.gray[600]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[300]
+      : props.theme.colors.gray[600]};
     font-size: 1.1rem;
   }
 `;
 
 const SearchAndFilter = styled.div`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${props => props.theme.isDark
+    ? 'rgba(45, 55, 72, 0.95)'
+    : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(20px);
   border-radius: ${props => props.theme.borderRadiusLarge};
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   margin-bottom: 2rem;
   display: flex;
@@ -146,14 +154,27 @@ const SearchBox = styled.div`
   input {
     width: 100%;
     padding: 0.75rem 2.5rem 0.75rem 1rem;
-    border: 2px solid ${props => props.theme.colors.gray[300]};
+    border: 2px solid ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.2)'
+      : props.theme.colors.gray[300]};
     border-radius: ${props => props.theme.borderRadius};
     font-size: 0.875rem;
-    background: white;
+    background: ${props => props.theme.isDark
+      ? 'rgba(0, 0, 0, 0.2)'
+      : 'white'};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
 
     &:focus {
       border-color: #C94416;
       outline: none;
+    }
+
+    &::placeholder {
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[400]
+        : props.theme.colors.gray[500]};
     }
   }
 
@@ -176,8 +197,14 @@ const CategoryButton = styled.button`
   padding: 0.5rem 1rem;
   background: ${props => props.active
     ? 'linear-gradient(135deg, #C94416 0%, #E85A28 100%)'
-    : props.theme.colors.gray[100]};
-  color: ${props => props.active ? 'white' : props.theme.colors.gray[700]};
+    : props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.1)'
+      : props.theme.colors.gray[100]};
+  color: ${props => props.active
+    ? 'white'
+    : props.theme.isDark
+      ? props.theme.colors.gray[200]
+      : props.theme.colors.gray[700]};
   border: none;
   border-radius: 20px;
   font-size: 0.875rem;
@@ -191,7 +218,9 @@ const CategoryButton = styled.button`
   &:hover {
     background: ${props => props.active
       ? 'linear-gradient(135deg, #A03612 0%, #C94416 100%)'
-      : props.theme.colors.gray[200]};
+      : props.theme.isDark
+        ? 'rgba(255, 255, 255, 0.15)'
+        : props.theme.colors.gray[200]};
     box-shadow: ${props => props.active ? '0 4px 12px rgba(201, 68, 22, 0.35)' : 'none'};
     transform: ${props => props.active ? 'translateY(-1px)' : 'none'};
   }
@@ -204,11 +233,15 @@ const KnowledgeGrid = styled.div`
 `;
 
 const TermCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${props => props.theme.isDark
+    ? 'rgba(45, 55, 72, 0.95)'
+    : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(20px);
   border-radius: ${props => props.theme.borderRadiusLarge};
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   border-left: 4px solid ${props => {
     switch(props.category) {
@@ -225,6 +258,9 @@ const TermCard = styled(motion.div)`
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${props => props.theme.shadows.xl};
+    background: ${props => props.theme.isDark
+      ? 'rgba(55, 65, 81, 0.98)'
+      : 'rgba(255, 255, 255, 0.98)'};
   }
 `;
 
@@ -260,14 +296,18 @@ const TermHeader = styled.div`
     flex: 1;
 
     h3 {
-      color: ${props => props.theme.colors.gray[800]};
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[100]
+        : props.theme.colors.gray[800]};
       margin-bottom: 0.25rem;
       font-size: 1.1rem;
       line-height: 1.3;
     }
 
     .meta {
-      color: ${props => props.theme.colors.gray[500]};
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[400]
+        : props.theme.colors.gray[500]};
       font-size: 0.875rem;
       display: flex;
       align-items: center;
@@ -277,14 +317,18 @@ const TermHeader = styled.div`
 `;
 
 const TermDefinition = styled.div`
-  color: ${props => props.theme.colors.gray[700]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[300]
+    : props.theme.colors.gray[700]};
   line-height: 1.6;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 `;
 
 const TermContext = styled.div`
-  background: ${props => props.theme.colors.gray[50]};
+  background: ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.05)'
+    : props.theme.colors.gray[50]};
   border-radius: ${props => props.theme.borderRadius};
   padding: 0.75rem;
   margin-bottom: 1rem;
@@ -292,13 +336,17 @@ const TermContext = styled.div`
 
   .label {
     font-weight: 600;
-    color: ${props => props.theme.colors.gray[700]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[200]
+      : props.theme.colors.gray[700]};
     font-size: 0.8rem;
     margin-bottom: 0.25rem;
   }
 
   .content {
-    color: ${props => props.theme.colors.gray[600]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[400]
+      : props.theme.colors.gray[600]};
     font-size: 0.85rem;
     line-height: 1.5;
   }
@@ -338,8 +386,12 @@ const TermFooter = styled.div`
 
   .tag {
     padding: 0.2rem 0.5rem;
-    background: ${props => props.theme.colors.gray[100]};
-    color: ${props => props.theme.colors.gray[600]};
+    background: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.1)'
+      : props.theme.colors.gray[100]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[300]
+      : props.theme.colors.gray[600]};
     border-radius: 12px;
     font-size: 0.7rem;
     font-weight: 500;
@@ -351,7 +403,9 @@ const TermFooter = styled.div`
   }
 
   .reference-link {
-    color: #C94416;
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.juridical.lightGold
+      : '#C94416'};
     text-decoration: none;
     font-size: 0.8rem;
     display: flex;
@@ -372,7 +426,9 @@ const VideoHeading = styled.h2`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: ${props => props.theme.colors.gray[800]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[100]
+    : props.theme.colors.gray[800]};
   margin-bottom: 1.5rem;
   font-size: 1.35rem;
 `;
@@ -390,11 +446,15 @@ const RapporterGrid = styled.div`
 `;
 
 const RapportCard = styled(motion.a)`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${props => props.theme.isDark
+    ? 'rgba(45, 55, 72, 0.95)'
+    : 'rgba(255, 255, 255, 0.95)'};
   backdrop-filter: blur(20px);
   border-radius: ${props => props.theme.borderRadiusLarge};
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(255, 255, 255, 0.2)'};
   box-shadow: ${props => props.theme.shadows.glass};
   transition: all 0.3s ease;
   text-decoration: none;
@@ -409,6 +469,9 @@ const RapportCard = styled(motion.a)`
     transform: translateY(-4px);
     box-shadow: ${props => props.theme.shadows.xl};
     border-left-color: ${props => props.theme.colors.juridical.lightGold};
+    background: ${props => props.theme.isDark
+      ? 'rgba(55, 65, 81, 0.98)'
+      : 'rgba(255, 255, 255, 0.98)'};
   }
 `;
 
@@ -425,7 +488,9 @@ const RapportYear = styled.div`
 `;
 
 const RapportTitle = styled.h3`
-  color: ${props => props.theme.colors.gray[800]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[100]
+    : props.theme.colors.gray[800]};
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
@@ -438,7 +503,9 @@ const RapportTitle = styled.h3`
 `;
 
 const RapportResume = styled.p`
-  color: ${props => props.theme.colors.gray[600]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[300]
+    : props.theme.colors.gray[600]};
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0.5rem 0;
@@ -457,8 +524,12 @@ const RapportMeta = styled.div`
 
 const RapportBadge = styled.span`
   padding: 0.25rem 0.65rem;
-  background: ${props => props.theme.colors.gray[100]};
-  color: ${props => props.theme.colors.gray[600]};
+  background: ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : props.theme.colors.gray[100]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[300]
+    : props.theme.colors.gray[600]};
   border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 500;
@@ -583,7 +654,9 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled(motion.div)`
-  background: white;
+  background: ${props => props.theme.isDark
+    ? props.theme.colors.gray[800]
+    : 'white'};
   border-radius: ${props => props.theme.borderRadiusLarge};
   padding: 2rem;
   max-width: 600px;
@@ -600,7 +673,9 @@ const ModalHeader = styled.div`
   margin-bottom: 2rem;
 
   h2 {
-    color: ${props => props.theme.colors.gray[800]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
     margin: 0;
     display: flex;
     align-items: center;
@@ -611,7 +686,9 @@ const ModalHeader = styled.div`
 const CloseButton = styled.button`
   background: none;
   border: none;
-  color: ${props => props.theme.colors.gray[500]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[400]
+    : props.theme.colors.gray[500]};
   font-size: 1.25rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -619,8 +696,12 @@ const CloseButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.theme.colors.gray[100]};
-    color: ${props => props.theme.colors.gray[700]};
+    background: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.1)'
+      : props.theme.colors.gray[100]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[200]
+      : props.theme.colors.gray[700]};
   }
 `;
 
@@ -631,20 +712,35 @@ const FormGroup = styled.div`
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: ${props => props.theme.colors.gray[700]};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[200]
+      : props.theme.colors.gray[700]};
   }
 
   input, textarea, select {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid ${props => props.theme.colors.gray[300]};
+    border: 2px solid ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.2)'
+      : props.theme.colors.gray[300]};
     border-radius: ${props => props.theme.borderRadius};
     font-size: 0.875rem;
-    background: white;
+    background: ${props => props.theme.isDark
+      ? 'rgba(0, 0, 0, 0.2)'
+      : 'white'};
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
 
     &:focus {
       border-color: #C94416;
       outline: none;
+    }
+
+    &::placeholder {
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[500]
+        : props.theme.colors.gray[400]};
     }
   }
 
@@ -655,7 +751,9 @@ const FormGroup = styled.div`
 `;
 
 const ReferenceSection = styled.div`
-  border: 1px solid ${props => props.theme.colors.gray[200]};
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.2)'
+    : props.theme.colors.gray[200]};
   border-radius: ${props => props.theme.borderRadius};
   padding: 1rem;
   margin-bottom: 1rem;
@@ -668,7 +766,9 @@ const ReferenceSection = styled.div`
 
     h4 {
       margin: 0;
-      color: ${props => props.theme.colors.gray[700]};
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[200]
+        : props.theme.colors.gray[700]};
     }
   }
 
@@ -698,9 +798,15 @@ const ReferenceSection = styled.div`
 `;
 
 const AddReferenceButton = styled.button`
-  background: ${props => props.theme.colors.gray[100]};
-  color: ${props => props.theme.colors.gray[700]};
-  border: 1px dashed ${props => props.theme.colors.gray[300]};
+  background: ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.05)'
+    : props.theme.colors.gray[100]};
+  color: ${props => props.theme.isDark
+    ? props.theme.colors.gray[300]
+    : props.theme.colors.gray[700]};
+  border: 1px dashed ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.2)'
+    : props.theme.colors.gray[300]};
   border-radius: ${props => props.theme.borderRadius};
   padding: 0.75rem;
   width: 100%;

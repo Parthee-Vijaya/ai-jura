@@ -1361,6 +1361,103 @@ async def global_search(
     }
 
 
+# ==================== Law Assistant API ====================
+
+class LawSearchRequest(BaseModel):
+    """Request model for law search"""
+    query: str = Field(..., min_length=2, max_length=200, description="Search query")
+    category: Optional[str] = Field(None, description="Optional category filter")
+    limit: int = Field(10, ge=1, le=50, description="Max results")
+
+
+class LawAskRequest(BaseModel):
+    """Request model for AI law assistant"""
+    query: str = Field(..., min_length=5, max_length=500, description="Legal question")
+    category: Optional[str] = Field(None, description="Optional category filter")
+
+
+@app.post("/api/law/search", response_model=Dict[str, Any])
+async def search_laws_api(request: LawSearchRequest):
+    """
+    Search Danish laws by text query
+    Returns matching laws with relevance scores
+    """
+    try:
+        from src.law import search_laws
+
+        logger.info(f"Law search: {request.query}")
+
+        results = search_laws(
+            query=request.query,
+            category=request.category,
+            limit=request.limit
+        )
+
+        return {
+            "success": True,
+            "query": request.query,
+            "category": request.category,
+            "results": results,
+            "total": len(results)
+        }
+
+    except Exception as e:
+        logger.error(f"Law search failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Søgning fejlede: {str(e)}")
+
+
+@app.post("/api/law/ask", response_model=Dict[str, Any])
+async def ask_law_assistant(request: LawAskRequest):
+    """
+    Ask legal question and get AI-generated answer with citations
+    Uses Azure OpenAI for answer generation
+    """
+    try:
+        from src.law import LawAssistant
+
+        logger.info(f"Law AI query: {request.query}")
+
+        async with LawAssistant() as assistant:
+            result = await assistant.ask(
+                query=request.query,
+                category=request.category,
+                max_sources=5
+            )
+
+        return {
+            "success": True,
+            "query": request.query,
+            "answer": result.get('answer'),
+            "confidence": result.get('confidence'),
+            "key_points": result.get('key_points'),
+            "sources": result.get('sources'),
+            "citations": result.get('citations')
+        }
+
+    except Exception as e:
+        logger.error(f"Law AI assistant failed: {e}")
+        raise HTTPException(status_code=500, detail=f"AI assistent fejlede: {str(e)}")
+
+
+@app.get("/api/law/categories", response_model=Dict[str, Any])
+async def get_law_categories():
+    """Get all law categories from regelrytter.dk"""
+    try:
+        from src.law import get_categories
+
+        categories = get_categories()
+
+        return {
+            "success": True,
+            "categories": categories,
+            "total": len(categories)
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to load law categories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ==================== Compliance API ====================
 
 @app.post("/api/compliance/analyser", response_model=Dict[str, Any])

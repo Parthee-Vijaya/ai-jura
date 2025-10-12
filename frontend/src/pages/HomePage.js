@@ -1070,7 +1070,8 @@ const HomePage = () => {
 
   const versionLabel = useMemo(() => {
     if (versionData?.version) {
-      return `v${versionData.version}`;
+      const buildNum = versionData?.buildNumber ? ` build ${versionData.buildNumber}` : '';
+      return `v${versionData.version}${buildNum}`;
     }
     if (versionError) {
       return 'v--';
