@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional, Literal
+from contextlib import asynccontextmanager
 import asyncio
 import uvicorn
 import logging
@@ -38,7 +39,6 @@ from src.compliance.ai_act_checker import AIActComplianceChecker
 from src.compliance.gdpr_checker import GDPRComplianceChecker
 from src.services import NewsService, TechTickerService
 from src.utils import get_version_info
-from src.agents import run_research_agent
 from urllib.parse import urlparse, quote
 from src.compliance_engine import ComplianceController
 from src.cache import warm_caches_on_startup, validate_cache_health
@@ -57,11 +57,89 @@ from apscheduler.triggers.cron import CronTrigger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize FastAPI app
+# Lifespan context manager for startup/shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifecycle (startup and shutdown)."""
+    global news_refresh_task, ticker_refresh_task
+
+    # Startup
+    logger.info("Starting application...")
+
+    # Warm caches on startup (in background)
+    logger.info("Warming caches on startup...")
+    warm_caches_on_startup(include_compliance=True, background=True)
+
+    # Validate cache health
+    cache_health = validate_cache_health()
+    if cache_health['status'] == 'healthy':
+        logger.info("Cache health check: OK")
+    else:
+        logger.warning(f"Cache health issues detected: {cache_health['issues']}")
+
+    # Fetch nyheder med det samme så forsiden har data
+    try:
+        await news_service.get_latest_news(force_refresh=True)
+    except Exception as exc:
+        logger.warning("Første nyhedsopdatering fejlede: %s", exc)
+
+    try:
+        await ticker_service.get_latest(force_refresh=True)
+    except Exception as exc:
+        logger.warning("Første ticker-opdatering fejlede: %s", exc)
+
+    # Start baggrundsopgaven hvis ikke allerede aktiv
+    if not news_refresh_task or news_refresh_task.done():
+        news_refresh_task = asyncio.create_task(_refresh_news_periodically())
+
+    # Setup knowledge base scheduler - daglig opdatering kl. 03:00
+    kb_scheduler.add_job(
+        scheduled_kb_update,
+        CronTrigger(hour=3, minute=0),  # Kører kl. 03:00 hver nat
+        id='kb_daily_update',
+        name='Daily Knowledge Base Update',
+        replace_existing=True
+    )
+    kb_scheduler.start()
+    logger.info("Knowledge base scheduler started - daily updates at 03:00")
+
+    if not ticker_refresh_task or ticker_refresh_task.done():
+        ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
+
+    logger.info("Application startup complete")
+
+    yield  # Application runs here
+
+    # Shutdown
+    logger.info("Shutting down application...")
+
+    if news_refresh_task and not news_refresh_task.done():
+        news_refresh_task.cancel()
+        try:
+            await news_refresh_task
+        except asyncio.CancelledError:
+            pass
+
+    if ticker_refresh_task and not ticker_refresh_task.done():
+        ticker_refresh_task.cancel()
+        try:
+            await ticker_refresh_task
+        except asyncio.CancelledError:
+            pass
+
+    # Shutdown knowledge base scheduler
+    if kb_scheduler.running:
+        kb_scheduler.shutdown(wait=False)
+        logger.info("Knowledge base scheduler stopped")
+
+    logger.info("Application shutdown complete")
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="The Judge - AI Compliance Platform",
     description="Comprehensive AI regulatory compliance checking",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -222,75 +300,6 @@ def scheduled_kb_update():
     except Exception as e:
         logger.error(f"Scheduled knowledge base update failed: {e}")
 
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Initialiser services ved opstart"""
-    global news_refresh_task, ticker_refresh_task
-
-    # Warm caches on startup (in background)
-    logger.info("Warming caches on startup...")
-    warm_caches_on_startup(include_compliance=True, background=True)
-
-    # Validate cache health
-    cache_health = validate_cache_health()
-    if cache_health['status'] == 'healthy':
-        logger.info("Cache health check: OK")
-    else:
-        logger.warning(f"Cache health issues detected: {cache_health['issues']}")
-
-    # Fetch nyheder med det samme så forsiden har data
-    try:
-        await news_service.get_latest_news(force_refresh=True)
-    except Exception as exc:
-        logger.warning("Første nyhedsopdatering fejlede: %s", exc)
-
-    try:
-        await ticker_service.get_latest(force_refresh=True)
-    except Exception as exc:
-        logger.warning("Første ticker-opdatering fejlede: %s", exc)
-
-    # Start baggrundsopgaven hvis ikke allerede aktiv
-    if not news_refresh_task or news_refresh_task.done():
-        news_refresh_task = asyncio.create_task(_refresh_news_periodically())
-
-    # Setup knowledge base scheduler - daglig opdatering kl. 03:00
-    kb_scheduler.add_job(
-        scheduled_kb_update,
-        CronTrigger(hour=3, minute=0),  # Kører kl. 03:00 hver nat
-        id='kb_daily_update',
-        name='Daily Knowledge Base Update',
-        replace_existing=True
-    )
-    kb_scheduler.start()
-    logger.info("Knowledge base scheduler started - daily updates at 03:00")
-
-    if not ticker_refresh_task or ticker_refresh_task.done():
-        ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
-
-
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """Ryd op ved nedlukning"""
-    global news_refresh_task, ticker_refresh_task
-    if news_refresh_task and not news_refresh_task.done():
-        news_refresh_task.cancel()
-        try:
-            await news_refresh_task
-        except asyncio.CancelledError:
-            pass
-
-    if ticker_refresh_task and not ticker_refresh_task.done():
-        ticker_refresh_task.cancel()
-        try:
-            await ticker_refresh_task
-        except asyncio.CancelledError:
-            pass
-
-    # Shutdown knowledge base scheduler
-    if kb_scheduler.running:
-        kb_scheduler.shutdown(wait=False)
-        logger.info("Knowledge base scheduler stopped")
 
 # In-memory storage for assessments (use database in production)
 assessments_db: Dict[str, ComplianceAssessment] = {}
@@ -972,6 +981,124 @@ async def juridisk_research(request: ResearchRequest):
     except Exception as e:
         logger.error(f"Juridisk research fejlede: {e}")
         raise HTTPException(status_code=500, detail=f"Research fejl: {str(e)}")
+
+
+@app.get("/api/research/juridisk/stream")
+async def juridisk_research_stream(emne: str = Query(..., description="Research emne")):
+    """
+    Server-Sent Events endpoint for real-time research progress
+    """
+    from asyncio import Queue
+
+    async def event_generator():
+        progress_queue: Queue = Queue()
+        research_done = False
+        research_result = None
+        research_error = None
+
+        async def progress_callback(message: str, status: str, progress: int):
+            """Callback function to send progress updates"""
+            progress_data = {
+                "message": message,
+                "status": status,
+                "progress": progress,
+                "timestamp": datetime.now(UTC).isoformat()
+            }
+            await progress_queue.put(progress_data)
+
+        async def run_research():
+            nonlocal research_done, research_result, research_error
+            try:
+                # Track query for knowledge base
+                recent_research_queries.append(emne)
+                if len(recent_research_queries) > MAX_STORED_QUERIES:
+                    recent_research_queries.pop(0)
+
+                # Start research with progress tracking
+                from src.research.web_searcher import WebSearcher
+                import time
+
+                start_time = time.time()
+                async with WebSearcher() as searcher:
+                    research_result = await searcher.research_topic(
+                        query=emne,
+                        focus_areas=["EU AI Act", "GDPR", "dansk lovgivning"],
+                        progress_callback=progress_callback
+                    )
+                processing_time = time.time() - start_time
+
+                # Add metadata to result
+                if not research_result.get('metadata'):
+                    research_result['metadata'] = {}
+
+                research_result['metadata']['processing_time'] = processing_time
+                research_result['metadata']['query'] = emne
+                research_result['metadata']['timestamp'] = datetime.now(UTC).isoformat()
+
+                research_done = True
+                await progress_queue.put(None)  # Signal completion
+            except Exception as e:
+                logger.error(f"Research stream fejlede: {e}")
+                research_error = str(e)
+                research_done = True
+                await progress_queue.put(None)  # Signal completion
+
+        # Start research in background
+        import asyncio
+        research_task = asyncio.create_task(run_research())
+
+        try:
+            # Stream progress updates
+            while not research_done or not progress_queue.empty():
+                try:
+                    progress_data = await asyncio.wait_for(progress_queue.get(), timeout=0.1)
+                    if progress_data is None:  # Completion signal
+                        break
+                    yield f"data: {json.dumps(progress_data)}\n\n"
+                except asyncio.TimeoutError:
+                    continue
+
+            # Wait for research to complete
+            await research_task
+
+            # Send final result or error
+            if research_error:
+                error_data = {
+                    "message": f"Fejl: {research_error}",
+                    "status": "error",
+                    "progress": 0,
+                    "timestamp": datetime.now(UTC).isoformat()
+                }
+                yield f"data: {json.dumps(error_data)}\n\n"
+            else:
+                final_data = {
+                    "message": "Research complete",
+                    "status": "complete",
+                    "progress": 100,
+                    "result": research_result,
+                    "timestamp": datetime.now(UTC).isoformat()
+                }
+                yield f"data: {json.dumps(final_data)}\n\n"
+
+        except Exception as e:
+            logger.error(f"Event generator fejlede: {e}")
+            error_data = {
+                "message": f"Fejl: {str(e)}",
+                "status": "error",
+                "progress": 0,
+                "timestamp": datetime.now(UTC).isoformat()
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
 
 
 def _format_research_result(
@@ -1664,5 +1791,7 @@ if __name__ == "__main__":
         "main:app",
         host=os.getenv("API_HOST", "0.0.0.0"),
         port=int(os.getenv("API_PORT", 8000)),
-        reload=os.getenv("API_RELOAD", "True").lower() == "true"
+        reload=os.getenv("API_RELOAD", "True").lower() == "true",
+        reload_dirs=["src", "."],  # Only watch src/ and root files
+        reload_excludes=["node_modules", "frontend", ".git", "__pycache__", "*.pyc"]
     )

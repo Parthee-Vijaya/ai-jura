@@ -12,7 +12,14 @@ import {
   FaGlobeEurope,
   FaFileAlt,
   FaUniversity,
-  FaBookOpen
+  FaBookOpen,
+  FaCheckCircle,
+  FaTag,
+  FaChartBar,
+  FaDatabase,
+  FaClock,
+  FaLink,
+  FaChevronDown
 } from 'react-icons/fa';
 import axios from 'axios';
 
@@ -126,6 +133,66 @@ const SearchButton = styled.button`
   }
 `;
 
+const ProgressContainer = styled.div`
+  display: ${props => props.show ? 'block' : 'none'};
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: ${props => props.theme.borderRadius};
+  box-shadow: ${props => props.theme.shadows.md};
+  margin-bottom: 1.5rem;
+`;
+
+const ProgressBarWrapper = styled.div`
+  width: 100%;
+  background: ${props => props.theme.colors.gray[200]};
+  border-radius: 10px;
+  height: 20px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+`;
+
+const ProgressBarFill = styled.div`
+  height: 100%;
+  background: linear-gradient(90deg,
+    #667eea 0%,
+    #764ba2 50%,
+    #667eea 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+  transition: width 0.5s ease-out;
+  width: ${props => props.percent}%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+`;
+
+const ProgressMessage = styled.div`
+  color: ${props => props.theme.colors.gray[700]};
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .icon {
+    color: ${props => props.theme.colors.primary};
+  }
+`;
+
 const ResultsSection = styled.section`
   display: ${props => props.show ? 'block' : 'none'};
 `;
@@ -165,52 +232,175 @@ const ResultsHeader = styled.div`
 `;
 
 const AnswerCard = styled.div`
-  background: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: ${props => props.theme.borderRadius};
-  box-shadow: ${props => props.theme.shadows.md};
-  padding: 1.75rem 2rem;
-  margin-bottom: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
+  box-shadow: ${props => props.theme.shadows.lg};
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  color: white;
 
   h3 {
-    margin: 0;
-    color: ${props => props.theme.colors.gray[800]};
+    margin: 0 0 1.5rem 0;
+    color: white;
+    font-size: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    font-weight: 700;
   }
 
-  p {
-    margin: 0;
-    color: ${props => props.theme.colors.gray[700]};
-    line-height: 1.7;
+  .answer-content {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 12px;
+    color: ${props => props.theme.colors.gray[800]};
+    line-height: 1.8;
+    font-size: 1.05rem;
+    white-space: pre-wrap;
+    margin-bottom: 1.5rem;
+
+    /* Style citation numbers */
+    [data-citation] {
+      background: ${props => props.theme.colors.primary};
+      color: white;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: ${props => props.theme.colors.primaryDark};
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  .confidence-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+  }
+
+  .key-points {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+
+    h4 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+
+        &:before {
+          content: "✓";
+          flex-shrink: 0;
+          width: 24px;
+          height: 24px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+        }
+      }
+    }
   }
 `;
 
 const CitationList = styled.ul`
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 1rem 0 0 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 10px;
 
   li {
-    background: ${props => props.theme.colors.gray[100]};
-    border-radius: 999px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
     color: ${props => props.theme.colors.gray[700]};
+    border-left: 3px solid ${props => props.theme.colors.primary};
+    transition: all 0.2s;
+
+    &:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    a {
+      color: ${props => props.theme.colors.primary};
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .citation-snippet {
+      margin-top: 0.5rem;
+      font-style: italic;
+      color: ${props => props.theme.colors.gray[600]};
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .citation-meta {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: ${props => props.theme.colors.gray[500]};
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+    }
   }
 `;
 
-const SourcesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+const SourcesList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  background: white;
+  border-radius: ${props => props.theme.borderRadius};
+  box-shadow: ${props => props.theme.shadows.sm};
+  overflow: hidden;
 `;
 
 const CrossReferenceList = styled.ul`
@@ -253,16 +443,67 @@ const CrossReferenceItem = styled.li`
   }
 `;
 
-const SourceCard = styled(motion.div)`
-  background: white;
-  border-radius: ${props => props.theme.borderRadius};
-  box-shadow: ${props => props.theme.shadows.md};
-  overflow: hidden;
-  transition: all 0.3s ease;
+const SourceItem = styled.li`
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+  transition: background-color 0.2s;
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:hover {
-    box-shadow: ${props => props.theme.shadows.lg};
-    transform: translateY(-2px);
+    background-color: ${props => props.theme.colors.gray[50]};
+  }
+
+  .source-info {
+    flex: 1;
+  }
+
+  .source-title {
+    font-weight: 600;
+    color: ${props => props.theme.colors.gray[800]};
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .source-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: ${props => props.theme.colors.gray[600]};
+    margin-bottom: 0.5rem;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+  }
+
+  .source-link {
+    color: ${props => props.theme.colors.primary};
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .relevance-badge {
+    flex-shrink: 0;
+    background: ${props => props.theme.colors.primary};
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
   }
 `;
 
@@ -290,6 +531,214 @@ const DetailsSection = styled.section`
       color: ${props => props.theme.colors.gray[700]};
       line-height: 1.6;
     }
+  }
+`;
+
+const SystemCard = styled.section`
+  background: ${props => props.theme.isDark
+    ? 'rgba(45, 55, 72, 0.95)'
+    : 'rgba(255, 255, 255, 0.95)'};
+  backdrop-filter: blur(20px);
+  border-radius: ${props => props.theme.borderRadiusLarge};
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(0, 0, 0, 0.1)'};
+  box-shadow: ${props => props.theme.shadows.md};
+
+  h3 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
+    font-weight: 600;
+
+    .icon {
+      color: ${props => props.theme.colors.primary};
+    }
+  }
+`;
+
+const SystemGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`;
+
+const SystemStat = styled.div`
+  background: ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.03)'};
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.isDark
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(0, 0, 0, 0.05)'};
+
+  .stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.6)'
+      : props.theme.colors.gray[600]};
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[100]
+      : props.theme.colors.gray[800]};
+    line-height: 1.2;
+  }
+
+  .stat-detail {
+    font-size: 0.7rem;
+    color: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.5)'
+      : props.theme.colors.gray[500]};
+    margin-top: 0.15rem;
+  }
+`;
+
+const SearchEnginesList = styled.div`
+  .search-engine-item {
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .engine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    background: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.03)'};
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.05)'};
+
+    &:hover {
+      background: ${props => props.theme.isDark
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.05)'};
+    }
+
+    .engine-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .engine-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[200]
+        : props.theme.colors.gray[700]};
+      font-weight: 500;
+
+      .engine-icon {
+        color: ${props => props.theme.colors.primary};
+      }
+    }
+
+    .engine-count {
+      background: ${props => props.theme.colors.primary}20;
+      color: ${props => props.theme.colors.primary};
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .expand-icon {
+      color: ${props => props.theme.isDark
+        ? props.theme.colors.gray[400]
+        : props.theme.colors.gray[500]};
+      transition: transform 0.2s;
+
+      &.expanded {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .engine-sources {
+    padding: 0.5rem 0.75rem 0.75rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .source-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    background: ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.03)'
+      : 'rgba(0, 0, 0, 0.02)'};
+    border-radius: 6px;
+    border: 1px solid ${props => props.theme.isDark
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.05)'};
+  }
+
+  .source-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: ${props => props.theme.colors.primary};
+    text-decoration: none;
+    transition: all 0.2s;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .link-icon {
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .link-text {
+      flex: 1;
+      line-height: 1.4;
+    }
+  }
+
+  .source-snippet {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: ${props => props.theme.isDark
+      ? props.theme.colors.gray[400]
+      : props.theme.colors.gray[600]};
+    font-style: italic;
+    padding-left: 1.2rem;
   }
 `;
 
@@ -455,6 +904,10 @@ const ResearchPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [selectedFocusAreas, setSelectedFocusAreas] = useState(['EU AI Act', 'GDPR']);
+  const [progressMessage, setProgressMessage] = useState('');
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressStatus, setProgressStatus] = useState('');
+  const [expandedEngines, setExpandedEngines] = useState({});
 
   const { register, handleSubmit } = useForm();
 
@@ -484,19 +937,54 @@ const ResearchPage = () => {
     }
 
     setIsLoading(true);
+    setResults(null);
+    setProgressMessage('Starter research...');
+    setProgressPercent(0);
+    setProgressStatus('initializing');
 
     try {
-      const response = await axios.post('/api/research/juridisk', {
-        emne: data.emne,
-        fokusområder: selectedFocusAreas
-      });
+      // Use EventSource for Server-Sent Events
+      const eventSource = new EventSource(
+        `/api/research/juridisk/stream?emne=${encodeURIComponent(data.emne)}`
+      );
 
-      setResults(response.data.resultat);
-      toast.success(`Research afsluttet - ${response.data.resultat.sources.length} kilder fundet`);
+      eventSource.onmessage = (event) => {
+        try {
+          const progressData = JSON.parse(event.data);
+
+          setProgressMessage(progressData.message);
+          setProgressPercent(progressData.progress);
+          setProgressStatus(progressData.status);
+
+          // Check if research is complete
+          if (progressData.status === 'complete' && progressData.result) {
+            setResults(progressData.result);
+            toast.success(`Research afsluttet - ${progressData.result.sources.length} kilder fundet`);
+            eventSource.close();
+            setIsLoading(false);
+          }
+
+          // Handle error
+          if (progressData.status === 'error') {
+            toast.error(progressData.message);
+            eventSource.close();
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error('Error parsing SSE data:', err);
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('EventSource error:', error);
+        toast.error('Der opstod en fejl under research. Prøv igen.');
+        eventSource.close();
+        setIsLoading(false);
+      };
+
     } catch (error) {
       console.error('Research fejl:', error);
       toast.error('Der opstod en fejl under research. Prøv igen.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -569,8 +1057,24 @@ const ResearchPage = () => {
         </SearchForm>
       </SearchSection>
 
+      {/* Progress Bar */}
+      <ProgressContainer show={isLoading}>
+        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>
+          Research i gang...
+        </h3>
+        <ProgressBarWrapper>
+          <ProgressBarFill percent={progressPercent}>
+            {progressPercent > 10 && `${progressPercent}%`}
+          </ProgressBarFill>
+        </ProgressBarWrapper>
+        <ProgressMessage>
+          <FaSpinner className="icon spinner" />
+          {progressMessage}
+        </ProgressMessage>
+      </ProgressContainer>
+
       <AnimatePresence>
-        {isLoading && (
+        {isLoading && !progressMessage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -604,9 +1108,31 @@ const ResearchPage = () => {
             {results.llm_answer && (
               <AnswerCard>
                 <h3>
-                  <FaBookOpen /> Samlet svar
+                  <FaBookOpen /> AI-Genereret Svar
                 </h3>
-                <p>{results.llm_answer}</p>
+
+                <div className="answer-content">
+                  {results.llm_answer}
+                </div>
+
+                {results.llm_answer_confidence && (
+                  <div className="confidence-badge">
+                    <FaCheckCircle />
+                    Confidence: {Math.round(results.llm_answer_confidence * 100)}%
+                  </div>
+                )}
+
+                {results.llm_answer_key_points && results.llm_answer_key_points.length > 0 && (
+                  <div className="key-points">
+                    <h4>Nøglepunkter:</h4>
+                    <ul>
+                      {results.llm_answer_key_points.map((point, index) => (
+                        <li key={`key-point-${index}`}>{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {results.llm_answer_citations && results.llm_answer_citations.length > 0 && (
                   <CitationList>
                     {results.llm_answer_citations.map((citation, index) => (
@@ -615,16 +1141,165 @@ const ResearchPage = () => {
                           href={citation.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#1d4ed8', textDecoration: 'none' }}
                         >
+                          <FaExternalLinkAlt size={12} />
                           {citation.authority || citation.title}
                         </a>
+                        {citation.snippet && (
+                          <div className="citation-snippet">
+                            "{citation.snippet}"
+                          </div>
+                        )}
+                        {citation.relevance && (
+                          <div className="citation-meta">
+                            <span>
+                              <FaTag size={10} />
+                              {citation.relevance}
+                            </span>
+                            {citation.confidence && (
+                              <span>
+                                <FaCheckCircle size={10} />
+                                {Math.round(citation.confidence * 100)}% relevant
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </li>
                     ))}
                   </CitationList>
                 )}
               </AnswerCard>
             )}
+
+            {/* System Card - Search Statistics */}
+            <SystemCard>
+              <h3>
+                <FaChartBar className="icon" /> Søgningsstatistikker
+              </h3>
+
+              <SystemGrid>
+                <SystemStat>
+                  <div className="stat-label">
+                    <FaDatabase /> Samlede kilder
+                  </div>
+                  <div className="stat-value">
+                    {results.sources?.length || 0}
+                  </div>
+                  <div className="stat-detail">
+                    Unikke kilder fundet
+                  </div>
+                </SystemStat>
+
+                <SystemStat>
+                  <div className="stat-label">
+                    <FaLink /> Citationer
+                  </div>
+                  <div className="stat-value">
+                    {results.citations?.length || 0}
+                  </div>
+                  <div className="stat-detail">
+                    Referencer brugt
+                  </div>
+                </SystemStat>
+
+                <SystemStat>
+                  <div className="stat-label">
+                    <FaUniversity /> Autoritative kilder
+                  </div>
+                  <div className="stat-value">
+                    {results.sources?.filter(s => s.authority).length || 0}
+                  </div>
+                  <div className="stat-detail">
+                    Verificerede domæner
+                  </div>
+                </SystemStat>
+
+                <SystemStat>
+                  <div className="stat-label">
+                    <FaClock /> Procestid
+                  </div>
+                  <div className="stat-value">
+                    {results.metadata?.processing_time ?
+                      `${results.metadata.processing_time.toFixed(1)}s` :
+                      'N/A'}
+                  </div>
+                  <div className="stat-detail">
+                    Total søgetid
+                  </div>
+                </SystemStat>
+              </SystemGrid>
+
+              <SearchEnginesList>
+                {(() => {
+                  // Group sources by domain/engine with their actual sources
+                  const groupedSources = {
+                    'EUR-Lex': results.sources?.filter(s => s.domain?.includes('eur-lex')) || [],
+                    'Datatilsynet': results.sources?.filter(s => s.domain?.includes('datatilsynet')) || [],
+                    'EDPB': results.sources?.filter(s => s.domain?.includes('edpb')) || [],
+                    'Retsinformation': results.sources?.filter(s => s.domain?.includes('retsinformation')) || [],
+                    'KL': results.sources?.filter(s => s.domain?.includes('kl.dk')) || [],
+                    'Andre kilder': results.sources?.filter(s =>
+                      !s.domain?.includes('eur-lex') &&
+                      !s.domain?.includes('datatilsynet') &&
+                      !s.domain?.includes('edpb') &&
+                      !s.domain?.includes('retsinformation') &&
+                      !s.domain?.includes('kl.dk')
+                    ) || []
+                  };
+
+                  return Object.entries(groupedSources)
+                    .filter(([_, sources]) => sources.length > 0)
+                    .map(([engineName, sources]) => (
+                      <div key={engineName} className="search-engine-item">
+                        <div
+                          className="engine-header"
+                          onClick={() => setExpandedEngines(prev => ({
+                            ...prev,
+                            [engineName]: !prev[engineName]
+                          }))}
+                        >
+                          <div className="engine-info">
+                            <div className="engine-name">
+                              <FaCheckCircle className="engine-icon" size={14} />
+                              {engineName}
+                            </div>
+                            <div className="engine-count">{sources.length}</div>
+                          </div>
+                          <FaChevronDown
+                            className={`expand-icon ${expandedEngines[engineName] ? 'expanded' : ''}`}
+                            size={14}
+                          />
+                        </div>
+
+                        {expandedEngines[engineName] && (
+                          <div className="engine-sources">
+                            {sources.map((source, idx) => (
+                              <div key={`${engineName}-${idx}`} className="source-item">
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="source-link"
+                                >
+                                  <FaExternalLinkAlt className="link-icon" size={12} />
+                                  <span className="link-text">
+                                    {source.title || source.url}
+                                  </span>
+                                </a>
+                                {source.snippet && (
+                                  <div className="source-snippet">
+                                    "{source.snippet}"
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ));
+                })()}
+              </SearchEnginesList>
+            </SystemCard>
 
             {results.key_findings && results.key_findings.length > 0 && (
               <DetailsSection>
@@ -646,81 +1321,6 @@ const ResearchPage = () => {
                   ))}
                 </ul>
               </DetailsSection>
-            )}
-
-            {results.sources && results.sources.length > 0 && (
-              <>
-                <h3 style={{ marginBottom: '1rem', color: '#1e293b' }}>
-                  Kilder ({results.sources.length})
-                </h3>
-                {results.cross_references && results.cross_references.length > 0 && (
-                  <>
-                    <h4 style={{ marginBottom: '0.75rem', color: '#334155' }}>Krydshenvisninger</h4>
-                    <CrossReferenceList>
-                      {results.cross_references.map((item, index) => (
-                        <CrossReferenceItem key={`cross-ref-${index}`}>
-                          <p>{item.statement}</p>
-                          <ul>
-                            {item.citations.map((citation, citationIndex) => (
-                              <li key={`citation-${citationIndex}`}>
-                                <a
-                                  href={citation.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{ color: '#2563eb', textDecoration: 'none' }}
-                                >
-                                  {citation.authority || citation.title}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </CrossReferenceItem>
-                      ))}
-                    </CrossReferenceList>
-                  </>
-                )}
-                <SourcesGrid>
-                  {results.sources.map((source, index) => {
-                    const AuthorityIcon = getAuthorityIcon(source.authority);
-                    return (
-                      <SourceCard
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <SourceHeader>
-                          {source.authority && (
-                            <div className="authority">
-                              <AuthorityIcon size={12} />
-                              {source.authority}
-                            </div>
-                          )}
-                          <div className="title">{source.title}</div>
-                          <div className="meta">
-                            <div className="domain">
-                              <FaGlobeEurope size={12} />
-                              {source.domain}
-                            </div>
-                            <div className="date">
-                              <FaCalendarAlt size={12} />
-                              {new Date(source.date_accessed).toLocaleDateString('da-DK')}
-                            </div>
-                          </div>
-                        </SourceHeader>
-                        <SourceContent>
-                          <div className="relevance-score" score={source.relevance_score}>
-                            Relevans: {Math.round(source.relevance_score * 100)}%
-                          </div>
-                          <SourceLink href={source.url} target="_blank" rel="noopener noreferrer">
-                            Læs kilde <FaExternalLinkAlt size={12} />
-                          </SourceLink>
-                        </SourceContent>
-                      </SourceCard>
-                    );
-                  })}
-                </SourcesGrid>
-              </>
             )}
 
             {results.citations && results.citations.length > 0 && (

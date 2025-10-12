@@ -7,7 +7,7 @@ import asyncio
 import aiohttp
 import json
 import os
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Callable
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote_plus, urlsplit
 import re
@@ -51,10 +51,21 @@ class WebSearcher:
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
         self.sources_cache: Dict[str, Source] = {}
+
+        # Brug Azure OpenAI hvis tilgængelig, ellers standard OpenAI
+        self.azure_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
+        self.azure_api_key = os.getenv('AZURE_OPENAI_API_KEY')
+        self.azure_deployment = os.getenv('AZURE_DEPLOYMENT_NAME', 'gpt-4o-mini')
+        self.azure_api_version = os.getenv('OPENAI_API_VERSION', '2024-02-15-preview')
+
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.openai_model = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')
         self.google_api_key = os.getenv('GOOGLE_API_KEY')
-        self.google_cse_id = os.getenv('GOOGLE_CSE_ID')
+        self.google_cse_id = os.getenv('GOOGLE_CSE_ID')  # Specific sites CSE
+        self.google_cse_general_id = os.getenv('GOOGLE_CSE_GENERAL_ID')  # General web search CSE
+
+        # Prioriter Azure OpenAI
+        self.use_azure = bool(self.azure_endpoint and self.azure_api_key)
 
         # Autoritative domæner for juridisk information
         base_trusted = {
@@ -101,18 +112,27 @@ class WebSearcher:
         if self.session:
             await self.session.close()
 
-    async def research_topic(self, query: str, focus_areas: List[str] = None) -> Dict[str, Any]:
+    async def research_topic(
+        self,
+        query: str,
+        focus_areas: List[str] = None,
+        progress_callback: Optional[Callable] = None
+    ) -> Dict[str, Any]:
         """
         Udfører omfattende research på et juridisk emne
 
         Args:
             query: Søgeforespørgsel
             focus_areas: Specifikke områder at fokusere på
+            progress_callback: Optional callback for progress updates
 
         Returns:
             Dict med research resultater og citationer
         """
         logger.info(f"Starter juridisk research: {query}")
+
+        if progress_callback:
+            await progress_callback("Starter juridisk research...", "initializing", 0)
 
         if focus_areas is None:
             focus_areas = ["EU AI Act", "GDPR", "dansk lovgivning"]
@@ -129,6 +149,9 @@ class WebSearcher:
         }
 
         # Søg i forskellige autoritative kilder
+        if progress_callback:
+            await progress_callback("Søger i EUR-Lex, Datatilsynet, EDPB...", "searching", 10)
+
         search_tasks = [
             self._search_eur_lex(query),
             self._search_datatilsynet(query),
@@ -142,8 +165,14 @@ class WebSearcher:
         if self.openai_api_key:
             search_tasks.append(self._llm_discover_sources(query, focus_areas))
 
+        if progress_callback:
+            await progress_callback(f"Kører {len(search_tasks)} parallelle søgninger...", "searching", 20)
+
         # Kør søgninger parallelt
         search_results = await asyncio.gather(*search_tasks, return_exceptions=True)
+
+        if progress_callback:
+            await progress_callback("Behandler søgeresultater...", "processing", 40)
 
         # Behandl resultater
         all_sources = []
@@ -168,6 +197,9 @@ class WebSearcher:
         if len(all_sources) < 3:
             all_sources.extend(self._ensure_minimum_sources(all_sources, query, focus_areas))
 
+        if progress_callback:
+            await progress_callback(f"Fundet {len(all_sources)} kilder - sorterer efter relevans...", "processing", 50)
+
         # Sorter efter relevans
         all_sources.sort(key=lambda x: x.relevance_score, reverse=True)
 
@@ -175,26 +207,48 @@ class WebSearcher:
         top_sources = all_sources[:10]
         results["sources"] = [self._source_to_dict(s) for s in top_sources]
 
+        if progress_callback:
+            await progress_callback(f"Genererer citationer fra {len(top_sources)} top kilder...", "analyzing", 60)
+
         # Generer citationer
         citations = await self._generate_citations(query, top_sources)
         results["citations"] = [self._citation_to_dict(c) for c in citations]
 
         # Generer sammenfatning og LLM svar
-        if self.openai_api_key:
+        if self.use_azure or self.openai_api_key:
+            if progress_callback:
+                await progress_callback("Analyserer med AI LLM...", "analyzing", 70)
+
             llm_answer = await self._generate_llm_answer(query, top_sources)
             if llm_answer:
                 results["llm_answer"] = llm_answer.get("answer")
+                results["llm_answer_key_points"] = llm_answer.get("key_points", [])
                 results["llm_answer_citations"] = llm_answer.get("citations", [])
+                results["llm_answer_confidence"] = llm_answer.get("confidence", 0.8)
 
+            if progress_callback:
+                await progress_callback("Genererer krydsreferencer...", "analyzing", 80)
             results["cross_references"] = await self._generate_cross_references(query, top_sources)
+
+            if progress_callback:
+                await progress_callback("Udtrækker key findings...", "analyzing", 85)
             results["key_findings"] = await self._extract_key_findings_with_llm(query, top_sources)
+
+            if progress_callback:
+                await progress_callback("Genererer anbefalinger...", "analyzing", 90)
             results["recommendations"] = await self._generate_recommendations_with_llm(query, top_sources)
         else:
             results["key_findings"] = await self._extract_key_findings(top_sources)
             results["recommendations"] = await self._generate_recommendations(query, citations)
 
+        if progress_callback:
+            await progress_callback("Genererer sammenfatning...", "finalizing", 95)
+
         results["summary"] = await self._generate_summary(query, top_sources, citations)
         results["llm_provider"] = "openai" if self.openai_api_key else None
+
+        if progress_callback:
+            await progress_callback(f"Research afsluttet! {len(top_sources)} kilder, {len(citations)} citationer", "complete", 100)
 
         logger.info(f"Research afsluttet: {len(top_sources)} kilder, {len(citations)} citationer")
         return results
@@ -358,55 +412,75 @@ class WebSearcher:
         return cross_refs
 
     async def _generate_llm_answer(self, query: str, sources: List[Source]) -> Optional[Dict[str, Any]]:
-        """Generer et samlet koncist svar med citationer og confidence scores."""
-        if not self.openai_api_key or not sources:
+        """Generer et detaljeret Perplexity-stil svar med citationer og confidence scores."""
+        if (not self.use_azure and not self.openai_api_key) or not sources:
             return None
 
         docs = []
-        for idx, source in enumerate(sources[:8], start=1):
+        for idx, source in enumerate(sources[:10], start=1):
             docs.append({
                 "index": idx,
                 "title": source.title,
                 "authority": source.authority or source.domain,
                 "url": source.url,
                 "relevance_score": source.relevance_score,
-                "snippet": source.content[:1000]
+                "snippet": source.content[:2000]
             })
 
         system_prompt = (
-            "Du er en juridisk AI-compliance ekspert. Besvar spørgsmålet kortfattet og præcist på dansk (max 4-6 sætninger). "
-            "Returner JSON med 'answer' (svaret med [nummer] citationer efter relevante sætninger), "
-            "'confidence' (0.0-1.0), og 'citations' array med objects: {source_index: int, quote: string, relevance: string}. "
-            "Brug ALTID de leverede kilder - citér kun fakta der er verificerede i kilderne. "
-            "Inkluder confidence score baseret på kildernes autoritet og konsistens."
+            "Du er en juridisk AI-compliance ekspert. Besvar spørgsmålet detaljeret og præcist på dansk (3-5 afsnit). "
+            "Skriv som Perplexity.ai: Start med en direkte besvarelse, derefter uddyb med detaljer og kontekst. "
+            "Returner JSON med følgende struktur:\n"
+            "{\n"
+            "  \"answer\": \"Detaljeret svar med [nummer] inline citationer efter hver påstand\",\n"
+            "  \"confidence\": 0.0-1.0,\n"
+            "  \"key_points\": [\"Hovedpunkt 1\", \"Hovedpunkt 2\", ...],\n"
+            "  \"citations\": [{\"source_index\": int, \"quote\": string, \"relevance\": string}, ...]\n"
+            "}\n\n"
+            "VIGTIGT:\n"
+            "- Brug ALTID de leverede kilder - citér kun verificerede fakta\n"
+            "- Tilføj [nummer] efter hver sætning der refererer til en kilde\n"
+            "- Skriv naturligt og sammenhængende på dansk\n"
+            "- Inkluder alle relevante detaljer fra kilderne\n"
+            "- Strukturer svaret i logiske afsnit (brug \\n\\n mellem afsnit)"
         )
 
         user_prompt = (
             f"Spørgsmål: {query}\n\n"
             "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
-            "Besvar spørgsmålet baseret UDELUKKENDE på de leverede kilder."
+            "Generer et omfattende, velstruktureret svar baseret på kilderne."
         )
 
         payload = {
-            "model": self.openai_model,
-            "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            "temperature": 0.1,
-            "max_tokens": 1500,
+            "temperature": 0.2,
+            "max_tokens": 2500,
+            "response_format": {"type": "json_object"}
         }
 
+        # Tilføj model kun for standard OpenAI
+        if not self.use_azure:
+            payload["model"] = self.openai_model
+
+        # Vælg endpoint og headers baseret på Azure eller standard OpenAI
+        if self.use_azure:
+            url = f"{self.azure_endpoint}/openai/deployments/{self.azure_deployment}/chat/completions?api-version={self.azure_api_version}"
+            headers = {
+                "api-key": self.azure_api_key,
+                "Content-Type": "application/json"
+            }
+        else:
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.openai_api_key}",
+                "Content-Type": "application/json"
+            }
+
         try:
-            async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.openai_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json=payload
-            ) as response:
+            async with self.session.post(url, headers=headers, json=payload) as response:
                 if response.status != 200:
                     text = await response.text()
                     logger.warning("OpenAI svar fejlede: %s - %s", response.status, text)
@@ -421,6 +495,7 @@ class WebSearcher:
             parsed = json.loads(content)
             answer = parsed.get("answer", "")
             overall_confidence = parsed.get("confidence", 0.8)
+            key_points = parsed.get("key_points", [])
             citations_map = parsed.get("citations", [])
         except (KeyError, json.JSONDecodeError, IndexError) as exc:
             logger.warning("Kunne ikke tolke OpenAI svar JSON: %s", exc)
@@ -446,6 +521,7 @@ class WebSearcher:
 
         return {
             "answer": answer,
+            "key_points": key_points,
             "citations": citation_details,
             "confidence": overall_confidence
         }
@@ -625,11 +701,20 @@ class WebSearcher:
         return sources
 
     async def _search_google(self, query: str, limit: int = 10, focus_areas: Optional[List[str]] = None) -> List[Source]:
-        """Søg med Google Custom Search API for bedre, up-to-date resultater."""
+        """Søg med Google Custom Search API for bedre, up-to-date resultater.
+
+        Bruger to CSEs parallelt:
+        1. Specifik CSE (google_cse_id) - søger i udvalgte autoritative sider
+        2. General CSE (google_cse_general_id) - åben web søgning
+        """
         sources: List[Source] = []
 
-        if not self.google_api_key or not self.google_cse_id or not self.session:
+        if not self.google_api_key or not self.session:
             logger.info("Google Custom Search ikke konfigureret - springer over")
+            return sources
+
+        if not self.google_cse_id and not self.google_cse_general_id:
+            logger.info("Ingen Google CSE IDs konfigureret - springer over")
             return sources
 
         # Byg søgestreng med fokusområder
@@ -637,35 +722,27 @@ class WebSearcher:
         if focus_areas:
             search_query += " " + " ".join(focus_areas)
 
-        # Tilføj site-specifikke søgninger for autoritative kilder
-        site_restrictions = [
-            "site:eur-lex.europa.eu OR site:datatilsynet.dk OR site:edpb.europa.eu",
-            "site:kl.dk OR site:retsinformation.dk",
-            ""  # Generel søgning uden site-restriction
-        ]
-
         seen_urls = set()
+        search_tasks = []
 
-        for site_restriction in site_restrictions:
-            full_query = f"{search_query} {site_restriction}".strip()
-
-            # Google Custom Search JSON API endpoint
-            params = {
-                'key': self.google_api_key,
-                'cx': self.google_cse_id,
-                'q': full_query,
-                'num': min(10, limit),
-                'dateRestrict': 'y2',  # Sidste 2 år for up-to-date resultater
-                'lr': 'lang_da|lang_en',  # Dansk og engelsk
-            }
-
-            url = f"https://www.googleapis.com/customsearch/v1?{urlencode(params)}"
-
+        # Helper function til at søge i en CSE
+        async def search_cse(cse_id: str, search_query: str, cse_name: str):
+            cse_sources = []
             try:
+                params = {
+                    'key': self.google_api_key,
+                    'cx': cse_id,
+                    'q': search_query,
+                    'num': min(10, limit),
+                    'dateRestrict': 'y2',  # Sidste 2 år for up-to-date resultater
+                    'lr': 'lang_da|lang_en',  # Dansk og engelsk
+                }
+                url = f"https://www.googleapis.com/customsearch/v1?{urlencode(params)}"
+
                 async with self.session.get(url) as response:
                     if response.status != 200:
-                        logger.warning("Google Search fejlede: %s", response.status)
-                        continue
+                        logger.warning(f"Google {cse_name} Search fejlede: %s", response.status)
+                        return cse_sources
 
                     data = await response.json()
                     items = data.get('items', [])
@@ -675,10 +752,8 @@ class WebSearcher:
                         title = item.get('title', '')
                         snippet = item.get('snippet', '')
 
-                        if not link or link in seen_urls:
+                        if not link:
                             continue
-
-                        seen_urls.add(link)
 
                         # Hent fuld kilde
                         source = await self._fetch_source(link)
@@ -705,21 +780,40 @@ class WebSearcher:
 
                         if self._is_relevant(source.content or snippet, query):
                             source.relevance_score = max(source.relevance_score, 0.8)
-                            sources.append(source)
-                        elif len(sources) < limit:
-                            sources.append(source)
 
-                        if len(sources) >= limit:
-                            break
+                        cse_sources.append(source)
 
             except Exception as exc:
-                logger.warning("Google Search forespørgsel fejlede: %s", exc)
-                continue
+                logger.warning(f"Google {cse_name} Search forespørgsel fejlede: %s", exc)
 
-            if len(sources) >= limit:
-                break
+            logger.info(f"Google {cse_name} CSE fandt {len(cse_sources)} kilder")
+            return cse_sources
 
-        logger.info("Google Custom Search fandt %d kilder", len(sources))
+        # Kør begge CSEs parallelt
+        if self.google_cse_id:
+            search_tasks.append(search_cse(self.google_cse_id, search_query, "Specific Sites"))
+
+        if self.google_cse_general_id:
+            search_tasks.append(search_cse(self.google_cse_general_id, search_query, "General Web"))
+
+        if search_tasks:
+            results = await asyncio.gather(*search_tasks, return_exceptions=True)
+
+            # Kombiner resultater fra begge CSEs
+            for result in results:
+                if isinstance(result, list):
+                    for source in result:
+                        if source.url not in seen_urls:
+                            seen_urls.add(source.url)
+                            sources.append(source)
+                elif isinstance(result, Exception):
+                    logger.warning(f"CSE søgning fejlede: {result}")
+
+        # Sorter efter relevans og begræns til limit
+        sources.sort(key=lambda x: x.relevance_score, reverse=True)
+        sources = sources[:limit]
+
+        logger.info(f"Google Custom Search kombineret fandt {len(sources)} unikke kilder")
         return sources
 
     async def _fetch_eur_lex_document(self, search_query: str) -> Optional[Source]:
@@ -1032,58 +1126,85 @@ class WebSearcher:
         return list(set(findings))  # Fjern dubletter
 
     async def _extract_key_findings_with_llm(self, query: str, sources: List[Source]) -> List[str]:
-        """Udtrækker nøglefund med OpenAI LLM."""
-        if not self.openai_api_key or not sources:
+        """Udtrækker detaljerede nøglefund med lovtekst citater."""
+        if (not self.use_azure and not self.openai_api_key) or not sources:
             return await self._extract_key_findings(sources)
 
         docs = []
-        for idx, source in enumerate(sources[:6], start=1):
+        for idx, source in enumerate(sources[:8], start=1):
             docs.append({
                 "index": idx,
                 "title": source.title,
                 "authority": source.authority or source.domain,
-                "content_snippet": source.content[:600]
+                "url": source.url,
+                "content_snippet": source.content[:1000]  # Mere kontekst
             })
 
         system_prompt = (
-            "Du er en juridisk analytiker. Identificér 4-6 vigtige juridiske indsigter relateret til AI-compliance. "
-            "Returner JSON med 'findings' array af strings. Hver finding skal være koncis (1 sætning) og faktuel."
+            "Du er en juridisk AI-compliance ekspert. Identificér 5-7 vigtige juridiske indsigter med specifikke lovtekst references. "
+            "Hver finding skal være en STRING der inkluderer:\n"
+            "- **Hovedpointe** med fet skrift\n"
+            "- Relevant artikel/paragraf (f.eks. 'EU AI Act Artikel 5', 'GDPR Artikel 22')\n"
+            "- Kort citat fra lovteksten i citationstegn hvis relevant\n"
+            "Format: '**[Titel] ([Artikel])**: [Beskrivelse]. [Citat hvis relevant]'\n"
+            "Returner JSON med 'findings' array af STRINGS (IKKE objekter). Hver finding skal være 2-3 sætninger."
         )
 
         user_prompt = (
             f"Emne: {query}\n\n"
             "Kilder:\n" + json.dumps(docs, ensure_ascii=False, indent=2) + "\n\n"
-            "Hvad er de vigtigste juridiske indsigter?"
+            "Hvad er de vigtigste juridiske indsigter med specifikke lovtekst references?"
         )
 
         payload = {
-            "model": self.openai_model,
+            "model": self.azure_deployment if self.use_azure else self.openai_model,
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             "temperature": 0.2,
-            "max_tokens": 800,
+            "max_tokens": 1500,
         }
 
         try:
-            async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.openai_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json=payload
-            ) as response:
+            if self.use_azure:
+                url = f"{self.azure_endpoint}/openai/deployments/{self.azure_deployment}/chat/completions?api-version={self.azure_api_version}"
+                headers = {"api-key": self.azure_api_key, "Content-Type": "application/json"}
+            else:
+                url = "https://api.openai.com/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {self.openai_api_key}", "Content-Type": "application/json"}
+
+            async with self.session.post(url, headers=headers, json=payload) as response:
                 if response.status != 200:
-                    logger.warning("OpenAI key findings fejlede")
+                    logger.warning("LLM key findings fejlede")
                     return await self._extract_key_findings(sources)
                 data = await response.json()
 
             content = data["choices"][0]["message"]["content"]
             parsed = json.loads(content)
-            return parsed.get("findings", [])
+            findings = parsed.get("findings", [])
+
+            # Ensure all findings are strings (convert objects to strings if needed)
+            string_findings = []
+            for finding in findings:
+                if isinstance(finding, str):
+                    string_findings.append(finding)
+                elif isinstance(finding, dict):
+                    # Convert dict to formatted string
+                    title = finding.get("Hovedpointe", finding.get("title", ""))
+                    article = finding.get("Relevant artikel/paragraf", finding.get("article", ""))
+                    quote = finding.get("Citat", finding.get("quote", ""))
+
+                    formatted = f"**{title}"
+                    if article:
+                        formatted += f" ({article})"
+                    formatted += "**"
+                    if quote:
+                        formatted += f": {quote}"
+                    string_findings.append(formatted)
+
+            return string_findings if string_findings else await self._extract_key_findings(sources)
         except Exception as exc:
             logger.warning(f"LLM key findings fejlede: {exc}")
             return await self._extract_key_findings(sources)
@@ -1164,7 +1285,22 @@ class WebSearcher:
         return recommendations
 
     def _source_to_dict(self, source: Source) -> Dict[str, Any]:
-        """Konverter Source til dict"""
+        """Konverter Source til dict med snippet"""
+        # Extract a relevant snippet from content (first 200 chars or up to sentence end)
+        snippet = ""
+        if source.content:
+            content = source.content.strip()
+            if len(content) > 200:
+                # Try to end at sentence boundary
+                snippet = content[:200]
+                last_period = snippet.rfind('.')
+                if last_period > 100:  # Only use sentence boundary if it's not too short
+                    snippet = content[:last_period + 1]
+                else:
+                    snippet = content[:200] + "..."
+            else:
+                snippet = content
+
         return {
             "title": source.title,
             "url": source.url,
@@ -1173,7 +1309,8 @@ class WebSearcher:
             "source_type": source.source_type,
             "date_accessed": source.date_accessed.isoformat(),
             "date_published": source.date_published.isoformat() if source.date_published else None,
-            "relevance_score": source.relevance_score
+            "relevance_score": source.relevance_score,
+            "snippet": snippet
         }
 
     def _citation_to_dict(self, citation: Citation) -> Dict[str, Any]:
