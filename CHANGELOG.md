@@ -29,6 +29,21 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+## [3.0.0-alpha.4] - 2026-05-07 — Fase 1.4 (v3 API-endpoints)
+
+### Tilføjet (Added)
+- **`POST /api/v3/assess`**: kører hele v3-regelmotoren mod input. Tager fritekst-beskrivelse + signals + predikater og returnerer:
+  - `aggregate_status` (NO-GO > BETINGET-GO > GO)
+  - `decisions[]` med fuld kilde-citation, krav, evidens og evaluation_log
+  - `signals_extracted_by_llm` så bruger kan auditere hvad LLM'en inferred
+  - `warnings[]` for fx. manglende LLM-konfiguration
+  - Caller-leverede signaler vinder altid over LLM-foreslåede
+- **`GET /api/v3/rules`**: lister alle indlæste regler med deres kilde + predikater. Bruges af frontend til at vise "regler dækket" og af auditorer.
+- Begge endpoints cacher rule-loading via `lru_cache` så regler kun parses én gang pr. server-instans.
+
+### Smoke-verificeret
+Med 10 regler indlæst og realistisk input: 6/10 regler triggered, aggregate = BETINGET-GO.
+
 ## [3.0.0-alpha.3] - 2026-05-07 — Fase 2 (frontend design-system primitives)
 
 ### Tilføjet (Added)

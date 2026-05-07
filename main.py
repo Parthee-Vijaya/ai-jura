@@ -1861,6 +1861,157 @@ async def get_cache_statistics():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ---------------------------------------------------------------------------
+# v3 rule engine — declarative compliance rules grounded in law citations
+# ---------------------------------------------------------------------------
+
+from src.rule_engine import (
+    RuleLoader,
+    RuleInput,
+    SignalExtractor,
+    SignalExtractionError,
+)
+from src.rule_engine.executor import aggregate_status, evaluate_all
+
+
+_RULES_DIR = Path(__file__).parent / "rules"
+
+
+@lru_cache(maxsize=1)
+def _v3_load_rules():
+    """Load and cache the v3 rule corpus. Rebuild requires a server restart
+    (or invalidating the cache from a privileged endpoint)."""
+    loader = RuleLoader(_RULES_DIR)
+    result = loader.load_all(raise_on_error=False)
+    if not result.ok:
+        raise RuntimeError(
+            "v3 rule corpus failed to load:\n"
+            + "\n".join(f"  - {err}" for err in result.errors)
+        )
+    return result.rules
+
+
+@lru_cache(maxsize=1)
+def _v3_signal_extractor() -> SignalExtractor:
+    return SignalExtractor()
+
+
+class V3AssessRequest(BaseModel):
+    """Input to the v3 rule engine.
+
+    All fields are optional except that the engine needs *something* to
+    work from: either signals/predicates the caller provides directly,
+    or a free-text system_description for the signal extractor to
+    interpret.
+    """
+
+    system_description: Optional[str] = Field(
+        default=None,
+        description="Free-text description of the AI system being assessed.",
+    )
+    signals: Dict[str, bool] = Field(
+        default_factory=dict,
+        description="Trigger signals provided directly by the caller.",
+    )
+    predicates: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Answers to rule predikater (boolean or enum strings).",
+    )
+    use_llm_extraction: bool = Field(
+        default=True,
+        description=(
+            "If true and a system_description is given, ask the LLM to "
+            "fill in any signals the caller did not provide explicitly."
+        ),
+    )
+
+
+@app.post("/api/v3/assess")
+async def v3_assess(request: V3AssessRequest):
+    """Evaluate the v3 rule corpus against the supplied input.
+
+    Returns one decision per rule plus the aggregate status and the
+    full set of signals that drove the evaluation (so the caller can
+    audit what the LLM inferred vs. what they supplied).
+    """
+
+    try:
+        rules = _v3_load_rules()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    # Start with caller-provided signals, then optionally fill in the rest
+    # via the LLM signal extractor.
+    merged_signals: Dict[str, bool] = dict(request.signals)
+    extracted_signals: Dict[str, bool] = {}
+    warnings: List[str] = []
+
+    if request.use_llm_extraction and request.system_description:
+        extractor = _v3_signal_extractor()
+        if extractor.is_configured:
+            try:
+                extracted_signals = extractor.extract(
+                    request.system_description, rules
+                )
+            except SignalExtractionError as exc:
+                warnings.append(f"signal extraction failed: {exc}")
+            for k, v in extracted_signals.items():
+                # Caller-provided values always win
+                merged_signals.setdefault(k, v)
+        else:
+            warnings.append(
+                "signal extractor not configured (no AZURE_OPENAI_* / OPENAI_API_KEY)"
+            )
+
+    rule_input = RuleInput(
+        signals=merged_signals,
+        predicates=request.predicates,
+    )
+
+    try:
+        decisions = evaluate_all(rules, rule_input)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"evaluation error: {exc}")
+
+    return {
+        "rule_engine_version": "3.0.0-alpha.3",
+        "evaluated_at": datetime.now(UTC).isoformat(),
+        "rules_loaded": len(rules),
+        "aggregate_status": aggregate_status(decisions).value,
+        "signals_provided": dict(request.signals),
+        "signals_extracted_by_llm": extracted_signals,
+        "decisions": [d.model_dump(mode="json") for d in decisions],
+        "warnings": warnings,
+    }
+
+
+@app.get("/api/v3/rules")
+async def v3_list_rules():
+    """List all loaded v3 rules with their citations. Useful for the
+    frontend to render a 'rules covered' list and for auditors."""
+    try:
+        rules = _v3_load_rules()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return {
+        "rule_engine_version": "3.0.0-alpha.3",
+        "count": len(rules),
+        "rules": [
+            {
+                "id": r.id,
+                "kilde": r.kilde.model_dump(mode="json"),
+                "predikater": [p.model_dump(mode="json", by_alias=True) for p in r.predikater],
+                "metadata": r.metadata or {},
+            }
+            for r in rules
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+
+
 def _generate_quick_recommendations(risk_level: RiskLevel, gdpr_relevant: bool, gdpr_high_risk: bool) -> List[str]:
     """Generate quick recommendations based on initial assessment"""
     recommendations = []
