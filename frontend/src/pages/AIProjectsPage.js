@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaSearch,
-  FaFilter,
   FaExternalLinkAlt,
   FaRobot,
   FaCheckCircle,
@@ -13,124 +12,33 @@ import {
 } from 'react-icons/fa';
 
 import projectsData from '../data/aiProjectsFallback.json';
+import {
+  PageShell,
+  PageHeader,
+  OutlinePill,
+  SearchField,
+} from '../components/page-chrome/PageChrome';
 
-const PageContainer = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 3rem;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.gray[900]};
-  margin-bottom: 0.5rem;
-`;
-
-const PageDescription = styled.p`
-  font-size: 1.1rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.8)'
-    : props.theme.colors.gray[600]};
-  max-width: 800px;
-`;
-
-const SearchAndFilterBar = styled.div`
+const Toolbar = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1.25rem;
+`;
+
+const FilterChips = styled.div`
+  display: flex;
+  gap: 6px;
   flex-wrap: wrap;
 `;
 
-const SearchBox = styled.div`
-  flex: 1;
-  min-width: 300px;
-  position: relative;
-
-  svg {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.7)'
-      : props.theme.colors.gray[400]};
-  }
-
-  input {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border-radius: ${props => props.theme.borderRadius};
-    border: 1px solid ${props => props.theme.mode === 'dark'
-      ? 'rgba(148, 163, 184, 0.2)'
-      : props.theme.colors.gray[300]};
-    background: ${props => props.theme.mode === 'dark'
-      ? 'rgba(15, 23, 42, 0.6)'
-      : props.theme.colors.white};
-    color: ${props => props.theme.mode === 'dark'
-      ? props.theme.colors.white
-      : props.theme.colors.gray[900]};
-    font-size: 1rem;
-
-    &:focus {
-      outline: none;
-      border-color: ${props => props.theme.colors.primary};
-    }
-
-    &::placeholder {
-      color: ${props => props.theme.mode === 'dark'
-        ? 'rgba(148, 163, 184, 0.5)'
-        : props.theme.colors.gray[400]};
-    }
-  }
-`;
-
-const FilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: ${props => props.theme.borderRadius};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : props.theme.colors.gray[300]};
-  background: ${props => props.$active
-    ? props.theme.colors.primary
-    : props.theme.mode === 'dark'
-      ? 'rgba(15, 23, 42, 0.6)'
-      : props.theme.colors.white};
-  color: ${props => props.$active
-    ? props.theme.colors.white
-    : props.theme.mode === 'dark'
-      ? props.theme.colors.white
-      : props.theme.colors.gray[700]};
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.colors.primary};
-    background: ${props => props.$active
-      ? props.theme.colors.primaryDark
-      : props.theme.mode === 'dark'
-        ? 'rgba(15, 23, 42, 0.8)'
-        : props.theme.colors.gray[50]};
-  }
-`;
-
 const ResultsCount = styled.div`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: ${(p) => p.theme.colors.textMuted};
   margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.7)'
-    : props.theme.colors.gray[600]};
 `;
 
 const ProjectsGrid = styled.div`
@@ -145,21 +53,17 @@ const ProjectsGrid = styled.div`
 `;
 
 const ProjectCard = styled(motion.div)`
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15, 23, 42, 0.8)'
-    : props.theme.colors.white};
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : props.theme.colors.gray[200]};
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: ${(p) => p.theme.animations.transition};
   cursor: pointer;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${props => props.theme.shadows.xl};
-    border-color: ${props => props.theme.colors.primary};
+    transform: translateY(-2px);
+    box-shadow: ${(p) => p.theme.shadows.md};
+    border-color: ${(p) => p.theme.colors.primary};
   }
 `;
 
@@ -196,21 +100,20 @@ const ProjectContent = styled.div`
 `;
 
 const ProjectTitle = styled.h3`
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.gray[900]};
-  margin: 0 0 0.75rem 0;
+  font-family: ${(p) => p.theme.fonts.display};
+  font-size: 1.18rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: ${(p) => p.theme.colors.text};
+  margin: 0 0 0.6rem 0;
   line-height: 1.3;
 `;
 
 const ProjectDescription = styled.p`
-  font-size: 0.9rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.8)'
-    : props.theme.colors.gray[600]};
-  line-height: 1.6;
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.95rem;
+  color: ${(p) => p.theme.colors.text};
+  line-height: 1.55;
   margin: 0 0 1rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -227,17 +130,16 @@ const ProjectMeta = styled.div`
 const MetaBadge = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.65rem;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(59, 130, 246, 0.15)'
-    : 'rgba(59, 130, 246, 0.1)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(147, 197, 253, 0.95)'
-    : props.theme.colors.primary};
+  gap: 0.4rem;
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  color: ${(p) => p.theme.colors.textMuted};
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.7rem;
   font-weight: 500;
+  letter-spacing: 0.04em;
 
   svg {
     font-size: 0.7rem;
@@ -245,16 +147,15 @@ const MetaBadge = styled.span`
 `;
 
 const StatusBadge = styled(MetaBadge)`
-  background: ${props => {
-    if (props.$status === 'I brug') return props.theme.mode === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)';
-    if (props.$status === 'Planlægges taget i brug') return props.theme.mode === 'dark' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)';
-    return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(148, 163, 184, 0.1)';
-  }};
-  color: ${props => {
-    if (props.$status === 'I brug') return props.theme.mode === 'dark' ? 'rgba(167, 243, 208, 0.95)' : '#059669';
-    if (props.$status === 'Planlægges taget i brug') return props.theme.mode === 'dark' ? 'rgba(253, 230, 138, 0.95)' : '#d97706';
-    return props.theme.mode === 'dark' ? 'rgba(203, 213, 225, 0.95)' : props.theme.colors.gray[600];
-  }};
+  ${({ $status, theme }) => {
+    if ($status === 'I brug') {
+      return `border-color: ${theme.colors.success}; color: ${theme.colors.success};`;
+    }
+    if ($status === 'Planlægges taget i brug') {
+      return `border-color: ${theme.colors.warning}; color: ${theme.colors.warning};`;
+    }
+    return '';
+  }}
 `;
 
 const Modal = styled(motion.div)`
@@ -433,36 +334,36 @@ const AIProjectsPage = () => {
   }, [searchTerm, selectedCategory]);
 
   return (
-    <PageContainer>
-      <PageHeader>
-        <PageTitle>AI Løsninger i Det Offentlige</PageTitle>
-        <PageDescription>
-          Udforsk danske offentlige AI-projekter og løsninger. Find inspiration til din egen organisation
-          og lær af andres erfaringer med kunstig intelligens i den offentlige sektor.
-        </PageDescription>
-      </PageHeader>
+    <PageShell>
+      <PageHeader
+        eyebrow="Forseti · ai-løsninger"
+        title="AI-løsninger i det offentlige"
+        lede="Udforsk danske offentlige AI-projekter — find inspiration, lær af andres erfaringer, og se hvilke løsninger der allerede er i drift på tværs af kommuner og styrelser."
+      />
 
-      <SearchAndFilterBar>
-        <SearchBox>
+      <Toolbar>
+        <SearchField>
           <FaSearch />
           <input
             type="text"
-            placeholder="Søg efter projekter..."
+            placeholder="Søg efter projekter…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </SearchBox>
+        </SearchField>
+      </Toolbar>
+
+      <FilterChips style={{ marginBottom: '1.25rem' }}>
         {categories.map(cat => (
-          <FilterButton
+          <OutlinePill
             key={cat}
             $active={selectedCategory === cat}
             onClick={() => setSelectedCategory(cat)}
           >
-            <FaFilter />
             {cat === 'all' ? 'Alle kategorier' : cat}
-          </FilterButton>
+          </OutlinePill>
         ))}
-      </SearchAndFilterBar>
+      </FilterChips>
 
       <ResultsCount>
         Viser {filteredProjects.length} af {projectsData.length} projekter
@@ -567,7 +468,7 @@ const AIProjectsPage = () => {
           </Modal>
         )}
       </AnimatePresence>
-    </PageContainer>
+    </PageShell>
   );
 };
 

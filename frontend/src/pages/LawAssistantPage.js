@@ -13,186 +13,118 @@ import {
   FaBook
 } from 'react-icons/fa';
 import axios from 'axios';
-
-// ============ STYLED COMPONENTS (Matching ResearchPage) ============
-
-const LawContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 2rem;
-  text-align: center;
-
-  h1 {
-    color: ${props => props.theme.isDark ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-
-    .icon {
-      color: ${props => props.theme.colors.primary};
-    }
-  }
-
-  p {
-    color: ${props => props.theme.isDark ? props.theme.colors.gray[400] : props.theme.colors.gray[600]};
-    font-size: 1.1rem;
-  }
-`;
+import {
+  PageShell,
+  PageHeader,
+  PrimaryButton,
+} from '../components/page-chrome/PageChrome';
 
 const SearchCard = styled.div`
-  background: ${props => props.theme.isDark
-    ? 'rgba(45, 55, 72, 0.95)'
-    : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 2rem;
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 1.75rem;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(201, 68, 22, 0.37);
-  border: 1px solid ${props => props.theme.isDark
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.05)'};
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 2px solid ${props => props.theme.isDark
-    ? props.theme.colors.gray[600]
-    : props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
+  padding: 0.85rem 1rem 0.85rem 2.75rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-family: ${(p) => p.theme.fonts.body};
   font-size: 1rem;
-  background: ${props => props.theme.isDark
-    ? props.theme.colors.gray[700]
-    : 'white'};
-  color: ${props => props.theme.isDark
-    ? props.theme.colors.gray[100]
-    : props.theme.colors.gray[900]};
-  transition: all 0.2s ease;
+  background: ${(p) => p.theme.colors.surface};
+  color: ${(p) => p.theme.colors.text};
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:focus {
-    border-color: ${props => props.theme.colors.primary};
+    border-color: ${(p) => p.theme.colors.primary};
     outline: none;
-    box-shadow: 0 0 0 3px ${props => props.theme.colors.primary}33;
+    box-shadow: ${(p) => p.theme.shadows.focus};
   }
 
   &::placeholder {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[500]
-      : props.theme.colors.gray[400]};
+    color: ${(p) => p.theme.colors.textFaded};
+    font-style: italic;
   }
 `;
 
 const SearchInputWrapper = styled.div`
   position: relative;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 
   .search-icon {
     position: absolute;
-    left: 1rem;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: ${props => props.theme.colors.gray[400]};
+    color: ${(p) => p.theme.colors.textMuted};
+    font-size: 0.9rem;
   }
 `;
 
 const CategorySelect = styled.select`
-  padding: 0.75rem;
-  border: 2px solid ${props => props.theme.isDark
-    ? props.theme.colors.gray[600]
-    : props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
-  background: ${props => props.theme.isDark
-    ? props.theme.colors.gray[700]
-    : 'white'};
-  color: ${props => props.theme.isDark
-    ? props.theme.colors.gray[100]
-    : props.theme.colors.gray[900]};
-  font-size: 0.95rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  background: ${(p) => p.theme.colors.surface};
+  color: ${(p) => p.theme.colors.text};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.92rem;
   cursor: pointer;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
 
   &:focus {
-    border-color: ${props => props.theme.colors.primary};
+    border-color: ${(p) => p.theme.colors.primary};
     outline: none;
   }
 `;
 
-const SearchButton = styled.button`
-  background: ${props => props.theme.colors.primary};
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: ${props => props.theme.borderRadius};
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
+const SearchButton = styled(PrimaryButton)`
   width: 100%;
-
-  &:hover:not(:disabled) {
-    background: ${props => props.theme.colors.primary}dd;
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    background: ${props => props.theme.colors.gray[400]};
-    cursor: not-allowed;
-  }
+  justify-content: center;
+  padding: 12px 20px;
 `;
 
 const AnswerCard = styled(motion.div)`
-  background: ${props => props.theme.isDark
-    ? 'linear-gradient(135deg, rgba(66, 76, 92, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%)'
-    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%)'};
-  backdrop-filter: blur(30px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 2rem;
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-left: 3px solid ${(p) => p.theme.colors.primary};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 1.75rem;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(102, 126, 234, 0.2);
-  border: 1px solid ${props => props.theme.isDark
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.05)'};
 
   h3 {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[100]
-      : props.theme.colors.gray[800]};
-    margin-bottom: 1rem;
+    font-family: ${(p) => p.theme.fonts.display};
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: ${(p) => p.theme.colors.text};
+    margin: 0 0 1rem 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 
     .icon {
-      color: ${props => props.theme.colors.primary};
+      color: ${(p) => p.theme.colors.primary};
+      font-size: 1rem;
     }
   }
 `;
 
 const AnswerText = styled.div`
-  color: ${props => props.theme.isDark
-    ? props.theme.colors.gray[300]
-    : props.theme.colors.gray[700]};
-  line-height: 1.8;
+  font-family: ${(p) => p.theme.fonts.body};
+  color: ${(p) => p.theme.colors.text};
+  line-height: 1.7;
   font-size: 1.05rem;
   margin-bottom: 1.5rem;
 
-  p {
-    margin-bottom: 1rem;
-  }
+  p { margin-bottom: 1rem; }
 
   strong {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[100]
-      : props.theme.colors.gray[900]};
+    color: ${(p) => p.theme.colors.text};
+    font-weight: 600;
   }
 `;
 
@@ -200,22 +132,22 @@ const ConfidenceBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.74rem;
   font-weight: 600;
-  background: ${props => {
-    const conf = props.confidence;
-    if (conf >= 0.8) return 'rgba(34, 197, 94, 0.2)';
-    if (conf >= 0.6) return 'rgba(234, 179, 8, 0.2)';
-    return 'rgba(239, 68, 68, 0.2)';
-  }};
-  color: ${props => {
-    const conf = props.confidence;
-    if (conf >= 0.8) return '#22c55e';
-    if (conf >= 0.6) return '#eab308';
-    return '#ef4444';
-  }};
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid;
+  ${({ confidence, theme }) => {
+    if (confidence >= 0.8)
+      return `border-color: ${theme.colors.success}; color: ${theme.colors.success};`;
+    if (confidence >= 0.6)
+      return `border-color: ${theme.colors.warning}; color: ${theme.colors.warning};`;
+    return `border-color: ${theme.colors.danger}; color: ${theme.colors.danger};`;
+  }}
 `;
 
 const KeyPointsList = styled.ul`
@@ -224,37 +156,30 @@ const KeyPointsList = styled.ul`
   margin-top: 1.5rem;
 
   li {
-    padding: 0.75rem;
+    font-family: ${(p) => p.theme.fonts.body};
+    padding: 0.85rem 1rem;
     margin-bottom: 0.5rem;
-    background: ${props => props.theme.isDark
-      ? 'rgba(66, 76, 92, 0.5)'
-      : 'rgba(249, 250, 251, 0.8)'};
-    border-left: 3px solid ${props => props.theme.colors.primary};
+    background: ${(p) => p.theme.colors.surfaceAlt};
+    border-left: 2px solid ${(p) => p.theme.colors.primary};
     border-radius: 4px;
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[300]
-      : props.theme.colors.gray[700]};
+    color: ${(p) => p.theme.colors.text};
+    line-height: 1.55;
   }
 `;
 
 const SourcesCard = styled.div`
-  background: ${props => props.theme.isDark
-    ? 'rgba(45, 55, 72, 0.95)'
-    : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 2rem;
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 1.75rem;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(201, 68, 22, 0.37);
-  border: 1px solid ${props => props.theme.isDark
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.05)'};
 
   h3 {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[100]
-      : props.theme.colors.gray[800]};
-    margin-bottom: 1.5rem;
+    font-family: ${(p) => p.theme.fonts.display};
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: ${(p) => p.theme.colors.text};
+    margin: 0 0 1.25rem 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -262,23 +187,17 @@ const SourcesCard = styled.div`
 `;
 
 const SourceItem = styled.div`
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background: ${props => props.theme.isDark
-    ? 'rgba(66, 76, 92, 0.5)'
-    : 'rgba(249, 250, 251, 0.8)'};
-  border-radius: ${props => props.theme.borderRadius};
-  border: 1px solid ${props => props.theme.isDark
-    ? 'rgba(255, 255, 255, 0.05)'
-    : 'rgba(0, 0, 0, 0.05)'};
+  padding: 1.1rem;
+  margin-bottom: 0.8rem;
+  background: ${(p) => p.theme.colors.surfaceAlt};
+  border-radius: ${(p) => p.theme.borderRadius};
+  border: 1px solid ${(p) => p.theme.colors.borderSoft};
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:hover {
-    background: ${props => props.theme.isDark
-      ? 'rgba(66, 76, 92, 0.7)'
-      : 'rgba(249, 250, 251, 1)'};
-    border-color: ${props => props.theme.colors.primary};
+    border-color: ${(p) => p.theme.colors.primary};
+    background: ${(p) => p.theme.colors.surface};
   }
 
   .law-header {
@@ -289,52 +208,47 @@ const SourceItem = styled.div`
   }
 
   .law-title {
+    font-family: ${(p) => p.theme.fonts.display};
     font-weight: 600;
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[100]
-      : props.theme.colors.gray[800]};
-    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    color: ${(p) => p.theme.colors.text};
+    margin-bottom: 0.4rem;
   }
 
   .law-summary {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[400]
-      : props.theme.colors.gray[600]};
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin-top: 0.5rem;
+    font-family: ${(p) => p.theme.fonts.body};
+    color: ${(p) => p.theme.colors.text};
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-top: 0.4rem;
   }
 
   .law-link {
-    color: ${props => props.theme.colors.primary};
+    font-family: ${(p) => p.theme.fonts.sans};
+    color: ${(p) => p.theme.colors.primary};
     text-decoration: none;
-    font-size: 0.875rem;
-    display: flex;
+    font-size: 0.82rem;
+    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     margin-top: 0.75rem;
 
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { text-decoration: underline; }
   }
 
   .expand-icon {
-    color: ${props => props.theme.colors.gray[500]};
+    color: ${(p) => p.theme.colors.textMuted};
     transition: transform 0.2s ease;
-    transform: ${props => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+    transform: ${(p) => (p.expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
   }
 
   .law-content {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid ${props => props.theme.isDark
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.1)'};
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[400]
-      : props.theme.colors.gray[700]};
-    font-size: 0.9rem;
+    border-top: 1px solid ${(p) => p.theme.colors.borderSoft};
+    font-family: ${(p) => p.theme.fonts.body};
+    color: ${(p) => p.theme.colors.text};
+    font-size: 0.94rem;
     line-height: 1.7;
   }
 `;
@@ -343,30 +257,31 @@ const ExampleQueries = styled.div`
   margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 6px;
+  align-items: center;
 
   .label {
-    color: ${props => props.theme.isDark
-      ? props.theme.colors.gray[400]
-      : props.theme.colors.gray[600]};
-    font-size: 0.875rem;
+    font-family: ${(p) => p.theme.fonts.sans};
+    color: ${(p) => p.theme.colors.textMuted};
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin-right: 4px;
   }
 
   button {
-    background: ${props => props.theme.isDark
-      ? 'rgba(66, 76, 92, 0.5)'
-      : 'rgba(249, 250, 251, 0.8)'};
-    color: ${props => props.theme.colors.primary};
-    border: 1px solid ${props => props.theme.colors.primary}44;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
+    font-family: ${(p) => p.theme.fonts.sans};
+    background: transparent;
+    color: ${(p) => p.theme.colors.textMuted};
+    border: 1px solid ${(p) => p.theme.colors.border};
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: ${(p) => p.theme.animations.transitionFast};
 
     &:hover {
-      background: ${props => props.theme.colors.primary}22;
-      transform: translateY(-1px);
+      border-color: ${(p) => p.theme.colors.primary};
+      color: ${(p) => p.theme.colors.primary};
     }
   }
 `;
@@ -460,14 +375,12 @@ const LawAssistantPage = () => {
   ];
 
   return (
-    <LawContainer>
-      <PageHeader>
-        <h1>
-          <FaGavel className="icon" size={32} />
-          Lov Assistent
-        </h1>
-        <p>Få AI-genererede svar på juridiske spørgsmål baseret på 295 danske love</p>
-      </PageHeader>
+    <PageShell>
+      <PageHeader
+        eyebrow="Forseti · lov-assistent"
+        title="Lov-assistent"
+        lede="AI-genererede svar på juridiske spørgsmål forankret i 295 danske love. Kilder fremgår altid eksplicit, så du kan verificere mod regelrytter.dk og Retsinformation."
+      />
 
       {/* Search Card */}
       <SearchCard>
@@ -624,7 +537,7 @@ const LawAssistantPage = () => {
           </SourcesCard>
         )}
       </AnimatePresence>
-    </LawContainer>
+    </PageShell>
   );
 };
 

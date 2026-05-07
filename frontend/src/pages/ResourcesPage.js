@@ -14,122 +14,61 @@ import {
   FaTimes,
   FaSave
 } from 'react-icons/fa';
+import {
+  PageShell,
+  PageHeader,
+  OutlinePill,
+  PrimaryButton,
+  SearchField,
+} from '../components/page-chrome/PageChrome';
 
-const ResourcesContainer = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 1rem;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 2rem;
-
-  h1 {
-    color: ${props => props.theme.colors.gray[800]};
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  p {
-    color: ${props => props.theme.colors.gray[600]};
-    font-size: 1.1rem;
-  }
-`;
-
-const SearchAndFilter = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: ${props => props.theme.shadows.glass};
-  margin-bottom: 2rem;
+const Toolbar = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 12px;
   align-items: center;
-`;
-
-const SearchBox = styled.div`
-  position: relative;
-  flex: 1;
-  min-width: 300px;
-
-  input {
-    width: 100%;
-    padding: 0.75rem 2.5rem 0.75rem 1rem;
-    border: 2px solid ${props => props.theme.colors.gray[300]};
-    border-radius: ${props => props.theme.borderRadius};
-    font-size: 0.875rem;
-    background: white;
-
-    &:focus {
-      border-color: ${props => props.theme.colors.primary};
-      outline: none;
-    }
-  }
-
-  .search-icon {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: ${props => props.theme.colors.gray[400]};
-  }
+  margin-bottom: 1.5rem;
 `;
 
 const CategoryFilters = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-`;
-
-const CategoryButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.gray[100]};
-  color: ${props => props.active ? 'white' : props.theme.colors.gray[700]};
-  border: none;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  &:hover {
-    background: ${props => props.active ? props.theme.colors.primaryDark || '#A03612' : props.theme.colors.gray[200]};
-  }
+  gap: 6px;
+  margin-bottom: 1.5rem;
 `;
 
 const StatsBar = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 1rem 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: ${props => props.theme.shadows.glass};
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 16px 20px;
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  margin-bottom: 1.75rem;
 
   .stat {
-    text-align: center;
+    text-align: left;
+    border-left: 2px solid ${(p) => p.theme.colors.borderSoft};
+    padding-left: 16px;
+
+    &:first-child { border-left: none; padding-left: 0; }
 
     .number {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: ${props => props.theme.colors.primary};
+      font-family: ${(p) => p.theme.fonts.display};
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: ${(p) => p.theme.colors.primary};
+      line-height: 1;
     }
 
     .label {
-      font-size: 0.8rem;
-      color: ${props => props.theme.colors.gray[600]};
-      margin-top: 0.2rem;
+      font-family: ${(p) => p.theme.fonts.sans};
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: ${(p) => p.theme.colors.textMuted};
+      margin-top: 6px;
     }
   }
 `;
@@ -141,81 +80,95 @@ const ResourceGrid = styled.div`
 `;
 
 const ResourceCard = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: ${props => props.theme.shadows.glass};
-  border-left: 4px solid ${props => {
-    switch(props.category) {
-      case 'eu': return props.theme.colors.juridical.gold;
-      case 'danish': return props.theme.colors.juridical.navy;
-      case 'legal': return props.theme.colors.success;
-      case 'international': return props.theme.colors.warning;
-      default: return props.theme.colors.gray[300];
+  border-left: 3px solid ${(p) => {
+    switch (p.category) {
+      case 'eu': return p.theme.colors.warning;
+      case 'danish': return p.theme.colors.primary;
+      case 'legal': return p.theme.colors.success;
+      case 'international': return p.theme.colors.accent;
+      default: return p.theme.colors.borderSoft;
     }
   }};
-  transition: all 0.2s ease;
+  transition: ${(p) => p.theme.animations.transition};
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadows.xl};
+    box-shadow: ${(p) => p.theme.shadows.md};
   }
 `;
 
 const ResourceHeader = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 14px;
   margin-bottom: 1rem;
 
   .icon {
-    background: ${props => {
-      switch(props.category) {
-        case 'eu': return props.theme.colors.juridical.gold;
-        case 'danish': return props.theme.colors.juridical.navy;
-        case 'legal': return props.theme.colors.success;
-        case 'international': return props.theme.colors.warning;
-        default: return props.theme.colors.gray[400];
+    background: transparent;
+    border: 1px solid ${(p) => {
+      switch (p.category) {
+        case 'eu': return p.theme.colors.warning;
+        case 'danish': return p.theme.colors.primary;
+        case 'legal': return p.theme.colors.success;
+        case 'international': return p.theme.colors.accent;
+        default: return p.theme.colors.border;
       }
     }};
-    color: white;
+    color: ${(p) => {
+      switch (p.category) {
+        case 'eu': return p.theme.colors.warning;
+        case 'danish': return p.theme.colors.primary;
+        case 'legal': return p.theme.colors.success;
+        case 'international': return p.theme.colors.accent;
+        default: return p.theme.colors.textMuted;
+      }
+    }};
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     flex-shrink: 0;
   }
 
   .content {
     flex: 1;
+    min-width: 0;
 
     h3 {
-      color: ${props => props.theme.colors.gray[800]};
-      margin-bottom: 0.25rem;
-      font-size: 1.1rem;
+      font-family: ${(p) => p.theme.fonts.display};
+      font-size: 1.18rem;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      color: ${(p) => p.theme.colors.text};
+      margin: 0 0 4px 0;
       line-height: 1.3;
     }
 
     .meta {
-      color: ${props => props.theme.colors.gray[500]};
-      font-size: 0.875rem;
+      color: ${(p) => p.theme.colors.textMuted};
+      font-family: ${(p) => p.theme.fonts.sans};
+      font-size: 0.78rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
+      letter-spacing: 0.02em;
     }
   }
 `;
 
 const ResourceDescription = styled.div`
-  color: ${props => props.theme.colors.gray[700]};
+  font-family: ${(p) => p.theme.fonts.body};
+  color: ${(p) => p.theme.colors.text};
   line-height: 1.6;
   margin-bottom: 1rem;
-  font-size: 0.9rem;
+  font-size: 0.96rem;
 `;
 
 const ResourceLinks = styled.div`
@@ -223,22 +176,21 @@ const ResourceLinks = styled.div`
 `;
 
 const ResourceLink = styled.a`
-  display: block;
-  color: ${props => props.theme.colors.primary};
+  font-family: ${(p) => p.theme.fonts.sans};
+  color: ${(p) => p.theme.colors.primary};
   text-decoration: none;
-  font-size: 0.875rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid ${props => props.theme.colors.gray[100]};
+  font-size: 0.88rem;
+  padding: 8px 0;
+  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:hover {
-    color: ${props => props.theme.colors.juridical.lightNavy};
-    background: ${props => props.theme.colors.gray[50]};
-    padding-left: 0.5rem;
-    border-radius: 4px;
+    color: ${(p) => p.theme.colors.primaryDark};
+    text-decoration: underline;
   }
 
   &:last-child {
@@ -246,7 +198,7 @@ const ResourceLink = styled.a`
   }
 
   .external-icon {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     opacity: 0.7;
   }
 `;
@@ -265,40 +217,25 @@ const ResourceFooter = styled.div`
   }
 
   .tag {
-    padding: 0.2rem 0.5rem;
-    background: ${props => props.theme.colors.gray[100]};
-    color: ${props => props.theme.colors.gray[600]};
-    border-radius: 12px;
+    padding: 2px 10px;
+    background: transparent;
+    border: 1px solid ${(p) => p.theme.colors.border};
+    color: ${(p) => p.theme.colors.textMuted};
+    border-radius: 999px;
+    font-family: ${(p) => p.theme.fonts.sans};
     font-size: 0.7rem;
     font-weight: 500;
+    letter-spacing: 0.04em;
   }
 
   .info {
-    color: ${props => props.theme.colors.gray[500]};
-    font-size: 0.8rem;
+    color: ${(p) => p.theme.colors.textMuted};
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.74rem;
+    letter-spacing: 0.02em;
     display: flex;
     align-items: center;
-    gap: 0.2rem;
-  }
-`;
-
-const AddButton = styled.button`
-  background: ${props => props.theme.colors.juridical.gold};
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-weight: 600;
-
-  &:hover {
-    background: ${props => props.theme.colors.juridical.lightGold};
-    transform: translateY(-1px);
+    gap: 0.3rem;
   }
 `;
 
@@ -594,19 +531,23 @@ const ResourcesPage = () => {
   const totalLinks = resources.reduce((sum, resource) => sum + resource.links.length, 0);
 
   return (
-    <ResourcesContainer>
-      <PageHeader>
-        <h1>
-          <FaExternalLinkAlt />
-          Relevante Links
-        </h1>
-        <p>Omfattende samling af juridiske og compliance ressourcer til AI-governance</p>
-      </PageHeader>
+    <PageShell>
+      <PageHeader
+        eyebrow="Forseti · ressourcer"
+        title="Relevante links"
+        lede="Curated samling af juridiske, kommunale og europæiske kilder. EUR-Lex, Retsinformation, EDPB, Datatilsynet og fagspecifikke vejledninger — alle samlet ét sted."
+        actions={
+          <PrimaryButton onClick={() => setShowAddModal(true)}>
+            <FaPlus />
+            Tilføj ny ressource
+          </PrimaryButton>
+        }
+      />
 
       <StatsBar>
         <div className="stat">
           <div className="number">{totalResources}</div>
-          <div className="label">Ressource kategorier</div>
+          <div className="label">Kategorier</div>
         </div>
         <div className="stat">
           <div className="number">{totalLinks}</div>
@@ -618,35 +559,30 @@ const ResourcesPage = () => {
         </div>
       </StatsBar>
 
-      <SearchAndFilter>
-        <SearchBox>
+      <Toolbar>
+        <SearchField>
+          <FaSearch />
           <input
             type="text"
-            placeholder="Søg i ressourcer, beskrivelser og tags..."
+            placeholder="Søg i ressourcer, beskrivelser og tags…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="search-icon" />
-        </SearchBox>
+        </SearchField>
+      </Toolbar>
 
-        <CategoryFilters>
-          {categories.map(category => (
-            <CategoryButton
-              key={category.id}
-              active={activeCategory === category.id}
-              onClick={() => setActiveCategory(category.id)}
-            >
-              <category.icon />
-              {category.name}
-            </CategoryButton>
-          ))}
-        </CategoryFilters>
-
-        <AddButton onClick={() => setShowAddModal(true)}>
-          <FaPlus />
-          Tilføj ny ressource
-        </AddButton>
-      </SearchAndFilter>
+      <CategoryFilters>
+        {categories.map(category => (
+          <OutlinePill
+            key={category.id}
+            $active={activeCategory === category.id}
+            onClick={() => setActiveCategory(category.id)}
+          >
+            <category.icon />
+            {category.name}
+          </OutlinePill>
+        ))}
+      </CategoryFilters>
 
       <ResourceGrid>
         {filteredResources.map((resource) => (
@@ -710,7 +646,7 @@ const ResourcesPage = () => {
           />
         )}
       </AnimatePresence>
-    </ResourcesContainer>
+    </PageShell>
   );
 };
 

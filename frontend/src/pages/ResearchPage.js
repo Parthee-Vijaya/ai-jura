@@ -22,31 +22,17 @@ import {
   FaChevronDown
 } from 'react-icons/fa';
 import axios from 'axios';
-
-const ResearchContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 2rem;
-
-  h1 {
-    color: ${props => props.theme.colors.gray[800]};
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: ${props => props.theme.colors.gray[600]};
-    font-size: 1.1rem;
-  }
-`;
+import {
+  PageShell,
+  PageHeader,
+  PrimaryButton,
+} from '../components/page-chrome/PageChrome';
 
 const SearchSection = styled.section`
-  background: white;
-  padding: 2rem;
-  border-radius: ${props => props.theme.borderRadius};
-  box-shadow: ${props => props.theme.shadows.md};
+  background: ${(p) => p.theme.colors.surface};
+  padding: 1.75rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
   margin-bottom: 2rem;
 `;
 
@@ -62,21 +48,34 @@ const FormGroup = styled.div`
   gap: 0.5rem;
 
   label {
+    font-family: ${(p) => p.theme.fonts.sans};
     font-weight: 600;
-    color: ${props => props.theme.colors.gray[700]};
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: ${(p) => p.theme.colors.textMuted};
   }
 `;
 
 const SearchInput = styled.input`
-  padding: 1rem;
-  border: 2px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
+  padding: 0.85rem 1rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-family: ${(p) => p.theme.fonts.body};
   font-size: 1rem;
-  transition: border-color 0.2s ease;
+  background: ${(p) => p.theme.colors.surface};
+  color: ${(p) => p.theme.colors.text};
+  transition: ${(p) => p.theme.animations.transitionFast};
+
+  &::placeholder {
+    color: ${(p) => p.theme.colors.textFaded};
+    font-style: italic;
+  }
 
   &:focus {
-    border-color: ${props => props.theme.colors.primary};
+    border-color: ${(p) => p.theme.colors.primary};
     outline: none;
+    box-shadow: ${(p) => p.theme.shadows.focus};
   }
 
   &::placeholder {
@@ -91,46 +90,31 @@ const FocusAreasContainer = styled.div`
 `;
 
 const FocusAreaTag = styled.button`
-  background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.gray[100]};
-  color: ${props => props.selected ? 'white' : props.theme.colors.gray[700]};
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  background: ${(p) =>
+    p.selected ? p.theme.colors.primarySoft : 'transparent'};
+  color: ${(p) =>
+    p.selected ? p.theme.colors.primary : p.theme.colors.textMuted};
+  border: 1px solid
+    ${(p) => (p.selected ? p.theme.colors.primary : p.theme.colors.border)};
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:hover {
-    background: ${props => props.selected ? props.theme.colors.primary : props.theme.colors.gray[200]};
+    border-color: ${(p) => p.theme.colors.primary};
+    color: ${(p) => p.theme.colors.primary};
   }
 `;
 
-const SearchButton = styled.button`
-  background: ${props => props.theme.colors.primary};
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: ${props => props.theme.borderRadius};
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
+const SearchButton = styled(PrimaryButton)`
   align-self: flex-start;
-
-  &:hover {
-    background: ${props => props.theme.colors.primary}dd;
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    background: ${props => props.theme.colors.gray[400]};
-    cursor: not-allowed;
-    transform: none;
-  }
+  padding: 12px 24px;
+  font-size: 0.95rem;
 `;
 
 const ProgressContainer = styled.div`
@@ -1004,17 +988,21 @@ const ResearchPage = () => {
   };
 
   return (
-    <ResearchContainer>
-      <PageHeader>
-        <h1>Juridisk Research</h1>
-        <p>
-          Udfør dyb research i relevant lovgivning med præcise kildehenvisninger.
-          Søg i autoritative kilder som EUR-Lex, Datatilsynet og EDPB guidelines.
-        </p>
-      </PageHeader>
+    <PageShell>
+      <PageHeader
+        eyebrow="Forseti · juridisk research"
+        title="Juridisk research"
+        lede="Dyb research i relevant lovgivning med præcise kildehenvisninger. Søg i autoritative kilder — EUR-Lex, Datatilsynet, EDPB guidelines og kommunale vejledninger."
+      />
 
       <SearchSection>
-        <h2 style={{ marginBottom: '1.5rem', color: '#1e293b' }}>Start Research</h2>
+        <h2 style={{
+          marginBottom: '1.5rem',
+          fontFamily: '"Source Serif Pro", Lora, Georgia, serif',
+          fontWeight: 600,
+          fontSize: '1.4rem',
+          letterSpacing: '-0.005em',
+        }}>Start research</h2>
 
         <SearchForm onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>
@@ -1352,7 +1340,7 @@ const ResearchPage = () => {
           </>
         )}
       </ResultsSection>
-    </ResearchContainer>
+    </PageShell>
   );
 };
 
