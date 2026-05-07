@@ -19,7 +19,8 @@ import { UserPreferencesProvider, useUserPreferences } from './contexts/UserPref
 import { LoadingProvider } from './contexts/LoadingContext';
 
 // Command palette
-import CommandPalette, { useCommandPaletteShortcut } from './components/command-palette/CommandPalette';
+import CommandPalette, { useCommandPaletteShortcut, useGotoShortcuts } from './components/command-palette/CommandPalette';
+import { useNavigate } from 'react-router-dom';
 
 // Lazy loaded pages - Optimized code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -32,6 +33,7 @@ const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 const VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 const VurderingHistorikPage = React.lazy(() => import('./pages/VurderingHistorikPage'));
+const SammenlignPage = React.lazy(() => import('./pages/SammenlignPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -205,6 +207,14 @@ const MainContent = styled.main`
   }
 `;
 
+// Tiny in-Router wrapper that wires `g v`-style shortcuts (needs useNavigate
+// which only works inside <Router>).
+const RouterShortcuts = ({ paletteOpen }) => {
+  const navigate = useNavigate();
+  useGotoShortcuts(navigate, paletteOpen);
+  return null;
+};
+
 const AppInner = () => {
   const { preferences } = useUserPreferences();
   const themeMode = useMemo(() => (preferences?.theme === 'dark' ? darkTheme : lightTheme), [preferences?.theme]);
@@ -223,6 +233,7 @@ const AppInner = () => {
     <ThemeProvider theme={themeMode}>
       <GlobalStyle />
       <Router>
+        <RouterShortcuts paletteOpen={paletteOpen} />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <AppContainer>
           <PageErrorBoundary title="Navigation fejl" message="Der opstod en fejl i sidebar. Siden kan stadig fungere.">
@@ -251,6 +262,9 @@ const AppInner = () => {
                   {/* Vurderingshistorik (audit log over /api/v3/audit) */}
                   <Route path="/historik" element={<VurderingHistorikPage />} />
                   <Route path="/historik/:id" element={<VurderingHistorikPage />} />
+
+                  {/* Sammenlign engines (v3 vs legacy) — Step 4 validation */}
+                  <Route path="/sammenlign" element={<SammenlignPage />} />
 
                   {/* Back-compat redirects from removed pages */}
                   <Route path="/hurtig-tjek" element={<Navigate to="/vurdering" replace />} />

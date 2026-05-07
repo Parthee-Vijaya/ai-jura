@@ -66,6 +66,18 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting application...")
 
+    # Initialize database schema if needed (idempotent — create_all
+    # only adds tables that don't already exist). Important for fresh
+    # SQLite installs where the v3_assessment_log table must exist
+    # before the first /api/v3/assess call.
+    try:
+        from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
+        from src.database.connection import init_db
+        init_db()
+        logger.info("Database schema verified (init_db)")
+    except Exception as exc:
+        logger.warning("init_db at startup failed (non-fatal): %s", exc)
+
     # Warm caches on startup (in background)
     logger.info("Warming caches on startup...")
     warm_caches_on_startup(include_compliance=True, background=True)
@@ -151,14 +163,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize orchestrator
-orchestrator = ComplianceOrchestrator()
-ai_act_checker = AIActComplianceChecker()
-gdpr_checker = GDPRComplianceChecker()
+# Initialize orchestrator + legacy compliance components.
+# These instantiate LangChain LLM clients that require API keys at construction
+# time. Wrap in try/except so the v3 rule_engine can run even when no
+# upstream LLM is configured — legacy endpoints will surface their own
+# errors when called.
+def _safe_init(factory, label):
+    try:
+        return factory()
+    except Exception as exc:
+        logger.warning(
+            "Could not initialize %s at startup (%s) — legacy endpoints "
+            "depending on it will return 503. v3 endpoints are unaffected.",
+            label, exc,
+        )
+        return None
+
+orchestrator = _safe_init(ComplianceOrchestrator, "ComplianceOrchestrator")
+ai_act_checker = _safe_init(AIActComplianceChecker, "AIActComplianceChecker")
+gdpr_checker = _safe_init(GDPRComplianceChecker, "GDPRComplianceChecker")
 news_service = NewsService()
 ticker_service = TechTickerService()
 agent_registry = get_agent_registry()
-compliance_controller = ComplianceController()
+compliance_controller = _safe_init(ComplianceController, "ComplianceController")
 ticker_refresh_task: Optional[asyncio.Task] = None
 news_refresh_task: Optional[asyncio.Task] = None
 NEWS_REFRESH_INTERVAL_SECONDS = int(os.getenv("NEWS_REFRESH_INTERVAL_SECONDS", "300"))  # 5 minutter
@@ -2052,6 +2079,167 @@ async def v3_audit_detail(log_id: str):
         return entry.to_full_dict()
     finally:
         db.close()
+
+
+# ---------------------------------------------------------------------------
+# /api/v3/compare — side-by-side diff between legacy engine and v3 rule_engine
+# ---------------------------------------------------------------------------
+#
+# Used to validate that v3 covers the cases the legacy engine catches before
+# we delete the legacy code (Step 4 in HANDOFF.md).
+
+class V3CompareRequest(V3AssessRequest):
+    """Same input as /api/v3/assess plus an optional legacy_input that
+    fills in the fields the legacy ComplianceController.run_quick_checks
+    expects. If legacy_input is omitted we attempt to derive it from
+    predicates on a best-effort basis."""
+
+    legacy_input: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description=(
+            "Direct input to the legacy ComplianceController.run_quick_checks. "
+            "When omitted, derived from predicates on best-effort basis."
+        ),
+    )
+
+
+def _derive_legacy_input_from_v3(req: V3AssessRequest) -> Dict[str, Any]:
+    """Best-effort: derive a legacy quick-check payload from v3 predicates.
+    Fields the legacy engine reads (per ComplianceController.run_quick_checks):
+      beskrivelse, organisation, team, fagomraade, ai_risk_level,
+      behandler_persondata, automatiserede_beslutninger, human_in_loop,
+      har_retslige_konsekvenser, juridisk_grundlag, persondata_typer.
+    """
+    p = req.predicates or {}
+    s = req.signals or {}
+    return {
+        "beskrivelse": req.system_description or "",
+        "ai_type": "predictive_ai" if s.get("system.uses_ai") else None,
+        "fagomraade": "",
+        "behandler_persondata": bool(
+            s.get("system.processes_personal_data")
+            or p.get("indeholder_personoplysninger")
+        ),
+        "automatiserede_beslutninger": bool(
+            p.get("er_helautomatiseret")
+            or s.get("system.makes_decisions_about_persons")
+        ),
+        "human_in_loop": not bool(p.get("er_helautomatiseret")),
+        "har_retslige_konsekvenser": bool(
+            p.get("har_retsvirkning_eller_betydelig_paavirkning")
+        ),
+        "juridisk_grundlag": p.get("retsgrundlag"),
+        "persondata_typer": [],
+        "ai_risk_level": "high" if p.get("anvendelsesomraade") == "vaesentlige_offentlige_tjenester" else "minimal",
+    }
+
+
+def _summarise_v3_decisions(rules, decisions_raw, signals: Dict[str, bool]) -> Dict[str, Any]:
+    """Summarise v3 results. Takes the raw RuleDecision objects so we can
+    pass them directly to aggregate_status (which inspects .status)."""
+    triggered = [d for d in decisions_raw if d.triggered]
+    triggered_dicts = [d.model_dump(mode="json") for d in triggered]
+    return {
+        "rule_engine_version": "3.0.0-alpha.5",
+        "rules_loaded": len(rules),
+        "aggregate_status": aggregate_status(triggered),
+        "triggered_count": len(triggered),
+        "triggered": [
+            {
+                "rule_id": td.get("rule_id"),
+                "status": td.get("status"),
+                "kilde": td.get("kilde", {}),
+            }
+            for td in triggered_dicts
+        ],
+        "signals_used": signals,
+    }
+
+
+@app.post("/api/v3/compare")
+async def v3_compare(request: V3CompareRequest):
+    """Run both legacy and v3 engines on the same input and report a diff."""
+
+    # ---- Run v3 (same logic as /api/v3/assess but don't persist) ----
+    try:
+        rules = _v3_load_rules()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    merged_signals: Dict[str, bool] = dict(request.signals)
+    warnings: List[str] = []
+
+    if request.use_llm_extraction and request.system_description:
+        extractor = _v3_signal_extractor()
+        if extractor.is_configured:
+            try:
+                extracted = extractor.extract(request.system_description, rules)
+                for k, v in extracted.items():
+                    merged_signals.setdefault(k, v)
+            except SignalExtractionError as exc:
+                warnings.append(f"signal extraction failed: {exc}")
+
+    rule_input = RuleInput(signals=merged_signals, predicates=request.predicates)
+    decisions = evaluate_all(rules, rule_input)
+
+    v3_summary = _summarise_v3_decisions(rules, decisions, merged_signals)
+
+    # ---- Run legacy ----
+    legacy_summary: Dict[str, Any] = {"available": False, "reason": "ComplianceController not initialized"}
+
+    if compliance_controller is not None:
+        legacy_input = request.legacy_input or _derive_legacy_input_from_v3(request)
+        try:
+            legacy_result = compliance_controller.run_quick_checks(legacy_input)
+            legacy_summary = {
+                "available": True,
+                "decision": legacy_result.get("decision"),
+                "risk_score": legacy_result.get("risk_score"),
+                "classification": legacy_result.get("classification"),
+                "triggered_count": len(legacy_result.get("findings", [])),
+                "triggered": legacy_result.get("findings", []),
+                "summary": legacy_result.get("summary"),
+                "obligations": legacy_result.get("obligations", []),
+                "input": legacy_input,
+            }
+        except Exception as exc:
+            logger.exception("legacy quick check failed")
+            legacy_summary = {"available": False, "reason": f"legacy engine error: {exc}"}
+
+    # ---- Diff ----
+    # Topical mapping is best-effort: legacy rules are coded by id (e.g.
+    # AI_ACT_001), v3 rules use law-citation ids (e.g. ai_act.art6.*). We
+    # report counts and lists; full topical mapping requires jurist work.
+    v3_topics = sorted({d["rule_id"].split(".", 1)[0] for d in v3_summary["triggered"]})
+    legacy_topics = sorted({
+        f.get("kategori", "?") for f in legacy_summary.get("triggered") or []
+    })
+    agreement = "unknown"
+    if legacy_summary.get("available"):
+        legacy_decision = (legacy_summary.get("decision") or "").upper().replace("_", "-")
+        v3_decision = (v3_summary.get("aggregate_status") or "").upper()
+        # Map legacy CONDITIONAL-GO ↔ v3 BETINGET-GO
+        if legacy_decision == "CONDITIONAL-GO":
+            legacy_decision = "BETINGET-GO"
+        if v3_decision == legacy_decision:
+            agreement = "match"
+        elif v3_decision == "GO" and legacy_decision in ("GO", ""):
+            agreement = "match"
+        else:
+            agreement = "different"
+
+    return {
+        "v3": v3_summary,
+        "legacy": legacy_summary,
+        "diff": {
+            "agreement": agreement,
+            "v3_topics": v3_topics,
+            "legacy_topics": legacy_topics,
+            "v3_decision": v3_summary.get("aggregate_status"),
+            "legacy_decision": legacy_summary.get("decision"),
+        },
+        "warnings": warnings,
+    }
 
 
 @app.get("/api/v3/rules")

@@ -18,6 +18,7 @@ const COMMANDS = [
   { id: 'home', label: 'Forsiden', hint: 'g h', path: '/', kind: 'nav' },
   { id: 'vurdering', label: 'Vurdering', hint: 'g v', path: '/vurdering', kind: 'nav' },
   { id: 'historik', label: 'Vurderingshistorik', hint: 'g i', path: '/historik', kind: 'nav' },
+  { id: 'sammenlign', label: 'Sammenlign engines (v3 vs legacy)', hint: 'g c', path: '/sammenlign', kind: 'nav' },
   { id: 'cases', label: 'AI Sager', hint: 'g s', path: '/ai-sager', kind: 'nav' },
   { id: 'kb', label: 'Videnbase', path: '/videnbase', kind: 'nav' },
   { id: 'projects', label: 'AI Løsninger', path: '/ai-losninger', kind: 'nav' },
@@ -187,6 +188,77 @@ export const useCommandPaletteShortcut = (open) => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [open]);
+};
+
+// ---- Hook for g-prefix vim-style shortcuts -------------------------------
+//
+// Press `g` (alone), then within ~700ms press a second letter that matches
+// a command's hint (e.g. `g v` → /vurdering, `g h` → /, `g i` → /historik).
+// Aborts if the user is typing, holds a modifier, or waits too long.
+
+const GOTO_TIMEOUT_MS = 700;
+
+export const useGotoShortcuts = (navigate, isPaletteOpen = false) => {
+  useEffect(() => {
+    let pending = false;
+    let timer = null;
+
+    const isTypingTarget = (el) => {
+      if (!el) return false;
+      const tag = el.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (el.isContentEditable) return true;
+      return false;
+    };
+
+    const cancel = () => {
+      pending = false;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
+    const handler = (e) => {
+      // Skip when palette is open or any modifier is held.
+      if (isPaletteOpen) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Skip when user is typing.
+      if (isTypingTarget(e.target)) return;
+      if (e.key === 'Escape') {
+        cancel();
+        return;
+      }
+
+      if (!pending) {
+        // First keystroke must be plain "g"
+        if (e.key === 'g' || e.key === 'G') {
+          pending = true;
+          timer = setTimeout(cancel, GOTO_TIMEOUT_MS);
+        }
+        return;
+      }
+
+      // Second keystroke — try to match against COMMANDS hint
+      const second = (e.key || '').toLowerCase();
+      const target = COMMANDS.find((c) => {
+        if (!c.hint) return false;
+        const parts = c.hint.split(/\s+/);
+        return parts.length === 2 && parts[0] === 'g' && parts[1] === second;
+      });
+      cancel();
+      if (target?.path) {
+        e.preventDefault();
+        navigate(target.path);
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => {
+      window.removeEventListener('keydown', handler);
+      cancel();
+    };
+  }, [navigate, isPaletteOpen]);
 };
 
 // ---- Component -----------------------------------------------------------
