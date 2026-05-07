@@ -115,7 +115,7 @@ rules/sektorlove/
 ## Workflow for jurist-aktivering
 
 1. **Læs** [docs/JURIST_BRIEFING.md](../../docs/JURIST_BRIEFING.md) (5 min)
-2. **Mød** med Hjemmel-team — gennemgå [docs/JURIST_INTERVIEW.md](../../docs/JURIST_INTERVIEW.md)
+2. **Mød** med Forseti-team — gennemgå [docs/JURIST_INTERVIEW.md](../../docs/JURIST_INTERVIEW.md)
 3. **Udfyld** TODO-felter i hver template:
    - `kilde.citat`: ordret tekst fra paragraffen (min. 10 tegn)
    - `kilde.artikel`: præciser stk./litra/nr.
@@ -124,7 +124,7 @@ rules/sektorlove/
    - `afgørelse.hvis`: verificer logik
    - `afgørelse.så.krav`: skift TODO-bullets ud med konkrete kommunale krav
    - `metadata.forfatter`: dit navn
-4. **Gennemgå** med Hjemmel-team — vi tester regel-evalueringen mod sample-cases
+4. **Gennemgå** med Forseti-team — vi tester regel-evalueringen mod sample-cases
 5. **Aktiver** ved at fjerne `_template_`-prefix fra filnavnet (én ad gangen)
 6. **Verificer** at citation-verifier kan finde dit citat i Retsinformation:
    ```

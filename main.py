@@ -660,55 +660,106 @@ async def test_web_search(request: Dict[str, Any]):
 
 @app.post("/api/compliance/test-llm")
 async def test_llm(request: Dict[str, Any]):
-    """Test LLM connectivity with timeout."""
+    """Test LLM connectivity with timeout.
+
+    Probe-prioritet matcher v3 signal_extractor: LM Studio > Azure > OpenAI.
+    Sender en lille completion mod /v1/chat/completions for hver provider og
+    returnerer den første der svarer.
+    """
     import asyncio
+    import httpx
 
-    async def test_llm_connection():
+    async def probe_lm_studio():
+        base_url = os.getenv("LM_STUDIO_BASE_URL")
+        if not base_url:
+            return None
+        model = os.getenv("LM_STUDIO_MODEL", "local-model")
         try:
-            from langchain_openai import AzureChatOpenAI, ChatOpenAI
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.post(
+                    f"{base_url.rstrip('/')}/chat/completions",
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": "Say OK"}],
+                        "max_tokens": 4,
+                        "temperature": 0,
+                    },
+                )
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            content = (data.get("choices", [{}])[0].get("message", {}) or {}).get("content", "")
+            return {
+                "success": True,
+                "model": f"{model} (LM Studio)",
+                "response": content[:120] or "OK",
+            }
+        except Exception as exc:
+            logger.warning(f"LM Studio probe failed: {exc}")
+            return None
 
-            # Try Azure OpenAI first
-            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-            azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
-            deployment_name = os.getenv("AZURE_DEPLOYMENT_NAME", "gpt-4o")  # Try gpt-4o by default
-
-            if azure_endpoint and azure_api_key:
-                try:
-                    llm = AzureChatOpenAI(
-                        azure_endpoint=azure_endpoint,
-                        api_key=azure_api_key,
-                        api_version=os.getenv("OPENAI_API_VERSION", "2024-02-15-preview"),
-                        deployment_name=deployment_name,
-                        temperature=0,
-                        timeout=5
-                    )
-                    response = await asyncio.to_thread(llm.invoke, "Say 'OK' if you can read this.")
-                    return {
-                        "success": True,
-                        "model": f"{deployment_name} (Azure)",
-                        "response": response.content
-                    }
-                except Exception as azure_error:
-                    logger.warning(f"Azure OpenAI failed, trying regular OpenAI: {azure_error}")
-
-            # Fallback to regular OpenAI
-            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, timeout=5)
+    async def probe_azure():
+        try:
+            from langchain_openai import AzureChatOpenAI
+        except Exception:
+            return None
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        deployment_name = os.getenv("AZURE_DEPLOYMENT_NAME", "gpt-4o")
+        if not (azure_endpoint and azure_api_key):
+            return None
+        try:
+            llm = AzureChatOpenAI(
+                azure_endpoint=azure_endpoint,
+                api_key=azure_api_key,
+                api_version=os.getenv("OPENAI_API_VERSION", "2024-02-15-preview"),
+                deployment_name=deployment_name,
+                temperature=0,
+                timeout=5,
+            )
             response = await asyncio.to_thread(llm.invoke, "Say 'OK' if you can read this.")
             return {
                 "success": True,
-                "model": "gpt-4o-mini",
-                "response": response.content
+                "model": f"{deployment_name} (Azure)",
+                "response": response.content,
             }
-        except Exception as e:
-            error_str = str(e).lower()
-            if "api" in error_str or "auth" in error_str or "key" in error_str:
-                return {"success": False, "error": "API key configuration required", "model": None}
-            else:
-                return {
-                    "success": True,
-                    "model": "gpt-4o-mini (mock)",
-                    "response": "LLM module functional in mock mode"
-                }
+        except Exception as exc:
+            logger.warning(f"Azure OpenAI probe failed: {exc}")
+            return None
+
+    async def probe_openai():
+        try:
+            from langchain_openai import ChatOpenAI
+        except Exception:
+            return None
+        if not os.getenv("OPENAI_API_KEY"):
+            return None
+        try:
+            llm = ChatOpenAI(
+                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                temperature=0,
+                timeout=5,
+            )
+            response = await asyncio.to_thread(llm.invoke, "Say 'OK' if you can read this.")
+            return {
+                "success": True,
+                "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                "response": response.content,
+            }
+        except Exception as exc:
+            logger.warning(f"OpenAI probe failed: {exc}")
+            return None
+
+    async def test_llm_connection():
+        for probe in (probe_lm_studio, probe_azure, probe_openai):
+            result = await probe()
+            if result and result.get("success"):
+                return result
+        return {
+            "success": False,
+            "error": "Ingen LLM-provider svarede (LM Studio offline + ingen Azure/OpenAI-nøgle)",
+            "model": None,
+        }
 
     try:
         # 8 second timeout for the whole operation

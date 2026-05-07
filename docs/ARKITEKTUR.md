@@ -1,4 +1,4 @@
-# Hjemmel — arkitektur-overblik
+# Forseti — arkitektur-overblik
 
 *Single-page reference til komponenterne og hvordan de hænger sammen.*
 

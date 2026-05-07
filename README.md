@@ -1,8 +1,8 @@
-# Hjemmel — kommunal AI-compliance platform
+# Forseti — kommunal AI-compliance platform
 
 **Kalundborg Kommunes officielle AI-compliance-platform** der hjemler hver vurdering i en konkret lovartikel — ordret citat, verificeret mod kilden, deterministisk regelmotor.
 
-> Tidligere "Project Judge Dredd" / "Judge Jarvis". Branded "Hjemmel" fra v3.
+> Tidligere "Project Judge Dredd" / "Judge Jarvis". Branded "Forseti" fra v3.
 
 ## 🚀 Features (v3 / alpha.13)
 

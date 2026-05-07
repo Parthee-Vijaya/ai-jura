@@ -1164,14 +1164,14 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <HeroBadge>Hjemmel · v3 — kommunal AI-compliance</HeroBadge>
+              <HeroBadge>Forseti · v3 — kommunal AI-compliance</HeroBadge>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.05 }}
             >
-              <HeroTitle>Hjemmel</HeroTitle>
+              <HeroTitle>Forseti</HeroTitle>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 40 }}
@@ -1421,7 +1421,7 @@ const HomePage = () => {
       <QuickStartSection>
         <QuickStartTitle>Kom Godt i Gang</QuickStartTitle>
         <p style={{ color: '#64748b', marginBottom: '2rem' }}>
-          Følg disse trin for at få maksimal værdi af Hjemmel
+          Følg disse trin for at få maksimal værdi af Forseti
         </p>
 
         <QuickStartGrid>

@@ -1,6 +1,6 @@
-# Jurist-interview — sektorlov-regler til Hjemmel v3
+# Jurist-interview — sektorlov-regler til Forseti v3
 
-**Formål:** Få identificeret og verificeret de kommunale sektorlove der hyppigst rammer AI-vurderinger hos Kalundborg, så de kan bygges ind i Hjemmel-regelmotoren ud over de tværgående regler (AI Act, GDPR, Forvaltningslov, Offentlighedslov).
+**Formål:** Få identificeret og verificeret de kommunale sektorlove der hyppigst rammer AI-vurderinger hos Kalundborg, så de kan bygges ind i Forseti-regelmotoren ud over de tværgående regler (AI Act, GDPR, Forvaltningslov, Offentlighedslov).
 
 **Tidsramme:** 30-45 min. interview + 1-2 timer review af templates bagefter.
 
@@ -137,4 +137,4 @@ Template: [`rules/sektorlove/sundhedslov/_template_par23_patientinformation.yaml
 
 Jeg sender renskrevne YAML-filer (med dine citater + eventuelle ændringer) tilbage til godkendelse. Når du har sagt god, fjerner vi `_template_`-prefix så reglerne aktiveres i regelmotoren. Citation-verifier-jobbet kører dagligt og verificerer at citaterne stadig findes ordret i kilden.
 
-Tak for tiden. — Hjemmel-team / Digitalisering og IT
+Tak for tiden. — Forseti-team / Digitalisering og IT

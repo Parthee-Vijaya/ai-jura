@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hjemmel.kalundborg.dk/schemas/rule.json",
-  "title": "Hjemmel Rule",
+  "title": "Forseti Rule",
   "description": "Deklarativ compliance-regel forankret i en konkret lovartikel. Hver afgørelse spores tilbage til kilden via 'kilde'-objektet.",
   "type": "object",
   "required": ["id", "kilde", "trigger", "predikater", "afgørelse"],

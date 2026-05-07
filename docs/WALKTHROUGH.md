@@ -1,4 +1,4 @@
-# Hjemmel — visuel walkthrough
+# Forseti — visuel walkthrough
 
 *5 min hands-on tour through alpha.13. Følg med i appen mens du læser.*
 
@@ -13,8 +13,8 @@
 
 Åbn http://localhost:8090. Du ser:
 
-- **Sidebar venstre:** Hjemmel-brand med rød prik, "AI-KOMPLIANCE · KALUNDBORG", aktive nav-links
-- **Hero:** "Hjemmel" h1 i Source Serif Pro, badge "Hjemmel · v3 — kommunal AI-compliance", lede-tekst om hjemling og lov-citater
+- **Sidebar venstre:** Forseti-brand med rød prik, "AI-KOMPLIANCE · KALUNDBORG", aktive nav-links
+- **Hero:** "Forseti" h1 i Source Serif Pro, badge "Forseti · v3 — kommunal AI-compliance", lede-tekst om hjemling og lov-citater
 - **CTA-knapper:** "Start vurdering" (rød) → `/vurdering`, "Sag-overblik" (ghost) → `/sager`
 - **Højre version-kort:** version + system-status (backend, database, søgning, LLM)
 - **Educational cards nedenunder:** Forbudt AI · GPAI · Højrisiko og menneskeligt tilsyn

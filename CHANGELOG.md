@@ -1,18 +1,27 @@
-# Changelog — Hjemmel (tidligere "Project Judge Dredd")
+# Changelog — Forseti (tidligere "Project Judge Dredd")
 
 Alle bemærkelsesværdige ændringer til dette projekt dokumenteres her.
 
 Formatet er baseret på [Keep a Changelog](https://keepachangelog.com/da/1.0.0/), og projektet følger [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.0-alpha.15] - 2026-05-07 — Forseti-rebrand + LM Studio system-status
+
+### Ændret (Changed)
+- **Brand-navn skiftet til "Forseti"** (tidligere "Hjemmel" i alpha.13/14). Forseti er den nordiske retsguds-pendant til de andre Mac Studio-services (Bifrost, Odin, Saga, Skynet) — passer ind i konstellationen og er præcis semantik for en compliance-platform der dømmer mellem AI-systemer. Ord-skift på tværs af UI, docs, README, CHANGELOG, YAML-metadata, schema og manifest. Den juridiske term "hjemmel" (med lille begyndelsesbogstav) er bevaret i fritekst da det stadig er korrekt fagterminologi.
+- **`/api/compliance/test-llm` understøtter nu LM Studio som første provider** (var tidligere kun Azure → OpenAI). Probe-rækkefølgen matcher v3 signal_extractor: LM Studio → Azure → OpenAI. Hits `/v1/chat/completions` direkte med `httpx` og 5s timeout. LLM-feltet i forsidens system-status lyser derfor grønt når LM Studio kører lokalt — også uden Azure/OpenAI-nøgler.
+
+### Fjernet (Removed)
+- Brand-strenge "Project Judge Dredd" / "Hjemmel" i `frontend/public/index.html` + `manifest.json` (PWA-titel, beskrivelse, short_name).
 
 ## [3.0.0-alpha.13] - 2026-05-07 — Forside-rebrand + M1.5 + jurist-pakke
 
 ### Tilføjet (Added)
 - **Predikat-extraction fra dokument (M1.5)** — `signal_extractor.extract_predicates_for_rule()` udtrækker også predikat-svar fra dokumenttekst, ikke kun trigger-signaler. Dokument-upload alene giver nu fuld BETINGET-GO/NO-GO uden manuel predikat-udfyldelse. Sample-test: 26 predikater udtrukket fra Borgerassistent-DOCX.
 - **6 sektorlov-templates** klar til jurist-interview: 3 servicelov (§ 11, § 50, § 102), 2 beskæftigelseslov (§ 11, § 27), 1 sundhedslov (§ 23). Alle prefixet `_template_` så `RuleLoader` skipper dem indtil aktivering.
-- **Jurist-pakke** under `docs/`: `JURIST_INTERVIEW.md` (struktureret 30-45 min interview-guide med 4 spørgsmål per paragraf), `JURIST_BRIEFING.md` (5 min onboarding der forklarer Hjemmel + citation-verifier).
+- **Jurist-pakke** under `docs/`: `JURIST_INTERVIEW.md` (struktureret 30-45 min interview-guide med 4 spørgsmål per paragraf), `JURIST_BRIEFING.md` (5 min onboarding der forklarer Forseti + citation-verifier).
 
 ### Ændret (Changed)
-- **Forside rebranded til "Hjemmel"** — droppet "Project Judge Dredd"-branding på forsiden. Hero-tekst, badge og CTAs reflekterer nu Hjemmel-positionering.
+- **Forside rebranded til "Forseti"** — droppet "Project Judge Dredd"-branding på forsiden. Hero-tekst, badge og CTAs reflekterer nu Forseti-positionering.
 - `rules/sektorlove/README.md` udvidet med aktivering-workflow + skema-krav.
 
 ## [3.0.0-alpha.12] - 2026-05-07 — M2 sager-kanban + M3 citation-verifier
@@ -91,7 +100,7 @@ LLM extraherede 8 signaler korrekt fra Borgerassistent-DOCX, alle 15 regler trig
 - `SidenotesColumn.jsx` — sticky højre-kolonne med ¹²³ unicode-superscripts
 - `mockups/design-d.html` — A+C blend-eksploration (forkastet til fordel for ren C)
 
-## [3.0.0-alpha.1] - 2026-05-07 — "Hjemmel" (intern arbejdstitel)
+## [3.0.0-alpha.1] - 2026-05-07 — "Forseti" (intern arbejdstitel)
 
 Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte i lovkilder.
 

@@ -306,7 +306,7 @@ const SammenlignPage = () => {
 
   return (
     <Page>
-      <Eyebrow>Hjemmel · v3 vs legacy · validation-only</Eyebrow>
+      <Eyebrow>Forseti · v3 vs legacy · validation-only</Eyebrow>
       <Title>Sammenlign engines</Title>
       <Lede>
         <strong>Validation-værktøj</strong> der udelukkende bruges til at

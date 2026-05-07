@@ -1,5 +1,5 @@
 /**
- * Judge Dredd / Hjemmel — Design C ("Editorial workspace") theme
+ * Judge Dredd / Forseti — Design C ("Editorial workspace") theme
  *
  * Visuel kanon: cream-paper baggrund, Lora body + Source Serif Pro display,
  * Inter chrome (nav/UI), JetBrains Mono til audit/case-id.

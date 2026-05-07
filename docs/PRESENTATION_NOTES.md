@@ -1,4 +1,4 @@
-# Hjemmel — præsentationsnoter
+# Forseti — præsentationsnoter
 
 *Til intern fremlæggelse: Digitalisering og IT, juridisk afdeling, ledelse*
 
@@ -8,13 +8,13 @@
 
 ## Elevator pitch (30 sek)
 
-Hjemmel er Kalundborg Kommunes interne AI-compliance-platform. Hver vurdering hjemles i en konkret lovartikel — ordret citat, dagligt verificeret mod kilden, deterministisk regelmotor. Sagsbehandlere kan beskrive et AI-system i fri tekst eller uploade en kontrakt; LLM ekstraherer juridisk relevante signaler og predikater; regelmotoren afgør GO / BETINGET-GO / NO-GO med fuld kilde-dokumentation. Workflow-styres som kanban over sagernes livscyklus.
+Forseti er Kalundborg Kommunes interne AI-compliance-platform. Hver vurdering hjemles i en konkret lovartikel — ordret citat, dagligt verificeret mod kilden, deterministisk regelmotor. Sagsbehandlere kan beskrive et AI-system i fri tekst eller uploade en kontrakt; LLM ekstraherer juridisk relevante signaler og predikater; regelmotoren afgør GO / BETINGET-GO / NO-GO med fuld kilde-dokumentation. Workflow-styres som kanban over sagernes livscyklus.
 
 ---
 
 ## Hvorfor vi bygger det selv (vs. fx ailex.dk)
 
-| Behov | Generisk AI-jurist | Hjemmel |
+| Behov | Generisk AI-jurist | Forseti |
 |---|---|---|
 | Lov-citater | Hentet ad-hoc fra databaser | Hånd-curated YAML-regler med ordret citat + URL |
 | Citat-friskhed | Ukendt — beror på indeks | Daglig verificering at citatet stadig findes ordret i kilden |
@@ -81,7 +81,7 @@ Træk-og-slip PDF eller DOCX ind på vurderings-siden. Backend chunker, kører L
 ### alpha.13 — M4 forberedelse + M1.5 + Forside-rebrand
 - **6 sektorlov-templates** klar til jurist-interview (servicelov §§ 11, 50, 102; beskæftigelseslov §§ 11, 27; sundhedslov § 23). Jurist-pakke i `docs/JURIST_INTERVIEW.md` + `docs/JURIST_BRIEFING.md`
 - **M1.5 predikat-extraction** — LLM ekstraherer ikke kun signaler, men også predikat-svar fra dokumenter. Upload alene giver fuld vurdering uden manuelt predikat-step
-- **Forside rebranded** til Hjemmel
+- **Forside rebranded** til Forseti
 
 ---
 
@@ -127,14 +127,14 @@ Træk-og-slip PDF eller DOCX ind på vurderings-siden. Backend chunker, kører L
 
 2. **Citat-friskhed på SPA-renderede lovsider** — 13/15 regler flagges fordi `httpx` ikke får renderet HTML. Løsning: tilføj Playwright/headless browser i v1.1. Indtil da: jurist skal manuelt verificere én gang om måneden.
 
-3. **Sektorlove mangler** — Servicelov, beskæftigelseslov og sundhedslov er kun templates. Indtil jurist har udfyldt dem, dækker Hjemmel ikke fuldt ud kommunale sager. Mitigation: tværgående regler (AI Act, GDPR, Forvaltningslov) er allerede aktive og fanger de fleste compliance-problemer.
+3. **Sektorlove mangler** — Servicelov, beskæftigelseslov og sundhedslov er kun templates. Indtil jurist har udfyldt dem, dækker Forseti ikke fuldt ud kommunale sager. Mitigation: tværgående regler (AI Act, GDPR, Forvaltningslov) er allerede aktive og fanger de fleste compliance-problemer.
 
 ---
 
 ## Spørgsmål man kan forvente
 
 **"Hvorfor ikke bare bruge ChatGPT?"**
-ChatGPT kan hallucinere lov-citater. Hjemmel kan ikke — citaterne er statisk hånd-curated og verificeres dagligt. Vi spilder LLM på det den er god til (læse fritekst og fortolke signaler) og bruger deterministisk kode til det den er dårlig til (juridisk afgørelse).
+ChatGPT kan hallucinere lov-citater. Forseti kan ikke — citaterne er statisk hånd-curated og verificeres dagligt. Vi spilder LLM på det den er god til (læse fritekst og fortolke signaler) og bruger deterministisk kode til det den er dårlig til (juridisk afgørelse).
 
 **"Er det godkendt af DPO/jurist?"**
 Reglerne i `rules/`-mappen er forfattet af IT, ikke af jurister endnu. Sektorlovene afventer jurist-interview. Ingen rule er aktiv produktionsmæssigt før jurist har sagt god — `_template_`-prefix i filnavnet skipper dem fra rule-engine indtil aktivering.

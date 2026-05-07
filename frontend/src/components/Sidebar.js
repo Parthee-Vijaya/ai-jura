@@ -401,7 +401,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             {collapsed ? (
               <>H<span className="brand-dot">.</span></>
             ) : (
-              <>Hjemmel<span className="brand-dot">.</span><span className="brand-version">v3</span></>
+              <>Forseti<span className="brand-dot">.</span><span className="brand-version">v3</span></>
             )}
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}

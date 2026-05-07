@@ -63,6 +63,6 @@ llm_fortolkning:
     Returnér KUN gyldig JSON.
 
 metadata:
-  forfatter: "Hjemmel core team"
+  forfatter: "Forseti core team"
   version: "1.0.0"
   tags: ["forvaltningsloven", "partshoring"]

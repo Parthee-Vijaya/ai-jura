@@ -228,7 +228,7 @@ class ComplianceRuleEngine:
             ComplianceRule(
                 rule_id="FORV_001",
                 category=RuleCategory.FORVALTNINGSRET,
-                description="Hjemmelskrav",
+                description="Forsetiskrav",
                 conditions={
                     "public_authority": True,
                     "legal_basis_public": False
@@ -417,7 +417,7 @@ class ComplianceRuleEngine:
             # Forvaltningsartefakter
             "legal_basis_memo": EvidenceArtifact(
                 artifact_id="legal_basis_memo",
-                name="Hjemmelsnotat",
+                name="Forsetisnotat",
                 category="forvaltning",
                 description="Juridisk notat om lovhjemmel",
                 required_for=["public_authority_use"]
