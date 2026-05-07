@@ -19,12 +19,13 @@ const COMMANDS = [
   { id: 'vurdering', label: 'Vurdering', hint: 'g v', path: '/vurdering', kind: 'nav' },
   { id: 'historik', label: 'Vurderingshistorik', hint: 'g i', path: '/historik', kind: 'nav' },
   { id: 'sammenlign', label: 'Sammenlign engines (v3 vs legacy)', hint: 'g c', path: '/sammenlign', kind: 'nav' },
-  { id: 'cases', label: 'AI Sager', hint: 'g s', path: '/ai-sager', kind: 'nav' },
+  { id: 'cases', label: 'Sager (kanban)', hint: 'g s', path: '/sager', kind: 'nav' },
   { id: 'kb', label: 'Videnbase', path: '/videnbase', kind: 'nav' },
   { id: 'projects', label: 'AI Løsninger', path: '/ai-losninger', kind: 'nav' },
   { id: 'research', label: 'Juridisk Research', path: '/research', kind: 'nav' },
   { id: 'law', label: 'Lov-assistent', path: '/lov-assistent', kind: 'nav' },
   { id: 'resources', label: 'Relevante Links', path: '/ressourcer', kind: 'nav' },
+  { id: 'lov-overvaagning', label: 'Lov-overvågning (citat-verifikation)', path: '/lov-overvaagning', kind: 'nav' },
   { id: 'settings', label: 'Indstillinger', path: '/indstillinger', kind: 'nav' },
 ];
 

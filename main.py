@@ -72,6 +72,8 @@ async def lifespan(app: FastAPI):
     # before the first /api/v3/assess call.
     try:
         from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
+        from src.database import cases as v3_cases  # noqa: F401 — registers Case + CaseTransition
+        from src.services import citation_verifier as v3_freshness  # noqa: F401 — registers RuleFreshness
         from src.database.connection import init_db
         init_db()
         logger.info("Database schema verified (init_db)")
@@ -112,8 +114,18 @@ async def lifespan(app: FastAPI):
         name='Daily Knowledge Base Update',
         replace_existing=True
     )
+    # Citation verifier (M3): daily at 04:00 — verify each rule's citat
+    # still appears in the source URL.
+    kb_scheduler.add_job(
+        _v3_run_citation_verifier,
+        CronTrigger(hour=4, minute=0),
+        id='v3_citation_verifier',
+        name='Daily citation verification (M3)',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - daily updates at 03:00")
+    logger.info("Citation verifier scheduled - daily at 04:00")
 
     if not ticker_refresh_task or ticker_refresh_task.done():
         ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
@@ -2369,6 +2381,180 @@ async def v3_document_analyze(
         "warnings": result.warnings,
         "audit_log_id": audit_id,
     }
+
+
+# ---------------------------------------------------------------------------
+# Case workflow endpoints (Step 2 — kanban over /sager)
+# ---------------------------------------------------------------------------
+
+class V3CaseCreate(BaseModel):
+    case_id: str = Field(..., description="External Kalundborg case ID, e.g. K-2026-0184")
+    title: str = Field(..., max_length=255)
+    notes: Optional[str] = None
+    status: str = Field(default="kladde")
+    assigned_to: Optional[str] = None
+
+
+class V3CaseTransition(BaseModel):
+    new_status: str = Field(..., description="One of CASE_STATUSES")
+    note: Optional[str] = None
+
+
+@app.post("/api/v3/cases")
+async def v3_cases_create(req: V3CaseCreate):
+    from src.database import cases as v3_cases
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        case = v3_cases.create_case(
+            db,
+            case_id=req.case_id,
+            title=req.title,
+            notes=req.notes,
+            status=req.status,
+            assigned_to=req.assigned_to,
+        )
+        db.commit()
+        return case.to_dict()
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases")
+async def v3_cases_list(
+    status: Optional[str] = None,
+    case_id: Optional[str] = None,
+    limit: int = 200,
+):
+    from src.database import cases as v3_cases
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        items = v3_cases.list_cases(db, status=status, case_id=case_id, limit=limit)
+        return {"count": len(items), "items": [c.to_dict() for c in items]}
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases/{case_db_id}")
+async def v3_cases_detail(case_db_id: str):
+    from src.database import cases as v3_cases
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        case = v3_cases.get_case(db, case_db_id)
+        if case is None:
+            raise HTTPException(status_code=404, detail=f"case not found: {case_db_id}")
+        d = case.to_dict()
+        d["transitions"] = [t.to_dict() for t in case.transitions]
+        return d
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/cases/{case_db_id}/transition")
+async def v3_cases_transition(case_db_id: str, req: V3CaseTransition):
+    from src.database import cases as v3_cases
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        case = v3_cases.transition_case(
+            db,
+            case_db_id,
+            req.new_status,
+            note=req.note,
+        )
+        db.commit()
+        return case.to_dict()
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(exc))
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases/meta/statuses")
+async def v3_cases_statuses():
+    from src.database.cases import CASE_STATUSES, CASE_STATUS_LABELS
+    return {
+        "statuses": [
+            {"id": s, "label": CASE_STATUS_LABELS[s]} for s in CASE_STATUSES
+        ]
+    }
+
+
+# ---------------------------------------------------------------------------
+# Citation verifier endpoints (Step 3 — daily-job + admin trigger)
+# ---------------------------------------------------------------------------
+
+def _v3_run_citation_verifier() -> None:
+    """Scheduler entry point — runs every night at 04:00."""
+    from src.services.citation_verifier import verify_all_rules
+    from src.database.connection import SessionLocal
+
+    try:
+        rules = _v3_load_rules()
+    except Exception as exc:
+        logger.warning("citation verifier: rules failed to load: %s", exc)
+        return
+
+    db = SessionLocal()
+    try:
+        results = verify_all_rules(db, rules)
+        db.commit()
+        flagged = sum(1 for r in results if r.flagged_for_review)
+        logger.info(
+            "Citation verifier: %d rules checked, %d flagged for juridisk review",
+            len(results), flagged,
+        )
+    except Exception as exc:
+        db.rollback()
+        logger.exception("Citation verifier failed: %s", exc)
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/law/freshness")
+async def v3_law_freshness():
+    """Return latest verification status for each rule."""
+    from src.services.citation_verifier import list_freshness
+    from src.database.connection import SessionLocal
+
+    db = SessionLocal()
+    try:
+        rows = list_freshness(db)
+        return {
+            "count": len(rows),
+            "checked_at": datetime.now(UTC).isoformat(),
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/law/freshness/run")
+async def v3_law_freshness_run():
+    """Manual trigger of the citation-verifier (for admin use / testing).
+    Runs synchronously so the response shows the verified state."""
+    _v3_run_citation_verifier()
+    return await v3_law_freshness()
+
+
+@app.get("/api/v3/law/freshness/flagged")
+async def v3_law_freshness_flagged():
+    """Quick endpoint for the frontend to know which rule_ids should
+    show a warning banner in the result-mode."""
+    from src.services.citation_verifier import flagged_rule_ids
+    from src.database.connection import SessionLocal
+
+    db = SessionLocal()
+    try:
+        return {"flagged_rule_ids": sorted(flagged_rule_ids(db))}
+    finally:
+        db.close()
 
 
 @app.get("/api/v3/rules")

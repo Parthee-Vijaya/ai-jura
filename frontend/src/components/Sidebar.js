@@ -351,8 +351,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
         { path: '/vurdering', icon: FaClipboardList, text: 'Vurdering' },
-        { path: '/historik', icon: FaHistory, text: 'Historik' },
-        { path: '/ai-sager', icon: FaBalanceScale, text: 'AI Sager' }
+        { path: '/sager', icon: FaBalanceScale, text: 'Sager' },
+        { path: '/historik', icon: FaHistory, text: 'Historik' }
       ]
     },
     {
@@ -370,6 +370,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       section: 'Indstillinger',
       sectionKey: 'indstillinger',
       items: [
+        { path: '/lov-overvaagning', icon: FaGavel, text: 'Lov-overvågning' },
         { path: '/indstillinger', icon: FaCog, text: 'Indstillinger' }
       ]
     }

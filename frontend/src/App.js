@@ -34,6 +34,8 @@ const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 const VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 const VurderingHistorikPage = React.lazy(() => import('./pages/VurderingHistorikPage'));
 const SammenlignPage = React.lazy(() => import('./pages/SammenlignPage'));
+const SagerPage = React.lazy(() => import('./pages/SagerPage'));
+const LovOvervaagningPage = React.lazy(() => import('./pages/LovOvervaagningPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -266,13 +268,20 @@ const AppInner = () => {
                   {/* Sammenlign engines (v3 vs legacy) — Step 4 validation */}
                   <Route path="/sammenlign" element={<SammenlignPage />} />
 
+                  {/* Sager — kanban over /api/v3/cases (Step 2 workflow) */}
+                  <Route path="/sager" element={<SagerPage />} />
+
+                  {/* Lov-overvågning — daglig citation-verifier (Step 3) */}
+                  <Route path="/lov-overvaagning" element={<LovOvervaagningPage />} />
+
                   {/* Back-compat redirects from removed pages */}
                   <Route path="/hurtig-tjek" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/fuld-vurdering" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/v3-vurdering" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/ai-sager" element={<Navigate to="/sager" replace />} />
 
-                  <Route path="/ai-sager" element={<AICasesPage />} />
+                  <Route path="/ai-cases-legacy" element={<AICasesPage />} />
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />
                   <Route path="/ai-losninger" element={<AIProjectsPage />} />
                   <Route path="/research" element={<ResearchPage />} />

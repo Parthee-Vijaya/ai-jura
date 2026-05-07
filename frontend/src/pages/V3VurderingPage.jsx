@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
 import {
   ComplianceVerdict,
@@ -932,6 +932,21 @@ const Warnings = styled.div`
   ul { margin: 0.4rem 0 0; padding-left: 1.25rem; }
 `;
 
+const FlaggedBanner = styled.div`
+  background: rgba(160, 32, 32, 0.06);
+  border-left: 3px solid #a02020;
+  border-radius: 0 6px 6px 0;
+  padding: 0.95rem 1.2rem;
+  margin-bottom: 1.5rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.88rem;
+  color: ${(p) => p.theme.colors.ink};
+
+  strong { color: #a02020; }
+  ul { margin: 0.4rem 0 0; padding-left: 1.25rem; font-family: ${(p) => p.theme.fonts.mono}; font-size: 0.78rem; }
+  a { color: ${(p) => p.theme.colors.primary}; font-weight: 500; }
+`;
+
 // ---- API + helpers ------------------------------------------------------
 
 async function postAssess(body) {
@@ -949,6 +964,11 @@ async function postDocumentAnalyze({ file, caseId, note }) {
     timeout: 180000,
   });
   return res.data;
+}
+
+async function fetchFlaggedRuleIds() {
+  const res = await axios.get('/api/v3/law/freshness/flagged');
+  return res.data.flagged_rule_ids || [];
 }
 
 const buildEvidenceItems = (decisions, statusMap = {}) => {
@@ -1026,6 +1046,14 @@ const V3VurderingPage = () => {
 
   const mutation = useMutation(postAssess);
   const documentMutation = useMutation(postDocumentAnalyze);
+  // Background fetch of which rules are flagged for juridisk review
+  // (citation-verifier output). Used to draw a warning-banner if a
+  // *triggered* rule sits on top of a flagged citation.
+  const { data: flaggedRuleIds = [] } = useQuery(
+    'v3-flagged-rules',
+    fetchFlaggedRuleIds,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -1324,6 +1352,28 @@ const V3VurderingPage = () => {
               </ul>
             </Warnings>
           )}
+
+          {(() => {
+            const triggeredFlagged = decisions
+              .filter((d) => flaggedRuleIds.includes(d.rule_id))
+              .map((d) => d.rule_id);
+            if (triggeredFlagged.length === 0) return null;
+            return (
+              <FlaggedBanner>
+                <strong>⚠ Lov-citater kræver juridisk review</strong>
+                <p style={{ margin: '0.4rem 0 0' }}>
+                  {triggeredFlagged.length === 1
+                    ? 'Én af de udløste regler bygger på et lov-citat der ikke kunne verificeres ordret i kilden ved seneste tjek. Verificér manuelt at lovteksten stadig understøtter konklusionen.'
+                    : `${triggeredFlagged.length} af de udløste regler bygger på lov-citater der ikke kunne verificeres ordret i kilden ved seneste tjek. Verificér manuelt at lovteksten stadig understøtter konklusionen.`}
+                  {' '}
+                  <a href="/lov-overvaagning">Se status →</a>
+                </p>
+                <ul>
+                  {triggeredFlagged.map((rid) => <li key={rid}>{rid}</li>)}
+                </ul>
+              </FlaggedBanner>
+            );
+          })()}
 
           <VerdictBanner>
             <VerdictStatus>{statusLabel(result.aggregate_status)}</VerdictStatus>
