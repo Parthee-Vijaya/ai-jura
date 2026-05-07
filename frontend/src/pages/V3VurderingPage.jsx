@@ -154,6 +154,39 @@ const TextArea = styled.textarea`
   }
 `;
 
+const Input = styled.input`
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-family: ${(p) => p.theme.fonts.main};
+  font-size: 0.92rem;
+  background: ${(p) => p.theme.colors.inputBackground};
+  color: ${(p) => p.theme.colors.text};
+
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: ${(p) => p.theme.shadows.focus};
+  }
+`;
+
+const MetaRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  margin-top: 1.25rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const MetaField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const Controls = styled.div`
   display: flex;
   gap: 1rem;
@@ -348,6 +381,8 @@ const buildEvidenceItems = (decisions, statusMap = {}) => {
 const V3VurderingPage = () => {
   const [description, setDescription] = useState('');
   const [usePredicates, setUsePredicates] = useState(true);
+  const [caseId, setCaseId] = useState('');
+  const [note, setNote] = useState('');
 
   const mutation = useMutation(postAssess);
 
@@ -358,12 +393,16 @@ const V3VurderingPage = () => {
       signals: {},
       predicates: usePredicates ? SAMPLE_PREDICATES : {},
       use_llm_extraction: true,
+      case_id: caseId.trim() || undefined,
+      note: note.trim() || undefined,
     });
   };
 
   const fillSample = () => {
     setDescription(SAMPLE_DESCRIPTION);
     setUsePredicates(true);
+    if (!caseId) setCaseId('K-2026-0184');
+    if (!note) setNote('Pilot-vurdering af pensionsassistent');
   };
 
   const result = mutation.data;
@@ -396,6 +435,28 @@ const V3VurderingPage = () => {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Fx: chatbot der hjælper borgere med pension, foretager profilering og afgørelser…"
         />
+
+        <MetaRow>
+          <MetaField>
+            <Label htmlFor="caseId">Sags-ID (valgfrit)</Label>
+            <Input
+              id="caseId"
+              value={caseId}
+              onChange={(e) => setCaseId(e.target.value)}
+              placeholder="K-2026-…"
+            />
+          </MetaField>
+          <MetaField>
+            <Label htmlFor="note">Note (valgfri)</Label>
+            <Input
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Fx: pilot-vurdering, opdatering efter modeludskift…"
+            />
+          </MetaField>
+        </MetaRow>
+
         <Controls>
           <PrimaryButton type="submit" disabled={mutation.isLoading}>
             {mutation.isLoading ? 'Vurderer…' : 'Vurder'}
@@ -495,6 +556,12 @@ const V3VurderingPage = () => {
             signals_extracted_by_llm={JSON.stringify(result.signals_extracted_by_llm)}
             <br />
             deterministisk afgørelse · ingen LLM-input til selve afgørelsen
+            {result.audit_log_id && (
+              <>
+                <br />
+                audit_log_id={result.audit_log_id}
+              </>
+            )}
           </AuditFootnote>
         </>
       )}
