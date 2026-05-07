@@ -40,7 +40,7 @@ def test_ai_act_art6_betinget_go_for_biometri_with_profilering(rules):
     rule = rules["ai_act.art6.hojrisiko_klassifikation"]
     decision = RuleExecutor(rule).evaluate(
         RuleInput(
-            signals={"system.processes_personal_data": True},
+            signals={"system.uses_ai": True},
             predicates={
                 "anvendelsesomraade": "biometri",
                 "kun_forberedende": True,
@@ -58,7 +58,7 @@ def test_ai_act_art6_go_for_purely_preparatory_outside_annex_iii(rules):
     rule = rules["ai_act.art6.hojrisiko_klassifikation"]
     decision = RuleExecutor(rule).evaluate(
         RuleInput(
-            signals={"system.processes_personal_data": True},
+            signals={"system.uses_ai": True},
             predicates={
                 "anvendelsesomraade": "intet_af_ovenstaaende",
                 "kun_forberedende": True,
@@ -156,18 +156,71 @@ def test_forvaltningsloven_par22_go_when_full_medhold(rules):
     assert decision.status == Status.GO
 
 
+# AI Act art. 5 (NO-GO) -------------------------------------------------
+
+
+def test_ai_act_art5_no_go_for_social_scoring(rules):
+    rule = rules["ai_act.art5.forbudte_praksisser"]
+    decision = RuleExecutor(rule).evaluate(
+        RuleInput(
+            signals={"system.uses_ai": True},
+            predicates={
+                "anvendelse": "social_scoring_offentlig_myndighed",
+                "medicinsk_eller_sikkerheds_undtagelse": False,
+            },
+        )
+    )
+    assert decision.triggered is True
+    assert decision.status == Status.NO_GO
+    assert "forbudt" in (decision.outcome.begrundelse or "").lower()
+
+
+def test_ai_act_art5_emotion_recognition_with_medical_exception_is_go(rules):
+    rule = rules["ai_act.art5.forbudte_praksisser"]
+    decision = RuleExecutor(rule).evaluate(
+        RuleInput(
+            signals={"system.uses_ai": True},
+            predicates={
+                "anvendelse": "foelelsesgenkendelse_paa_arbejdsplads_eller_uddannelse",
+                "medicinsk_eller_sikkerheds_undtagelse": True,
+            },
+        )
+    )
+    assert decision.triggered is True
+    assert decision.status == Status.GO
+
+
+def test_ai_act_art5_normal_use_is_go(rules):
+    rule = rules["ai_act.art5.forbudte_praksisser"]
+    decision = RuleExecutor(rule).evaluate(
+        RuleInput(
+            signals={"system.uses_ai": True},
+            predicates={
+                "anvendelse": "intet_af_ovenstaaende",
+                "medicinsk_eller_sikkerheds_undtagelse": False,
+            },
+        )
+    )
+    assert decision.triggered is True
+    assert decision.status == Status.GO
+
+
 # Cross-cutting ----------------------------------------------------------
 
 
-def test_missing_predicate_raises(rules):
+def test_missing_predicate_returns_needs_input(rules):
     rule = rules["gdpr.art22.automatiseret_individuel_afgorelse"]
-    with pytest.raises(RuleExecutionError, match="missing answer for predicate"):
-        RuleExecutor(rule).evaluate(
-            RuleInput(
-                signals={"system.makes_decisions_about_persons": True},
-                predicates={"er_helautomatiseret": True},
-            )
+    decision = RuleExecutor(rule).evaluate(
+        RuleInput(
+            signals={"system.makes_decisions_about_persons": True},
+            predicates={"er_helautomatiseret": True},
         )
+    )
+    # Triggered but cannot decide because predicate answers are missing
+    assert decision.triggered is True
+    assert decision.status is None
+    assert decision.outcome is None
+    assert "har_retsvirkning_eller_betydelig_paavirkning" in decision.needs_input
 
 
 def test_aggregate_status_picks_strictest():
@@ -211,30 +264,81 @@ def test_aggregate_status_picks_strictest():
 
 
 def test_evaluate_all_returns_one_decision_per_rule(rules):
+    """Realistic full-pipeline run: a Borgerassistent that processes
+    personal data and assists with administrative decisions. Most rules
+    should trigger; a couple shouldn't."""
     rule_list = list(rules.values())
     decisions = evaluate_all(
         rule_list,
         RuleInput(
             signals={
+                "system.uses_ai": True,
                 "system.processes_personal_data": True,
                 "system.makes_decisions_about_persons": True,
                 "system.is_used_by_public_authority": True,
+                "system.makes_administrative_decisions": True,
+                "system.generates_decision_text": True,
+                # not triggered:
+                "system.interacts_with_persons": False,
+                "system.generates_synthetic_content": False,
+                "system.recognizes_emotions_or_biometrics": False,
+                "system.aggregates_or_combines_databases": False,
             },
             predicates={
-                "anvendelsesomraade": "biometri",
+                # ai_act.art5
+                "anvendelse": "intet_af_ovenstaaende",
+                "medicinsk_eller_sikkerheds_undtagelse": False,
+                # ai_act.art6
+                "anvendelsesomraade": "vaesentlige_offentlige_tjenester",
                 "kun_forberedende": False,
                 "profilering": True,
+                # gdpr.art6
+                "retsgrundlag": "samfundets_interesse_eller_offentlig_myndighed_e",
+                "behandler_saerlige_kategorier": False,
+                "nationalt_retsgrundlag_dokumenteret": True,
+                # gdpr.art22
                 "er_helautomatiseret": True,
                 "har_retsvirkning_eller_betydelig_paavirkning": True,
-                "retsgrundlag_til_undtagelse": "samtykke",
+                "retsgrundlag_til_undtagelse": "lov",
                 "omfatter_saerlige_kategorier": False,
+                # gdpr.art35
+                "art35_stk3_litra": "litra_a_systematisk_omfattende_evaluering_med_retsvirkning",
+                "paa_datatilsynets_liste": True,
+                "art35_stk1_hoj_risiko": True,
+                "dpia_eksisterer": False,
+                # forvaltningsloven.par19
                 "traeffer_afgoerelse": True,
+                "bruger_oplysninger_om_part": True,
+                "parten_kender_oplysningerne": False,
+                "ufordelagtig_for_parten": True,
+                # forvaltningsloven.par22 (traeffer_afgoerelse shared)
                 "meddeles_skriftligt": True,
                 "fuld_medhold": False,
                 "kan_systemet_generere_begrundelse": "ja_delvist",
+                # forvaltningsloven.par24
+                "genererer_begrundelse": True,
+                "indeholder_lovhenvisning": True,
+                "angiver_hovedhensyn_ved_skon": "ja",
+                "angiver_faktiske_omstaendigheder": True,
+                "lovhenvisninger_verificerbare": True,
+                # offentlighedsloven.par13 (still triggered by is_used_by_public_authority)
+                "laver_sammenstillinger": False,
+                "enkle_kommandoer": False,
+                "indeholder_personoplysninger": False,
+                "anonymiseringskapacitet": True,
             },
         ),
     )
     assert len(decisions) == len(rule_list)
-    assert all(d.triggered for d in decisions)
+    triggered_ids = {d.rule_id for d in decisions if d.triggered}
+    # rules that should fire on these signals
+    assert "ai_act.art5.forbudte_praksisser" in triggered_ids
+    assert "ai_act.art6.hojrisiko_klassifikation" in triggered_ids
+    assert "gdpr.art22.automatiseret_individuel_afgorelse" in triggered_ids
+    assert "gdpr.art35.dpia_pligt" in triggered_ids
+    assert "forvaltningsloven.par22.begrundelsespligt" in triggered_ids
+    # offentlighedsloven triggers (used by public authority) but resolves to GO
+    # because the system doesn't actually do data aggregation
+    # this configuration should yield BETINGET-GO overall (DPIA missing,
+    # high-risk classification, etc.) — not NO-GO since art. 5 is "intet"
     assert aggregate_status(decisions) == Status.BETINGET_GO

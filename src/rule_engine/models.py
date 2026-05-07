@@ -138,7 +138,12 @@ class RuleInput(BaseModel):
 
 
 class RuleDecision(BaseModel):
-    """Result of evaluating one rule against `RuleInput`."""
+    """Result of evaluating one rule against `RuleInput`.
+
+    `needs_input` lists predicate ids the rule referenced but the caller
+    did not provide. When non-empty, `status` will be None — the rule
+    cannot decide until the missing answers come in.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -147,4 +152,5 @@ class RuleDecision(BaseModel):
     status: Status | None = None
     outcome: RuleOutcome | None = None
     kilde: LawSource
+    needs_input: list[str] = Field(default_factory=list)
     evaluation_log: list[str] = Field(default_factory=list)

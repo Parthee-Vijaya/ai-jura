@@ -29,6 +29,27 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+## [3.0.0-alpha.2] - 2026-05-07 — Fase 1 (regelbase + signal-extractor)
+
+### Tilføjet (Added)
+- **Signal-extractor** (`src/rule_engine/signal_extractor.py`): LLM-baseret fritekst → strukturerede signaler. LLM kan ALDRIG ændre selve afgørelsen, kun foreslå hvilke trigger-signaler der matcher. Bruger Azure OpenAI (eller OpenAI fallback) — samme pattern som resten af kodebasen. Stub-LLM understøttes for testning.
+- **6 nye regler** (10 i alt):
+  - AI Act art. 5 (forbudte praksisser → NO-GO)
+  - AI Act art. 50 (transparens for chatbots/syntetisk indhold/deepfakes)
+  - GDPR art. 6 (retsgrundlag for behandling)
+  - GDPR art. 35 (DPIA-pligt)
+  - Forvaltningsloven § 19 (partshøring)
+  - Forvaltningsloven § 24 (begrundelsens indhold + AI-hallucinations-risiko)
+  - Offentlighedsloven § 11 (dataudtræk og sammenstilling)
+- **Regression-runner** (`src/rule_engine/regression.py` + `tests/regression/cases.yaml`): YAML-baseret test-harness der kører realistiske scenarier mod hele regelbasen og verificerer status + triggered rules + per-rule status. Kør: `python -m src.rule_engine.regression tests/regression/cases.yaml`. 3 startcases dækker BETINGET-GO, NO-GO og GO.
+
+### Ændret (Changed)
+- **Forgivende executor**: når et triggered rule mangler predikat-svar, returneres en `RuleDecision` med `needs_input: [...]` i stedet for at smide en exception. Dette gør regelmotoren brugbar i en iterativ wizard-flow: fortæl brugeren *hvad* der mangler, ikke "fejlet".
+- **Strammere AI-Act triggers**: art. 5/6/50 kræver nu `system.uses_ai`-signalet (ikke bare personoplysnings-behandling). Forhindrer at rene fagsystemer uden AI udløser AI-Act-vurdering.
+
+### Test-status
+85 unit tests grønne · 3/3 regression-cases passerer
+
 ### Design-beslutning (2026-05-07)
 Visuelt sprog er bekræftet via tre mockups i `mockups/`:
 - **Marketing/login (`/`, `/om`, `/kontakt`):** Design A — "stille autoritet" (hvid baggrund, Source Serif Pro headlines, Inter body, lov-citater som elegante citatblokke). Sender ro og autoritet til indkøbsbeslutningstagere.

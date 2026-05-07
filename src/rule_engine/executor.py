@@ -94,6 +94,7 @@ class RuleExecutor:
             )
 
         context: dict[str, bool | str | int | float] = {}
+        missing: list[str] = []
         for pid in self._referenced:
             predicate = self.rule.predicate_by_id(pid)
             if predicate is None:
@@ -101,10 +102,21 @@ class RuleExecutor:
                     f"rule '{self.rule.id}': internal error: predicate '{pid}' missing"
                 )
             if pid not in rule_input.predicates:
-                raise RuleExecutionError(
-                    f"rule '{self.rule.id}': missing answer for predicate '{pid}'"
-                )
+                missing.append(pid)
+                continue
             context[pid] = _coerce_predicate_value(predicate, rule_input.predicates[pid])
+
+        if missing:
+            log.append(f"missing predicate answers: {sorted(missing)}")
+            return RuleDecision(
+                rule_id=self.rule.id,
+                triggered=True,
+                status=None,
+                outcome=None,
+                kilde=self.rule.kilde,
+                needs_input=sorted(missing),
+                evaluation_log=log,
+            )
 
         condition = evaluate(self._expr, context)
         log.append(f"decision expression evaluated to: {condition}")

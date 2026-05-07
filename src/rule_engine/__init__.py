@@ -21,6 +21,10 @@ from src.rule_engine.models import (
 )
 from src.rule_engine.executor import RuleExecutor, evaluate_rule
 from src.rule_engine.loader import RuleLoader, load_rules
+from src.rule_engine.signal_extractor import (
+    SignalExtractionError,
+    SignalExtractor,
+)
 
 __all__ = [
     "LawSource",
@@ -35,4 +39,6 @@ __all__ = [
     "evaluate_rule",
     "RuleLoader",
     "load_rules",
+    "SignalExtractor",
+    "SignalExtractionError",
 ]

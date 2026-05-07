@@ -7,10 +7,8 @@ kilde:
   sidst_verificeret: "2026-05-07"
 
 trigger:
-  any_of:
-    - signal: system.processes_personal_data
-    - signal: system.makes_decisions_about_persons
-    - signal: system.affects_public_services
+  all_of:
+    - signal: system.uses_ai
 
 predikater:
   - id: anvendelsesomraade
