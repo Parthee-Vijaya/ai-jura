@@ -94,14 +94,61 @@ metadata:
 
 Når sektorlove er på plads, slettes denne README og erstattes med en `INDEX.md` der oplister de leverede regler.
 
-## Aktuel placeholder-struktur
+## Aktuel struktur (templates klar — alpha.13)
 
 ```
 rules/sektorlove/
-├── README.md          ← denne fil
-├── servicelov/        ← tom (afventer jurist)
-├── beskaeftigelseslov/ ← tom (afventer jurist)
-└── sundhedslov/       ← tom (afventer jurist)
+├── README.md
+├── servicelov/
+│   ├── _template_par11_raadgivning.yaml
+│   ├── _template_par50_boernefaglig_undersoegelse.yaml
+│   └── _template_par102_voksenstoette.yaml
+├── beskaeftigelseslov/
+│   ├── _template_par11_kontaktforloeb.yaml
+│   └── _template_par27_jobplan.yaml
+└── sundhedslov/
+    └── _template_par23_patientinformation.yaml
 ```
 
-Disse mapper er bevidst tomme — `RuleLoader` ignorerer tomme mapper, så regelmotoren kører videre uden disse.
+**Filer med `_template_`-prefix skippes af `RuleLoader`** — regelmotoren ignorerer dem indtil prefix fjernes. Det betyder vi kan have draft-regler i repository uden at de udløses i vurderinger.
+
+## Workflow for jurist-aktivering
+
+1. **Læs** [docs/JURIST_BRIEFING.md](../../docs/JURIST_BRIEFING.md) (5 min)
+2. **Mød** med Hjemmel-team — gennemgå [docs/JURIST_INTERVIEW.md](../../docs/JURIST_INTERVIEW.md)
+3. **Udfyld** TODO-felter i hver template:
+   - `kilde.citat`: ordret tekst fra paragraffen (min. 10 tegn)
+   - `kilde.artikel`: præciser stk./litra/nr.
+   - `kilde.sidst_verificeret`: opdater til dagens dato
+   - `predikater`: justere/tilføje spørgsmål til sagsbehandler
+   - `afgørelse.hvis`: verificer logik
+   - `afgørelse.så.krav`: skift TODO-bullets ud med konkrete kommunale krav
+   - `metadata.forfatter`: dit navn
+4. **Gennemgå** med Hjemmel-team — vi tester regel-evalueringen mod sample-cases
+5. **Aktiver** ved at fjerne `_template_`-prefix fra filnavnet (én ad gangen)
+6. **Verificer** at citation-verifier kan finde dit citat i Retsinformation:
+   ```
+   curl -X POST http://hjemmel-host/api/v3/law/freshness/run
+   ```
+   Hvis flagget rød, juster citatet til at matche den faktiske webside-tekst.
+
+## Skema-krav
+
+Templates skal være valid YAML der opfylder [`rules/_schema.json`](../_schema.json). De vigtigste krav:
+
+| Felt | Krav |
+|---|---|
+| `id` | Unik streng på formen `<lovkilde>.par<nummer>.<beskrivelse>` |
+| `kilde.citat` | Min. 10 tegn (placeholder OK i template) |
+| `kilde.url` | Valid URI |
+| `kilde.sidst_verificeret` | ISO-dato YYYY-MM-DD |
+| `trigger` | Mindst ét signal eller predicate |
+| `predikater[].id` | Lowercase, snake_case |
+| `predikater[].type` | `boolean` eller `enum` |
+| `afgørelse.hvis` | Boolean expression over predikat-id'er |
+
+Hvis du tilføjer nye predikater eller signal-navne, skal de også føjes til signal-liste i [src/rule_engine/signal_extractor.py](../../src/rule_engine/signal_extractor.py)'s `expected_signals`-mængde — så LLM kan udtrække dem fra fritekst-beskrivelser.
+
+## Spørgekatalog
+
+Per template har jeg forberedt 3-4 specifikke spørgsmål i [docs/JURIST_INTERVIEW.md](../../docs/JURIST_INTERVIEW.md). Læs disse igennem inden mødet så vi kan komme hurtigt igennem alle 6 paragraffer.
