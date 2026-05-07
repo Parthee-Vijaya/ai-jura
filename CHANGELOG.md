@@ -29,6 +29,14 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+## [3.0.0-alpha.5] - 2026-05-07 — LM Studio + react-query + ⌘K command palette
+
+### Tilføjet (Added)
+- **LM Studio / lokal LLM-support** i `signal_extractor.py`. Selection priority er nu: `LM_STUDIO_BASE_URL` (LM Studio / Ollama / vLLM / llama.cpp server) → `AZURE_OPENAI_ENDPOINT` → `OPENAI_API_KEY`. Sæt fx `LM_STUDIO_BASE_URL=http://localhost:1234/v1` for at køre signal-extraction lokalt uden API-omkostninger.
+- **`.env.example`** opdateret med dokumentation af alle tre LLM-options.
+- **V3VurderingPage** kalder nu `/api/v3/assess` via `react-query` `useMutation`. Sample-data er flyttet til "Indsæt eksempel"-knap i formen i stedet for at være hardcoded i siden. Loading/error/empty states er på plads.
+- **CommandPalette** (⌘K / Ctrl+K) under `frontend/src/components/command-palette/`. Lightweight implementering med framer-motion (ingen ny dep). Naviger mellem alle 13 sider med pil-op/ned + Enter. Globalt bundet i App.js — fungerer på alle sider.
+
 ## [3.0.0-alpha.4] - 2026-05-07 — Fase 1.4 (v3 API-endpoints)
 
 ### Tilføjet (Added)

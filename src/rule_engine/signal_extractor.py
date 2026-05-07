@@ -56,12 +56,17 @@ class SignalExtractionError(Exception):
 
 
 def _default_llm() -> LLMClient | None:
-    """Build an Azure-or-OpenAI client from environment variables.
+    """Build an LLM client from environment variables.
 
-    Mirrors the pattern in `src/news/llm_news_search.py`. Returns `None`
-    if no credentials are configured — callers must handle that path
-    (typically by skipping LLM extraction and relying on caller-provided
-    signals).
+    Selection priority (first match wins):
+      1. LM_STUDIO_BASE_URL  — local LM Studio / any OpenAI-compatible
+         endpoint (Ollama, vLLM, llama.cpp server, …). API key is
+         typically not required but can be set via LM_STUDIO_API_KEY.
+      2. AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY — Azure OpenAI.
+      3. OPENAI_API_KEY — public OpenAI API.
+
+    Returns `None` if nothing is configured. Callers handle that path
+    by skipping LLM extraction and relying on caller-provided signals.
     """
     try:
         from langchain_openai import AzureChatOpenAI, ChatOpenAI
@@ -69,9 +74,20 @@ def _default_llm() -> LLMClient | None:
         logger.warning("langchain_openai not installed; signal extraction disabled")
         return None
 
+    # 1. Local OpenAI-compatible endpoint (LM Studio, Ollama, vLLM, …)
+    lmstudio_url = os.getenv("LM_STUDIO_BASE_URL")
+    if lmstudio_url:
+        return ChatOpenAI(
+            base_url=lmstudio_url,
+            api_key=os.getenv("LM_STUDIO_API_KEY", "lm-studio"),
+            model=os.getenv("LM_STUDIO_MODEL", "local-model"),
+            temperature=0.0,
+            timeout=int(os.getenv("LM_STUDIO_TIMEOUT", "60")),
+        )
+
+    # 2. Azure OpenAI
     azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
-
     if azure_endpoint and azure_api_key:
         return AzureChatOpenAI(
             azure_endpoint=azure_endpoint,
@@ -82,6 +98,7 @@ def _default_llm() -> LLMClient | None:
             timeout=15,
         )
 
+    # 3. Public OpenAI
     if os.getenv("OPENAI_API_KEY"):
         return ChatOpenAI(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

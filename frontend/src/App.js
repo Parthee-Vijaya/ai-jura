@@ -33,6 +33,8 @@ const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 const V3VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 
+import CommandPalette, { useCommandPaletteShortcut } from './components/command-palette/CommandPalette';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -177,10 +179,13 @@ const AppInner = () => {
   const { preferences } = useUserPreferences();
   const themeMode = useMemo(() => (preferences?.theme === 'dark' ? darkTheme : lightTheme), [preferences?.theme]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themeMode.mode);
   }, [themeMode.mode]);
+
+  useCommandPaletteShortcut(() => setPaletteOpen(true));
 
   const toggleSidebar = () => setSidebarCollapsed(prev => !prev);
 
@@ -188,6 +193,7 @@ const AppInner = () => {
     <ThemeProvider theme={themeMode}>
       <GlobalStyle />
       <Router>
+        <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <AppContainer>
           <PageErrorBoundary title="Navigation fejl" message="Der opstod en fejl i sidebar. Siden kan stadig fungere.">
             <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />

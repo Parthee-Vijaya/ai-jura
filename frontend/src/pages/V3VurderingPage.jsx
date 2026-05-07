@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
+import { useMutation } from 'react-query';
+import axios from 'axios';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
@@ -7,135 +9,82 @@ import {
 } from '../components/rules';
 
 /**
- * V3VurderingPage — visualizes the output of the new rule_engine.
+ * V3VurderingPage — wires the new rule_engine output into the UI.
  *
- * Currently fed by a hard-coded sample RuleDecision array that mirrors
- * the JSON shape the backend's /api/v3/assess endpoint will return.
- * When the endpoint lands (Fase 1.4), swap `SAMPLE_DECISIONS` for a
- * react-query call.
+ * Workflow:
+ *   1. User describes the AI system in free text (and optionally fills
+ *      in sample predicates).
+ *   2. We POST to /api/v3/assess.
+ *   3. Backend runs the deterministic rule engine and (if configured)
+ *      asks the LLM to interpret signals from the description.
+ *   4. We render every triggered decision via the v3 design primitives.
  *
- * Layout follows Design A "stille autoritet" — wide whitespace, serif
- * heading, centered content, teglrød only on status pills and CTAs.
+ * Layout follows Design A "stille autoritet" — wide whitespace, generous
+ * typography, teglrød reserved for status and CTA.
  */
 
-// ---- Sample data (will be replaced by /api/v3/assess response) ----------
+// ---- Sample input (one click to populate) -----------------------------
 
-const SAMPLE_CASE = {
-  caseId: 'K-2026-0184',
-  title: 'Borgerassistent — Pensionsansøgning',
-  meta: 'Mette Nielsen · Center for Borgerservice · sidste vurdering 7. maj 2026',
-  aggregateStatus: 'BETINGET-GO',
-  summary: 'Tre lovartikler udløser krav før idriftsættelse. Otte konkrete artefakter skal etableres; tre er allerede dokumenteret.',
+const SAMPLE_DESCRIPTION =
+  'Borgerassistent — pensionsansøgning. Systemet er en AI-drevet tjeneste der ' +
+  'hjælper borgere med at udfylde pensionsansøgninger og foretager profilering ' +
+  'af ansøgers risikoprofil. Det træffer skriftlige afgørelser om tildeling, og ' +
+  'borgere kan bestride dem. Behandler personoplysninger i fuldt automatiseret flow.';
+
+const SAMPLE_SIGNALS = {
+  'system.uses_ai': true,
+  'system.processes_personal_data': true,
+  'system.makes_decisions_about_persons': true,
+  'system.is_used_by_public_authority': true,
+  'system.makes_administrative_decisions': true,
+  'system.generates_decision_text': true,
 };
 
-const SAMPLE_DECISIONS = [
-  {
-    rule_id: 'ai_act.art6.hojrisiko_klassifikation',
-    triggered: true,
-    status: 'BETINGET-GO',
-    outcome: {
-      status: 'BETINGET-GO',
-      begrundelse:
-        'Systemet falder ind under Bilag III og opfylder ikke undtagelsen for snæver forberedende opgave, eller foretager profilering. Det klassificeres som højrisiko.',
-      krav: [
-        'Etabler risikostyringssystem (art. 9)',
-        'Sikr datasæt-kvalitet (art. 10)',
-        'Lav teknisk dokumentation (art. 11) inden idriftsættelse',
-        'Sikr menneskelig overvågning (art. 14)',
-        'Registrér i EU-databasen for højrisikosystemer (art. 49)',
-      ],
-      evidens_påkrævet: [
-        'risikostyringsplan',
-        'datasaet_dokumentation',
-        'teknisk_dokumentation_art11',
-        'human_oversight_protokol',
-        'eu_database_registrering',
-      ],
-    },
-    kilde: {
-      lov: 'EU AI-forordningen (Forordning 2024/1689)',
-      artikel: 'Artikel 6, stk. 2 + Bilag III',
-      citat:
-        'Ud over de højrisiko-AI-systemer, der er omhandlet i stk. 1, anses AI-systemer, der er omhandlet i bilag III, som højrisiko.',
-      url: 'https://eur-lex.europa.eu/eli/reg/2024/1689/oj/dan',
-      sidst_verificeret: '2026-05-07',
-    },
-    needs_input: [],
-  },
-  {
-    rule_id: 'gdpr.art22.automatiseret_individuel_afgorelse',
-    triggered: true,
-    status: 'BETINGET-GO',
-    outcome: {
-      status: 'BETINGET-GO',
-      begrundelse:
-        'Afgørelsen er omfattet af GDPR art. 22, stk. 1. Helautomatiserede afgørelser med retsvirkning kræver retsgrundlag og passende sikkerhedsforanstaltninger.',
-      krav: [
-        'Implementér ret til menneskelig indgriben (art. 22, stk. 3)',
-        'Implementér ret til at bestride afgørelsen',
-        'Informér registrerede om logikken bag afgørelsen og forventede konsekvenser',
-      ],
-      evidens_påkrævet: [
-        'menneskelig_indgriben_proces',
-        'transparenstekst_til_registrerede',
-        'dpia_dokument',
-      ],
-    },
-    kilde: {
-      lov: 'Databeskyttelsesforordningen (Forordning 2016/679 - GDPR)',
-      artikel: 'Artikel 22, stk. 1',
-      citat:
-        'Den registrerede har ret til ikke at være genstand for en afgørelse, der alene er baseret på automatisk behandling, herunder profilering, som har retsvirkning eller på tilsvarende vis betydeligt påvirker den pågældende.',
-      url: 'https://eur-lex.europa.eu/eli/reg/2016/679/oj/dan#art_22',
-      sidst_verificeret: '2026-05-07',
-    },
-    needs_input: [],
-  },
-  {
-    rule_id: 'forvaltningsloven.par22.begrundelsespligt',
-    triggered: true,
-    status: 'BETINGET-GO',
-    outcome: {
-      status: 'BETINGET-GO',
-      begrundelse:
-        'Systemet træffer skriftlige afgørelser uden fuldt medhold. § 22 udløser begrundelseskrav, og § 24 kræver konkret indhold i begrundelsen.',
-      krav: [
-        'AI-genereret begrundelse skal verificeres af kompetent sagsbehandler INDEN afsendelse',
-        'Sikr at AI ikke "opfinder" lovhenvisninger — alle paragraffer skal være verificerbare',
-        'Etablér klagevejledning (§ 25) i samme dokument',
-      ],
-      evidens_påkrævet: [
-        'sagsbehandler_review_protokol',
-        'klagevejledning_skabelon',
-      ],
-    },
-    kilde: {
-      lov: 'Forvaltningsloven (lovbekendtgørelse nr. 433 af 22. april 2014 med senere ændringer)',
-      artikel: '§ 22',
-      citat:
-        'En afgørelse skal, når den meddeles skriftligt, være ledsaget af en begrundelse, medmindre afgørelsen fuldt ud giver den pågældende part medhold.',
-      url: 'https://www.retsinformation.dk/eli/lta/2014/433',
-      sidst_verificeret: '2026-05-07',
-    },
-    needs_input: [],
-  },
-];
-
-// Sample evidence-status (would come from case storage in real backend)
-const SAMPLE_EVIDENCE_STATUS = {
-  risikostyringsplan: { status: 'done', metadata: 'godkendt 2026-05-02' },
-  datasaet_dokumentation: { status: 'done', metadata: 'godkendt 2026-05-04' },
-  dpia_dokument: { status: 'done', metadata: 'godkendt 2026-04-30' },
-  teknisk_dokumentation_art11: { status: 'pending' },
-  human_oversight_protokol: { status: 'in_progress' },
-  menneskelig_indgriben_proces: { status: 'pending' },
-  eu_database_registrering: { status: 'blocked', metadata: 'afventer art. 49-skema' },
-  transparenstekst_til_registrerede: { status: 'pending' },
-  sagsbehandler_review_protokol: { status: 'in_progress' },
-  klagevejledning_skabelon: { status: 'pending' },
+const SAMPLE_PREDICATES = {
+  // ai_act.art5
+  anvendelse: 'intet_af_ovenstaaende',
+  medicinsk_eller_sikkerheds_undtagelse: false,
+  // ai_act.art6
+  anvendelsesomraade: 'vaesentlige_offentlige_tjenester',
+  kun_forberedende: false,
+  profilering: true,
+  // gdpr.art6
+  retsgrundlag: 'samfundets_interesse_eller_offentlig_myndighed_e',
+  behandler_saerlige_kategorier: false,
+  nationalt_retsgrundlag_dokumenteret: true,
+  // gdpr.art22
+  er_helautomatiseret: true,
+  har_retsvirkning_eller_betydelig_paavirkning: true,
+  retsgrundlag_til_undtagelse: 'lov',
+  omfatter_saerlige_kategorier: false,
+  // gdpr.art35
+  art35_stk3_litra: 'litra_a_systematisk_omfattende_evaluering_med_retsvirkning',
+  paa_datatilsynets_liste: true,
+  art35_stk1_hoj_risiko: true,
+  dpia_eksisterer: false,
+  // forvaltningsloven.par19
+  traeffer_afgoerelse: true,
+  bruger_oplysninger_om_part: true,
+  parten_kender_oplysningerne: false,
+  ufordelagtig_for_parten: true,
+  // forvaltningsloven.par22
+  meddeles_skriftligt: true,
+  fuld_medhold: false,
+  kan_systemet_generere_begrundelse: 'ja_delvist',
+  // forvaltningsloven.par24
+  genererer_begrundelse: true,
+  indeholder_lovhenvisning: true,
+  angiver_hovedhensyn_ved_skon: 'ja',
+  angiver_faktiske_omstaendigheder: true,
+  lovhenvisninger_verificerbare: true,
+  // offentlighedsloven.par13
+  laver_sammenstillinger: false,
+  enkle_kommandoer: false,
+  indeholder_personoplysninger: false,
+  anonymiseringskapacitet: true,
 };
 
-// ---- Layout ------------------------------------------------------------
+// ---- Styled --------------------------------------------------------------
 
 const Page = styled.div`
   max-width: 920px;
@@ -161,30 +110,119 @@ const Title = styled.h1`
   color: ${(p) => p.theme.colors.text};
 `;
 
-const Meta = styled.p`
+const Lede = styled.p`
   margin: 0 0 2.5rem;
   color: ${(p) => p.theme.colors.textMuted};
+  font-size: 1rem;
+  max-width: 640px;
+  line-height: 1.6;
+`;
+
+const FormCard = styled.form`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 1.75rem;
+  margin-bottom: 2.5rem;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: ${(p) => p.theme.colors.text};
+  margin-bottom: 0.5rem;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 130px;
+  padding: 0.85rem 1rem;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-family: ${(p) => p.theme.fonts.main};
   font-size: 0.95rem;
+  line-height: 1.55;
+  resize: vertical;
+  background: ${(p) => p.theme.colors.inputBackground};
+  color: ${(p) => p.theme.colors.text};
+
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: ${(p) => p.theme.shadows.focus};
+  }
+`;
+
+const Controls = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const PrimaryButton = styled.button`
+  background: ${(p) => p.theme.colors.primary};
+  color: white;
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background ${(p) => p.theme.animations.transitionFast};
+
+  &:hover {
+    background: ${(p) => p.theme.colors.primaryDark};
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const SecondaryButton = styled.button`
+  background: transparent;
+  color: ${(p) => p.theme.colors.text};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  padding: 0.7rem 1.2rem;
+  border-radius: ${(p) => p.theme.borderRadius};
+  font-weight: 500;
+  font-size: 0.92rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${(p) => p.theme.colors.primary};
+    color: ${(p) => p.theme.colors.primary};
+  }
+`;
+
+const ToggleRow = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  color: ${(p) => p.theme.colors.textMuted};
+  cursor: pointer;
+  margin-left: auto;
 `;
 
 const VerdictBox = styled.div`
   background: ${(p) => p.theme.colors.surface};
   border: 1px solid ${(p) => p.theme.colors.border};
   border-radius: ${(p) => p.theme.borderRadius};
-  padding: 1.75rem 2rem;
-  display: flex;
-  gap: 1.5rem;
+  padding: 1.5rem 1.75rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.25rem;
   align-items: center;
-  margin-bottom: 3rem;
-`;
-
-const VerdictText = styled.div`
-  flex: 1;
+  margin-bottom: 2.5rem;
 `;
 
 const VerdictTitle = styled.h2`
-  margin: 0 0 0.4rem;
-  font-size: 1.3rem;
+  margin: 0 0 0.3rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: ${(p) => p.theme.colors.text};
   letter-spacing: -0.01em;
@@ -193,16 +231,34 @@ const VerdictTitle = styled.h2`
 const VerdictSummary = styled.p`
   margin: 0;
   color: ${(p) => p.theme.colors.gray[700]};
-  font-size: 0.95rem;
-  line-height: 1.55;
+  font-size: 0.92rem;
+  line-height: 1.5;
+`;
+
+const StatNum = styled.div`
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: right;
+  color: ${(p) => p.theme.colors.text};
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${(p) => p.theme.colors.textMuted};
+  text-align: right;
+`;
+
+const Section = styled.section`
+  margin-bottom: 3rem;
 `;
 
 const SectionH = styled.h2`
-  font-family: ${(p) => p.theme.fonts.main};
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
   color: ${(p) => p.theme.colors.text};
 `;
 
@@ -212,14 +268,45 @@ const SectionLede = styled.p`
   font-size: 0.95rem;
 `;
 
-const Section = styled.section`
-  margin-bottom: 3rem;
-`;
-
 const PanelStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+`;
+
+const Empty = styled.div`
+  background: ${(p) => p.theme.colors.surfaceAlt};
+  border: 1px dashed ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 2.5rem;
+  text-align: center;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: 0.95rem;
+`;
+
+const ErrorBox = styled.div`
+  background: ${(p) => p.theme.colors.danger}1a;
+  border: 1px solid ${(p) => p.theme.colors.danger};
+  color: ${(p) => p.theme.colors.danger};
+  padding: 1rem 1.25rem;
+  border-radius: ${(p) => p.theme.borderRadius};
+  margin-bottom: 2rem;
+  font-size: 0.92rem;
+`;
+
+const Warnings = styled.div`
+  background: ${(p) => p.theme.colors.warning}1a;
+  border: 1px solid ${(p) => p.theme.colors.warning};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 0.85rem 1rem;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+  color: ${(p) => p.theme.colors.gray[800]};
+
+  ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.25rem;
+  }
 `;
 
 const AuditFootnote = styled.div`
@@ -234,15 +321,20 @@ const AuditFootnote = styled.div`
   line-height: 1.7;
 `;
 
-// ---- Page --------------------------------------------------------------
+// ---- API call ------------------------------------------------------------
 
-const buildEvidenceItems = (decisions, statusMap) => {
-  // Union of evidens_påkrævet across all triggered decisions
+async function postAssess(body) {
+  const res = await axios.post('/api/v3/assess', body);
+  return res.data;
+}
+
+// ---- Helpers -------------------------------------------------------------
+
+const buildEvidenceItems = (decisions, statusMap = {}) => {
   const all = new Set();
   decisions.forEach((d) => {
     (d.outcome?.evidens_påkrævet || []).forEach((e) => all.add(e));
   });
-
   return Array.from(all).map((id) => ({
     id,
     label: id.replace(/_/g, ' '),
@@ -251,72 +343,161 @@ const buildEvidenceItems = (decisions, statusMap) => {
   }));
 };
 
+// ---- Page ----------------------------------------------------------------
+
 const V3VurderingPage = () => {
-  const triggered = useMemo(
-    () => SAMPLE_DECISIONS.filter((d) => d.triggered),
-    [],
-  );
+  const [description, setDescription] = useState('');
+  const [usePredicates, setUsePredicates] = useState(true);
 
-  const evidenceItems = useMemo(
-    () => buildEvidenceItems(triggered, SAMPLE_EVIDENCE_STATUS),
-    [triggered],
-  );
+  const mutation = useMutation(postAssess);
 
-  const evidenceDone = evidenceItems.filter((i) => i.status === 'done').length;
-  const totalKrav = triggered.reduce(
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutation.mutate({
+      system_description: description.trim() || undefined,
+      signals: {},
+      predicates: usePredicates ? SAMPLE_PREDICATES : {},
+      use_llm_extraction: true,
+    });
+  };
+
+  const fillSample = () => {
+    setDescription(SAMPLE_DESCRIPTION);
+    setUsePredicates(true);
+  };
+
+  const result = mutation.data;
+  const decisions = useMemo(
+    () => (result?.decisions || []).filter((d) => d.triggered),
+    [result],
+  );
+  const evidenceItems = useMemo(() => buildEvidenceItems(decisions), [decisions]);
+  const totalKrav = decisions.reduce(
     (sum, d) => sum + (d.outcome?.krav?.length || 0),
     0,
   );
 
   return (
     <Page>
-      <Eyebrow>Sag · {SAMPLE_CASE.caseId} · v3 rule_engine</Eyebrow>
-      <Title>{SAMPLE_CASE.title}</Title>
-      <Meta>{SAMPLE_CASE.meta}</Meta>
+      <Eyebrow>v3 rule_engine · live API</Eyebrow>
+      <Title>V3 Vurdering — Hjemmel</Title>
+      <Lede>
+        Beskriv AI-systemet i fri tekst. Backend kører den deterministiske
+        regelmotor og spørger valgfrit en LLM om at fortolke fritekst til
+        signaler. Hver afgørelse spores tilbage til konkret lov-citat med
+        URL og verificeringsdato.
+      </Lede>
 
-      <VerdictBox>
-        <ComplianceVerdict status={SAMPLE_CASE.aggregateStatus} size="lg" />
-        <VerdictText>
-          <VerdictTitle>{triggered.length} regler udløser krav</VerdictTitle>
-          <VerdictSummary>{SAMPLE_CASE.summary}</VerdictSummary>
-        </VerdictText>
-        <div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, textAlign: 'right' }}>
-            {evidenceDone}/{evidenceItems.length}
-          </div>
-          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' }}>
-            Evidens · {totalKrav} krav
-          </div>
-        </div>
-      </VerdictBox>
+      <FormCard onSubmit={handleSubmit}>
+        <Label htmlFor="desc">Beskriv systemet</Label>
+        <TextArea
+          id="desc"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Fx: chatbot der hjælper borgere med pension, foretager profilering og afgørelser…"
+        />
+        <Controls>
+          <PrimaryButton type="submit" disabled={mutation.isLoading}>
+            {mutation.isLoading ? 'Vurderer…' : 'Vurder'}
+          </PrimaryButton>
+          <SecondaryButton type="button" onClick={fillSample}>
+            Indsæt eksempel
+          </SecondaryButton>
+          <ToggleRow>
+            <input
+              type="checkbox"
+              checked={usePredicates}
+              onChange={(e) => setUsePredicates(e.target.checked)}
+            />
+            Send demo-predikater (springer needs_input over)
+          </ToggleRow>
+        </Controls>
+      </FormCard>
 
-      <Section>
-        <SectionH>Lov-grundlag</SectionH>
-        <SectionLede>
-          Hver afgørelse hjemles direkte i den lovartikel den udspringer af. Klik på artiklen for at læse den i sin helhed.
-        </SectionLede>
-        <PanelStack>
-          {triggered.map((decision) => (
-            <RuleDecisionPanel key={decision.rule_id} decision={decision} />
-          ))}
-        </PanelStack>
-      </Section>
+      {mutation.isError && (
+        <ErrorBox>
+          Kunne ikke kalde /api/v3/assess: {String(mutation.error?.message || mutation.error)}
+          {mutation.error?.response?.data?.detail && (
+            <div style={{ marginTop: 6, fontFamily: 'monospace', fontSize: 12 }}>
+              {String(mutation.error.response.data.detail)}
+            </div>
+          )}
+        </ErrorBox>
+      )}
 
-      <Section>
-        <SectionH>Evidens-checkliste</SectionH>
-        <SectionLede>
-          {evidenceItems.length} artefakter er identificeret på tværs af de ramte regler. {evidenceDone} er allerede dokumenteret.
-        </SectionLede>
-        <EvidenceChecklist items={evidenceItems} />
-      </Section>
+      {!result && !mutation.isLoading && !mutation.isError && (
+        <Empty>
+          Ingen vurdering endnu. Klik <strong>"Indsæt eksempel"</strong> ovenfor og derefter <strong>"Vurder"</strong>
+          for at se den fulde flow med 10 regler.
+        </Empty>
+      )}
 
-      <AuditFootnote>
-        rule_engine v3.0.0-alpha.2 · 3 regler triggered · status:{' '}
-        {SAMPLE_CASE.aggregateStatus} · aggregat-precedens: NO-GO &gt;
-        BETINGET-GO &gt; GO · deterministisk afgørelse · ingen LLM-input til
-        selve afgørelsen · demo-data (vil blive erstattet af /api/v3/assess i
-        Fase 1.4)
-      </AuditFootnote>
+      {result && (
+        <>
+          {result.warnings?.length > 0 && (
+            <Warnings>
+              <strong>Backend-advarsler:</strong>
+              <ul>
+                {result.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </Warnings>
+          )}
+
+          <VerdictBox>
+            <ComplianceVerdict status={result.aggregate_status} size="lg" />
+            <div>
+              <VerdictTitle>
+                {decisions.length} af {result.rules_loaded} regler udløser krav
+              </VerdictTitle>
+              <VerdictSummary>
+                Aggregat-status: <strong>{result.aggregate_status}</strong>. Kilde-citation
+                vises pr. regel nedenfor.
+              </VerdictSummary>
+            </div>
+            <div>
+              <StatNum>{evidenceItems.length}</StatNum>
+              <StatLabel>Evidens · {totalKrav} krav</StatLabel>
+            </div>
+          </VerdictBox>
+
+          {decisions.length > 0 && (
+            <Section>
+              <SectionH>Lov-grundlag</SectionH>
+              <SectionLede>
+                Hver afgørelse hjemles direkte i den lovartikel den udspringer af.
+              </SectionLede>
+              <PanelStack>
+                {decisions.map((decision) => (
+                  <RuleDecisionPanel key={decision.rule_id} decision={decision} />
+                ))}
+              </PanelStack>
+            </Section>
+          )}
+
+          {evidenceItems.length > 0 && (
+            <Section>
+              <SectionH>Evidens-checkliste</SectionH>
+              <SectionLede>
+                {evidenceItems.length} artefakter er identificeret på tværs af de ramte regler.
+              </SectionLede>
+              <EvidenceChecklist items={evidenceItems} />
+            </Section>
+          )}
+
+          <AuditFootnote>
+            rule_engine {result.rule_engine_version} · evalueret {result.evaluated_at}
+            <br />
+            rules_loaded={result.rules_loaded} · triggered={decisions.length} ·
+            aggregate={result.aggregate_status}
+            <br />
+            signals_extracted_by_llm={JSON.stringify(result.signals_extracted_by_llm)}
+            <br />
+            deterministisk afgørelse · ingen LLM-input til selve afgørelsen
+          </AuditFootnote>
+        </>
+      )}
     </Page>
   );
 };
