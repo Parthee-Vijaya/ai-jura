@@ -1114,19 +1114,19 @@ const HomePage = () => {
 
   const quickStartSteps = [
     {
-      title: 'Hurtig Tjek',
-      description: 'Få øjeblikkelig feedback på om dit AI-system lever op til kravene',
-      link: '/hurtig-tjek'
+      title: 'Lav en vurdering',
+      description: 'Beskriv AI-systemet i fri tekst og få en deterministisk regelmotor-vurdering med lov-citater i marginen',
+      link: '/vurdering'
     },
     {
-      title: 'Compliance Control',
-      description: 'Gennemfør en fuld analyse med detaljeret rapport og handlingsplan',
-      link: '/fuld-vurdering'
+      title: 'Registrér AI-sag',
+      description: 'Opret en formel sag i ServicePortalen med automatisk e-mail til Digitalisering og IT',
+      link: '/ai-sager'
     },
     {
-      title: 'Se Resultater',
-      description: 'Følg udviklingen og compliance-status i dashboardet',
-      link: '/dashboard'
+      title: 'Slå loven op',
+      description: 'Find paragraf, præcedens og afgørelser via Juridisk Research og Lov-assistent',
+      link: '/research'
     }
   ];
 
@@ -1188,8 +1188,8 @@ const HomePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.18 }}
               >
-                <CTAButton to="/hurtig-tjek">
-                  Start compliance tjek
+                <CTAButton to="/vurdering">
+                  Start vurdering
                   <FaArrowRight />
                 </CTAButton>
               </motion.div>

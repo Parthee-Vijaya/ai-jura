@@ -44,10 +44,11 @@
   }
   .grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .grid.row2 { margin-top: 20px; }
   .card {
     background: #fff;
     border: 1px solid #e4e4e7;
@@ -68,6 +69,7 @@
   .preview-a { background: #ffffff; }
   .preview-b { background: #0a0a0b; }
   .preview-c { background: #faf8f5; }
+  .preview-d { background: #fbfaf6; }
   .ph-line { height: 6px; border-radius: 3px; }
   .preview-a .ph-line { background: #d4d4d8; }
   .preview-a .ph-accent { background: #c94416; }
@@ -131,6 +133,31 @@
   .preview-c .pa-h1 { background: #a3a3a3; }
   .preview-a .pa-btn { background: #c94416; }
   .preview-c .pa-btn { background: #c94416; }
+  .preview-d .ph-line { background: #d4ccba; }
+  .preview-d .ph-accent { background: #c94416; }
+  .preview-d .pa-h1 { background: #97897b; }
+  .preview-d .pa-btn { background: #c94416; }
+  .preview-d .sidenote-stripe {
+    position: absolute;
+    right: 24px; top: 28px; bottom: 28px;
+    width: 60px;
+    border-left: 1px solid #e8e2d4;
+    padding-left: 8px;
+  }
+  .preview-d .sn-bar { width: 100%; height: 4px; border-radius: 2px; background: #e8e2d4; margin-bottom: 6px; }
+  .preview-d .sn-bar.short { width: 70%; }
+  .new-badge {
+    display: inline-block;
+    background: #c94416;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
   .footnote {
     margin-top: 56px;
     padding: 20px 24px;
@@ -148,8 +175,8 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Hjemmel · Design-retninger</div>
-    <h1>Tre bud på hvordan v3 skal se ud</h1>
-    <p class="lede">Samme indhold (en Quick Check af en pensionsassistent), tre forskellige visuelle sprog. Klik dig ind for at se den fulde side.</p>
+    <h1>Fire bud på hvordan v3 skal se ud</h1>
+    <p class="lede">Samme indhold (en Quick Check af en pensionsassistent), fire forskellige visuelle sprog. <strong>Design D</strong> blender den stille autoritet fra A med editorial-workspace-følelsen fra C — det er det nye forslag.</p>
   </header>
 
   <div class="grid">
@@ -216,8 +243,43 @@
 
   </div>
 
+  <div class="grid row2">
+    <a class="card" href="design-d.html" style="grid-column: span 2;">
+      <div class="preview preview-d">
+        <div class="preview-inner" style="display:grid;grid-template-columns:1fr 80px;gap:20px;">
+          <div>
+            <div class="preview-bar"><div class="dot"></div></div>
+            <div class="ph-line pa-h1"></div>
+            <div class="ph-line pa-l1" style="margin-bottom:8px;"></div>
+            <div class="ph-line pa-l2" style="margin-bottom:8px;"></div>
+            <div class="ph-line pa-l3"></div>
+            <div class="ph-line ph-accent pa-btn"></div>
+          </div>
+          <div style="border-left: 1px solid #e8e2d4; padding-left: 12px;">
+            <div class="sn-bar" style="width:24px;background:#c94416;height:5px;margin-bottom:8px;"></div>
+            <div class="sn-bar"></div>
+            <div class="sn-bar short"></div>
+            <div class="sn-bar"></div>
+            <div class="sn-bar short"></div>
+            <div style="height:14px;"></div>
+            <div class="sn-bar" style="width:24px;background:#c94416;height:5px;margin-bottom:8px;"></div>
+            <div class="sn-bar"></div>
+            <div class="sn-bar short"></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="sub">D · Editorial autoritet <span class="new-badge">NY</span></div>
+        <h3>A's gravitas møder C's marginalia</h3>
+        <p>Cream-paper i A's renere variant, Source Serif Pro h1 fra A, Lora-paragraffer fra C. Lov-citater rykker ud i sidenotes som klikbare fodnoter — kropsteksten flyder uafbrudt, mens jurister får hjemlen ved fingeren. Det bedste fra begge: stille troværdighed og levende dokument.</p>
+        <div class="meta">Source Serif Pro h1 · Lora body · Sidenotes · ¹²³-fodnoter · Cream-paper</div>
+        <span class="cta">Se design D →</span>
+      </div>
+    </a>
+  </div>
+
   <div class="footnote">
-    <strong>Sådan vælger du.</strong> Tænk på <em>hvem der skal bruge skærmen mest</em>. A er bedst til marketing/login og indkøbsbeslutningstagere. B er bedst til sagsbehandlere der bruger app'en 2 timer dagligt. C er bedst hvis lov-kilder skal være konstant synlige. I planen foreslog jeg en kombination (A på marketing + B i selve app'en) — men måske passer C bedst hos jer.
+    <strong>Sådan vælger du.</strong> Tænk på <em>hvem der skal bruge skærmen mest</em>. A er bedst til marketing/login og indkøbsbeslutningstagere. B er bedst til sagsbehandlere der bruger app'en 2 timer dagligt. C er bedst hvis lov-kilder skal være konstant synlige. <strong>D er det nye forslag</strong> der prøver at få det bedste fra A og C i én og samme oplevelse — autoritativ overskrift, læsbar krop, og lov-citater i marginen som man kan tilgå med ét blik uden at miste tråden i selve teksten.
   </div>
 
 </div>

@@ -37,3 +37,10 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Local SQLite databases
+judge_dredd.db
+*.db-journal
+
+# Local preview symlinks
+frontend/public/mockups
+

@@ -3,10 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   FaHome,
-  FaSearch,
   FaClipboardList,
-  FaChartBar,
-  FaHistory,
   FaBook,
   FaGlobeEurope,
   FaBalanceScale,
@@ -31,13 +28,13 @@ const SidebarContainer = styled.aside`
   position: fixed;
   left: 0;
   top: 0;
-  padding: 2rem 0 0;
+  padding: 1.75rem 0 0;
   overflow-y: auto;
   transition: ${props => props.theme.animations.transition};
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  box-shadow: ${props => props.theme.shadows.glass};
+  font-family: ${props => props.theme.fonts.sans};
 
   @media (max-width: 768px) {
     transform: translateX(${props => props.collapsed ? '-100%' : '0'});
@@ -47,9 +44,9 @@ const SidebarContainer = styled.aside`
 
 const SidebarHeader = styled.div`
   position: relative;
-  padding: 0 1.5rem 2rem;
+  padding: 0 1.25rem 1.5rem;
   border-bottom: 1px solid ${props => props.theme.layout.sidebar.border};
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 `;
 
 const BrandContainer = styled.div`
@@ -57,21 +54,40 @@ const BrandContainer = styled.div`
   flex-direction: column;
   align-items: ${props => props.$collapsed ? 'center' : 'flex-start'};
   text-align: ${props => props.$collapsed ? 'center' : 'left'};
-  gap: ${props => props.$collapsed ? '0.35rem' : '0.25rem'};
+  gap: ${props => props.$collapsed ? '0.35rem' : '0.2rem'};
   padding: ${props => props.$collapsed ? '0.5rem 0' : '0'};
 `;
 
 const BrandPrimary = styled.span`
-  font-size: ${props => props.$collapsed ? '1rem' : '1.1rem'};
+  font-family: ${props => props.theme.fonts.display};
+  font-size: ${props => props.$collapsed ? '1.1rem' : '1.4rem'};
   font-weight: 700;
-  letter-spacing: ${props => props.$collapsed ? '0.18em' : '0.04em'};
-  text-transform: ${props => props.$collapsed ? 'uppercase' : 'none'};
+  letter-spacing: -0.02em;
   color: ${props => props.theme.layout.sidebar.text};
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+
+  .brand-dot {
+    color: ${props => props.theme.colors.primary};
+    font-weight: 800;
+  }
+
+  .brand-version {
+    font-family: ${props => props.theme.fonts.sans};
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: ${props => props.theme.layout.sidebar.muted};
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-left: 4px;
+  }
 `;
 
 const BrandSecondary = styled.span`
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-family: ${props => props.theme.fonts.sans};
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: ${props => props.theme.layout.sidebar.muted};
   font-weight: 600;
@@ -90,49 +106,44 @@ const NavItem = styled.li`
 const NavLink = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.7rem;
+  padding: 0.5rem 1.25rem;
+  margin: 0 0.5rem;
+  border-radius: 5px;
   color: ${props => props.theme.layout.sidebar.muted};
   text-decoration: none;
-  transition: ${props => props.theme.animations.transition};
-  border-left: 3px solid transparent;
+  transition: background-color ${props => props.theme.animations.transitionFast},
+              color ${props => props.theme.animations.transitionFast};
+  border-left: 2px solid transparent;
   position: relative;
-  overflow: hidden;
 
   &:hover {
     background: ${props => props.theme.layout.sidebar.hoverBackground};
     color: ${props => props.theme.layout.sidebar.hoverText};
-    transform: translateX(4px);
-
-    .icon {
-      transform: scale(1.1);
-      color: ${props => props.theme.colors.accent};
-    }
   }
 
   &.active {
     background: ${props => props.theme.layout.sidebar.activeBackground};
     color: ${props => props.theme.layout.sidebar.activeText};
-    border-left-color: ${props => props.theme.layout.sidebar.activeBorder};
-    box-shadow: ${props => props.theme.shadows.md};
+    font-weight: 500;
 
     .icon {
-      color: ${props => props.theme.colors.accent};
+      color: ${props => props.theme.layout.sidebar.activeText};
     }
   }
 
   .icon {
-    width: 18px;
-    height: 18px;
-    transition: ${props => props.theme.animations.spring};
+    width: 14px;
+    height: 14px;
     color: inherit;
+    flex-shrink: 0;
   }
 
   .text {
-    font-size: 0.875rem;
+    font-family: ${props => props.theme.fonts.sans};
+    font-size: 0.85rem;
     font-weight: 500;
-    position: relative;
-    z-index: 1;
+    line-height: 1.4;
   }
 `;
 
@@ -141,31 +152,31 @@ const SectionTitle = styled.button`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-family: ${props => props.theme.fonts.sans};
+  font-size: 0.66rem;
   font-weight: 600;
   color: ${props => props.theme.layout.sidebar.muted};
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 1rem 1.5rem 0.5rem;
-  margin: 2rem 0 0.5rem;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1.25rem 0.35rem;
+  margin: 1.25rem 0 0.25rem;
   border: none;
-  border-top: 1px solid ${props => props.theme.layout.sidebar.border};
   background: transparent;
   cursor: pointer;
   transition: ${props => props.theme.animations.transitionFast};
 
   &:hover {
-    color: ${props => props.theme.layout.sidebar.hoverText};
+    color: ${props => props.theme.colors.ink};
   }
 
   &:first-child {
-    margin-top: 0;
-    border-top: none;
+    margin-top: 0.25rem;
   }
 
   .chevron {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
     transition: ${props => props.theme.animations.transitionFast};
+    opacity: 0.6;
   }
 `;
 
@@ -215,22 +226,21 @@ const NavContent = styled.div`
 `;
 
 const SidebarFooter = styled.div`
-  padding: 1.4rem 1.5rem 1.3rem;
+  padding: 1.1rem 1.25rem 1.1rem;
   border-top: 1px solid ${props => props.theme.layout.sidebar.border};
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.6rem;
 `;
 
 const FooterNote = styled.div`
-  font-size: 0.68rem;
-  line-height: 1.3;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.9)'
-    : 'rgba(255, 255, 255, 0.95)'};
+  font-family: ${props => props.theme.fonts.sans};
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: ${props => props.theme.colors.inkFaded};
   font-style: italic;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 `;
 
 const Sidebar = ({ collapsed, onToggle }) => {
@@ -339,11 +349,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       sectionKey: null,
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
-        { path: '/hurtig-tjek', icon: FaSearch, text: 'Hurtig Tjek' },
-        { path: '/ai-sager', icon: FaBalanceScale, text: 'AI Sager' },
-        { path: '/fuld-vurdering', icon: FaClipboardList, text: 'Compliance Control' },
-        { path: '/dashboard', icon: FaChartBar, text: 'Dashboard' },
-        { path: '/historik', icon: FaHistory, text: 'Vurderingshistorik' }
+        { path: '/vurdering', icon: FaClipboardList, text: 'Vurdering' },
+        { path: '/ai-sager', icon: FaBalanceScale, text: 'AI Sager' }
       ]
     },
     {
@@ -388,9 +395,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
         </ToggleButton>
         <BrandContainer $collapsed={collapsed}>
           <BrandPrimary $collapsed={collapsed}>
-            {collapsed ? 'JD' : 'Project Judge Dredd'}
+            {collapsed ? (
+              <>H<span className="brand-dot">.</span></>
+            ) : (
+              <>Hjemmel<span className="brand-dot">.</span><span className="brand-version">v3</span></>
+            )}
           </BrandPrimary>
-        {!collapsed && <BrandSecondary>AI-komplianceplatform</BrandSecondary>}
+          {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}
         </BrandContainer>
       </SidebarHeader>
 

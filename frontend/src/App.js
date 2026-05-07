@@ -1,5 +1,5 @@
 import React, { useState, Suspense, useMemo, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
@@ -18,22 +18,19 @@ import { SectionLoader } from './components/LoadingSpinner';
 import { UserPreferencesProvider, useUserPreferences } from './contexts/UserPreferencesContext';
 import { LoadingProvider } from './contexts/LoadingContext';
 
+// Command palette
+import CommandPalette, { useCommandPaletteShortcut } from './components/command-palette/CommandPalette';
+
 // Lazy loaded pages - Optimized code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
-const QuickCheckPage = React.lazy(() => import('./pages/QuickCheckPage'));
-const FullAssessmentPage = React.lazy(() => import('./pages/FullAssessmentPage'));
-const DashboardPage = React.lazy(() => import('./pages/DashboardPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
-const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const ResourcesPage = React.lazy(() => import('./pages/ResourcesPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
-const V3VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
-
-import CommandPalette, { useCommandPaletteShortcut } from './components/command-palette/CommandPalette';
+const VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,10 +46,25 @@ const queryClient = new QueryClient({
 
 const GlobalStyle = createGlobalStyle`
   :root {
-    --kalundborg-primary: #A03612;
-    --kalundborg-primary-dark: #7d2b0e;
-    --kalundborg-primary-light: #C94416;
-    --kalundborg-primary-rgb: 160, 54, 18;
+    --kalundborg-primary: #c94416;
+    --kalundborg-primary-dark: #a03612;
+    --kalundborg-primary-light: #e85a28;
+    --kalundborg-primary-rgb: 201, 68, 22;
+
+    /* Design C — paper & ink */
+    --paper: #faf8f5;
+    --paper-soft: #f3efe8;
+    --ink: #1a1614;
+    --ink-soft: #6b5e4f;
+    --ink-faded: #9a8d7d;
+    --line: #e8e2d6;
+    --line-soft: #f0ebe1;
+
+    /* Typography stack */
+    --font-body: Lora, Georgia, "Times New Roman", serif;
+    --font-display: "Source Serif Pro", Lora, Georgia, serif;
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
   }
 
   html {
@@ -61,10 +73,14 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     margin: 0;
-    font-family: ${props => props.theme.fonts.main};
+    font-family: ${props => props.theme.fonts.body};
     background-color: ${props => props.theme.colors.background};
     color: ${props => props.theme.colors.text};
-    line-height: 1.6;
+    font-size: 17px;
+    line-height: 1.7;
+    font-feature-settings: "ss01", "kern";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
@@ -74,17 +90,25 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  /* Display headings use Source Serif Pro for gravitas */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: ${props => props.theme.fonts.display};
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    color: ${props => props.theme.colors.ink};
+  }
+
   a {
     text-decoration: none;
-    color: #A03612;
+    color: ${props => props.theme.colors.primary};
     transition: color ${props => props.theme.animations.transitionFast};
 
     &:hover {
-      color: #7d2b0e;
+      color: ${props => props.theme.colors.primaryDark};
     }
 
     &:focus-visible {
-      outline: 2px solid #A03612;
+      outline: 2px solid ${props => props.theme.colors.primary};
       outline-offset: 2px;
       border-radius: 2px;
     }
@@ -94,37 +118,42 @@ const GlobalStyle = createGlobalStyle`
     cursor: pointer;
     border: none;
     outline: none;
-    font-family: inherit;
+    font-family: ${props => props.theme.fonts.sans};
     background: none;
 
     &:focus-visible {
-      outline: 2px solid #A03612;
+      outline: 2px solid ${props => props.theme.colors.primary};
       outline-offset: 2px;
-      box-shadow: 0 0 0 3px rgba(160, 54, 18, 0.18);
+      box-shadow: 0 0 0 3px rgba(201, 68, 22, 0.18);
     }
   }
 
   input, textarea, select {
-    font-family: inherit;
+    font-family: ${props => props.theme.fonts.sans};
     outline: none;
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     background-color: ${props => props.theme.colors.inputBackground};
     color: ${props => props.theme.colors.text};
     border: 1px solid ${props => props.theme.colors.border};
 
     &:focus {
-      border-color: #A03612;
-      box-shadow: 0 0 0 3px rgba(160, 54, 18, 0.12);
+      border-color: ${props => props.theme.colors.primary};
+      box-shadow: 0 0 0 3px rgba(201, 68, 22, 0.15);
     }
   }
 
+  /* Body paragraphs in articles read as Lora */
+  article p, .doc p, .lora {
+    font-family: ${props => props.theme.fonts.body};
+  }
+
   ::selection {
-    background: #A03612;
+    background: ${props => props.theme.colors.primary};
     color: white;
   }
 
   ::-moz-selection {
-    background: #A03612;
+    background: ${props => props.theme.colors.primary};
     color: white;
   }
 
@@ -133,11 +162,11 @@ const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: ${props => props.theme.colors.gray[400]};
+    background-color: ${props => props.theme.colors.gray[300]};
     border-radius: 999px;
 
     &:hover {
-      background-color: #A03612;
+      background-color: ${props => props.theme.colors.primary};
     }
   }
 
@@ -214,18 +243,24 @@ const AppInner = () => {
               <Suspense fallback={<SectionLoader text="Indlæser side..." />}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/hurtig-tjek" element={<QuickCheckPage />} />
+
+                  {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
+                  <Route path="/vurdering" element={<VurderingPage />} />
+
+                  {/* Back-compat redirects from removed pages */}
+                  <Route path="/hurtig-tjek" element={<Navigate to="/vurdering" replace />} />
+                  <Route path="/fuld-vurdering" element={<Navigate to="/vurdering" replace />} />
+                  <Route path="/v3-vurdering" element={<Navigate to="/vurdering" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/historik" element={<Navigate to="/vurdering" replace />} />
+
                   <Route path="/ai-sager" element={<AICasesPage />} />
-                  <Route path="/fuld-vurdering" element={<FullAssessmentPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/historik" element={<HistoryPage />} />
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />
                   <Route path="/ai-losninger" element={<AIProjectsPage />} />
                   <Route path="/research" element={<ResearchPage />} />
                   <Route path="/lov-assistent" element={<LawAssistantPage />} />
                   <Route path="/ressourcer" element={<ResourcesPage />} />
                   <Route path="/indstillinger" element={<SettingsPage />} />
-                  <Route path="/v3-vurdering" element={<V3VurderingPage />} />
                 </Routes>
               </Suspense>
             </PageErrorBoundary>

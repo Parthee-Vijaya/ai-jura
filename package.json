@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "python3 main.py",
-    "dev:frontend": "cd frontend && PORT=8080 BROWSER=none npm start",
+    "dev:frontend": "cd frontend && PORT=8090 BROWSER=none npm start",
     "install:all": "npm install && pip install -r requirements.txt",
     "install:frontend": "cd frontend && npm install",
     "clean": "npm run clean:frontend && rm -rf node_modules package-lock.json",

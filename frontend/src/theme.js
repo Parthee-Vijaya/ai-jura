@@ -1,32 +1,36 @@
 /**
- * Judge Dredd - Kalundborg Kommune Theme Configuration
+ * Judge Dredd / Hjemmel — Design C ("Editorial workspace") theme
  *
- * Primary branding colors based on Kalundborg Kommune's official design:
- * - Teglrød (Brick Red): #C94416
- * - Dark variant: #A03612
- * - Light variant: #E85A28
- * - Secondary button: #BC4D30
+ * Visuel kanon: cream-paper baggrund, Lora body + Source Serif Pro display,
+ * Inter chrome (nav/UI), JetBrains Mono til audit/case-id.
+ *
+ * Primary brand: Kalundborg teglrød — bevares som accent, men er ikke længere
+ * hovedbaggrund. C er en "rolig juridisk læsebog", ikke en alarm-rød panel.
  */
 
 const commonThemeTokens = {
   fonts: {
-    main: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+    main: 'Lora, Georgia, "Times New Roman", serif',
+    body: 'Lora, Georgia, "Times New Roman", serif',
+    display: '"Source Serif Pro", Lora, Georgia, serif',
+    sans: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+    mono: '"JetBrains Mono", "SF Mono", Consolas, monospace',
   },
-  borderRadius: '12px',
-  borderRadiusLarge: '16px',
+  borderRadius: '8px',
+  borderRadiusLarge: '10px',
   shadows: {
-    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-    md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)',
-    glass: '0 8px 32px 0 rgba(201, 68, 22, 0.37)',
-    glow: '0 0 24px rgba(201, 68, 22, 0.35)',
-    focus: '0 0 0 3px rgba(201, 68, 22, 0.18)',
+    sm: '0 1px 2px 0 rgb(20 17 13 / 0.04)',
+    md: '0 4px 8px -2px rgb(20 17 13 / 0.06)',
+    lg: '0 10px 20px -4px rgb(20 17 13 / 0.08)',
+    xl: '0 20px 30px -8px rgb(20 17 13 / 0.10)',
+    glass: '0 4px 16px 0 rgba(20, 17, 13, 0.06)',
+    glow: '0 0 16px rgba(201, 68, 22, 0.18)',
+    focus: '0 0 0 3px rgba(201, 68, 22, 0.15)',
   },
   animations: {
-    transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: '0.25s cubic-bezier(0.4, 0, 0.2, 1)',
     transitionFast: '0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-    transitionSlow: '0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionSlow: '0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   },
@@ -36,108 +40,122 @@ export const lightTheme = {
   ...commonThemeTokens,
   mode: 'light',
   colors: {
-    // Kalundborg Kommune primary colors
-    primary: '#C94416',           // Teglrød (Brick Red)
-    primaryDark: '#A03612',       // Dark brick red
-    primaryLight: '#E85A28',      // Light brick red
-    secondary: '#BC4D30',         // Secondary button color
+    // Brand (Kalundborg teglrød) — accent, ikke baggrund
+    primary: '#c94416',
+    primaryDark: '#a03612',
+    primaryLight: '#e85a28',
+    primarySoft: '#fbe9dd',
+    primaryBg: '#fdf2eb',
+    secondary: '#bc4d30',
 
-    // Semantic colors
+    // Semantic
     accent: '#b8860b',
-    success: '#2f855a',
-    warning: '#d69e2e',
-    danger: '#c53030',
-    dark: '#252525',              // Kalundborg text dark
-    light: '#f7fafc',
+    success: '#2d6a31',
+    successSoft: '#ecf5ec',
+    warning: '#b8860b',
+    danger: '#a02020',
+    dangerSoft: '#fae6e6',
+    dark: '#14110d',
+    light: '#fbfaf6',
     white: '#ffffff',
 
-    // Surface colors
-    background: '#f4f7fb',
-    surface: '#ffffff',
-    surfaceAlt: '#f1f5f9',
+    // Surface — Design C cream-paper
+    background: '#faf8f5',          // paper
+    surface: '#ffffff',             // card
+    surfaceAlt: '#f3efe8',          // paper-soft
+    paper: '#faf8f5',
+    paperSoft: '#f3efe8',
+    card: '#ffffff',
 
-    // Text colors
-    text: '#252525',              // Kalundborg text dark
-    textMuted: '#64748b',
+    // Text
+    text: '#1a1614',                // ink
+    textMuted: '#6b5e4f',           // ink-soft
+    textFaded: '#9a8d7d',           // ink-faded
+    ink: '#1a1614',
+    inkSoft: '#6b5e4f',
+    inkFaded: '#9a8d7d',
 
-    // UI elements
-    border: '#e2e8f0',
+    // Lines
+    border: '#e8e2d6',              // line
+    borderSoft: '#f0ebe1',          // line-soft
+    line: '#e8e2d6',
+    lineSoft: '#f0ebe1',
     inputBackground: '#ffffff',
 
-    // Gray scale (preserved for compatibility)
+    // Gray (preserved for legacy components — but warm-toned)
     gray: {
-      50: '#f7fafc',
-      100: '#edf2f7',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#a0aec0',
-      500: '#718096',
-      600: '#4a5568',
-      700: '#2d3748',
-      800: '#252525',             // Aligned with Kalundborg dark
-      900: '#171923',
+      50: '#faf8f5',
+      100: '#f3efe8',
+      200: '#e8e2d6',
+      300: '#d4ccba',
+      400: '#9a8d7d',
+      500: '#6b5e4f',
+      600: '#4a4035',
+      700: '#2f2823',
+      800: '#1a1614',
+      900: '#0d0a08',
     },
 
-    // Kalundborg specific colors
+    // Kalundborg-spec (legacy alias)
     kalundborg: {
-      teglrod: '#C94416',         // Primary brick red
-      teglrodDark: '#A03612',     // Dark brick red
-      teglrodLight: '#E85A28',    // Light brick red
-      buttonSecondary: '#BC4D30', // Secondary button
-      textDark: '#252525',        // Text dark
-      bronze: '#cd7f32',
+      teglrod: '#c94416',
+      teglrodDark: '#a03612',
+      teglrodLight: '#e85a28',
+      buttonSecondary: '#bc4d30',
+      textDark: '#1a1614',
+      bronze: '#b8860b',
       platinum: '#e5e4e2',
     },
 
-    // Gradients with Kalundborg colors
+    // Gradients (kun i specielle steder; C er low-gradient)
     gradients: {
-      primary: 'linear-gradient(135deg, #C94416 0%, #E85A28 50%, #F07040 100%)',
-      secondary: 'linear-gradient(135deg, #BC4D30 0%, #C94416 50%, #E85A28 100%)',
-      hero: 'linear-gradient(135deg, #A03612 0%, #C94416 25%, #E85A28 75%, #F07040 100%)',
-      card: 'linear-gradient(145deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%)',
-      glass: 'linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)',
-      danger: 'linear-gradient(135deg, #c53030 0%, #e53e3e 50%, #f56565 100%)',
-      gold: 'linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #f6e05e 100%)',
+      primary: 'linear-gradient(135deg, #c94416 0%, #e85a28 100%)',
+      secondary: 'linear-gradient(135deg, #bc4d30 0%, #c94416 100%)',
+      hero: 'linear-gradient(135deg, #faf8f5 0%, #f3efe8 100%)',
+      card: 'linear-gradient(145deg, #ffffff 0%, #faf8f5 100%)',
+      glass: 'linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(250,248,245,0.75) 100%)',
+      danger: 'linear-gradient(135deg, #a02020 0%, #c53030 100%)',
+      gold: 'linear-gradient(135deg, #b8860b 0%, #d4af37 100%)',
     },
   },
 
-  // Glassmorphism effects
   glass: {
-    background: 'rgba(255, 255, 255, 0.65)',
-    border: '1px solid rgba(255, 255, 255, 0.35)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '16px',
+    background: 'rgba(251, 250, 246, 0.88)',
+    border: '1px solid #e8e2d6',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '10px',
   },
 
-  // Layout specific colors
   layout: {
     nav: {
-      background: 'rgba(255, 255, 255, 0.92)',
-      border: '#e2e8f0',
-      text: '#252525',
-      badgeBackground: 'rgba(201, 68, 22, 0.08)',
+      background: 'rgba(251, 250, 246, 0.88)',
+      border: '#e8e2d6',
+      text: '#1a1614',
+      badgeBackground: '#fdf2eb',
     },
     sidebar: {
-      background: 'linear-gradient(180deg, rgba(201,68,22,0.95) 0%, rgba(160,54,18,0.92) 100%)',
-      border: 'rgba(148, 163, 184, 0.15)',
-      text: '#f8fafc',
-      muted: '#fbd5c5',
-      hoverBackground: 'rgba(255,255,255,0.08)',
-      hoverText: '#ffffff',
-      activeBackground: 'linear-gradient(135deg, rgba(232,90,40,0.28) 0%, rgba(201,68,22,0.38) 100%)',
-      activeBorder: '#d4af37',
-      activeText: '#ffffff',
-      badgeBackground: 'rgba(255,255,255,0.12)',
+      // Design C: cream-paper, dark ink (ikke længere rød gradient)
+      background: '#fbfaf6',
+      backgroundSolid: '#fbfaf6',
+      border: '#e8e2d6',
+      text: '#1a1614',
+      muted: '#9a8d7d',
+      hoverBackground: '#f3efe8',
+      hoverText: '#1a1614',
+      activeBackground: '#fdf2eb',
+      activeBorder: '#c94416',
+      activeText: '#c94416',
+      badgeBackground: '#f3efe8',
     },
     card: {
       background: '#ffffff',
-      border: '#e2e8f0',
+      border: '#e8e2d6',
     },
     ticker: {
-      background: 'linear-gradient(135deg, #C94416 0%, #E85A28 100%)',
-      text: '#ffffff',
-      badgeBackground: 'rgba(255, 255, 255, 0.15)',
-      badgeText: '#ffffff',
+      background: '#fdf2eb',
+      text: '#a03612',
+      badgeBackground: '#fbe9dd',
+      badgeText: '#a03612',
     },
   },
 };
@@ -146,137 +164,148 @@ export const darkTheme = {
   ...commonThemeTokens,
   mode: 'dark',
   colors: {
-    // Kalundborg Kommune primary colors (adjusted for dark mode)
-    primary: '#E85A28',           // Light brick red for dark mode
-    primaryDark: '#C94416',       // Original brick red
-    primaryLight: '#F07040',      // Even lighter for highlights
-    secondary: '#BC4D30',         // Secondary button color
+    // Brand (lighter shade for dark mode)
+    primary: '#e85a28',
+    primaryDark: '#c94416',
+    primaryLight: '#f07040',
+    primarySoft: 'rgba(232, 90, 40, 0.18)',
+    primaryBg: 'rgba(232, 90, 40, 0.10)',
+    secondary: '#bc4d30',
 
-    // Semantic colors
+    // Semantic
     accent: '#fbbf24',
-    success: '#22c55e',
+    success: '#4ade80',
+    successSoft: 'rgba(74, 222, 128, 0.10)',
     warning: '#fbbf24',
     danger: '#f87171',
-    dark: '#0f172a',
-    light: '#1e293b',
-    white: '#f8fafc',
+    dangerSoft: 'rgba(248, 113, 113, 0.10)',
+    dark: '#0a0907',
+    light: '#1a1614',
+    white: '#f5f3ee',
 
-    // Surface colors
-    background: '#0b1220',
-    surface: '#111827',
-    surfaceAlt: '#1e293b',
+    // Surface — dark warm
+    background: '#1a1614',
+    surface: '#231d18',
+    surfaceAlt: '#2a231d',
+    paper: '#1a1614',
+    paperSoft: '#231d18',
+    card: '#231d18',
 
-    // Text colors
-    text: '#e2e8f0',
-    textMuted: '#94a3b8',
+    // Text
+    text: '#f0ebe1',
+    textMuted: '#b3a799',
+    textFaded: '#7a6e60',
+    ink: '#f0ebe1',
+    inkSoft: '#b3a799',
+    inkFaded: '#7a6e60',
 
-    // UI elements
-    border: '#1f2937',
-    inputBackground: '#1e293b',
+    // Lines
+    border: '#3a322a',
+    borderSoft: '#2a231d',
+    line: '#3a322a',
+    lineSoft: '#2a231d',
+    inputBackground: '#231d18',
 
-    // Gray scale
     gray: {
-      50: '#0b1220',
-      100: '#111827',
-      200: '#1e293b',
-      300: '#27364a',
-      400: '#334155',
-      500: '#475569',
-      600: '#64748b',
-      700: '#94a3b8',
-      800: '#cbd5f5',
-      900: '#e2e8ff',
+      50: '#1a1614',
+      100: '#231d18',
+      200: '#2a231d',
+      300: '#3a322a',
+      400: '#7a6e60',
+      500: '#b3a799',
+      600: '#d4c8b8',
+      700: '#e8e0d2',
+      800: '#f0ebe1',
+      900: '#faf8f5',
     },
 
-    // Kalundborg specific colors (dark mode adjusted)
     kalundborg: {
-      teglrod: '#E85A28',         // Lighter for dark mode
-      teglrodDark: '#C94416',     // Original
-      teglrodLight: '#F07040',    // Even lighter
-      buttonSecondary: '#BC4D30', // Secondary button
-      textDark: '#e2e8f0',        // Light text for dark mode
+      teglrod: '#e85a28',
+      teglrodDark: '#c94416',
+      teglrodLight: '#f07040',
+      buttonSecondary: '#bc4d30',
+      textDark: '#f0ebe1',
       bronze: '#f97316',
       platinum: '#faf5ff',
     },
 
-    // Gradients with Kalundborg colors (dark mode)
     gradients: {
-      primary: 'linear-gradient(135deg, #C94416 0%, #E85A28 50%, #F07040 100%)',
-      secondary: 'linear-gradient(135deg, #BC4D30 0%, #C94416 50%, #E85A28 100%)',
-      hero: 'linear-gradient(135deg, #0b1220 0%, #1e293b 40%, #C94416 100%)',
-      card: 'linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(201, 68, 22, 0.05) 100%)',
-      glass: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
-      danger: 'linear-gradient(135deg, #ef4444 0%, #f97316 50%, #facc15 100%)',
-      gold: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #facc15 100%)',
+      primary: 'linear-gradient(135deg, #c94416 0%, #e85a28 100%)',
+      secondary: 'linear-gradient(135deg, #bc4d30 0%, #c94416 100%)',
+      hero: 'linear-gradient(135deg, #1a1614 0%, #231d18 100%)',
+      card: 'linear-gradient(145deg, #231d18 0%, #1a1614 100%)',
+      glass: 'linear-gradient(145deg, rgba(35,29,24,0.85) 0%, rgba(26,22,20,0.75) 100%)',
+      danger: 'linear-gradient(135deg, #a02020 0%, #ef4444 100%)',
+      gold: 'linear-gradient(135deg, #b8860b 0%, #fbbf24 100%)',
     },
   },
 
-  // Glassmorphism effects (dark mode)
   glass: {
-    background: 'rgba(17, 24, 39, 0.65)',
-    border: '1px solid rgba(148, 163, 184, 0.15)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '16px',
+    background: 'rgba(26, 22, 20, 0.88)',
+    border: '1px solid #3a322a',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '10px',
   },
 
-  // Layout specific colors (dark mode)
   layout: {
     nav: {
-      background: 'rgba(17, 24, 39, 0.92)',
-      border: '#1f2937',
-      text: '#f8fafc',
-      badgeBackground: 'rgba(232, 90, 40, 0.15)',
+      background: 'rgba(26, 22, 20, 0.92)',
+      border: '#3a322a',
+      text: '#f0ebe1',
+      badgeBackground: 'rgba(232, 90, 40, 0.18)',
     },
     sidebar: {
-      background: 'linear-gradient(180deg, rgba(17,24,39,0.94) 0%, rgba(11,18,32,0.95) 100%)',
-      border: 'rgba(15, 23, 42, 0.6)',
-      text: '#f8fafc',
-      muted: '#94a3b8',
-      hoverBackground: 'rgba(232, 90, 40, 0.15)',
+      background: '#1a1614',
+      backgroundSolid: '#1a1614',
+      border: '#3a322a',
+      text: '#f0ebe1',
+      muted: '#7a6e60',
+      hoverBackground: '#231d18',
       hoverText: '#ffffff',
-      activeBackground: 'linear-gradient(135deg, rgba(232,90,40,0.28) 0%, rgba(201,68,22,0.38) 100%)',
-      activeBorder: '#fbbf24',
-      activeText: '#f8fafc',
-      badgeBackground: 'rgba(15, 23, 42, 0.4)',
+      activeBackground: 'rgba(232, 90, 40, 0.14)',
+      activeBorder: '#e85a28',
+      activeText: '#f07040',
+      badgeBackground: 'rgba(255, 255, 255, 0.06)',
     },
     card: {
-      background: '#111827',
-      border: '#1f2937',
+      background: '#231d18',
+      border: '#3a322a',
     },
     ticker: {
-      background: 'linear-gradient(135deg, #C94416 0%, #A03612 100%)',
-      text: '#f8fafc',
-      badgeBackground: 'rgba(255, 255, 255, 0.12)',
-      badgeText: '#f8fafc',
+      background: 'rgba(232, 90, 40, 0.14)',
+      text: '#f07040',
+      badgeBackground: 'rgba(232, 90, 40, 0.20)',
+      badgeText: '#f07040',
     },
   },
 };
 
-// Legacy support - keeping juridical colors for backward compatibility
+// Legacy juridical color aliases (preserved for components that still reference)
 lightTheme.colors.juridical = {
-  navy: '#C94416',              // Replaced with Kalundborg teglrød
+  navy: '#c94416',
   gold: '#b8860b',
   darkGold: '#9a7209',
-  charcoal: '#2d3748',
-  lightNavy: '#E85A28',         // Replaced with light teglrød
-  deepNavy: '#A03612',          // Replaced with dark teglrød
-  midNavy: '#BC4D30',           // Replaced with secondary
+  charcoal: '#1a1614',
+  lightNavy: '#e85a28',
+  deepNavy: '#a03612',
+  midNavy: '#bc4d30',
   lightGold: '#d4af37',
   bronze: '#cd7f32',
   platinum: '#e5e4e2',
 };
 
 darkTheme.colors.juridical = {
-  navy: '#E85A28',              // Replaced with Kalundborg light teglrød
+  navy: '#e85a28',
   gold: '#fbbf24',
   darkGold: '#f59e0b',
-  charcoal: '#1f2937',
-  lightNavy: '#F07040',         // Replaced with even lighter teglrød
-  deepNavy: '#A03612',          // Replaced with dark teglrød
-  midNavy: '#C94416',           // Replaced with primary teglrød
+  charcoal: '#231d18',
+  lightNavy: '#f07040',
+  deepNavy: '#a03612',
+  midNavy: '#c94416',
   lightGold: '#facc15',
   bronze: '#f97316',
   platinum: '#faf5ff',
 };
 
-export default { lightTheme, darkTheme };
+const themes = { lightTheme, darkTheme };
+export default themes;

@@ -16,17 +16,13 @@ import { useNavigate } from 'react-router-dom';
 
 const COMMANDS = [
   { id: 'home', label: 'Forsiden', hint: 'g h', path: '/', kind: 'nav' },
-  { id: 'dashboard', label: 'Dashboard', hint: 'g d', path: '/dashboard', kind: 'nav' },
-  { id: 'quick-check', label: 'Hurtig Tjek', hint: 'g q', path: '/hurtig-tjek', kind: 'nav' },
-  { id: 'v3', label: 'V3 Vurdering (Hjemmel)', hint: 'g v', path: '/v3-vurdering', kind: 'nav' },
-  { id: 'full-assessment', label: 'Fuld Vurdering', hint: 'g f', path: '/fuld-vurdering', kind: 'nav' },
+  { id: 'vurdering', label: 'Vurdering', hint: 'g v', path: '/vurdering', kind: 'nav' },
   { id: 'cases', label: 'AI Sager', hint: 'g s', path: '/ai-sager', kind: 'nav' },
-  { id: 'history', label: 'Historik', path: '/historik', kind: 'nav' },
   { id: 'kb', label: 'Videnbase', path: '/videnbase', kind: 'nav' },
   { id: 'projects', label: 'AI Løsninger', path: '/ai-losninger', kind: 'nav' },
-  { id: 'research', label: 'Research', path: '/research', kind: 'nav' },
+  { id: 'research', label: 'Juridisk Research', path: '/research', kind: 'nav' },
   { id: 'law', label: 'Lov-assistent', path: '/lov-assistent', kind: 'nav' },
-  { id: 'resources', label: 'Ressourcer', path: '/ressourcer', kind: 'nav' },
+  { id: 'resources', label: 'Relevante Links', path: '/ressourcer', kind: 'nav' },
   { id: 'settings', label: 'Indstillinger', path: '/indstillinger', kind: 'nav' },
 ];
 
