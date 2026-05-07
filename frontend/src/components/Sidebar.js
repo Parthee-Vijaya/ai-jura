@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import {
   FaHome,
   FaClipboardList,
+  FaHistory,
   FaBook,
   FaGlobeEurope,
   FaBalanceScale,
@@ -350,6 +351,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
         { path: '/vurdering', icon: FaClipboardList, text: 'Vurdering' },
+        { path: '/historik', icon: FaHistory, text: 'Historik' },
         { path: '/ai-sager', icon: FaBalanceScale, text: 'AI Sager' }
       ]
     },

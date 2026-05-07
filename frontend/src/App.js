@@ -31,6 +31,7 @@ const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 const VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
+const VurderingHistorikPage = React.lazy(() => import('./pages/VurderingHistorikPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -247,12 +248,15 @@ const AppInner = () => {
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />
 
+                  {/* Vurderingshistorik (audit log over /api/v3/audit) */}
+                  <Route path="/historik" element={<VurderingHistorikPage />} />
+                  <Route path="/historik/:id" element={<VurderingHistorikPage />} />
+
                   {/* Back-compat redirects from removed pages */}
                   <Route path="/hurtig-tjek" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/fuld-vurdering" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/v3-vurdering" element={<Navigate to="/vurdering" replace />} />
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
-                  <Route path="/historik" element={<Navigate to="/vurdering" replace />} />
 
                   <Route path="/ai-sager" element={<AICasesPage />} />
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />

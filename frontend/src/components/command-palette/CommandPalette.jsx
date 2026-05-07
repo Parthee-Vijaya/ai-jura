@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 const COMMANDS = [
   { id: 'home', label: 'Forsiden', hint: 'g h', path: '/', kind: 'nav' },
   { id: 'vurdering', label: 'Vurdering', hint: 'g v', path: '/vurdering', kind: 'nav' },
+  { id: 'historik', label: 'Vurderingshistorik', hint: 'g i', path: '/historik', kind: 'nav' },
   { id: 'cases', label: 'AI Sager', hint: 'g s', path: '/ai-sager', kind: 'nav' },
   { id: 'kb', label: 'Videnbase', path: '/videnbase', kind: 'nav' },
   { id: 'projects', label: 'AI Løsninger', path: '/ai-losninger', kind: 'nav' },
