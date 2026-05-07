@@ -2242,6 +2242,135 @@ async def v3_compare(request: V3CompareRequest):
     }
 
 
+# ---------------------------------------------------------------------------
+# /api/v3/document/analyze — upload PDF/DOCX and run the rule engine over it
+# ---------------------------------------------------------------------------
+
+@app.post("/api/v3/document/analyze")
+async def v3_document_analyze(
+    file: UploadFile = File(...),
+    case_id: Optional[str] = None,
+    note: Optional[str] = None,
+):
+    """Parse a PDF or DOCX, chunk it, extract signals via LLM per chunk,
+    then evaluate the v3 rule engine against the merged signals.
+
+    Returns the same shape as /api/v3/assess plus per-chunk attribution
+    so the UI can highlight which section triggered which rule."""
+    from src.services.document_analyzer import (
+        parse_document,
+        analyze_document,
+        chunk_rule_map,
+        DocumentParseError,
+    )
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    if len(content) > 10 * 1024 * 1024:  # 10 MB cap
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large ({len(content)} bytes). Max 10 MB.",
+        )
+
+    try:
+        text, offsets, kind = parse_document(content, file.filename or "")
+    except DocumentParseError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.exception("document parse failed")
+        raise HTTPException(status_code=500, detail=f"parse failed: {exc}")
+
+    if not text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Document contained no extractable text (scanned PDF without OCR?).",
+        )
+
+    try:
+        rules = _v3_load_rules()
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    extractor = _v3_signal_extractor()
+    result = analyze_document(
+        text,
+        rules,
+        offsets,
+        extractor=extractor,
+    )
+
+    # Build chunk → triggered rule_ids mapping for UI highlighting.
+    chunk_to_rules = chunk_rule_map(result, rules)
+
+    # Persist to audit-log so this analysis shows up in /historik.
+    audit_id: Optional[str] = None
+    try:
+        from src.database.connection import SessionLocal
+        db = SessionLocal()
+        try:
+            request_payload = {
+                "kind": "document",
+                "filename": file.filename,
+                "size_bytes": len(content),
+                "format": kind,
+                "text_length": result.text_length,
+                "chunk_count": result.chunk_count,
+                "merged_signals": result.merged_signals,
+                "case_id": case_id,
+                "note": note,
+            }
+            response_payload = {
+                "rule_engine_version": "3.0.0-alpha.5",
+                "evaluated_at": datetime.now(UTC).isoformat(),
+                "rules_loaded": result.rules_loaded,
+                "aggregate_status": result.aggregate_status,
+                "decisions": [d.model_dump(mode="json") for d in result.decisions],
+                "warnings": result.warnings,
+            }
+            entry = v3_audit.save_assessment(
+                db,
+                request_payload=request_payload,
+                response_payload=response_payload,
+                case_id=case_id,
+                note=note,
+            )
+            audit_id = entry.id
+            db.commit()
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.warning("v3 audit log write failed (analysis still returned): %s", exc)
+
+    return {
+        "rule_engine_version": "3.0.0-alpha.5",
+        "evaluated_at": datetime.now(UTC).isoformat(),
+        "filename": file.filename,
+        "format": kind,
+        "size_bytes": len(content),
+        "text_length": result.text_length,
+        "chunk_count": result.chunk_count,
+        "rules_loaded": result.rules_loaded,
+        "aggregate_status": result.aggregate_status,
+        "merged_signals": result.merged_signals,
+        "decisions": [d.model_dump(mode="json") for d in result.decisions],
+        "chunks": [
+            {
+                "index": c.index,
+                "label": c.label,
+                "page": c.page,
+                "char_start": c.char_start,
+                "char_end": c.char_end,
+                "preview": c.text[:300] + ("…" if len(c.text) > 300 else ""),
+                "triggered_rules": chunk_to_rules.get(c.index, []),
+            }
+            for c in result.chunks
+        ],
+        "warnings": result.warnings,
+        "audit_log_id": audit_id,
+    }
+
+
 @app.get("/api/v3/rules")
 async def v3_list_rules():
     """List all loaded v3 rules with their citations. Useful for the

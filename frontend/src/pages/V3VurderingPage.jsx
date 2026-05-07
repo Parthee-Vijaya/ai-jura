@@ -453,6 +453,109 @@ const ToggleRow = styled.label`
   margin-left: auto;
 `;
 
+// ---- Document drop-zone --------------------------------------------------
+
+const DropZone = styled.label`
+  display: block;
+  background: ${(p) => p.theme.colors.card};
+  border: 2px dashed ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.line)};
+  border-radius: 10px;
+  padding: 1.6rem 1.5rem;
+  margin-bottom: 1.25rem;
+  cursor: pointer;
+  transition: border-color ${(p) => p.theme.animations.transitionFast},
+              background ${(p) => p.theme.animations.transitionFast};
+  text-align: left;
+
+  &:hover {
+    border-color: ${(p) => p.theme.colors.primary};
+  }
+
+  ${(p) =>
+    p.$active &&
+    `background: ${p.theme.colors.primaryBg};`}
+
+  input[type="file"] { display: none; }
+`;
+
+const DropTitle = styled.div`
+  font-family: ${(p) => p.theme.fonts.display};
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.ink};
+  margin-bottom: 0.3rem;
+`;
+
+const DropHint = styled.div`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.92rem;
+  color: ${(p) => p.theme.colors.inkSoft};
+  line-height: 1.5;
+`;
+
+const DropMeta = styled.div`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.78rem;
+  color: ${(p) => p.theme.colors.inkFaded};
+  margin-top: 0.55rem;
+  letter-spacing: 0.04em;
+`;
+
+// ---- Document chunks section in result-mode ----------------------------
+
+const ChunksSection = styled.div`
+  margin: 2.5rem 0 1rem;
+  padding: 1.4rem 1.6rem;
+  background: ${(p) => p.theme.colors.paperSoft};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 8px;
+`;
+
+const ChunksHeader = styled.div`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${(p) => p.theme.colors.inkFaded};
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+`;
+
+const ChunkItem = styled.div`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.95rem;
+  color: ${(p) => p.theme.colors.ink};
+  padding: 0.65rem 0;
+  border-bottom: 1px solid ${(p) => p.theme.colors.lineSoft};
+  line-height: 1.55;
+
+  &:last-child { border-bottom: none; }
+
+  .label {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: ${(p) => p.theme.colors.primary};
+    letter-spacing: 0.1em;
+    margin-right: 0.6rem;
+    font-weight: 600;
+  }
+
+  .preview {
+    color: ${(p) => p.theme.colors.inkSoft};
+    font-style: italic;
+    margin-top: 0.3rem;
+    font-size: 0.88rem;
+  }
+
+  .rules {
+    margin-top: 0.4rem;
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.72rem;
+    color: ${(p) => p.theme.colors.inkFaded};
+  }
+`;
+
 // ---- Examples panel ------------------------------------------------------
 
 const ExamplesPanel = styled.section`
@@ -836,6 +939,18 @@ async function postAssess(body) {
   return res.data;
 }
 
+async function postDocumentAnalyze({ file, caseId, note }) {
+  const fd = new FormData();
+  fd.append('file', file);
+  if (caseId) fd.append('case_id', caseId);
+  if (note) fd.append('note', note);
+  const res = await axios.post('/api/v3/document/analyze', fd, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 180000,
+  });
+  return res.data;
+}
+
 const buildEvidenceItems = (decisions, statusMap = {}) => {
   const all = new Set();
   decisions.forEach((d) => {
@@ -910,6 +1025,7 @@ const V3VurderingPage = () => {
   const [expandedExplanations, setExpandedExplanations] = useState({});
 
   const mutation = useMutation(postAssess);
+  const documentMutation = useMutation(postDocumentAnalyze);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -921,6 +1037,20 @@ const V3VurderingPage = () => {
       case_id: caseId.trim() || undefined,
       note: note.trim() || undefined,
     });
+  };
+
+  const handleFileDrop = (file) => {
+    if (!file) return;
+    documentMutation.mutate({
+      file,
+      caseId: caseId.trim() || undefined,
+      note: note.trim() || `Document analysis: ${file.name}`,
+    });
+  };
+
+  const onFileInputChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileDrop(file);
   };
 
   const loadExample = (ex) => {
@@ -937,11 +1067,19 @@ const V3VurderingPage = () => {
     setLoadedExample(null);
   };
 
+  const resetAll = () => {
+    mutation.reset();
+    documentMutation.reset();
+  };
+
   const toggleExplanation = (id) => {
     setExpandedExplanations((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const result = mutation.data;
+  // Result is either from /api/v3/assess (form) or /api/v3/document/analyze
+  // (drop-zone). Both endpoints return decisions/aggregate_status/audit.
+  const result = documentMutation.data || mutation.data;
+  const isDocumentResult = !!documentMutation.data;
   const decisions = useMemo(
     () => (result?.decisions || []).filter((d) => d.triggered),
     [result],
@@ -989,8 +1127,11 @@ const V3VurderingPage = () => {
   // that are relevant to the legal output.
   const relevantWarnings = filterNoiseWarnings(result?.warnings || []);
 
-  // Derive case display fields
-  const displayTitle = deriveTitle(description, caseId);
+  // Derive case display fields. For document-mode, fall back to the
+  // filename if no description was provided.
+  const displayTitle = isDocumentResult && result?.filename
+    ? result.filename.replace(/\.(pdf|docx)$/i, '')
+    : deriveTitle(description, caseId);
   const displayCaseId = caseId || (result?.audit_log_id ? result.audit_log_id.slice(0, 8) : '');
   const evaluatedDate = formatDanishDate(result?.evaluated_at);
 
@@ -1006,6 +1147,40 @@ const V3VurderingPage = () => {
           signaler. Hver afgørelse hjemles i en konkret lovartikel — citater
           står i marginen til højre.
         </Lede>
+
+        <DropZone $active={documentMutation.isLoading}>
+          <input
+            type="file"
+            accept=".pdf,.docx"
+            onChange={onFileInputChange}
+            disabled={documentMutation.isLoading}
+          />
+          <DropTitle>
+            {documentMutation.isLoading
+              ? 'Analyserer dokument…'
+              : 'Upload kontrakt, DPIA eller policy'}
+          </DropTitle>
+          <DropHint>
+            Træk en PDF eller DOCX hertil — eller klik for at vælge en fil.
+            Backend chunker dokumentet, kører LLM-baseret signal-extraction
+            per afsnit og evaluerer reglerne mod den samlede signal-mængde.
+          </DropHint>
+          <DropMeta>
+            Understøtter .pdf og .docx · Max 10 MB · Tekst skal være søgbar
+            (ikke scannet billede)
+          </DropMeta>
+        </DropZone>
+
+        {documentMutation.isError && (
+          <ErrorBox>
+            Dokument-analyse fejlede:{' '}
+            {String(
+              documentMutation.error?.response?.data?.detail ||
+                documentMutation.error?.message ||
+                documentMutation.error,
+            )}
+          </ErrorBox>
+        )}
 
         <FormCard onSubmit={handleSubmit}>
           <Label htmlFor="desc">Beskriv systemet</Label>
@@ -1118,7 +1293,7 @@ const V3VurderingPage = () => {
     <Page>
       <Shell>
         <Doc>
-          <BackLink type="button" onClick={() => mutation.reset()}>
+          <BackLink type="button" onClick={resetAll}>
             ← Ny vurdering
           </BackLink>
 
@@ -1174,6 +1349,28 @@ const V3VurderingPage = () => {
               )}
             </VerdictText>
           </VerdictBanner>
+
+            {isDocumentResult && result.chunks?.length > 0 && (
+              <ChunksSection>
+                <ChunksHeader>
+                  Dokument-afsnit · {result.format?.toUpperCase()} · {result.chunk_count} chunk(s)
+                </ChunksHeader>
+                {result.chunks.map((c) => (
+                  <ChunkItem key={c.index}>
+                    <span className="label">{c.label}</span>
+                    {c.triggered_rules?.length > 0
+                      ? `udløser ${c.triggered_rules.length} regel(er)`
+                      : 'ingen regler udløst'}
+                    <div className="preview">"{c.preview}"</div>
+                    {c.triggered_rules?.length > 0 && (
+                      <div className="rules">
+                        {c.triggered_rules.join(' · ')}
+                      </div>
+                    )}
+                  </ChunkItem>
+                ))}
+              </ChunksSection>
+            )}
 
             {requiringDecisions.length > 0 && (
               <>
