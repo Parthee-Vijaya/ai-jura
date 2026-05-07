@@ -5,6 +5,7 @@ Kombinerer rigtige RSS feeds med LLM analyse for relevante nyheder
 
 import asyncio
 import os
+import re
 from datetime import datetime, UTC, timedelta
 from typing import List, Dict, Any, Optional
 import logging
@@ -241,6 +242,38 @@ Returner kun JSON array.""")
             # Fallback: returner formaterede feed items uden LLM analyse
             return self._format_feed_items(all_feed_items[:8])
 
+    @staticmethod
+    def _clean_summary(raw: str, max_chars: int = 480) -> str:
+        """Strip HTML/whitespace fra RSS summary og afkort på sætnings-/ord-grænse."""
+        if not raw:
+            return 'Ingen sammendrag tilgængeligt'
+        # Strip HTML
+        text = re.sub(r'<[^>]+>', ' ', raw)
+        # Decode common entities
+        text = (
+            text.replace('&nbsp;', ' ')
+            .replace('&amp;', '&')
+            .replace('&quot;', '"')
+            .replace('&#39;', "'")
+            .replace('&lt;', '<')
+            .replace('&gt;', '>')
+        )
+        # Collapse whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        if len(text) <= max_chars:
+            return text
+        # Sentence-boundary first
+        cut = text[:max_chars]
+        for sep in ('. ', '! ', '? '):
+            idx = cut.rfind(sep)
+            if idx >= max_chars * 0.6:
+                return cut[: idx + 1].strip()
+        # Else word-boundary
+        idx = cut.rfind(' ')
+        if idx >= max_chars * 0.5:
+            return cut[:idx].rstrip(',;:') + '…'
+        return cut.rstrip() + '…'
+
     def _format_feed_items(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Formater RSS items uden LLM analyse"""
         formatted = []
@@ -248,7 +281,7 @@ Returner kun JSON array.""")
             formatted.append({
                 'title': item['title'],
                 'url': item['link'],
-                'summary': item['summary'][:200] if item['summary'] else 'Ingen sammendrag tilgængeligt',
+                'summary': self._clean_summary(item.get('summary', '')),
                 'source': item['source'],
                 'keywords': ['gdpr', 'compliance'],
                 'importance': 'medium'

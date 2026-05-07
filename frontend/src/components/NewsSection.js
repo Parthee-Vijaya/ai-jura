@@ -4,66 +4,104 @@ import { FaSync } from 'react-icons/fa';
 import { NewsSkeletonLoader } from './SkeletonLoader';
 import { availableCategories, resolveSourceMeta } from '../utils/newsSourceMap';
 
-const NewsContainer = styled.div`
-  background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 24px;
-  box-shadow: ${props => props.theme.shadows.lg};
+// ---- Design C — editorial news column ------------------------------------
+
+const NewsContainer = styled.section`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 28px 32px 12px;
+  box-shadow: ${(p) => p.theme.shadows.sm};
   margin-bottom: 24px;
-  border: 1px solid ${props => props.theme.colors.border};
-  transition: ${props => props.theme.animations.transition};
+
+  @media (max-width: 720px) {
+    padding: 22px 20px 8px;
+  }
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
+  margin-bottom: 8px;
 `;
 
 const NewsHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const Eyebrow = styled.span`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: ${(p) => p.theme.colors.primary};
 `;
 
 const NewsTitle = styled.h2`
-  color: ${props => props.theme.colors.text};
-  margin: 0;
-  font-size: 1.5rem;
+  font-family: ${(p) => p.theme.fonts.display};
+  font-size: 1.65rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  color: ${(p) => p.theme.colors.text};
+  margin: 0;
+  line-height: 1.15;
 `;
 
 const HeaderInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 14px;
 `;
 
 const LastUpdated = styled.span`
-  color: ${props => props.theme.colors.textMuted};
-  font-size: 0.9rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  color: ${(p) => p.theme.colors.textMuted};
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
 `;
 
 const RefreshButton = styled.button`
-  background: ${props => props.theme.colors.primary};
-  color: ${props => props.theme.colors.white};
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  display: flex;
+  background: transparent;
+  color: ${(p) => p.theme.colors.primary};
+  border: 1px solid ${(p) => p.theme.colors.primary};
+  border-radius: 999px;
+  padding: 6px 14px;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: ${props => props.theme.animations.transitionFast};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: ${(p) => p.theme.animations.transitionFast};
 
-  &:hover {
-    filter: brightness(1.05);
-    transform: translateY(-1px);
+  &:hover:not(:disabled) {
+    background: ${(p) => p.theme.colors.primarySoft};
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
-    transform: none;
   }
 
   .refresh-icon {
-    animation: ${props => props.spinning ? 'spin 1s linear infinite' : 'none'};
+    font-size: 0.75rem;
+    animation: ${(p) => (p.spinning ? 'spin 1s linear infinite' : 'none')};
   }
 
   @keyframes spin {
@@ -72,164 +110,247 @@ const RefreshButton = styled.button`
   }
 `;
 
+const CategoryFilter = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
+
 const CategoryButton = styled.button`
-  padding: 6px 14px;
-  border: 1px solid ${props => props.theme.colors.border};
-  border-radius: 20px;
-  background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.surfaceAlt};
-  color: ${props => props.active ? props.theme.colors.white : props.theme.colors.text};
-  font-size: 0.875rem;
+  padding: 4px 12px;
+  border: 1px solid
+    ${(p) => (p.active ? p.theme.colors.primary : p.theme.colors.border)};
+  border-radius: 999px;
+  background: ${(p) =>
+    p.active ? p.theme.colors.primarySoft : 'transparent'};
+  color: ${(p) =>
+    p.active ? p.theme.colors.primary : p.theme.colors.textMuted};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: ${props => props.theme.animations.transitionFast};
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:hover {
-    background: ${props => props.active ? props.theme.colors.primary : props.theme.colors.surface};
+    border-color: ${(p) => p.theme.colors.primary};
+    color: ${(p) => p.theme.colors.primary};
   }
 `;
 
-const NewsItem = styled.div`
-  border-bottom: 1px solid ${props => props.theme.colors.border};
-  padding: 16px 0;
+// ---- Item ---------------------------------------------------------------
+
+const NewsItem = styled.article`
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 0;
+  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
 
   &:last-child {
     border-bottom: none;
   }
-`;
 
-const NewsItemHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-`;
-
-const NewsItemTitle = styled.h3`
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: ${props => props.theme.colors.text};
-  line-height: 1.4;
-  flex: 1;
-`;
-
-const ImportanceBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 12px;
-  background: ${props => {
-    switch(props.importance) {
-      case 'high': return 'rgba(201, 68, 22, 0.12)';
-      case 'medium': return 'rgba(232, 90, 40, 0.15)';
-      case 'low': return '#c6f6d5';
-      default: return '#e2e8f0';
-    }
-  }};
-  color: ${props => {
-    switch(props.importance) {
-      case 'high': return '#7f1d1d';
-      case 'medium': return '#92400e';
-      case 'low': return '#38a169';
-      default: return '#4a5568';
-    }
-  }};
-`;
-
-const NewsSource = styled.div`
-  font-size: 0.85rem;
-  color: ${props => props.theme.colors.textMuted};
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  @media (max-width: 720px) {
+    gap: 14px;
+  }
 `;
 
 const SourceLogo = styled.img`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
   object-fit: cover;
-  border: 1px solid ${props => props.theme.colors.border};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  background: ${(p) => p.theme.colors.surfaceAlt};
+
+  @media (max-width: 720px) {
+    width: 36px;
+    height: 36px;
+  }
 `;
 
-const SourceMeta = styled.span`
+const ItemBody = styled.div`
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  gap: 6px;
+`;
+
+const ItemHeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+`;
+
+const ItemHeaderText = styled.div`
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const NewsItemTitle = styled.h3`
+  font-family: ${(p) => p.theme.fonts.display};
+  font-size: 1.18rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  color: ${(p) => p.theme.colors.text};
+  margin: 0;
+`;
+
+const SourceLine = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  color: ${(p) => p.theme.colors.textMuted};
 `;
 
 const SourceName = styled.span`
   font-weight: 600;
-  color: ${props => props.theme.colors.text};
+  color: ${(p) => p.theme.colors.text};
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 `;
 
-const SourceExtra = styled.span`
-  color: ${props => props.theme.colors.textMuted};
-  font-size: 0.75rem;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const CategoryFilter = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+const SourceMetaText = styled.span`
+  &::before {
+    content: '·';
+    margin-right: 8px;
+    color: ${(p) => p.theme.colors.textFaded};
+  }
 `;
 
 const NewsSummary = styled.p`
-  margin: 0;
-  color: ${props => props.theme.colors.textMuted};
-  line-height: 1.5;
-  font-size: 0.95rem;
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 1rem;
+  line-height: 1.6;
+  color: ${(p) => p.theme.colors.text};
+  margin: 6px 0 0;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const Keywords = styled.div`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+`;
+
+const Keyword = styled.span`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: ${(p) => p.theme.colors.textMuted};
+  background: transparent;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: 999px;
+  padding: 2px 10px;
 `;
 
 const NewsLink = styled.a`
-  color: ${props => props.theme.colors.primary};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: ${(p) => p.theme.colors.primary};
   text-decoration: none;
-  font-size: 0.875rem;
-  margin-top: 8px;
-  display: inline-block;
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
 
   &:hover {
     text-decoration: underline;
   }
 `;
 
-const Keywords = styled.div`
-  margin-top: 8px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+// ---- Importance badge — outline pill, not solid ------------------------
+
+const ImportanceBadge = styled.span`
+  flex: 0 0 auto;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid;
+  background: transparent;
+
+  ${({ importance, theme }) => {
+    if (importance === 'high') {
+      return `border-color: ${theme.colors.danger}; color: ${theme.colors.danger};`;
+    }
+    if (importance === 'medium') {
+      return `border-color: ${theme.colors.primary}; color: ${theme.colors.primary};`;
+    }
+    return `border-color: ${theme.colors.success}; color: ${theme.colors.success};`;
+  }}
 `;
 
-const Keyword = styled.span`
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  color: #4a5568;
-`;
+// ---- Status messages ----------------------------------------------------
 
 const LoadingMessage = styled.div`
+  font-family: ${(p) => p.theme.fonts.body};
   text-align: center;
-  padding: 40px;
-  color: ${props => props.theme.colors.textMuted};
+  padding: 36px 0;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-style: italic;
 `;
 
 const ErrorMessage = styled.div`
+  font-family: ${(p) => p.theme.fonts.sans};
   text-align: center;
-  padding: 40px;
-  color: ${props => props.theme.colors.danger};
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(248, 113, 113, 0.15)' : '#fed7d7'};
-  border-radius: 10px;
+  padding: 16px 18px;
+  margin: 12px 0;
+  color: ${(p) => p.theme.colors.danger};
+  background: ${(p) => p.theme.colors.dangerSoft};
+  border-left: 3px solid ${(p) => p.theme.colors.danger};
+  border-radius: 4px;
+  font-size: 0.85rem;
 `;
+
+// ---- Helpers ------------------------------------------------------------
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  // Remove tags
+  let text = String(html).replace(/<[^>]+>/g, ' ');
+  // Decode common entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+  // Collapse whitespace
+  return text.replace(/\s+/g, ' ').trim();
+};
+
+const importanceLabel = (importance) => {
+  if (importance === 'high') return 'Høj vigtighed';
+  if (importance === 'medium') return 'Middel vigtighed';
+  return 'Lav vigtighed';
+};
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const POLLING_INTERVAL_MS = 15 * 60 * 1000;
@@ -310,46 +431,32 @@ const NewsSection = () => {
       setLoading(false);
       setRefreshing(false);
     }
-    // fetchStaticNews is a stable function defined above and doesn't need to be in deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawItems.length]);
 
   useEffect(() => {
     fetchNews();
-
-    const interval = setInterval(() => {
-      fetchNews();
-    }, POLLING_INTERVAL_MS);
-
+    const interval = setInterval(() => fetchNews(), POLLING_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [fetchNews]);
 
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-  };
-
-  const handleManualRefresh = () => {
-    fetchNews({ forceRefresh: true });
-  };
+  const handleCategoryChange = (category) => setSelectedCategory(category);
+  const handleManualRefresh = () => fetchNews({ forceRefresh: true });
 
   const news = useMemo(() => {
-    if (selectedCategory === 'all') {
-      return rawItems;
-    }
+    if (selectedCategory === 'all') return rawItems;
     return rawItems.filter((item) => resolveSourceMeta(item.source).id === selectedCategory);
   }, [rawItems, selectedCategory]);
 
   const formatDate = (dateString, fallbackString) => {
     const date = dateString ? new Date(dateString) : fallbackString ? new Date(fallbackString) : null;
-    if (!date || Number.isNaN(date.getTime())) {
-      return 'Ukendt tidspunkt';
-    }
+    if (!date || Number.isNaN(date.getTime())) return 'Ukendt tidspunkt';
     return date.toLocaleDateString('da-DK', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -357,14 +464,16 @@ const NewsSection = () => {
     <NewsContainer>
       <SectionHeader>
         <NewsHeader>
-          <NewsTitle>Seneste AI- og juranews</NewsTitle>
+          <TitleBlock>
+            <Eyebrow>Forseti · live-feed</Eyebrow>
+            <NewsTitle>Seneste AI- og juranews</NewsTitle>
+          </TitleBlock>
           <HeaderInfo>
             {lastUpdated && (
               <LastUpdated>
                 Opdateret {lastUpdated.toLocaleDateString('da-DK', {
                   day: '2-digit',
                   month: '2-digit',
-                  year: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
@@ -376,7 +485,7 @@ const NewsSection = () => {
               spinning={refreshing}
             >
               <FaSync className="refresh-icon" />
-              {refreshing ? 'Opdaterer...' : 'Opdater nu'}
+              {refreshing ? 'Opdaterer…' : 'Opdater'}
             </RefreshButton>
           </HeaderInfo>
         </NewsHeader>
@@ -394,9 +503,7 @@ const NewsSection = () => {
         </CategoryFilter>
       </SectionHeader>
 
-      {error && (
-        <ErrorMessage>Fejl ved indlæsning af nyheder: {error}</ErrorMessage>
-      )}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {loading && rawItems.length === 0 ? (
         <NewsSkeletonLoader />
@@ -405,42 +512,40 @@ const NewsSection = () => {
       ) : (
         news.map((item, index) => {
           const sourceMeta = resolveSourceMeta(item.source);
+          const summary = stripHtml(item.summary);
           return (
             <NewsItem key={`${item.url}-${index}`}>
-              <NewsItemHeader>
-                <NewsItemTitle>{item.title}</NewsItemTitle>
-                <ImportanceBadge importance={item.importance}>
-                  {item.importance === 'high'
-                    ? 'Høj vigtighed'
-                    : item.importance === 'medium'
-                    ? 'Middel vigtighed'
-                    : 'Lav vigtighed'}
-                </ImportanceBadge>
-              </NewsItemHeader>
+              <SourceLogo src={sourceMeta.logo} alt={`${sourceMeta.name} logo`} />
+              <ItemBody>
+                <ItemHeaderRow>
+                  <ItemHeaderText>
+                    <NewsItemTitle>{item.title}</NewsItemTitle>
+                    <SourceLine>
+                      <SourceName>{item.source}</SourceName>
+                      <SourceMetaText>
+                        {sourceMeta.region} · {formatDate(item.published_at, item.scraped_at)}
+                      </SourceMetaText>
+                    </SourceLine>
+                  </ItemHeaderText>
+                  <ImportanceBadge importance={item.importance}>
+                    {importanceLabel(item.importance)}
+                  </ImportanceBadge>
+                </ItemHeaderRow>
 
-              <NewsSource>
-                <SourceLogo src={sourceMeta.logo} alt={`${sourceMeta.name} logo`} />
-                <SourceMeta>
-                  <SourceName>{item.source}</SourceName>
-                  <SourceExtra>
-                    {sourceMeta.region} • {formatDate(item.published_at, item.scraped_at)}
-                  </SourceExtra>
-                </SourceMeta>
-              </NewsSource>
+                {summary && <NewsSummary>{summary}</NewsSummary>}
 
-              <NewsSummary>{item.summary}</NewsSummary>
+                {item.keywords && item.keywords.length > 0 && (
+                  <Keywords>
+                    {item.keywords.map((keyword, kidx) => (
+                      <Keyword key={kidx}>{keyword}</Keyword>
+                    ))}
+                  </Keywords>
+                )}
 
-              {item.keywords && item.keywords.length > 0 && (
-                <Keywords>
-                  {item.keywords.map((keyword, kidx) => (
-                    <Keyword key={kidx}>{keyword}</Keyword>
-                  ))}
-                </Keywords>
-              )}
-
-              <NewsLink href={item.url} target="_blank" rel="noopener noreferrer">
-                Læs mere →
-              </NewsLink>
+                <NewsLink href={item.url} target="_blank" rel="noopener noreferrer">
+                  Læs hele artiklen →
+                </NewsLink>
+              </ItemBody>
             </NewsItem>
           );
         })
