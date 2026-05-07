@@ -29,6 +29,13 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+### Design-beslutning (2026-05-07)
+Visuelt sprog er bekræftet via tre mockups i `mockups/`:
+- **Marketing/login (`/`, `/om`, `/kontakt`):** Design A — "stille autoritet" (hvid baggrund, Source Serif Pro headlines, Inter body, lov-citater som elegante citatblokke). Sender ro og autoritet til indkøbsbeslutningstagere.
+- **App (`/app/*`):** Design B — "kommandocenter" (mørk default, sidebar-navigation, ⌘K command palette, JetBrains Mono på lov-citater, status-pills). Power-user-værktøj for sagsbehandlere.
+
+`.claude/launch.json` er sat op med dev-servers for backend (port 8000) og frontend (port 8080).
+
 ## [2.0.0] - 2025-09-20
 
 ### Ændret (Changed)
