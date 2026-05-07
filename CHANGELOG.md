@@ -29,6 +29,27 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+## [3.0.0-alpha.6] - 2026-05-07 — Audit-log + 5 nye regler
+
+### Tilføjet (Added)
+- **Audit-log for v3-vurderinger** (`src/rule_engine/audit.py`):
+  - `V3AssessmentLog` SQLAlchemy-model (append-only, JSON-payload, indekseret på created_at + status)
+  - Hver `/api/v3/assess` persisterer request + response automatisk
+  - Best-effort: hvis DB er nede, returneres vurderingen stadig med en advarsel
+  - Optional `case_id`, `user_id`, `note` på request for senere filtrering
+- **Audit-endpoints**:
+  - `GET /api/v3/audit?limit=50&case_id=...&status=NO-GO` — filtreret liste
+  - `GET /api/v3/audit/{log_id}` — fuld request + response til reproduktion
+- **5 nye regler** (15 i alt):
+  - AI Act art. 13 (transparens og brugerinformation for højrisiko)
+  - AI Act art. 14 (menneskelig overvågning af højrisiko)
+  - GDPR art. 5 (principper: formålsbegrænsning, dataminimering, opbevaring, rigtighed, sikkerhed)
+  - GDPR art. 32 (sikkerhed ved behandling)
+  - Forvaltningsloven § 3 (inhabilitet — også systemisk via leverandør og bias)
+
+### Test-status
+94 unit tests grønne (9 nye for audit) · 3/3 regression-cases passerer · 15 regler validerer
+
 ## [3.0.0-alpha.5] - 2026-05-07 — LM Studio + react-query + ⌘K command palette
 
 ### Tilføjet (Added)

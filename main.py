@@ -1872,6 +1872,7 @@ from src.rule_engine import (
     SignalExtractionError,
 )
 from src.rule_engine.executor import aggregate_status, evaluate_all
+from src.rule_engine import audit as v3_audit  # registers V3AssessmentLog with Base.metadata
 
 
 _RULES_DIR = Path(__file__).parent / "rules"
@@ -1925,6 +1926,11 @@ class V3AssessRequest(BaseModel):
         ),
     )
 
+    # Optional audit metadata
+    case_id: Optional[str] = Field(default=None, description="Case identifier the assessment belongs to.")
+    user_id: Optional[str] = Field(default=None, description="User running the assessment.")
+    note: Optional[str] = Field(default=None, description="Free-text note saved with the audit entry.")
+
 
 @app.post("/api/v3/assess")
 async def v3_assess(request: V3AssessRequest):
@@ -1973,8 +1979,8 @@ async def v3_assess(request: V3AssessRequest):
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"evaluation error: {exc}")
 
-    return {
-        "rule_engine_version": "3.0.0-alpha.3",
+    response = {
+        "rule_engine_version": "3.0.0-alpha.5",
         "evaluated_at": datetime.now(UTC).isoformat(),
         "rules_loaded": len(rules),
         "aggregate_status": aggregate_status(decisions).value,
@@ -1983,6 +1989,69 @@ async def v3_assess(request: V3AssessRequest):
         "decisions": [d.model_dump(mode="json") for d in decisions],
         "warnings": warnings,
     }
+
+    # Persist to audit log so auditors can reproduce the decision later.
+    # Best-effort: an audit failure should not break the assessment response.
+    try:
+        from src.database.connection import SessionLocal
+        db = SessionLocal()
+        try:
+            entry = v3_audit.save_assessment(
+                db,
+                request_payload=request.model_dump(mode="json"),
+                response_payload=response,
+                case_id=request.case_id,
+                user_id=request.user_id,
+                note=request.note,
+            )
+            db.commit()
+            response["audit_log_id"] = entry.id
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.warning(f"v3 audit log write failed (assessment still returned): {exc}")
+        response.setdefault("warnings", []).append(f"audit log unavailable: {exc}")
+
+    return response
+
+
+@app.get("/api/v3/audit")
+async def v3_audit_list(
+    limit: int = 50,
+    case_id: Optional[str] = None,
+    aggregate_status_filter: Optional[str] = Query(default=None, alias="status"),
+):
+    """List recent v3 assessments. Filters: status (GO/BETINGET-GO/NO-GO), case_id."""
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        entries = v3_audit.list_recent(
+            db,
+            limit=limit,
+            case_id=case_id,
+            aggregate_status=aggregate_status_filter,
+        )
+        return {
+            "count": len(entries),
+            "limit": limit,
+            "items": [e.to_dict() for e in entries],
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/audit/{log_id}")
+async def v3_audit_detail(log_id: str):
+    """Return the full request + response for one audit entry."""
+    from src.database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        entry = v3_audit.get_by_id(db, log_id)
+        if entry is None:
+            raise HTTPException(status_code=404, detail=f"audit log entry not found: {log_id}")
+        return entry.to_full_dict()
+    finally:
+        db.close()
 
 
 @app.get("/api/v3/rules")
