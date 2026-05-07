@@ -220,3 +220,100 @@ class SignalExtractor:
         for rule in rules:
             merged.update(self.extract_for_rule(system_description, rule))
         return merged
+
+    def extract_predicates_for_rule(
+        self, system_description: str, rule: Rule
+    ) -> dict[str, object]:
+        """Best-effort extraction of predicate values from free text.
+
+        Used by the document-analyzer when it has detected a rule's
+        trigger fired and wants to fill in predicates instead of
+        leaving them as MANGLER INPUT. Output is mechanically
+        validated against the predicate's type and enum_values
+        before being returned — anything the LLM emits that doesn't
+        match the schema is silently dropped.
+
+        Returns a dict where keys are predicate ids and values are
+        either bool (for type=boolean) or str (for type=enum). The
+        caller passes these to RuleInput(predicates=...).
+        """
+        if self._llm is None or not rule.predikater:
+            return {}
+
+        # Build a structured prompt that lists each predicate with its
+        # question, type, and (for enums) the legal values.
+        items: list[str] = []
+        for p in rule.predikater:
+            if p.type.value == "enum":
+                vals = ", ".join(p.enum_values or [])
+                items.append(
+                    f"- {p.id} (enum, vælg én: {vals}): {p.spørgsmål}"
+                )
+            elif p.type.value == "boolean":
+                items.append(
+                    f"- {p.id} (true/false): {p.spørgsmål}"
+                )
+            else:
+                # text/number predicates — skip; not extractable safely
+                continue
+
+        if not items:
+            return {}
+
+        predicate_list = "\n".join(items)
+        prompt = (
+            "Du er et juridisk-teknisk værktøj. Læs nedenstående system-/dokumenttekst "
+            "og besvar de listede predikater så præcist som muligt baseret på indholdet.\n\n"
+            "Returnér KUN et JSON-objekt på formen {\"predikat_id\": \"værdi\"}.\n"
+            "- For boolean: brug true / false / \"usikker\"\n"
+            "- For enum: brug én af de tilladte værdier eller \"usikker\"\n"
+            "- Spring predikater over hvis dokumentet ikke giver klart grundlag\n\n"
+            f"PREDIKATER:\n{predicate_list}\n\n"
+            f"TEKST:\n{system_description[:8000]}\n\n"
+            "JSON:"
+        )
+
+        try:
+            response = self._llm.invoke(prompt)
+        except Exception as exc:
+            raise SignalExtractionError(
+                f"LLM predicate extraction failed for rule '{rule.id}': {exc}"
+            ) from exc
+
+        content = getattr(response, "content", response)
+        if not isinstance(content, str):
+            content = str(content)
+
+        # Reuse the JSON-parsing utility but build expected_keys from
+        # predicate ids and validate types.
+        match = _JSON_BLOCK_RE.search(content)
+        if not match:
+            return {}
+        try:
+            data = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return {}
+        if not isinstance(data, dict):
+            return {}
+
+        out: dict[str, object] = {}
+        predicates_by_id = {p.id: p for p in rule.predikater}
+        for key, raw_value in data.items():
+            pred = predicates_by_id.get(key)
+            if pred is None:
+                continue
+            # Skip "usikker" — caller should keep predicate unanswered
+            if isinstance(raw_value, str) and raw_value.strip().lower() in (
+                "usikker", "unknown", "uncertain", "maybe"
+            ):
+                continue
+            if pred.type.value == "boolean":
+                normalized = _normalize_value(raw_value)
+                if isinstance(normalized, bool):
+                    out[key] = normalized
+            elif pred.type.value == "enum":
+                if isinstance(raw_value, str) and pred.enum_values:
+                    val = raw_value.strip()
+                    if val in pred.enum_values:
+                        out[key] = val
+        return out

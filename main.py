@@ -2365,6 +2365,7 @@ async def v3_document_analyze(
         "rules_loaded": result.rules_loaded,
         "aggregate_status": result.aggregate_status,
         "merged_signals": result.merged_signals,
+        "extracted_predicates": result.extracted_predicates,
         "decisions": [d.model_dump(mode="json") for d in result.decisions],
         "chunks": [
             {

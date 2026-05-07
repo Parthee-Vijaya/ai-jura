@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
+import { filterNoiseWarnings } from '../utils/warnings';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
@@ -992,16 +993,8 @@ const ruleHumanTitle = (decision) => {
   return decision?.rule_id || 'Ukendt regel';
 };
 
-// Drop infrastructure/config warnings — they're not relevant to the legal
-// output and add visual noise. Keep anything else.
-const NOISE_PATTERNS = [
-  /signal extraction failed.*LLM invocation failed/i,
-  /Incorrect API key|Invalid API key|api_key|api[- ]key/i,
-  /Operation canceled|Model unloaded/i,
-  /401|invalid_request_error|invalid_api_key/i,
-];
-const filterNoiseWarnings = (warnings = []) =>
-  warnings.filter((w) => !NOISE_PATTERNS.some((re) => re.test(String(w))));
+// Noise-warning filter is shared with VurderingHistorikPage —
+// imported above to avoid duplication.
 
 // Derive a human-readable case title from the description's first sentence.
 const deriveTitle = (description, caseId) => {
@@ -1399,6 +1392,26 @@ const V3VurderingPage = () => {
               )}
             </VerdictText>
           </VerdictBanner>
+
+            {isDocumentResult && Object.keys(result.extracted_predicates || {}).length > 0 && (
+              <ChunksSection>
+                <ChunksHeader>
+                  LLM-udtrukne predikater · {Object.keys(result.extracted_predicates).length} felter (M1.5)
+                </ChunksHeader>
+                <ChunkItem>
+                  <span style={{ display: 'block', fontStyle: 'italic', marginBottom: '0.5rem' }}>
+                    Disse predikat-svar er udtrukket fra dokumentet af LLM som best-effort.
+                    Sagsbehandler bør verificere de mest kritiske felter (helbredsdata,
+                    retsgrundlag, automatisering) manuelt før idriftsættelse.
+                  </span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem 1rem', marginTop: '0.5rem', fontFamily: 'monospace', fontSize: '0.78rem' }}>
+                    {Object.entries(result.extracted_predicates).map(([k, v]) => (
+                      <span key={k}><strong>{k}</strong> = {String(v)}</span>
+                    ))}
+                  </div>
+                </ChunkItem>
+              </ChunksSection>
+            )}
 
             {isDocumentResult && result.chunks?.length > 0 && (
               <ChunksSection>

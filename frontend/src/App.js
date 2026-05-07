@@ -29,7 +29,6 @@ const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
 const ResourcesPage = React.lazy(() => import('./pages/ResourcesPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
-const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
 const VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 const VurderingHistorikPage = React.lazy(() => import('./pages/VurderingHistorikPage'));
@@ -281,7 +280,6 @@ const AppInner = () => {
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   <Route path="/ai-sager" element={<Navigate to="/sager" replace />} />
 
-                  <Route path="/ai-cases-legacy" element={<AICasesPage />} />
                   <Route path="/videnbase" element={<KnowledgeBasePage />} />
                   <Route path="/ai-losninger" element={<AIProjectsPage />} />
                   <Route path="/research" element={<ResearchPage />} />

@@ -306,12 +306,17 @@ const SammenlignPage = () => {
 
   return (
     <Page>
-      <Eyebrow>Hjemmel · v3 vs legacy</Eyebrow>
+      <Eyebrow>Hjemmel · v3 vs legacy · validation-only</Eyebrow>
       <Title>Sammenlign engines</Title>
       <Lede>
-        Kør den samme input gennem både den gamle ComplianceController og
-        den nye v3 rule_engine. Bruges til at validere at v3 dækker det den
-        gamle engine fanger — før den gamle kode slettes.
+        <strong>Validation-værktøj</strong> der udelukkende bruges til at
+        sammenligne den gamle <code>ComplianceController</code> mod den nye v3
+        rule_engine på samme input. Når jurist har kørt 10-15 sektor-cases
+        gennem her og alle returnerer <code>match</code>, kan legacy-koden
+        slettes (~4 800 linjer) — beskrevet i{' '}
+        <a href="https://github.com/Parthee-Vijaya/Judge_dredd/blob/v3-hjemmel/SLETNING-EVAL.md" target="_blank" rel="noreferrer noopener">
+          SLETNING-EVAL.md
+        </a>. Denne side fjernes når sletningen er sket.
       </Lede>
 
       <FormCard onSubmit={handleSubmit}>

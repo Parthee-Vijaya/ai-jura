@@ -1164,14 +1164,14 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <HeroBadge>AI Compliance & Risikostyring</HeroBadge>
+              <HeroBadge>Hjemmel · v3 — kommunal AI-compliance</HeroBadge>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.05 }}
             >
-              <HeroTitle>Project Judge Dredd</HeroTitle>
+              <HeroTitle>Hjemmel</HeroTitle>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 40 }}
@@ -1179,7 +1179,10 @@ const HomePage = () => {
               transition={{ duration: 0.7, delay: 0.12 }}
             >
               <HeroSubtitle>
-                Få et samlet overblik over AI-kompliance på tværs af EU AI Act, GDPR og danske standarder. Automatisér risikovurderinger, dokumentation og juridisk research fra ét sted.
+                Hver kommunal AI-vurdering bliver hjemlet i en konkret lovartikel
+                — ordret citat, verificeret mod kilden, deterministisk regelmotor.
+                EU AI Act, GDPR, forvaltningslov og offentlighedslov er dækket på
+                tværs; sektorlove kommer i takt med jurist-input.
               </HeroSubtitle>
             </motion.div>
             <HeroActions>
@@ -1198,9 +1201,9 @@ const HomePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.24 }}
               >
-                <SecondaryCTA to="/ai-sager">
+                <SecondaryCTA to="/sager">
                   <FaBalanceScale size={16} />
-                  Registrér AI sag
+                  Sag-overblik
                 </SecondaryCTA>
               </motion.div>
             </HeroActions>
@@ -1418,7 +1421,7 @@ const HomePage = () => {
       <QuickStartSection>
         <QuickStartTitle>Kom Godt i Gang</QuickStartTitle>
         <p style={{ color: '#64748b', marginBottom: '2rem' }}>
-          Følg disse trin for at få maksimal værdi af Project Judge Dredd platform
+          Følg disse trin for at få maksimal værdi af Hjemmel
         </p>
 
         <QuickStartGrid>

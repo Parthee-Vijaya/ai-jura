@@ -78,6 +78,10 @@ class AnalysisResult:
     aggregate_status: str
     rules_loaded: int
     warnings: list[str] = field(default_factory=list)
+    # Predicates extracted by the M1.5 second LLM pass (only populated
+    # when extract_predicates=True). Caller-supplied predicates are NOT
+    # included here — only what the LLM derived from the document.
+    extracted_predicates: dict[str, Any] = field(default_factory=dict)
 
 
 # ---- Document parsing ------------------------------------------------------
@@ -237,8 +241,21 @@ def analyze_document(
     extra_predicates: Optional[dict[str, Any]] = None,
     chunk_size: int = 4000,
     overlap: int = 400,
+    extract_predicates: bool = True,
 ) -> AnalysisResult:
-    """Full pipeline: chunk → extract signals → merge → evaluate rules."""
+    """Full pipeline:
+
+      1. Chunk the document
+      2. Per chunk: extract trigger-signals via LLM
+      3. Merge signals (True wins) + apply caller's extra_signals
+      4. Evaluate rules → identify triggered rules
+      5. (M1.5) For each triggered rule: extract predicate values from
+         the FULL text via LLM. This lets a document upload alone produce
+         a real BETINGET-GO/NO-GO without manual predicate input
+      6. Merge extracted predicates with caller-supplied predicates
+         (caller wins — they're explicit, LLM is best-effort)
+      7. Re-evaluate rules with the enriched input
+    """
     chunks = chunk_text(text, page_offsets, chunk_size=chunk_size, overlap=overlap)
     chunk_signals: list[ChunkSignals] = []
     warnings: list[str] = []
@@ -254,13 +271,13 @@ def analyze_document(
             "document text."
         )
 
+    # ---- Step 2: per-chunk signal extraction ----
     for chunk in chunks:
         if not extractor.is_configured:
             chunk_signals.append(ChunkSignals(chunk=chunk, signals={}, error=None))
             continue
         try:
             signals = extractor.extract(chunk.text, rules)
-            # extractor.extract returns SignalValue (bool | str). Filter to bools.
             bool_signals = {k: v for k, v in signals.items() if isinstance(v, bool)}
             chunk_signals.append(ChunkSignals(chunk=chunk, signals=bool_signals))
         except SignalExtractionError as exc:
@@ -268,17 +285,49 @@ def analyze_document(
             warnings.append(f"chunk {chunk.label}: {err}")
             chunk_signals.append(ChunkSignals(chunk=chunk, signals={}, error=err))
 
+    # ---- Step 3: merge signals ----
     merged_signals = _merge_signals(chunk_signals)
     if extra_signals:
         merged_signals.update(extra_signals)
 
+    # ---- Step 4: first-pass evaluation to find triggered rules ----
     rule_input = RuleInput(
         signals=merged_signals,
-        predicates=extra_predicates or {},
+        predicates=dict(extra_predicates or {}),
     )
-    decisions = evaluate_all(rules, rule_input)
-    triggered = [d for d in decisions if d.triggered]
-    agg = aggregate_status(triggered)
+    decisions_first_pass = evaluate_all(rules, rule_input)
+    triggered = [d for d in decisions_first_pass if d.triggered]
+
+    # ---- Step 5: M1.5 predicate extraction for triggered rules ----
+    extracted_predicates: dict[str, Any] = {}
+    if extract_predicates and extractor.is_configured and triggered:
+        triggered_rule_ids = {d.rule_id for d in triggered}
+        rules_by_id = {r.id: r for r in rules}
+        for rule_id in triggered_rule_ids:
+            rule = rules_by_id.get(rule_id)
+            if rule is None or not rule.predikater:
+                continue
+            try:
+                preds = extractor.extract_predicates_for_rule(text, rule)
+                # Don't overwrite caller-supplied predicates
+                for k, v in preds.items():
+                    if k not in (extra_predicates or {}):
+                        extracted_predicates[k] = v
+            except SignalExtractionError as exc:
+                warnings.append(f"predicate extraction failed for {rule_id}: {exc}")
+
+    # ---- Step 6+7: merge predicates and re-evaluate ----
+    final_predicates: dict[str, Any] = dict(extracted_predicates)
+    if extra_predicates:
+        final_predicates.update(extra_predicates)  # caller wins
+
+    final_rule_input = RuleInput(
+        signals=merged_signals,
+        predicates=final_predicates,
+    )
+    decisions = evaluate_all(rules, final_rule_input)
+    final_triggered = [d for d in decisions if d.triggered]
+    agg = aggregate_status(final_triggered)
 
     return AnalysisResult(
         text_length=len(text),
@@ -290,6 +339,7 @@ def analyze_document(
         aggregate_status=agg,
         rules_loaded=len(rules),
         warnings=warnings,
+        extracted_predicates=extracted_predicates,
     )
 
 

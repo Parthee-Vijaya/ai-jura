@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useQuery } from 'react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { filterNoiseWarnings } from '../utils/warnings';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
@@ -90,15 +91,7 @@ const ruleHumanTitle = (decision) => {
   return decision?.rule_id || 'Ukendt regel';
 };
 
-// Drop infrastructure noise from warnings displayed.
-const NOISE_PATTERNS = [
-  /signal extraction failed.*LLM invocation failed/i,
-  /Incorrect API key|Invalid API key|api_key|api[- ]key/i,
-  /Operation canceled|Model unloaded/i,
-  /401|invalid_request_error|invalid_api_key/i,
-];
-const filterNoiseWarnings = (warnings = []) =>
-  warnings.filter((w) => !NOISE_PATTERNS.some((re) => re.test(String(w))));
+// Drop infrastructure noise from warnings displayed — see ../utils/warnings.
 
 // ---- Layout shell -------------------------------------------------------
 

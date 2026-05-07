@@ -1,16 +1,24 @@
-# Project Judge Dredd - AI Compliance Platform
+# Hjemmel — kommunal AI-compliance platform
 
-**Kalundborg Kommune's officielle AI compliance platform** til vurdering af AI-systemer baseret på EU AI Act, GDPR og dansk lovgivning.
+**Kalundborg Kommunes officielle AI-compliance-platform** der hjemler hver vurdering i en konkret lovartikel — ordret citat, verificeret mod kilden, deterministisk regelmotor.
 
-## 🚀 Features
+> Tidligere "Project Judge Dredd" / "Judge Jarvis". Branded "Hjemmel" fra v3.
+
+## 🚀 Features (v3 / alpha.13)
 
 ### Kernefunktionalitet
-- **Hurtig Tjek** - Øjeblikkelig AI compliance screening med web research og præcedens
-- **7-Punkts AI-Vurdering** - Struktureret, trinvis compliance vurdering
-- **Compliance Control** - Omfattende fuld vurdering med detaljeret rapport
-- **AI Sager** - Registrering og tracking af AI-projekter med e-mail integration
-- **Dashboard** - Overblik over alle vurderinger og compliance status
-- **Vurderingshistorik** - Komplet historik over tidligere vurderinger
+- **Vurdering** (`/vurdering`) — Beskriv et AI-system i fri tekst eller upload PDF/DOCX. LLM ekstraherer signaler + predikater; deterministisk regelmotor evaluerer 15 regler og returnerer GO / BETINGET-GO / NO-GO med inline lov-citater.
+- **Sager** (`/sager`) — Kanban-workflow med 6 statuses (kladde → vurderet → remediation → godkendt → idriftsat → arkiveret). Drag-drop mellem kolonner med audit-trail.
+- **Historik** (`/historik`) — Append-only audit-log over alle vurderinger; filterbar per status; klik for fuld reproduktion.
+- **Lov-overvågning** (`/lov-overvaagning`) — Daglig job verificerer at hver regels lov-citat stadig findes ordret i kilden (EUR-Lex, Retsinformation). Flagger til juridisk review hvis ikke.
+- **Sammenlign** (`/sammenlign`) — Side-om-side diff mellem legacy ComplianceController og v3 rule_engine; bruges til at validere Kategori A-sletning.
+
+### Aktive lovregler (15)
+- **EU AI-forordningen 2024/1689**: art. 5 (forbudte praksisser), art. 6 (højrisiko-klassifikation), art. 13 (transparens), art. 14 (menneskelig overvågning), art. 50
+- **GDPR / Databeskyttelsesforordningen 2016/679**: art. 5 (principper), art. 6 (retsgrundlag), art. 22 (automatiserede afgørelser), art. 32 (sikkerhed), art. 35 (DPIA)
+- **Forvaltningsloven**: §§ 3, 19, 22, 24
+- **Offentlighedsloven**: § 13
+- **Sektorlove**: 6 templates klar til jurist-interview (servicelov §§ 11, 50, 102; beskæftigelseslov §§ 11, 27; sundhedslov § 23)
 
 ### Viden & Research
 - **Videnbase** - Dynamisk knowledge base med automatisk opdatering

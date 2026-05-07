@@ -18,7 +18,7 @@ const COMMANDS = [
   { id: 'home', label: 'Forsiden', hint: 'g h', path: '/', kind: 'nav' },
   { id: 'vurdering', label: 'Vurdering', hint: 'g v', path: '/vurdering', kind: 'nav' },
   { id: 'historik', label: 'Vurderingshistorik', hint: 'g i', path: '/historik', kind: 'nav' },
-  { id: 'sammenlign', label: 'Sammenlign engines (v3 vs legacy)', hint: 'g c', path: '/sammenlign', kind: 'nav' },
+  { id: 'sammenlign', label: 'Sammenlign engines · validation-only', hint: 'g c', path: '/sammenlign', kind: 'nav' },
   { id: 'cases', label: 'Sager (kanban)', hint: 'g s', path: '/sager', kind: 'nav' },
   { id: 'kb', label: 'Videnbase', path: '/videnbase', kind: 'nav' },
   { id: 'projects', label: 'AI Løsninger', path: '/ai-losninger', kind: 'nav' },

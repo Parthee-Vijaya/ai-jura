@@ -1,9 +1,95 @@
-# Changelog - Project Judge Dredd
+# Changelog — Hjemmel (tidligere "Project Judge Dredd")
 
-Alle bemærkelsesværdige ændringer til dette projekt vil blive dokumenteret i denne fil.
+Alle bemærkelsesværdige ændringer til dette projekt dokumenteres her.
 
-Formatet er baseret på [Keep a Changelog](https://keepachangelog.com/da/1.0.0/),
-og dette projekt følger [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Formatet er baseret på [Keep a Changelog](https://keepachangelog.com/da/1.0.0/), og projektet følger [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.0-alpha.13] - 2026-05-07 — Forside-rebrand + M1.5 + jurist-pakke
+
+### Tilføjet (Added)
+- **Predikat-extraction fra dokument (M1.5)** — `signal_extractor.extract_predicates_for_rule()` udtrækker også predikat-svar fra dokumenttekst, ikke kun trigger-signaler. Dokument-upload alene giver nu fuld BETINGET-GO/NO-GO uden manuel predikat-udfyldelse. Sample-test: 26 predikater udtrukket fra Borgerassistent-DOCX.
+- **6 sektorlov-templates** klar til jurist-interview: 3 servicelov (§ 11, § 50, § 102), 2 beskæftigelseslov (§ 11, § 27), 1 sundhedslov (§ 23). Alle prefixet `_template_` så `RuleLoader` skipper dem indtil aktivering.
+- **Jurist-pakke** under `docs/`: `JURIST_INTERVIEW.md` (struktureret 30-45 min interview-guide med 4 spørgsmål per paragraf), `JURIST_BRIEFING.md` (5 min onboarding der forklarer Hjemmel + citation-verifier).
+
+### Ændret (Changed)
+- **Forside rebranded til "Hjemmel"** — droppet "Project Judge Dredd"-branding på forsiden. Hero-tekst, badge og CTAs reflekterer nu Hjemmel-positionering.
+- `rules/sektorlove/README.md` udvidet med aktivering-workflow + skema-krav.
+
+## [3.0.0-alpha.12] - 2026-05-07 — M2 sager-kanban + M3 citation-verifier
+
+### Tilføjet (Added)
+- **M2 Workflow state-machine for sager**:
+  - `Case` + `CaseTransition` SQLAlchemy-modeller med 6 statuses (kladde / vurderet / remediation / godkendt / idriftsat / arkiveret)
+  - 5 nye endpoints: `POST /api/v3/cases`, `GET /api/v3/cases`, `GET /api/v3/cases/{id}`, `POST /api/v3/cases/{id}/transition`, `GET /api/v3/cases/meta/statuses`
+  - `SagerPage.jsx` — kanban-side i Design C med drag-drop mellem kolonner, "+ Ny sag"-modal, status-pille per kort
+  - Auto-transitions: kladde→vurderet ved første assessment, vurderet→remediation ved BETINGET-GO/NO-GO
+- **M3 Citation-verifier**:
+  - `RuleFreshness`-tabel + `citation_verifier.py` service der dagligt verificerer hver regels `kilde.citat` mod `kilde.url` (httpx + normalize)
+  - APScheduler-job kl. 04:00 (efter knowledge-base-update kl. 03:00)
+  - 3 nye endpoints: `GET /api/v3/law/freshness` (liste), `POST /api/v3/law/freshness/run` (manuel trigger), `GET /api/v3/law/freshness/flagged` (kompakt for frontend)
+  - `LovOvervaagningPage.jsx` under Indstillinger med stat-kort + per-regel tabel
+  - Warning-banner i Vurdering når triggered regel sidder på flagget citat
+- Citation-verifier flagger 13/15 regler ved første run — forventet, da EUR-Lex/Retsinformation er JS-renderede SPAs. v2 kan tilføje Playwright-rendering for fuld dækning.
+
+### Ændret (Changed)
+- "AI Sager" sidebar-entry erstattet af "Sager" → `/sager`. `/ai-sager` redirecter for back-compat.
+
+## [3.0.0-alpha.11] - 2026-05-07 — M1 Document-analyse
+
+### Tilføjet (Added)
+- **`POST /api/v3/document/analyze`** endpoint — modtager PDF/DOCX, parser via pypdf/python-docx, chunker med recursive char splitter (4000 chars / 400 overlap), kører signal-extractor per chunk, evaluerer regelmotor på merged signals.
+- `src/services/document_analyzer.py` — komplet pipeline med chunk-attribution (hvilke regler udløses fra hvilken side/paragraf).
+- Frontend drag-drop-zone på `/vurdering` med fil-input fallback. Result-mode viser ny "Dokument-afsnit"-sektion med chunk-til-regel-mapping.
+- `tests/fixtures/documents/borgerassistent_pension.docx` test-fixture.
+
+### Smoke-verificeret
+LLM extraherede 8 signaler korrekt fra Borgerassistent-DOCX, alle 15 regler triggered, audit-log persisterer med kind=document.
+
+## [3.0.0-alpha.10] - 2026-05-07 — 3 eksempler + foldable forklaringer
+
+### Tilføjet (Added)
+- **3 fuldt udfyldte case-eksempler** på `/vurdering`:
+  - GO: Internt journalsøgning (lav-risiko søgesystem, fuld GDPR-dokumentation)
+  - BETINGET-GO: Borgerassistent — pensionsansøgning (tidligere SAMPLE_PREDICATES)
+  - NO-GO: Social scoring af borgere (forbudt praksis under AI Act art. 5)
+- Per case: status-pille (farvekodet GO/BETINGET-GO/NO-GO), Indsæt-knap, foldable "Hvorfor?"-forklaring der underviser sagsbehandler i hvad reglerne kigger efter.
+
+### Ændret (Changed)
+- Verdict-tekst skelner nu mellem "decisions.length" (alle triggered) og "requiringDecisions" (BETINGET-GO/NO-GO med faktiske krav). Sidenotes-kolonnen viser kun citater for regler der udløser krav.
+- Per aggregate-status får sagsbehandler nu specifik besked (GO: "Ingen lovartikler udløser krav"; BETINGET-GO: "X af Y lovartikler…"; NO-GO: "Forbudt praksis…").
+
+## [3.0.0-alpha.9] - 2026-05-07 — Steps 3-5 + tech debt + sammenlign
+
+### Tilføjet (Added)
+- **Step 3 g-prefix shortcuts** — `g v` → /vurdering, `g i` → /historik, `g s` → /sager, `g h` → /, `g c` → /sammenlign. ~700ms timeout, springer over når input/textarea har fokus.
+- **Step 4 Sammenlign-mode** — backend `POST /api/v3/compare` kører både legacy `ComplianceController` og v3 rule_engine på samme input; returnerer side-om-side resultat + agreement-felt. Frontend `/sammenlign`-side viser diff-grid.
+- **Step 5 Sektorlove placeholder** — tomme undermapper + jurist-spec README (afventer v1.0 indhold; udfyldt i alpha.13).
+- **Tech debt fixet**:
+  - `apscheduler==3.11.2` til requirements.txt
+  - `init_db()` flyttet ind i FastAPI lifespan
+  - Legacy `ComplianceOrchestrator` + checkers initialiseres via `_safe_init()` så fresh-clone uden ANTHROPIC_API_KEY kan starte op
+
+### Dokumentation
+- `SLETNING-EVAL.md` — analyse + workflow for Kategori A backend-sletning (~4 800 linjer legacy)
+
+## [3.0.0-alpha.8] - 2026-05-07 — Vurderingshistorik (Step 2)
+
+### Tilføjet (Added)
+- `VurderingHistorikPage.jsx` — én komponent med list-mode (`/historik`) og detail-mode (`/historik/:id`). Genbruger SidenotesColumn + design-primitives.
+- Liste: Design C dokument-layout med tabel (Tidspunkt · Sag · Note · Status · Engine), filter-chips per aggregate_status, live count.
+- Detail: spejler V3VurderingPage's result-mode — back-link, breadcrumb, case_id eyebrow, h1, verdict-banner, regler med inline ¹²³, sidenotes-kolonne, audit-spor.
+
+## [3.0.0-alpha.7] - 2026-05-07 — Design C global rebrand + nav-konsolidering
+
+### Ændret (Changed)
+- **Design C ("editorial workspace") som visuel kanon**: cream-paper `#faf8f5`, Lora body, Source Serif Pro display, Inter chrome, JetBrains Mono mono. Sidenotes-kolonne for lov-citater. Erstatter tidligere A+B-blend-plan fra alpha.5-tiden.
+- **Nav-konsolidering**: 13 → 9 punkter (Forside / Vurdering / AI Sager / Viden & Research × 5 / Indstillinger). Hurtig Tjek + Compliance Control + Dashboard fjernet (redirecter til /vurdering eller /).
+- `/v3-vurdering` route omdøbt til `/vurdering` som primær. Back-compat redirects fra alle gamle paths.
+- Ren result-mode på Vurdering: form skjules efter Vurder-klik; case-fokuseret layout (breadcrumb + h1 fra description + verdict + regler + audit). LLM-config noise filtreres væk fra warnings.
+
+### Tilføjet (Added)
+- `SidenotesColumn.jsx` — sticky højre-kolonne med ¹²³ unicode-superscripts
+- `mockups/design-d.html` — A+C blend-eksploration (forkastet til fordel for ren C)
 
 ## [3.0.0-alpha.1] - 2026-05-07 — "Hjemmel" (intern arbejdstitel)
 
