@@ -29,6 +29,21 @@ Fase 0 af v3-evolutionen: fundament for deklarativ regelmotor forankret direkte 
 ### Arkitekturprincip
 LLM må kun fortolke fritekst → strukturerede signaler (`signal_extractor`, kommer i Fase 1). Selve compliance-afgørelsen er altid deterministisk og kan spores til den lovartikel, reglen er hjemlet i.
 
+## [3.0.0-alpha.3] - 2026-05-07 — Fase 2 (frontend design-system primitives)
+
+### Tilføjet (Added)
+- **Design-system primitives** under `frontend/src/components/rules/`:
+  - `ComplianceVerdict` — status-pille (GO / BETINGET-GO / NO-GO / NEEDS_INPUT) i tre størrelser
+  - `LawSourceLink` — ekstern-link til EUR-Lex / Retsinformation med "sidst verificeret"-dato
+  - `RuleCitation` — citatblok med direkte lov-citat + kilde-attribution
+  - `EvidenceChecklist` — interaktiv evidens-tjekliste med status-farver (done/pending/in_progress/blocked)
+  - `RuleDecisionPanel` — komplet panel for én RuleDecision: header + citat + begrundelse + krav-liste + needs_input
+  - Alle primitives accepterer v3 RuleDecision-JSON direkte og bruger eksisterende theme-tokens
+- **`/v3-vurdering`-side** (`V3VurderingPage.jsx`): viser primitives komponeret til en hel Quick Check-side i Design A "stille autoritet"-stil. Bruger hardcoded sample-data der mirror'er backend-output. Erstattes af /api/v3/assess-kald i Fase 1.4.
+
+### Ændret (Changed)
+- `App.js`: tilføjet lazy-import + Route for `/v3-vurdering`. Ingen ændringer til eksisterende ruter.
+
 ## [3.0.0-alpha.2] - 2026-05-07 — Fase 1 (regelbase + signal-extractor)
 
 ### Tilføjet (Added)

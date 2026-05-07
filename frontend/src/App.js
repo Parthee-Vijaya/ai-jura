@@ -31,6 +31,7 @@ const ResourcesPage = React.lazy(() => import('./pages/ResourcesPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AICasesPage = React.lazy(() => import('./pages/AICasesPage'));
 const AIProjectsPage = React.lazy(() => import('./pages/AIProjectsPage'));
+const V3VurderingPage = React.lazy(() => import('./pages/V3VurderingPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -218,6 +219,7 @@ const AppInner = () => {
                   <Route path="/lov-assistent" element={<LawAssistantPage />} />
                   <Route path="/ressourcer" element={<ResourcesPage />} />
                   <Route path="/indstillinger" element={<SettingsPage />} />
+                  <Route path="/v3-vurdering" element={<V3VurderingPage />} />
                 </Routes>
               </Suspense>
             </PageErrorBoundary>
