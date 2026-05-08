@@ -1470,39 +1470,94 @@ class LawSearchRequest(BaseModel):
     query: str = Field(..., min_length=2, max_length=200, description="Search query")
     category: Optional[str] = Field(None, description="Optional category filter")
     limit: int = Field(10, ge=1, le=50, description="Max results")
+    mode: str = Field(
+        "auto",
+        pattern="^(auto|keyword|semantic)$",
+        description="auto = semantic if RAG index ready else keyword; "
+                    "semantic forces RAG; keyword forces lexical",
+    )
 
 
 class LawAskRequest(BaseModel):
     """Request model for AI law assistant"""
     query: str = Field(..., min_length=5, max_length=500, description="Legal question")
     category: Optional[str] = Field(None, description="Optional category filter")
+    mode: str = Field(
+        "auto",
+        pattern="^(auto|keyword|rag)$",
+        description="auto = RAG if index ready, else keyword; "
+                    "rag forces RAG (errors if not built); keyword forces lexical",
+    )
 
 
 @app.post("/api/law/search", response_model=Dict[str, Any])
 async def search_laws_api(request: LawSearchRequest):
     """
-    Search Danish laws by text query
-    Returns matching laws with relevance scores
+    Search Danish laws by text query.
+
+    Mode "auto" (default) uses semantic embeddings when the RAG index has been
+    built, falling back to keyword scoring otherwise. Mode "semantic" returns
+    chunk-level matches with similarity scores; "keyword" returns whole-law
+    matches with relevance counts.
     """
     try:
         from src.law import search_laws
+        from src.services.law_rag import get_default_index
 
-        logger.info(f"Law search: {request.query}")
+        logger.info(f"Law search ({request.mode}): {request.query}")
+
+        wants_semantic = request.mode in ("auto", "semantic")
+        if wants_semantic:
+            index = get_default_index()
+            if index.is_ready():
+                hits = await asyncio.to_thread(index.search, request.query, request.limit)
+                # Reshape semantic hits to match the keyword response so the
+                # frontend can render either uniformly.
+                results = [
+                    {
+                        "law": {
+                            "title": h["law_title"],
+                            "slug": h["law_slug"],
+                            "url": h["law_url"],
+                            "content": h["text"],
+                        },
+                        "relevance": h["similarity"],
+                        "matches": ["semantic"],
+                        "chunk_index": h["chunk_index"],
+                    }
+                    for h in hits
+                ]
+                return {
+                    "success": True,
+                    "query": request.query,
+                    "category": request.category,
+                    "results": results,
+                    "total": len(results),
+                    "mode": "semantic",
+                }
+            if request.mode == "semantic":
+                raise HTTPException(
+                    status_code=409,
+                    detail="Law RAG index not built — POST /api/law/rag/build first",
+                )
+            # auto mode: fall through to keyword
 
         results = search_laws(
             query=request.query,
             category=request.category,
             limit=request.limit
         )
-
         return {
             "success": True,
             "query": request.query,
             "category": request.category,
             "results": results,
-            "total": len(results)
+            "total": len(results),
+            "mode": "keyword",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Law search failed: {e}")
         raise HTTPException(status_code=500, detail=f"Søgning fejlede: {str(e)}")
@@ -1511,19 +1566,23 @@ async def search_laws_api(request: LawSearchRequest):
 @app.post("/api/law/ask", response_model=Dict[str, Any])
 async def ask_law_assistant(request: LawAskRequest):
     """
-    Ask legal question and get AI-generated answer with citations
-    Uses Azure OpenAI for answer generation
+    Ask legal question and get AI-generated answer with citations.
+
+    Uses semantic RAG retrieval when index is built — falls back to keyword
+    search otherwise. Set mode="rag" to require semantic, mode="keyword" to
+    force lexical.
     """
     try:
         from src.law import LawAssistant
 
-        logger.info(f"Law AI query: {request.query}")
+        logger.info(f"Law AI query (mode={request.mode}): {request.query}")
 
         async with LawAssistant() as assistant:
             result = await assistant.ask(
                 query=request.query,
                 category=request.category,
-                max_sources=5
+                max_sources=5,
+                mode=request.mode,
             )
 
         return {
@@ -1533,12 +1592,41 @@ async def ask_law_assistant(request: LawAskRequest):
             "confidence": result.get('confidence'),
             "key_points": result.get('key_points'),
             "sources": result.get('sources'),
-            "citations": result.get('citations')
+            "citations": result.get('citations'),
+            "retrieval": result.get('retrieval'),
         }
 
     except Exception as e:
         logger.error(f"Law AI assistant failed: {e}")
         raise HTTPException(status_code=500, detail=f"AI assistent fejlede: {str(e)}")
+
+
+# ---- Law RAG admin endpoints ------------------------------------------------
+
+@app.post("/api/law/rag/build")
+async def law_rag_build():
+    """Embed every law section and persist a local cosine-search index.
+
+    Idempotent — running twice rebuilds the index. ~$0.0001 / 5s per build.
+    """
+    from src.services.law_rag import get_default_index
+    try:
+        summary = await asyncio.to_thread(get_default_index().build)
+        return {"success": True, **summary}
+    except Exception as e:
+        logger.exception("Law RAG build failed")
+        raise HTTPException(status_code=500, detail=f"RAG-byg fejlede: {str(e)}")
+
+
+@app.get("/api/law/rag/stats")
+async def law_rag_stats():
+    """Inspect index freshness, chunk count, embedding model, etc."""
+    from src.services.law_rag import get_default_index
+    try:
+        return await asyncio.to_thread(get_default_index().stats)
+    except Exception as e:
+        logger.exception("Law RAG stats failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/law/categories", response_model=Dict[str, Any])

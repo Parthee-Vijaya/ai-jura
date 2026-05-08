@@ -48,39 +48,101 @@ class LawAssistant:
         self,
         query: str,
         category: Optional[str] = None,
-        max_sources: int = 5
+        max_sources: int = 5,
+        mode: str = "auto",
     ) -> Dict[str, Any]:
         """
-        Generate AI answer for legal query with citations
+        Generate AI answer for legal query with citations.
 
         Args:
             query: User's legal question
-            category: Optional category filter
+            category: Optional category filter (only honored in keyword mode)
             max_sources: Max number of source laws to use
+            mode: "auto" → use RAG when index is built, else keyword fallback;
+                  "rag" → force semantic, fail loudly if index missing;
+                  "keyword" → original keyword search
 
         Returns:
-            Dict with: answer, confidence, key_points, sources, citations
+            Dict with: answer, confidence, key_points, sources, citations,
+            retrieval (mode + provider info)
         """
-        # Step 1: Search for relevant laws
-        logger.info(f"Searching for laws matching query: {query}")
-        search_results = search_laws(query, category=category, limit=max_sources)
+        sources, retrieval_info = await asyncio.to_thread(
+            self._retrieve_sources, query, category, max_sources, mode
+        )
 
-        if not search_results:
+        if not sources:
             return {
                 'answer': 'Jeg kunne ikke finde relevante love for dit spørgsmål. Prøv at omformulere eller søge bredere.',
                 'confidence': 0.0,
                 'key_points': [],
                 'sources': [],
-                'citations': []
+                'citations': [],
+                'retrieval': retrieval_info,
             }
 
-        sources = [result['law'] for result in search_results]
-
-        # Step 2: Generate AI answer with Azure OpenAI
-        logger.info(f"Generating AI answer using {len(sources)} sources")
+        logger.info(f"Generating AI answer using {len(sources)} sources (retrieval={retrieval_info.get('mode')})")
         ai_response = await self._generate_answer_with_llm(query, sources)
-
+        ai_response['retrieval'] = retrieval_info
         return ai_response
+
+    @staticmethod
+    def _retrieve_sources(
+        query: str,
+        category: Optional[str],
+        max_sources: int,
+        mode: str,
+    ) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+        """Pick the right retriever and return (sources, retrieval_info).
+
+        RAG returns law sections (chunks); keyword returns whole laws. The
+        LLM-prompt builder downstream handles both shapes — chunks have a
+        'content' field too.
+        """
+        from src.services.law_rag import get_default_index
+
+        wants_rag = mode in ("auto", "rag")
+
+        if wants_rag:
+            index = get_default_index()
+            if index.is_ready():
+                try:
+                    hits = index.search(query, top_k=max_sources)
+                    sources = []
+                    seen_slugs = set()
+                    for hit in hits:
+                        # Materialize into the same shape the LLM expects.
+                        # We carry the chunk text as 'content' so the LLM
+                        # only sees the relevant section, not the whole law.
+                        sources.append({
+                            "title": hit["law_title"],
+                            "slug": hit["law_slug"],
+                            "url": hit["law_url"],
+                            "content": hit["text"],
+                            "summary": "",
+                            "_rag_similarity": hit["similarity"],
+                            "_rag_chunk_index": hit["chunk_index"],
+                        })
+                        seen_slugs.add(hit["law_slug"])
+                    return sources, {
+                        "mode": "rag",
+                        "provider": index.stats().get("provider"),
+                        "matched_chunks": len(hits),
+                        "matched_laws": len(seen_slugs),
+                    }
+                except Exception as exc:
+                    logger.warning(f"Law RAG search failed, falling back to keyword: {exc}")
+                    if mode == "rag":
+                        # Caller asked for RAG explicitly — surface the failure
+                        raise
+
+        # Keyword fallback
+        results = search_laws(query, category=category, limit=max_sources)
+        sources = [r["law"] for r in results]
+        return sources, {
+            "mode": "keyword",
+            "matched_laws": len(sources),
+            "fallback": mode == "auto",  # was RAG-eligible but not used
+        }
 
     async def _generate_answer_with_llm(
         self,
