@@ -2,9 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Design System
+
+**ALWAYS read [DESIGN.md](./DESIGN.md) before making any visual or UI decisions.**
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval. In QA mode, flag any code that doesn't match DESIGN.md.
+
+**Brand:** Tyr ᛏ (tidligere Forseti / Hjemmel / Project Judge Dredd) — kommunal AI-compliance til Kalundborg Kommune. Northern Modern aesthetic, IBM Plex typography, kongelig blå + bronze palette. Hver hovedside har data-overview-section ved bunden.
+
 ## Project Overview
 
-**Judge Dredd** is an AI compliance platform built for Kalundborg Kommune (Denmark) that assesses AI systems against EU AI Act, GDPR, and Danish regulations. The platform uses a hybrid approach combining deterministic rule engines with LangGraph-based AI agents for intelligent compliance analysis.
+**Tyr** is an AI compliance platform built for Kalundborg Kommune (Denmark) that assesses AI systems against EU AI Act, GDPR, and Danish regulations. The platform uses a hybrid approach combining deterministic rule engines with LangGraph-based AI agents for intelligent compliance analysis.
 
 **Tech Stack:**
 - **Backend:** FastAPI + LangGraph + LangChain (v0.3.x patterns)
