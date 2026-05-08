@@ -12,6 +12,7 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageErrorBoundary from './components/PageErrorBoundary';
+import PrivacyNotice from './components/PrivacyNotice';
 import { SectionLoader } from './components/LoadingSpinner';
 
 // Contexts
@@ -24,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 
 // Lazy loaded pages - Optimized code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
+const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
@@ -269,6 +271,9 @@ const AppInner = () => {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
 
+                  {/* GDPR persondatapolitik (synlig fra privacy-banneret) */}
+                  <Route path="/privacy" element={<PrivacyPage />} />
+
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />
 
@@ -302,6 +307,7 @@ const AppInner = () => {
               </Suspense>
             </PageErrorBoundary>
           </MainContent>
+          <PrivacyNotice />
         </AppContainer>
       </Router>
     </ThemeProvider>

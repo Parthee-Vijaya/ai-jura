@@ -575,6 +575,21 @@ const Sidebar = ({ collapsed, onToggle }) => {
             Tyr · v3
           </FooterRune>
           <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>
+          <Link
+            to="/privacy"
+            style={{
+              fontFamily: 'inherit',
+              fontSize: '0.66rem',
+              color: 'inherit',
+              textDecoration: 'none',
+              opacity: 0.7,
+              letterSpacing: '0.04em',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.7')}
+          >
+            Persondatapolitik →
+          </Link>
         </SidebarFooter>
       )}
     </SidebarContainer>

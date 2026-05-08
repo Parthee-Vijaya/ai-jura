@@ -134,10 +134,21 @@ async def lifespan(app: FastAPI):
         name='Daily case re-review reminders',
         replace_existing=True,
     )
+    # GDPR retention sweep: daily at 02:00 — delete expired audit logs,
+    # archived cases, orphan documents, and stale rule_freshness rows.
+    from src.services.retention_service import scheduled_retention_job
+    kb_scheduler.add_job(
+        scheduled_retention_job,
+        CronTrigger(hour=2, minute=0),
+        id='gdpr_retention_sweep',
+        name='Daily GDPR retention sweep',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - daily updates at 03:00")
     logger.info("Citation verifier scheduled - daily at 04:00")
     logger.info("Case re-review reminders scheduled - daily at 08:00")
+    logger.info("GDPR retention sweep scheduled - daily at 02:00")
 
     if not ticker_refresh_task or ticker_refresh_task.done():
         ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
@@ -2105,6 +2116,7 @@ from src.rule_engine import (
 )
 from src.rule_engine.executor import aggregate_status, evaluate_all
 from src.rule_engine import audit as v3_audit  # registers V3AssessmentLog with Base.metadata
+from src.database import audit_access_log  # noqa: F401 — registers AuditAccessLog with Base.metadata
 
 
 _RULES_DIR = Path(__file__).parent / "rules"
@@ -2273,15 +2285,56 @@ async def v3_audit_list(
 
 
 @app.get("/api/v3/audit/{log_id}")
-async def v3_audit_detail(log_id: str):
-    """Return the full request + response for one audit entry."""
+async def v3_audit_detail(log_id: str, request: Request):
+    """Return the full request + response for one audit entry.
+
+    Each access is recorded in audit_access_log so we have a paper trail
+    of who looked at what — required for GDPR artikel 32 documentation.
+    """
     from src.database.connection import SessionLocal
+    from src.database.audit_access_log import record_access
     db = SessionLocal()
     try:
         entry = v3_audit.get_by_id(db, log_id)
         if entry is None:
             raise HTTPException(status_code=404, detail=f"audit log entry not found: {log_id}")
+        # Record the access — append-only, doesn't fail the request if it errors
+        try:
+            record_access(
+                db,
+                target_type="audit_log",
+                target_id=log_id,
+                action="read",
+                actor=request.headers.get("X-User"),
+                actor_ip=request.client.host if request.client else None,
+                user_agent=request.headers.get("User-Agent"),
+                request_id=request.headers.get("X-Request-ID"),
+            )
+            db.commit()
+        except Exception:
+            logger.warning("audit_access_log write failed for %s", log_id, exc_info=True)
+            db.rollback()
         return entry.to_full_dict()
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/audit/{log_id}/access-log")
+async def v3_audit_access_log(log_id: str):
+    """Return who has accessed this audit-log entry — for compliance review.
+
+    Returns the audit_access_log rows targeting this audit entry, newest first.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.audit_access_log import list_access_for_target
+    db = SessionLocal()
+    try:
+        rows = list_access_for_target(db, "audit_log", log_id, limit=200)
+        return {
+            "log_id": log_id,
+            "count": len(rows),
+            "accesses": [r.to_dict() for r in rows],
+        }
     finally:
         db.close()
 
@@ -2944,6 +2997,246 @@ async def v3_cases_reminder_run():
     from src.services.case_reminder_service import send_due_reminders
 
     summary = await asyncio.to_thread(send_due_reminders)
+    return summary
+
+
+# ---------------------------------------------------------------------------
+# GDPR / DSAR — Data Subject Access Request endpoints
+# ---------------------------------------------------------------------------
+#
+# Per GDPR artikler 15 (right of access), 17 (right to erasure) og 20 (right
+# to data portability) skal kommunen kunne eksportere og slette alt der er
+# gemt om en konkret sag. Disse endpoints implementerer flowet på sags-
+# niveau — i praksis er case_id kommunens link til borgeren, så at slette en
+# sag = at slette de borger-knyttede oplysninger Tyr har om vedkommende.
+#
+# Adgangskontrol: I denne fase er der ingen auth — endpoints er bag
+# Tailscale-grænsen og logges. Når Modul 5 (auth) lander, skal disse
+# endpoints kræve admin-rolle.
+
+
+@app.get("/api/v3/admin/dsar/export/{case_id}")
+async def v3_dsar_export(case_id: str, request: Request):
+    """Eksportér alt Tyr har om en case_id som JSON-bundle.
+
+    Indeholder: case-record, alle transitions, alle audit-logs hvor
+    request_payload/response_payload nævner case_id, freshness-status for
+    udløste regler, og lister hvilke dokument-filer der er tilknyttet
+    (selve filerne kan downloades via /api/v3/documents/{audit_log_id}/source).
+    """
+    import re
+    from src.database.connection import SessionLocal
+    from src.database.cases import Case, CaseTransition
+    from src.database.audit_access_log import record_access
+    from src.rule_engine.audit import V3AssessmentLog
+    from src.services.citation_verifier import RuleFreshness
+    from src.services import document_storage
+
+    if not case_id or not re.match(r"^[A-Za-z0-9._\-]+$", case_id):
+        raise HTTPException(status_code=400, detail="invalid case_id")
+
+    # Log the export access before doing the heavy work
+    try:
+        with SessionLocal() as access_session:
+            record_access(
+                access_session,
+                target_type="dsar_export",
+                target_id=case_id,
+                action="export",
+                actor=request.headers.get("X-User"),
+                actor_ip=request.client.host if request.client else None,
+                user_agent=request.headers.get("User-Agent"),
+                request_id=request.headers.get("X-Request-ID"),
+            )
+            access_session.commit()
+    except Exception:
+        logger.warning("audit_access_log write failed for DSAR export %s", case_id, exc_info=True)
+
+    def _collect() -> dict:
+        with SessionLocal() as session:
+            cases = (
+                session.query(Case).filter(Case.case_id == case_id).all()
+            )
+            case_payloads = [c.to_dict() for c in cases]
+            case_db_ids = [c.id for c in cases]
+
+            transitions = []
+            if case_db_ids:
+                transitions = [
+                    t.to_dict()
+                    for t in session.query(CaseTransition)
+                    .filter(CaseTransition.case_db_id.in_(case_db_ids))
+                    .order_by(CaseTransition.changed_at)
+                    .all()
+                ]
+
+            # Find audit logs that reference this case_id in their payload.
+            # We do a JSON-text LIKE — broad but cheap. Postgres has ->>
+            # operators we could use later.
+            log_rows = (
+                session.query(V3AssessmentLog)
+                .filter(
+                    V3AssessmentLog.request_payload.cast(sa_String).ilike(
+                        f"%{case_id}%"
+                    )
+                )
+                .all()
+            )
+            assessment_logs = [r.to_dict() for r in log_rows]
+            audit_log_ids = [r.id for r in log_rows]
+
+            # Collect rule_freshness for any rules these logs touched
+            rule_ids = set()
+            for r in log_rows:
+                rp = r.response_payload or {}
+                for d in rp.get("decisions") or []:
+                    if d.get("rule_id"):
+                        rule_ids.add(d["rule_id"])
+            freshness_rows = []
+            if rule_ids:
+                freshness_rows = [
+                    rf.to_dict()
+                    for rf in session.query(RuleFreshness)
+                    .filter(RuleFreshness.rule_id.in_(rule_ids))
+                    .all()
+                ]
+
+        documents = []
+        for log_id in audit_log_ids:
+            stored = document_storage.find(log_id)
+            if stored:
+                documents.append({
+                    "audit_log_id": log_id,
+                    "filename": stored.original_filename,
+                    "size_bytes": stored.size_bytes,
+                    "content_type": stored.content_type,
+                })
+
+        return {
+            "case_id": case_id,
+            "exported_at": datetime.now(UTC).isoformat(),
+            "cases": case_payloads,
+            "case_transitions": transitions,
+            "assessment_logs": assessment_logs,
+            "rule_freshness": freshness_rows,
+            "documents": documents,
+        }
+
+    # Lazy import to keep top-of-file lean
+    from sqlalchemy import String as sa_String  # noqa: F401
+
+    payload = await asyncio.to_thread(_collect)
+    return payload
+
+
+@app.delete("/api/v3/admin/dsar/case/{case_id}")
+async def v3_dsar_delete_case(case_id: str, request: Request):
+    """Slet alle persondata Tyr har om en case_id.
+
+    Dette er "right to erasure" (artikel 17). Sletter cases, transitions,
+    audit-logs, dokument-filer og rule_freshness-spor (hvis sidstnævnte
+    kun er linket via denne sag — implementeret i retention-sweepet).
+
+    Operationen er irreversibel. Returnerer en summary af hvad der blev slettet.
+    """
+    import re
+    from src.database.connection import SessionLocal
+    from src.database.cases import Case, CaseTransition
+    from src.database.audit_access_log import record_access
+    from src.rule_engine.audit import V3AssessmentLog
+    from src.services import document_storage
+    from sqlalchemy import String as sa_String
+
+    if not case_id or not re.match(r"^[A-Za-z0-9._\-]+$", case_id):
+        raise HTTPException(status_code=400, detail="invalid case_id")
+
+    # Log the delete access — this entry survives the deletion
+    try:
+        with SessionLocal() as access_session:
+            record_access(
+                access_session,
+                target_type="dsar_delete",
+                target_id=case_id,
+                action="delete",
+                actor=request.headers.get("X-User"),
+                actor_ip=request.client.host if request.client else None,
+                user_agent=request.headers.get("User-Agent"),
+                request_id=request.headers.get("X-Request-ID"),
+            )
+            access_session.commit()
+    except Exception:
+        logger.warning("audit_access_log write failed for DSAR delete %s", case_id, exc_info=True)
+
+    def _delete() -> dict:
+        deleted = {
+            "cases": 0,
+            "case_transitions": 0,
+            "assessment_logs": 0,
+            "documents": 0,
+        }
+        document_audit_ids: list[str] = []
+
+        with SessionLocal() as session:
+            cases = (
+                session.query(Case).filter(Case.case_id == case_id).all()
+            )
+            case_db_ids = [c.id for c in cases]
+
+            if case_db_ids:
+                deleted["case_transitions"] = (
+                    session.query(CaseTransition)
+                    .filter(CaseTransition.case_db_id.in_(case_db_ids))
+                    .delete(synchronize_session=False)
+                )
+
+            for c in cases:
+                session.delete(c)
+            deleted["cases"] = len(cases)
+
+            log_rows = (
+                session.query(V3AssessmentLog)
+                .filter(
+                    V3AssessmentLog.request_payload.cast(sa_String).ilike(
+                        f"%{case_id}%"
+                    )
+                )
+                .all()
+            )
+            for r in log_rows:
+                document_audit_ids.append(r.id)
+                session.delete(r)
+            deleted["assessment_logs"] = len(log_rows)
+
+            session.commit()
+
+        # Slet dokument-filer udenfor session så vi ikke holder DB-locks
+        # under filsystem-IO
+        for log_id in document_audit_ids:
+            if document_storage.delete(log_id):
+                deleted["documents"] += 1
+
+        return {
+            "case_id": case_id,
+            "deleted_at": datetime.now(UTC).isoformat(),
+            "deleted": deleted,
+        }
+
+    summary = await asyncio.to_thread(_delete)
+    logger.warning(
+        "DSAR delete executed: case_id=%s deleted=%s",
+        case_id,
+        summary["deleted"],
+    )
+    return summary
+
+
+@app.post("/api/v3/admin/retention/run")
+async def v3_retention_run():
+    """Manually trigger the retention sweep. Returns summary of what was
+    deleted. Equivalent to what the daily 02:00 cron job does."""
+    from src.services.retention_service import run_retention
+
+    summary = await asyncio.to_thread(run_retention)
     return summary
 
 
