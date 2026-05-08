@@ -2,11 +2,11 @@ import React from 'react';
 import styled from 'styled-components';
 
 /**
- * SidenotesColumn — Design C marginalia column.
+ * SidenotesColumn — Northern Modern marginalia column.
  *
  * Renders an ordered list of lov-citater (legal citations) numbered with
  * superscript ¹²³ markers. Each sidenote contains:
- *   - the citat (italic Lora pull-quote)
+ *   - the citat (italic Plex Serif pull-quote)
  *   - source attribution + EUR-Lex / retsinformation link
  *   - last verified date in monospace
  *

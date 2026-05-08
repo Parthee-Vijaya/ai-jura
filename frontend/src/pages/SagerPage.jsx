@@ -22,13 +22,14 @@ const STATUSES = [
   { id: 'arkiveret', label: 'Arkiveret' },
 ];
 
+// Northern Modern verdict-mapping fra DESIGN.md
 const STATUS_ACCENT = {
-  kladde: '#9a8d7d',
-  vurderet: '#6b5e4f',
-  remediation: '#c94416',
-  godkendt: '#2d6a31',
-  idriftsat: '#1f4e22',
-  arkiveret: '#9a8d7d',
+  kladde: '#8a8f96',        // textFaded
+  vurderet: '#555a64',      // textMuted
+  remediation: '#b08a4a',   // bronze (betinget — kræver handling, ikke fejl)
+  godkendt: '#2f6b2f',      // success
+  idriftsat: '#0d2e54',     // primary (kongelig blå — i drift)
+  arkiveret: '#8a8f96',     // faded
 };
 
 // ---- API ----------------------------------------------------------------

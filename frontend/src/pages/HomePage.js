@@ -1,1440 +1,555 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { useQuery } from 'react-query';
-import axios from 'axios';
-import {
-  FaShieldAlt,
-  FaGlobeEurope,
-  FaArrowRight,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaTimesCircle,
-  FaHistory,
-  FaClock,
-  FaUsers,
-  FaFileAlt,
-  FaCalendarAlt,
-  FaBalanceScale,
-  FaLightbulb,
-  FaExternalLinkAlt,
-  FaMoon,
-  FaSun,
-  FaInfoCircle,
-  FaChevronDown,
-  FaChevronUp,
-  FaServer,
-  FaDatabase,
-  FaSearch,
-  FaRobot,
-  FaSpinner
-} from 'react-icons/fa';
-import NewsSection from '../components/NewsSection';
-import LiveNewsCard from '../components/LiveNewsCard';
-import ComplianceTips from '../components/ComplianceTips';
-import { FeatureCardSkeletonLoader } from '../components/SkeletonLoader';
-import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
-import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
-const HomeContainer = styled.div`
-  max-width: 1200px;
+import NewsSection from '../components/NewsSection';
+import DataOverview from '../components/data-overview/DataOverview';
+import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
+
+/**
+ * Tyr — HomePage (Northern Modern, Design system v2)
+ *
+ * Helt nyt layout der matcher DESIGN.md. Drop'er den gamle Forseti-hero
+ * med rødt-gradient, version-card, system-status-block og 3-kolonne
+ * icon-feature-grid (AI-slop). Erstattet af:
+ *   1. Hero — wordmark "Tyr ᛏ" + h1 + lede + primær/sekundær CTA
+ *   2. Sådan virker Tyr — 4-trins workflow (hairline border, mono-tal)
+ *   3. Hvad du bør vide — 3 rotating facts som editorial cards
+ *   4. NewsSection (live RSS)
+ *   5. DataOverview (drift-overblik nederst — version + system-status)
+ */
+
+// ---- Layout primitives -------------------------------------------------
+
+const Page = styled.div`
+  max-width: 1240px;
   margin: 0 auto;
+  padding: 2.25rem 1.75rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+
+  @media (max-width: 720px) {
+    padding: 1.5rem 1rem 3rem;
+    gap: 40px;
+  }
 `;
 
-const DarkModeToggle = styled.button`
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(255,255,255,0.1)'
-    : 'rgba(0,0,0,0.05)'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(255,255,255,0.2)'
-    : 'rgba(0,0,0,0.1)'};
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.text};
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+// ---- Hero ---------------------------------------------------------------
+
+const Hero = styled.section`
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
+
+  @media (max-width: 920px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+`;
+
+const HeroPrimary = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 18px;
+`;
+
+const Wordmark = styled.div`
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: ${(p) => p.theme.fonts.display};
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: ${(p) => p.theme.colors.text};
+
+  .rune {
+    color: ${(p) => p.theme.colors.bronze};
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .ver {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: ${(p) => p.theme.colors.textMuted};
+    margin-left: 6px;
+  }
+`;
+
+const HeroTitle = styled.h1`
+  font-family: ${(p) => p.theme.fonts.display};
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: ${(p) => p.theme.colors.text};
+  margin: 0;
+`;
+
+const HeroLede = styled.p`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: ${(p) => p.theme.colors.textMuted};
+  margin: 0;
+  max-width: 540px;
+`;
+
+const CTARow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+`;
+
+const PrimaryCTA = styled(Link)`
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
+  gap: 10px;
+  padding: 12px 22px;
+  background: ${(p) => p.theme.colors.primary};
+  color: ${(p) => p.theme.colors.white};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: ${(p) => p.theme.borderRadius};
+  border: 1px solid ${(p) => p.theme.colors.primary};
+  transition: ${(p) => p.theme.animations.transitionFast};
 
   &:hover {
-    transform: scale(1.1);
-    background: ${props => props.theme.mode === 'dark'
-      ? 'rgba(255,255,255,0.15)'
-      : 'rgba(0,0,0,0.08)'};
+    background: ${(p) => p.theme.colors.primaryDark};
+    border-color: ${(p) => p.theme.colors.primaryDark};
+  }
+
+  .arrow { font-family: ${(p) => p.theme.fonts.mono}; font-weight: 400; }
+`;
+
+const GhostCTA = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  background: transparent;
+  color: ${(p) => p.theme.colors.primary};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: ${(p) => p.theme.borderRadius};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  transition: ${(p) => p.theme.animations.transitionFast};
+
+  &:hover {
+    border-color: ${(p) => p.theme.colors.primary};
+    background: ${(p) => p.theme.colors.primarySoft};
   }
 `;
 
-const HeroSection = styled.section`
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.92) 100%)'
-    : 'linear-gradient(135deg, rgba(241,245,249,0.98) 0%, rgba(226,232,240,0.95) 100%)'};
-  padding: 2.5rem;
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  margin-bottom: 2rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: ${props => props.theme.shadows.xl};
+// Hero-sidekort — quick-stats om aktive regler + sagsmasse
+const HeroAside = styled.aside`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-self: start;
+`;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.08), transparent 60%);
-    pointer-events: none;
+const AsideEyebrow = styled.div`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: ${(p) => p.theme.colors.bronze};
+`;
+
+const AsideStat = styled.div`
+  padding-bottom: 14px;
+  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .label {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: ${(p) => p.theme.colors.textMuted};
+    margin-bottom: 4px;
   }
-
-  @media (max-width: 1024px) {
-    padding: 2rem;
+  .value {
+    font-family: ${(p) => p.theme.fonts.display};
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: ${(p) => p.theme.colors.text};
+    letter-spacing: -0.01em;
   }
-
-  @media (max-width: 768px) {
-    padding: 1.5rem;
+  .value .accent { color: ${(p) => p.theme.colors.primary}; }
+  .meta {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.72rem;
+    color: ${(p) => p.theme.colors.textFaded};
+    margin-top: 4px;
   }
 `;
 
-const HeroLayout = styled.div`
-  position: relative;
+// ---- Workflow -----------------------------------------------------------
+
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const SectionHeader = styled.header`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 720px;
+`;
+
+const SectionEyebrow = styled.span`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: ${(p) => p.theme.colors.bronze};
+`;
+
+const SectionTitle = styled.h2`
+  font-family: ${(p) => p.theme.fonts.display};
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: -0.015em;
+  margin: 0;
+  color: ${(p) => p.theme.colors.text};
+`;
+
+const SectionLede = styled.p`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 1rem;
+  line-height: 1.55;
+  color: ${(p) => p.theme.colors.textMuted};
+  margin: 0;
+`;
+
+const Steps = styled.ol`
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2rem;
-  align-items: start;
-  z-index: 1;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  counter-reset: step;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 920px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 540px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const HeroContent = styled.div`
+const Step = styled.li`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 22px 22px 24px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.text};
-`;
-
-const HeroSidebar = styled.div`
-  width: 380px;
-
-  @media (max-width: 1024px) {
-    width: 100%;
-  }
-`;
-
-const HeroLogo = styled.img`
-  max-width: 180px;
-  height: auto;
-
-  @media (max-width: 768px) {
-    max-width: 140px;
-  }
-`;
-
-const HeroBadge = styled.span`
-  align-self: flex-start;
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background: rgba(255,255,255,0.16);
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.primary};
-  border: 1px solid rgba(255,255,255,0.3);
-`;
-
-const HeroTitle = styled.h1`
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 700;
-  line-height: 1.1;
-  margin: 0;
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 0.95rem;
-  line-height: 1.5;
-  max-width: 600px;
-  margin: 0;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.8)'
-    : 'rgba(51, 65, 85, 0.85)'};
-`;
-
-const HeroActions = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-`;
-
-const CTAButton = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  border-radius: 999px;
-  padding: 0.85rem 1.8rem;
-  font-weight: 600;
-  background: ${props => props.theme.colors.gradients.primary};
-  color: ${props => props.theme.colors.white};
-  box-shadow: ${props => props.theme.shadows.glow};
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadows.xl};
-  }
-`;
-
-const SecondaryCTA = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.85rem 1.4rem;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 600;
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.white : props.theme.colors.primary};
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.35);
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    transform: translateY(-2px);
-    backdrop-filter: blur(6px);
-  }
-`;
-
-
-const FeaturesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-`;
-
-const FeatureCard = styled(motion.div)`
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.9)'};
-  backdrop-filter: blur(20px);
-  padding: 2rem;
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
-  box-shadow: ${props => props.theme.shadows.glass};
-  text-align: center;
-  transition: ${props => props.theme.animations.transition};
+  gap: 10px;
   position: relative;
-  overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: ${props => props.theme.colors.gradients.card};
-    opacity: 0;
-    transition: ${props => props.theme.animations.transition};
+  .num {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: ${(p) => p.theme.colors.bronze};
+    margin-bottom: 4px;
   }
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: ${props => props.theme.shadows.xl};
-    border-color: rgba(26, 54, 93, 0.3);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .icon {
-      transform: scale(1.1);
-      box-shadow: ${props => props.theme.shadows.glow};
-    }
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .icon {
-    background: ${props => props.theme.colors.gradients.primary};
-    color: white;
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    transition: ${props => props.theme.animations.spring};
-    box-shadow: ${props => props.theme.shadows.md};
-  }
-
-  h3 {
-    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-
-  p {
-    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
-    line-height: 1.6;
-  }
-
-  .fact-source {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
+  .title {
+    font-family: ${(p) => p.theme.fonts.display};
     font-weight: 600;
-    color: ${props => props.theme.colors.primary};
-    text-decoration: none;
-    transition: ${props => props.theme.animations.transitionFast};
-
-    svg {
-      font-size: 0.75rem;
-    }
-
-    &:hover {
-      text-decoration: underline;
-    }
+    font-size: 1.05rem;
+    color: ${(p) => p.theme.colors.text};
+    letter-spacing: -0.005em;
   }
-`;
-
-const QuickStartSection = styled.section`
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : props.theme.colors.gray[50]};
-  padding: 3rem 2rem;
-  border-radius: ${props => props.theme.borderRadius};
-  text-align: center;
-`;
-
-const QuickStartTitle = styled.h2`
-  color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-  margin-bottom: 2rem;
-`;
-
-const QuickStartGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-`;
-
-const QuickStartCard = styled(Link)`
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)'};
-  backdrop-filter: blur(10px);
-  padding: 1.5rem;
-  border-radius: ${props => props.theme.borderRadius};
-  text-decoration: none;
-  color: inherit;
-  transition: ${props => props.theme.animations.transition};
-  border: 2px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.3)' : 'rgba(255, 255, 255, 0.3)'};
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: ${props => props.theme.colors.gradients.card};
-    opacity: 0;
-    transition: ${props => props.theme.animations.transition};
-  }
-
-  &:hover {
-    border-color: ${props => props.theme.colors.juridical.lightGold};
-    transform: translateY(-4px);
-    box-shadow: ${props => props.theme.shadows.lg};
-
-    &::before {
-      opacity: 1;
-    }
-
-    .step-number {
-      background: ${props => props.theme.colors.gradients.gold};
-      transform: scale(1.1);
-    }
-  }
-
-  > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  .step-number {
-    background: ${props => props.theme.colors.gradients.primary};
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.875rem;
-    margin: 0 auto 1rem;
-    transition: ${props => props.theme.animations.spring};
-    box-shadow: ${props => props.theme.shadows.md};
-  }
-
-  h4 {
-    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-
-  p {
-    color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
-    font-size: 0.875rem;
+  .body {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.92rem;
     line-height: 1.5;
+    color: ${(p) => p.theme.colors.textMuted};
   }
 `;
 
-const RecentActivitySection = styled.section`
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.95)'};
-  backdrop-filter: blur(20px);
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(255, 255, 255, 0.2)'};
-  box-shadow: ${props => props.theme.shadows.glass};
-  padding: 2rem;
-  margin-bottom: 3rem;
+// ---- Editorial fact cards ----------------------------------------------
 
-  h3 {
-    color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-`;
-
-const ActivityList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const ActivityItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(15, 23, 42, 0.85)' : props.theme.colors.gray[50]};
-  border-radius: ${props => props.theme.borderRadius};
-  border-left: 3px solid ${props => {
-    switch(props.type) {
-      case 'assessment': return props.theme.colors.primary;
-      case 'research': return props.theme.colors.warning;
-      case 'compliance': return props.theme.colors.success;
-      default: return props.theme.colors.gray[400];
-    }
-  }};
-
-  .activity-icon {
-    background: ${props => {
-      switch(props.type) {
-        case 'assessment': return props.theme.colors.primary;
-        case 'research': return props.theme.colors.warning;
-        case 'compliance': return props.theme.colors.success;
-        default: return props.theme.colors.gray[400];
-      }
-    }};
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.875rem;
-  }
-
-  .activity-content {
-    flex: 1;
-
-    .activity-title {
-      font-weight: 600;
-      color: ${props => props.theme.mode === 'dark' ? props.theme.colors.gray[100] : props.theme.colors.gray[800]};
-      margin-bottom: 0.25rem;
-    }
-
-    .activity-description {
-      color: ${props => props.theme.mode === 'dark' ? 'rgba(226, 232, 240, 0.85)' : props.theme.colors.gray[600]};
-      font-size: 0.875rem;
-    }
-  }
-
-  .activity-time {
-    color: ${props => props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : props.theme.colors.gray[500]};
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-`;
-
-const VersionSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: ${props => props.theme.borderRadius};
-  background: ${props => props.theme.mode === 'dark'
-    ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.88))'
-    : 'linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.92))'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : 'rgba(148, 163, 184, 0.32)'};
-  box-shadow: ${props => props.theme.shadows.md};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(226, 232, 240, 0.92)'
-    : props.theme.layout.sidebar.text};
-`;
-
-const VersionHeading = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(203, 213, 225, 0.85)'
-    : 'rgba(71, 85, 105, 0.85)'};
-`;
-
-const VersionValue = styled.div`
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: ${props => props.theme.mode === 'dark'
-    ? props.theme.colors.white
-    : props.theme.colors.primary};
-`;
-
-const ChangeTypeBadge = styled.span`
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(59, 130, 246, 0.18)'
-    : 'rgba(29, 78, 216, 0.12)'};
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(191, 219, 254, 0.95)'
-    : 'rgba(29, 78, 216, 0.85)'};
-  border: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(96, 165, 250, 0.35)'
-    : 'rgba(29, 78, 216, 0.2)'};
-`;
-
-const VersionMeta = styled.div`
-  font-size: 0.68rem;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(203, 213, 225, 0.82)'
-    : 'rgba(71, 85, 105, 0.85)'};
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-
-  .relative {
-    opacity: 0.75;
-    font-size: 0.66rem;
-  }
-
-  .author {
-    font-weight: 600;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(191, 219, 254, 0.9)'
-      : 'rgba(30, 64, 175, 0.9)'};
-  }
-`;
-
-const VersionDetailsButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: transparent;
-  border: none;
-  padding: 0.4rem 0;
-  margin-top: 0.2rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.85)'
-    : 'rgba(100, 116, 139, 0.85)'};
-  cursor: pointer;
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(191, 219, 254, 0.95)'
-      : 'rgba(30, 64, 175, 0.95)'};
-  }
-
-  .chevron {
-    font-size: 0.6rem;
-    transition: ${props => props.theme.animations.transitionFast};
-  }
-`;
-
-const VersionDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  max-height: ${props => props.$isOpen ? '500px' : '0'};
-  overflow: hidden;
-  opacity: ${props => props.$isOpen ? '1' : '0'};
-  transition: all 0.3s ease-in-out;
-  margin-top: ${props => props.$isOpen ? '0.4rem' : '0'};
-  padding-top: ${props => props.$isOpen ? '0.4rem' : '0'};
-  border-top: ${props => props.$isOpen
-    ? `1px solid ${props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.25)'}`
-    : 'none'};
-`;
-
-const SystemStatusSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.2)'
-    : 'rgba(148, 163, 184, 0.25)'};
-`;
-
-const SystemStatusGrid = styled.div`
+const FactsRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.4rem;
-`;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 
-const ServiceStatus = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.4rem 0.5rem;
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15, 23, 42, 0.4)'
-    : 'rgba(255, 255, 255, 0.5)'};
-  border-radius: 4px;
-  border: 1px solid ${props => {
-    if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.25)';
-    if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.25)';
-    if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.25)';
-    return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.15)';
-  }};
-
-  .service-label {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.7rem;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(226, 232, 240, 0.85)'
-      : 'rgba(71, 85, 105, 0.85)'};
-
-    svg {
-      font-size: 0.85rem;
-      color: ${props => props.theme.mode === 'dark'
-        ? 'rgba(148, 163, 184, 0.7)'
-        : 'rgba(100, 116, 139, 0.7)'};
-    }
-  }
-
-  .service-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: ${props => {
-      if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(134, 239, 172, 0.95)' : 'rgba(22, 163, 74, 0.95)';
-      if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(253, 224, 71, 0.95)' : 'rgba(202, 138, 4, 0.95)';
-      if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(252, 165, 165, 0.95)' : 'rgba(220, 38, 38, 0.95)';
-      return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.8)' : 'rgba(100, 116, 139, 0.8)';
-    }};
-
-    svg {
-      font-size: 0.7rem;
-      ${props => props.$status === 'checking' && `
-        animation: spin 1s linear infinite;
-      `}
-    }
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  @media (max-width: 920px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-const SystemStatusDetailsButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: transparent;
-  border: none;
-  padding: 0.4rem 0;
-  margin-top: 0.4rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: ${props => props.theme.mode === 'dark'
-    ? 'rgba(148, 163, 184, 0.85)'
-    : 'rgba(100, 116, 139, 0.85)'};
-  cursor: pointer;
-  transition: ${props => props.theme.animations.transitionFast};
-
-  &:hover {
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(191, 219, 254, 0.95)'
-      : 'rgba(30, 64, 175, 0.95)'};
-  }
-
-  .chevron {
-    font-size: 0.6rem;
-    transition: ${props => props.theme.animations.transitionFast};
-  }
-`;
-
-const SystemStatusDetails = styled.div`
+const FactCard = styled.article`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-left: 3px solid ${(p) => p.theme.colors.bronze};
+  border-radius: ${(p) => p.theme.borderRadius};
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-height: ${props => props.$isOpen ? '800px' : '0'};
-  overflow: hidden;
-  opacity: ${props => props.$isOpen ? '1' : '0'};
-  transition: all 0.3s ease-in-out;
-  margin-top: ${props => props.$isOpen ? '0.5rem' : '0'};
-`;
+  gap: 10px;
 
-const ServiceDetailCard = styled.div`
-  background: ${props => props.theme.mode === 'dark'
-    ? 'rgba(15, 23, 42, 0.6)'
-    : 'rgba(255, 255, 255, 0.7)'};
-  border: 1px solid ${props => {
-    if (props.$status === 'healthy') return props.theme.mode === 'dark' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(34, 197, 94, 0.25)';
-    if (props.$status === 'degraded') return props.theme.mode === 'dark' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(245, 158, 11, 0.25)';
-    if (props.$status === 'down') return props.theme.mode === 'dark' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.25)';
-    return props.theme.mode === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(148, 163, 184, 0.15)';
-  }};
-  border-radius: 6px;
-  padding: 0.6rem;
-
-  .service-detail-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-
-    svg {
-      font-size: 1rem;
-      color: ${props => props.theme.mode === 'dark'
-        ? 'rgba(148, 163, 184, 0.8)'
-        : 'rgba(100, 116, 139, 0.8)'};
-    }
-
-    h5 {
-      margin: 0;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: ${props => props.theme.mode === 'dark'
-        ? props.theme.colors.white
-        : props.theme.colors.gray[800]};
-    }
+  .topic {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: ${(p) => p.theme.colors.bronze};
   }
+  h3 {
+    font-family: ${(p) => p.theme.fonts.display};
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: -0.005em;
+    margin: 0;
+    color: ${(p) => p.theme.colors.text};
+  }
+  p {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: ${(p) => p.theme.colors.text};
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  a {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: ${(p) => p.theme.colors.primary};
+    text-decoration: none;
+    margin-top: 4px;
 
-  .service-detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    font-size: 0.68rem;
-    color: ${props => props.theme.mode === 'dark'
-      ? 'rgba(226, 232, 240, 0.85)'
-      : 'rgba(71, 85, 105, 0.85)'};
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .label {
-        font-weight: 500;
-        opacity: 0.8;
-      }
-
-      .value {
-        font-weight: 600;
-        font-family: 'Courier New', monospace;
-        color: ${props => props.theme.mode === 'dark'
-          ? props.theme.colors.white
-          : props.theme.colors.primary};
-      }
-    }
-
-    .error-message {
-      color: ${props => props.theme.mode === 'dark'
-        ? 'rgba(252, 165, 165, 0.95)'
-        : 'rgba(220, 38, 38, 0.95)'};
-      font-size: 0.65rem;
-      padding: 0.3rem;
-      background: ${props => props.theme.mode === 'dark'
-        ? 'rgba(239, 68, 68, 0.1)'
-        : 'rgba(239, 68, 68, 0.05)'};
-      border-radius: 4px;
-      margin-top: 0.2rem;
-    }
+    &:hover { text-decoration: underline; }
   }
 `;
 
-const FACTS_PER_VIEW = 3;
-const FACT_ROTATION_INTERVAL_MS = 120000;
+const FactsRotateCue = styled.div`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: ${(p) => p.theme.colors.textFaded};
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -8px;
+`;
 
-const VERSION_QUERY_KEY = 'platform-version-info';
-const VERSION_REFRESH_INTERVAL = 60 * 1000;
+// ---- Footer ribbon ------------------------------------------------------
 
-const CHANGE_TYPE_LABELS = {
-  major: 'Stor ændring',
-  minor: 'Mellem ændring',
-  patch: 'Mindre ændring'
+const Footer = styled.footer`
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 24px;
+  border-top: 1px solid ${(p) => p.theme.colors.borderSoft};
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: ${(p) => p.theme.colors.textFaded};
+`;
+
+// ---- Static content -----------------------------------------------------
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'Beskriv',
+    body: 'Beskriv et AI-system i fri tekst eller upload kontrakt/DPIA. LLM extraherer signaler — den må aldrig ændre afgørelsen.',
+  },
+  {
+    num: '02',
+    title: 'Vurder',
+    body: 'Deterministisk regelmotor evaluerer 15 lovartikler (EU AI Act, GDPR, forvaltningslov, offentlighedslov) mod input.',
+  },
+  {
+    num: '03',
+    title: 'Hjemling',
+    body: 'Hver triggered regel får ordret lov-citat med direkte link til EUR-Lex eller Retsinformation.',
+  },
+  {
+    num: '04',
+    title: 'Verifikation',
+    body: 'Citat-verifier kører dagligt kl. 04:00 og flagger hvis et citat ikke længere findes ordret i kilden.',
+  },
+];
+
+const TOPIC_LABELS = {
+  'ai-': 'AI-teknologi',
+  'aiact-': 'EU AI Act',
+  'gdpr-': 'GDPR',
+  'compliance-': 'Compliance',
+  'fvl-': 'Forvaltningslov',
+  'kommunal-': 'Kommunal praksis',
 };
 
-const buildApiUrl = (path) => {
-  const base = process.env.REACT_APP_API_BASE_URL || '';
-  if (!base) {
-    return path;
+const topicForFact = (fact) => {
+  const id = String(fact.id || '');
+  for (const [prefix, label] of Object.entries(TOPIC_LABELS)) {
+    if (id.startsWith(prefix)) return label;
   }
-  return `${base.replace(/\/$/, '')}${path}`;
+  return 'Faglig viden';
 };
 
-const fetchJsonNoCache = async (url, { timeout = 4000 } = {}) => {
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), timeout);
-  let response;
-  try {
-    response = await fetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
-      },
-      signal: controller.signal,
-    });
-  } finally {
-    window.clearTimeout(timer);
-  }
-  if (!response.ok) {
-    throw new Error(`Kunne ikke hente data fra ${url}`);
-  }
-  return response.json();
-};
-
-const fetchVersionInfo = async () => {
-  const fallback = await fetchJsonNoCache('/fallback/version.json', { timeout: 1500 }).catch(() => null);
-  try {
-    const live = await fetchJsonNoCache(buildApiUrl('/api/version'));
-    return live;
-  } catch (error) {
-    console.warn('Version API utilgængelig – anvender fallback', error);
-    if (fallback) {
-      return fallback;
-    }
-    throw error;
-  }
-};
-
-const formatRelativeTime = (date) => {
-  const diffMs = date.getTime() - Date.now();
-  const diffMinutes = Math.round(diffMs / 60000);
-
-  if (Math.abs(diffMinutes) < 1) {
-    return 'lige nu';
-  }
-
-  const formatter = new Intl.RelativeTimeFormat('da', { numeric: 'auto' });
-
-  if (Math.abs(diffMinutes) < 60) {
-    return formatter.format(diffMinutes, 'minute');
-  }
-
-  const diffHours = Math.round(diffMinutes / 60);
-  if (Math.abs(diffHours) < 24) {
-    return formatter.format(diffHours, 'hour');
-  }
-
-  const diffDays = Math.round(diffHours / 24);
-  if (Math.abs(diffDays) < 7) {
-    return formatter.format(diffDays, 'day');
-  }
-
-  const diffWeeks = Math.round(diffDays / 7);
-  if (Math.abs(diffWeeks) < 5) {
-    return formatter.format(diffWeeks, 'week');
-  }
-
-  const diffMonths = Math.round(diffDays / 30);
-  if (Math.abs(diffMonths) < 12) {
-    return formatter.format(diffMonths, 'month');
-  }
-
-  const diffYears = Math.round(diffDays / 365);
-  return formatter.format(diffYears, 'year');
-};
+// ---- Component ---------------------------------------------------------
 
 const HomePage = () => {
-  const { preferences, updatePreferences } = useUserPreferences();
-  const [loading, setLoading] = useState(true);
-  const [currentFactIndex, setCurrentFactIndex] = useState(0);
-  const [versionDetailsExpanded, setVersionDetailsExpanded] = useState(false);
-  const [systemStatusExpanded, setSystemStatusExpanded] = useState(false);
-  const [services, setServices] = useState({
-    backend: { status: 'checking', responseTime: null, version: null },
-    database: { status: 'checking', responseTime: null, records: null },
-    websearch: { status: 'checking', responseTime: null, resultsFound: null },
-    llm: { status: 'checking', responseTime: null, model: null }
+  const facts = aiActDidYouKnowFacts || [];
+  const [factOffset, setFactOffset] = useState(() => {
+    if (facts.length === 0) return 0;
+    return Math.floor(Math.random() * facts.length);
   });
 
-  const toggleDarkMode = () => {
-    updatePreferences({ theme: preferences?.theme === 'dark' ? 'light' : 'dark' });
-  };
-
-  const checkHealth = useCallback(async () => {
-    const results = {};
-
-    // Check Backend
-    try {
-      const start = Date.now();
-      const response = await axios.get('/api/version', { timeout: 5000 });
-      const responseTime = Date.now() - start;
-      results.backend = {
-        status: response.status === 200 ? 'healthy' : 'degraded',
-        responseTime,
-        version: response.data.version,
-        error: null
-      };
-    } catch (error) {
-      results.backend = {
-        status: 'down',
-        responseTime: null,
-        version: null,
-        error: error.message
-      };
-    }
-
-    // Check Database
-    try {
-      const start = Date.now();
-      const response = await axios.get('/api/health/database', { timeout: 5000 });
-      const responseTime = Date.now() - start;
-      results.database = {
-        status: response.data.healthy ? 'healthy' : 'degraded',
-        responseTime,
-        records: response.data.record_count,
-        error: null
-      };
-    } catch (error) {
-      results.database = {
-        status: 'down',
-        responseTime: null,
-        records: null,
-        error: error.message
-      };
-    }
-
-    // Check Web Search
-    try {
-      const start = Date.now();
-      const response = await axios.post('/api/compliance/test-search', {
-        query: 'GDPR test'
-      }, { timeout: 10000 });
-      const responseTime = Date.now() - start;
-      results.websearch = {
-        status: response.data.success ? 'healthy' : 'degraded',
-        responseTime,
-        resultsFound: response.data.results_count,
-        error: null
-      };
-    } catch (error) {
-      results.websearch = {
-        status: 'down',
-        responseTime: null,
-        resultsFound: null,
-        error: error.message
-      };
-    }
-
-    // Check LLM
-    try {
-      const start = Date.now();
-      const response = await axios.post('/api/compliance/test-llm', {
-        prompt: 'Test'
-      }, { timeout: 15000 });
-      const responseTime = Date.now() - start;
-      results.llm = {
-        status: response.data.success ? 'healthy' : 'degraded',
-        responseTime,
-        model: response.data.model,
-        error: null
-      };
-    } catch (error) {
-      results.llm = {
-        status: 'down',
-        responseTime: null,
-        model: null,
-        error: error.message
-      };
-    }
-
-    setServices(results);
-  }, []);
-
   useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    if (facts.length <= 3) return undefined;
+    const id = window.setInterval(() => {
+      setFactOffset((prev) => (prev + 3) % facts.length);
+    }, 120_000);
+    return () => window.clearInterval(id);
+  }, [facts.length]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    checkHealth();
-    const interval = setInterval(checkHealth, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [checkHealth]);
-
-  useEffect(() => {
-    const total = aiActDidYouKnowFacts.length;
-    if (!total) {
-      return;
-    }
-
-    const randomStart = Math.floor(Math.random() * total);
-    const normalised = randomStart - (randomStart % FACTS_PER_VIEW);
-    setCurrentFactIndex(normalised);
-  }, []);
-
-  useEffect(() => {
-    const total = aiActDidYouKnowFacts.length;
-    if (total <= FACTS_PER_VIEW) {
-      return undefined;
-    }
-
-    const interval = window.setInterval(() => {
-      setCurrentFactIndex((prev) => (prev + FACTS_PER_VIEW) % total);
-    }, FACT_ROTATION_INTERVAL_MS);
-
-    return () => window.clearInterval(interval);
-  }, []);
-
-  const displayedFacts = useMemo(() => {
-    if (!aiActDidYouKnowFacts.length) {
-      return [];
-    }
-
-    const total = aiActDidYouKnowFacts.length;
-    return Array.from({ length: FACTS_PER_VIEW }, (_, offset) => {
-      const index = (currentFactIndex + offset) % total;
-      return aiActDidYouKnowFacts[index];
-    });
-  }, [currentFactIndex]);
-
-  const { data: versionData, isError: versionError } = useQuery(
-    VERSION_QUERY_KEY,
-    fetchVersionInfo,
-    {
-      refetchInterval: VERSION_REFRESH_INTERVAL,
-      staleTime: VERSION_REFRESH_INTERVAL / 2,
-      retry: 1,
-    }
-  );
-
-  const versionLabel = useMemo(() => {
-    if (versionData?.version) {
-      const buildNum = versionData?.buildNumber ? ` build ${versionData.buildNumber}` : '';
-      return `v${versionData.version}${buildNum}`;
-    }
-    if (versionError) {
-      return 'v--';
-    }
-    return 'Henter...';
-  }, [versionData, versionError]);
-
-  const changeTypeLabel = useMemo(() => {
-    if (!versionData?.lastChangeType) {
-      return null;
-    }
-    return CHANGE_TYPE_LABELS[versionData.lastChangeType] || null;
-  }, [versionData]);
-
-  const lastCommitMeta = versionData?.lastCommit;
-
-  const lastUpdated = useMemo(() => {
-    if (!lastCommitMeta?.timestamp) {
-      return null;
-    }
-    const commitDate = new Date(lastCommitMeta.timestamp);
-    if (Number.isNaN(commitDate.getTime())) {
-      return null;
-    }
-
-    return {
-      formatted: new Intl.DateTimeFormat('da-DK', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(commitDate),
-      relative: formatRelativeTime(commitDate),
-      shortHash: lastCommitMeta?.shortHash || null,
-      message: lastCommitMeta?.message || null,
-      author: lastCommitMeta?.author || null,
-    };
-  }, [lastCommitMeta]);
-
-  const quickStartSteps = [
-    {
-      title: 'Lav en vurdering',
-      description: 'Beskriv AI-systemet i fri tekst og få en deterministisk regelmotor-vurdering med lov-citater i marginen',
-      link: '/vurdering'
-    },
-    {
-      title: 'Registrér AI-sag',
-      description: 'Opret en formel sag i ServicePortalen med automatisk e-mail til Digitalisering og IT',
-      link: '/ai-sager'
-    },
-    {
-      title: 'Slå loven op',
-      description: 'Find paragraf, præcedens og afgørelser via Juridisk Research og Lov-assistent',
-      link: '/research'
-    }
-  ];
-
-
-  const getStatusIcon = (status) => {
-    if (status === 'healthy') return <FaCheckCircle />;
-    if (status === 'degraded') return <FaExclamationTriangle />;
-    if (status === 'down') return <FaTimesCircle />;
-    return <FaSpinner />;
-  };
-
-  const getServiceIcon = (serviceName) => {
-    if (serviceName === 'backend') return <FaServer />;
-    if (serviceName === 'database') return <FaDatabase />;
-    if (serviceName === 'websearch') return <FaSearch />;
-    if (serviceName === 'llm') return <FaRobot />;
-    return <FaServer />;
-  };
-
-  const getServiceLabel = (serviceName) => {
-    if (serviceName === 'backend') return 'Backend';
-    if (serviceName === 'database') return 'Database';
-    if (serviceName === 'websearch') return 'Søgning';
-    if (serviceName === 'llm') return 'LLM';
-    return serviceName;
-  };
+  const visibleFacts = useMemo(() => {
+    if (facts.length === 0) return [];
+    return Array.from({ length: 3 }, (_, idx) => facts[(factOffset + idx) % facts.length]);
+  }, [factOffset, facts]);
 
   return (
-    <HomeContainer>
-      <HeroSection>
-        <HeroLayout>
-          <HeroContent>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <HeroBadge>Tyr · v3 — kommunal AI-compliance</HeroBadge>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.05 }}
-            >
-              <HeroTitle>Tyr</HeroTitle>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.12 }}
-            >
-              <HeroSubtitle>
-                Hver kommunal AI-vurdering bliver hjemlet i en konkret lovartikel
-                — ordret citat, verificeret mod kilden, deterministisk regelmotor.
-                EU AI Act, GDPR, forvaltningslov og offentlighedslov er dækket på
-                tværs; sektorlove kommer i takt med jurist-input.
-              </HeroSubtitle>
-            </motion.div>
-            <HeroActions>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.18 }}
-              >
-                <CTAButton to="/vurdering">
-                  Start vurdering
-                  <FaArrowRight />
-                </CTAButton>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.24 }}
-              >
-                <SecondaryCTA to="/sager">
-                  <FaBalanceScale size={16} />
-                  Sag-overblik
-                </SecondaryCTA>
-              </motion.div>
-            </HeroActions>
+    <Page>
+      {/* ============ HERO ============ */}
+      <Hero>
+        <HeroPrimary>
+          <Wordmark>
+            <span>Tyr</span>
+            <span className="rune" aria-hidden="true">ᛏ</span>
+            <span className="ver">v3 · Kalundborg</span>
+          </Wordmark>
+          <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
+          <HeroLede>
+            Tyr er Kalundborg Kommunes interne AI-compliance-platform. Beskriv et AI-system,
+            upload kontrakt eller DPIA — og få en hjemlet GO / BETINGET-GO / NO-GO med
+            ordret citat fra EU AI Act, GDPR, forvaltningslov og offentlighedslov.
+          </HeroLede>
+          <CTARow>
+            <PrimaryCTA to="/vurdering">Start vurdering <span className="arrow">→</span></PrimaryCTA>
+            <GhostCTA to="/sager">Sag-overblik</GhostCTA>
+          </CTARow>
+        </HeroPrimary>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              style={{ marginTop: '2rem' }}
-            >
-              <HeroLogo src="/kalundborg-logo.svg" alt="Kalundborg Kommune" />
-            </motion.div>
-          </HeroContent>
+        <HeroAside>
+          <AsideEyebrow>I drift lige nu</AsideEyebrow>
+          <AsideStat>
+            <div className="label">Aktive lovregler</div>
+            <div className="value"><span className="accent">15</span> regler</div>
+            <div className="meta">EU AI Act · GDPR · Forvaltningslov · Offentlighedslov</div>
+          </AsideStat>
+          <AsideStat>
+            <div className="label">Kilde-verifikation</div>
+            <div className="value">Dagligt kl. <span className="accent">04:00</span></div>
+            <div className="meta">EUR-Lex + Retsinformation · automatisk flagging</div>
+          </AsideStat>
+          <AsideStat>
+            <div className="label">LLM</div>
+            <div className="value">Lokal eller Azure</div>
+            <div className="meta">må aldrig ændre afgørelsen — kun ekstrahere signaler</div>
+          </AsideStat>
+        </HeroAside>
+      </Hero>
 
-          <HeroSidebar>
-            <VersionSection>
-              <VersionHeading>
-                <FaInfoCircle size={10} />
-                <span>Version</span>
-              </VersionHeading>
-              <VersionValue>
-                {versionLabel}
-                {changeTypeLabel && <ChangeTypeBadge>{changeTypeLabel}</ChangeTypeBadge>}
-              </VersionValue>
-              <VersionMeta>
-                {lastUpdated ? (
-                  <>
-                    {lastUpdated.relative || lastUpdated.formatted}
-                  </>
-                ) : (
-                  versionError ? 'Ukendt' : 'Henter...'
-                )}
-              </VersionMeta>
-
-              {(lastUpdated || changeTypeLabel) && (
-                <>
-                  <VersionDetailsButton onClick={() => setVersionDetailsExpanded(!versionDetailsExpanded)}>
-                    <span>Se detaljer</span>
-                    {versionDetailsExpanded ? (
-                      <FaChevronUp className="chevron" />
-                    ) : (
-                      <FaChevronDown className="chevron" />
-                    )}
-                  </VersionDetailsButton>
-
-                  <VersionDetails $isOpen={versionDetailsExpanded}>
-                    {lastUpdated && (
-                      <>
-                        {versionData?.branch && (
-                          <VersionMeta>
-                            <strong>Branch:</strong> <span>{versionData.branch === 'main' ? '🏠 main' : `🔧 ${versionData.branch}`}</span>
-                          </VersionMeta>
-                        )}
-
-                        <VersionMeta>
-                          <strong>Opdateret:</strong> {lastUpdated.formatted}
-                        </VersionMeta>
-
-                        {(lastUpdated.shortHash || lastUpdated.message) && (
-                          <VersionMeta>
-                            <strong>Commit:</strong>
-                            {lastUpdated.shortHash && <span> #{lastUpdated.shortHash}</span>}
-                            {lastUpdated.message && (
-                              <span>{lastUpdated.shortHash ? ' – ' : ''}{lastUpdated.message}</span>
-                            )}
-                          </VersionMeta>
-                        )}
-
-                        {lastUpdated.author && (
-                          <VersionMeta>
-                            <strong>Ændret af:</strong> <span className="author">{lastUpdated.author}</span>
-                          </VersionMeta>
-                        )}
-                      </>
-                    )}
-                  </VersionDetails>
-                </>
-              )}
-
-              <SystemStatusSection>
-                <VersionHeading>
-                  <FaServer size={9} />
-                  <span>System Status</span>
-                </VersionHeading>
-                <SystemStatusGrid>
-                  {Object.entries(services).map(([name, service]) => (
-                    <ServiceStatus key={name} $status={service.status}>
-                      <div className="service-label">
-                        {getServiceIcon(name)}
-                        <span>{getServiceLabel(name)}</span>
-                      </div>
-                      <div className="service-indicator">
-                        {getStatusIcon(service.status)}
-                      </div>
-                    </ServiceStatus>
-                  ))}
-                </SystemStatusGrid>
-
-                <SystemStatusDetailsButton onClick={() => setSystemStatusExpanded(!systemStatusExpanded)}>
-                  <span>Se detaljer</span>
-                  {systemStatusExpanded ? (
-                    <FaChevronUp className="chevron" />
-                  ) : (
-                    <FaChevronDown className="chevron" />
-                  )}
-                </SystemStatusDetailsButton>
-
-                <SystemStatusDetails $isOpen={systemStatusExpanded}>
-                  {Object.entries(services).map(([name, service]) => (
-                    <ServiceDetailCard key={name} $status={service.status}>
-                      <div className="service-detail-header">
-                        {getServiceIcon(name)}
-                        <h5>{getServiceLabel(name)}</h5>
-                      </div>
-                      <div className="service-detail-content">
-                        {service.responseTime !== null && (
-                          <div className="detail-row">
-                            <span className="label">Responstid:</span>
-                            <span className="value">{service.responseTime}ms</span>
-                          </div>
-                        )}
-                        {service.version && (
-                          <div className="detail-row">
-                            <span className="label">Version:</span>
-                            <span className="value">{service.version}</span>
-                          </div>
-                        )}
-                        {service.model && (
-                          <div className="detail-row">
-                            <span className="label">Model:</span>
-                            <span className="value">{service.model}</span>
-                          </div>
-                        )}
-                        {service.records !== null && service.records !== undefined && (
-                          <div className="detail-row">
-                            <span className="label">Records:</span>
-                            <span className="value">{service.records}</span>
-                          </div>
-                        )}
-                        {service.resultsFound !== null && service.resultsFound !== undefined && (
-                          <div className="detail-row">
-                            <span className="label">Resultater fundet:</span>
-                            <span className="value">{service.resultsFound}</span>
-                          </div>
-                        )}
-                        {service.error && (
-                          <div className="error-message">
-                            <strong>Fejl:</strong> {service.error}
-                          </div>
-                        )}
-                      </div>
-                    </ServiceDetailCard>
-                  ))}
-                </SystemStatusDetails>
-              </SystemStatusSection>
-            </VersionSection>
-          </HeroSidebar>
-        </HeroLayout>
-      </HeroSection>
-
-      <FeaturesGrid>
-        {loading ? (
-          // Show skeleton loaders while loading
-          [...Array(3)].map((_, index) => (
-            <FeatureCardSkeletonLoader key={index} />
-          ))
-        ) : (
-          // Show actual feature cards
-          displayedFacts.map((fact, index) => (
-            <FeatureCard
-              key={fact.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-            >
-              <div className="icon">
-                <FaLightbulb size={24} />
-              </div>
-              <h3>{fact.title}</h3>
-              <p>{fact.text}</p>
-              <a
-                className="fact-source"
-                href={fact.source}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Se kilde
-                <FaExternalLinkAlt />
-              </a>
-            </FeatureCard>
-          ))
-        )}
-      </FeaturesGrid>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <LiveNewsCard />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <ComplianceTips />
-        </motion.div>
-      </div>
-
-      <NewsSection />
-
-      <QuickStartSection>
-        <QuickStartTitle>Kom Godt i Gang</QuickStartTitle>
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>
-          Følg disse trin for at få maksimal værdi af Tyr
-        </p>
-
-        <QuickStartGrid>
-          {quickStartSteps.map((step, index) => (
-            <QuickStartCard key={index} to={step.link}>
-              <div className="step-number">{index + 1}</div>
-              <h4>{step.title}</h4>
-              <p>{step.description}</p>
-            </QuickStartCard>
+      {/* ============ WORKFLOW ============ */}
+      <Section>
+        <SectionHeader>
+          <SectionEyebrow>Sådan virker Tyr</SectionEyebrow>
+          <SectionTitle>Fire trin fra fri tekst til hjemlet vurdering</SectionTitle>
+          <SectionLede>
+            Fra sagsbehandlerens beskrivelse til en deterministisk afgørelse med live-verificerede
+            lov-citater. LLM må aldrig ændre afgørelsen — kun extrahere signaler.
+          </SectionLede>
+        </SectionHeader>
+        <Steps>
+          {STEPS.map((s) => (
+            <Step key={s.num}>
+              <div className="num">{s.num}</div>
+              <div className="title">{s.title}</div>
+              <div className="body">{s.body}</div>
+            </Step>
           ))}
-        </QuickStartGrid>
-      </QuickStartSection>
-    </HomeContainer>
+        </Steps>
+      </Section>
+
+      {/* ============ EDITORIAL FACTS ============ */}
+      {visibleFacts.length > 0 && (
+        <Section>
+          <SectionHeader>
+            <SectionEyebrow>Hvad du bør vide</SectionEyebrow>
+            <SectionTitle>Faglig baggrund — kuration der roterer</SectionTitle>
+            <SectionLede>
+              Korte essays om de teknologier og lovrammer Tyr bygger på.
+              {facts.length > 3 ? ` Roterer hvert andet minut · ${factOffset + 1}–${factOffset + 3} af ${facts.length}.` : ''}
+            </SectionLede>
+          </SectionHeader>
+          <FactsRow>
+            {visibleFacts.map((fact) => (
+              <FactCard key={fact.id}>
+                <span className="topic">{topicForFact(fact)}</span>
+                <h3>{fact.title}</h3>
+                <p>{fact.text}</p>
+                {fact.source && (
+                  <a href={fact.source} target="_blank" rel="noopener noreferrer">
+                    Læs kilden →
+                  </a>
+                )}
+              </FactCard>
+            ))}
+          </FactsRow>
+          <FactsRotateCue>
+            <span>↻</span>
+            <span>{facts.length > 3 ? 'Næste rotation om ~2 min · klik på et kort for at åbne kilden' : 'Alle entries vises'}</span>
+          </FactsRotateCue>
+        </Section>
+      )}
+
+      {/* ============ NEWS ============ */}
+      <Section>
+        <NewsSection />
+      </Section>
+
+      {/* ============ DRIFT-OVERBLIK (data-overview pattern) ============ */}
+      <DataOverview scope="home" />
+
+      {/* ============ FOOTER ribbon ============ */}
+      <Footer>
+        <span>Tyr · kommunal AI-compliance · Kalundborg Kommune</span>
+        <span>Kun til internt brug · Digitalisering og IT</span>
+      </Footer>
+    </Page>
   );
 };
 

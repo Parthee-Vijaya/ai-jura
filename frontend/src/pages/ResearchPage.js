@@ -998,10 +998,10 @@ const ResearchPage = () => {
       <SearchSection>
         <h2 style={{
           marginBottom: '1.5rem',
-          fontFamily: '"Source Serif Pro", Lora, Georgia, serif',
+          fontFamily: '"IBM Plex Sans", -apple-system, sans-serif',
           fontWeight: 600,
           fontSize: '1.4rem',
-          letterSpacing: '-0.005em',
+          letterSpacing: '-0.01em',
         }}>Start research</h2>
 
         <SearchForm onSubmit={handleSubmit(onSubmit)}>

@@ -50,25 +50,36 @@ const queryClient = new QueryClient({
 
 const GlobalStyle = createGlobalStyle`
   :root {
+    /* Tyr — Northern Modern */
+    --primary: #0d2e54;          /* kongelig blå */
+    --primary-dark: #082040;
+    --primary-light: #1c4a7d;
+    --primary-rgb: 13, 46, 84;
+
+    --bronze: #b08a4a;           /* rune-signatur */
+    --bronze-soft: #f3ead6;
+
+    --paper: #f5f4ef;            /* off-white papir */
+    --paper-soft: #ebe9e2;
+    --surface: #ffffff;
+    --ink: #14181f;
+    --ink-soft: #555a64;
+    --ink-faded: #8a8f96;
+    --line: #d8d3c5;
+    --line-soft: #ebe7da;
+
+    /* Typography stack — IBM Plex */
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+    --font-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+    /* Legacy alias (kun til Kalundborg-logo + ekstrem-CTA) */
     --kalundborg-primary: #c94416;
     --kalundborg-primary-dark: #a03612;
     --kalundborg-primary-light: #e85a28;
     --kalundborg-primary-rgb: 201, 68, 22;
-
-    /* Design C — paper & ink */
-    --paper: #faf8f5;
-    --paper-soft: #f3efe8;
-    --ink: #1a1614;
-    --ink-soft: #6b5e4f;
-    --ink-faded: #9a8d7d;
-    --line: #e8e2d6;
-    --line-soft: #f0ebe1;
-
-    /* Typography stack */
-    --font-body: Lora, Georgia, "Times New Roman", serif;
-    --font-display: "Source Serif Pro", Lora, Georgia, serif;
-    --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
   }
 
   html {
@@ -80,12 +91,12 @@ const GlobalStyle = createGlobalStyle`
     font-family: ${props => props.theme.fonts.body};
     background-color: ${props => props.theme.colors.background};
     color: ${props => props.theme.colors.text};
-    font-size: 17px;
-    line-height: 1.7;
+    font-size: 16px;
+    line-height: 1.6;
     font-feature-settings: "ss01", "kern";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.18s ease, color 0.18s ease;
   }
 
   * {
@@ -94,11 +105,11 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
 
-  /* Display headings use Source Serif Pro for gravitas */
+  /* Display headings use IBM Plex Sans (geometric authority) */
   h1, h2, h3, h4, h5, h6 {
     font-family: ${props => props.theme.fonts.display};
-    letter-spacing: -0.012em;
-    line-height: 1.25;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
     color: ${props => props.theme.colors.ink};
   }
 
@@ -128,27 +139,28 @@ const GlobalStyle = createGlobalStyle`
     &:focus-visible {
       outline: 2px solid ${props => props.theme.colors.primary};
       outline-offset: 2px;
-      box-shadow: 0 0 0 3px rgba(201, 68, 22, 0.18);
+      box-shadow: 0 0 0 3px rgba(13, 46, 84, 0.18);
     }
   }
 
   input, textarea, select {
     font-family: ${props => props.theme.fonts.sans};
     outline: none;
-    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     background-color: ${props => props.theme.colors.inputBackground};
     color: ${props => props.theme.colors.text};
     border: 1px solid ${props => props.theme.colors.border};
 
     &:focus {
       border-color: ${props => props.theme.colors.primary};
-      box-shadow: 0 0 0 3px rgba(201, 68, 22, 0.15);
+      box-shadow: 0 0 0 3px rgba(13, 46, 84, 0.15);
     }
   }
 
-  /* Body paragraphs in articles read as Lora */
-  article p, .doc p, .lora {
-    font-family: ${props => props.theme.fonts.body};
+  /* Lov-citater renderes i Plex Serif italic for "ordret kilde"-signal */
+  article p.citat, .doc p.citat, .citat {
+    font-family: ${props => props.theme.fonts.serif};
+    font-style: italic;
   }
 
   ::selection {

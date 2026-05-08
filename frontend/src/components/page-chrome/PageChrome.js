@@ -131,7 +131,7 @@ export const OutlinePill = styled.button`
   }
 `;
 
-/** Editorial "kort" — minimal shadow, varm border, ren cream/white surface */
+/** Editorial "kort" — minimal shadow, hairline border, ren off-white surface */
 export const EditorialCard = styled.div`
   background: ${(p) => p.theme.colors.surface};
   border: 1px solid ${(p) => p.theme.colors.border};
@@ -184,7 +184,7 @@ export const GhostButton = styled(PrimaryButton)`
   }
 `;
 
-/** Editorial søge/input — tynd ramme på cream baggrund */
+/** Editorial søge/input — tynd ramme på off-white baggrund */
 export const SearchField = styled.div`
   position: relative;
   flex: 1;

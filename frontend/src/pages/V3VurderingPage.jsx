@@ -20,9 +20,9 @@ import {
  *   - On result: 2-column shell (doc | sidenotes). The doc column renders
  *     each triggered rule as a document paragraph with inline ¹²³ footnote
  *     refs that anchor to the SidenotesColumn on the right.
- *   - Verdict is a cream banner with a teglrod left-border (no horizontal
+ *   - Verdict is an off-white banner with a bronze left-border (no horizontal
  *     hero card) and a counter row: lov-kilder · artefakter · krav.
- *   - Krav-list uses § bullets in cream-paper-soft surface.
+ *   - Krav-list uses § bullets in surface-alt (off-white-soft).
  *
  * The kilde citations live ONLY in the sidenotes — body text reads
  * uninterrupted.
@@ -710,7 +710,7 @@ const ExampleExplanation = styled.div`
   border-radius: 0 6px 6px 0;
 `;
 
-// ---- Verdict banner (Design C: cream + red left-border, simple stack) ---
+// ---- Verdict banner (Northern Modern: surface + bronze left-border) ---
 
 const VerdictBanner = styled.div`
   background: ${(p) => p.theme.colors.primaryBg};
