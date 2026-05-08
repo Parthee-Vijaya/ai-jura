@@ -11,7 +11,7 @@
       "name": "frontend",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev:frontend"],
-      "port": 8080
+      "port": 8090
     }
   ]
 }

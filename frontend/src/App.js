@@ -208,7 +208,7 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  margin-left: ${props => props.sidebarCollapsed ? '80px' : '250px'};
+  margin-left: ${props => props.sidebarCollapsed ? '76px' : '256px'};
   padding: 20px;
   transition: margin-left 0.3s ease;
   background-color: ${props => props.theme.colors.background};
