@@ -558,6 +558,98 @@ const ChunkItem = styled.div`
   }
 `;
 
+// ---- Source-doc evidence panel (#9 PDF annotation) ---------------------
+
+const SourceDocSection = styled.div`
+  margin: 2.5rem 0 1rem;
+  padding: 1.4rem 1.6rem;
+  background: ${(p) => p.theme.colors.paperSoft};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 8px;
+`;
+
+const SourceDocHeader = styled.div`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${(p) => p.theme.colors.inkFaded};
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+`;
+
+const SourceDocToggle = styled.button`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${(p) => p.theme.colors.primary};
+  background: transparent;
+  border: 1px solid ${(p) => p.theme.colors.primary};
+  border-radius: 3px;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  &:hover { background: ${(p) => p.theme.colors.primaryShallow}; }
+`;
+
+const SourceDocLayout = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  margin-top: 1rem;
+  min-height: 540px;
+  @media (max-width: 920px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SourceDocFrame = styled.iframe`
+  width: 100%;
+  min-height: 560px;
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 4px;
+  background: #fff;
+`;
+
+const SourceDocSidebar = styled.aside`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.86rem;
+  color: ${(p) => p.theme.colors.ink};
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const SourceDocRow = styled.div`
+  border: 1px solid ${(p) => p.theme.colors.lineSoft};
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+
+  .rid {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.74rem;
+    color: ${(p) => p.theme.colors.primary};
+    margin-bottom: 0.3rem;
+  }
+  .pages {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.7rem;
+    color: ${(p) => p.theme.colors.inkFaded};
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+  .preview {
+    font-style: italic;
+    color: ${(p) => p.theme.colors.inkSoft};
+    font-size: 0.78rem;
+  }
+`;
+
 // ---- Examples panel ------------------------------------------------------
 
 const ExamplesPanel = styled.section`
@@ -972,6 +1064,118 @@ async function fetchFlaggedRuleIds() {
   const res = await axios.get('/api/v3/law/freshness/flagged');
   return res.data.flagged_rule_ids || [];
 }
+
+async function fetchDocumentHighlights(auditLogId) {
+  if (!auditLogId) return null;
+  const res = await axios.get(`/api/v3/documents/${auditLogId}/highlights`);
+  return res.data;
+}
+
+const SourceDocViewer = ({ auditLogId, format }) => {
+  const [open, setOpen] = useState(false);
+  const { data: highlights, isFetching } = useQuery(
+    ['v3-document-highlights', auditLogId],
+    () => fetchDocumentHighlights(auditLogId),
+    {
+      enabled: !!auditLogId && open,
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  if (!auditLogId) return null;
+
+  const sourceUrl = `/api/v3/documents/${auditLogId}/source`;
+  const isPdf = (format || '').toLowerCase() === 'pdf';
+  const ruleRows = highlights?.rules || [];
+  const predikatRows = highlights?.predikates || [];
+
+  return (
+    <SourceDocSection>
+      <SourceDocHeader>
+        <span>
+          Kildedokument · {highlights?.filename || 'uploaded fil'}
+          {highlights?.page_count ? ` · ${highlights.page_count} side(r)` : ''}
+        </span>
+        <SourceDocToggle type="button" onClick={() => setOpen((v) => !v)}>
+          {open ? 'Skjul kilde' : 'Vis kilde + bevis'}
+        </SourceDocToggle>
+      </SourceDocHeader>
+
+      {!open && (
+        <span style={{ fontFamily: 'inherit', fontSize: '0.86rem', color: 'inherit', fontStyle: 'italic', opacity: 0.75 }}>
+          Klik "Vis kilde" for at se det originale dokument med side-numre per regel og predikat.
+        </span>
+      )}
+
+      {open && (
+        <SourceDocLayout>
+          {isPdf ? (
+            <SourceDocFrame
+              src={sourceUrl}
+              title="Kildedokument"
+            />
+          ) : (
+            <SourceDocFrame
+              as="div"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#666',
+                fontStyle: 'italic',
+              }}
+            >
+              <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
+                Download {highlights?.filename || 'kildefil'} (DOCX kan ikke vises inline)
+              </a>
+            </SourceDocFrame>
+          )}
+
+          <SourceDocSidebar>
+            {isFetching && <div>Henter bevis-data…</div>}
+
+            {!isFetching && ruleRows.length === 0 && predikatRows.length === 0 && (
+              <div style={{ fontStyle: 'italic', color: '#888' }}>
+                Ingen regler eller predikater er kortlagt til specifikke sider — dokumentet
+                udløste ingen krav, eller LLM-extractoren fandt ikke nok signal.
+              </div>
+            )}
+
+            {ruleRows.map((r) => (
+              <SourceDocRow key={r.rule_id}>
+                <div className="rid">{r.rule_id}</div>
+                <div className="pages">
+                  {r.pages.length > 0
+                    ? `Side ${r.pages.join(', ')}`
+                    : 'Ingen side fundet'}
+                </div>
+                {r.chunks?.[0]?.preview && (
+                  <div className="preview">"{r.chunks[0].preview}"</div>
+                )}
+              </SourceDocRow>
+            ))}
+
+            {predikatRows.length > 0 && (
+              <div style={{ marginTop: '0.6rem', fontWeight: 600, fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>
+                Predikat-bevis
+              </div>
+            )}
+            {predikatRows.map((p) => (
+              <SourceDocRow key={p.predikat_id}>
+                <div className="rid">{p.predikat_id}</div>
+                <div className="pages">
+                  Værdi: {String(p.value)}
+                  {p.pages.length > 0 && ` · side ${p.pages.join(', ')}`}
+                </div>
+              </SourceDocRow>
+            ))}
+          </SourceDocSidebar>
+        </SourceDocLayout>
+      )}
+    </SourceDocSection>
+  );
+};
 
 const buildEvidenceItems = (decisions, statusMap = {}) => {
   const all = new Set();
@@ -1434,6 +1638,13 @@ const V3VurderingPage = () => {
                   </ChunkItem>
                 ))}
               </ChunksSection>
+            )}
+
+            {isDocumentResult && result.audit_log_id && (
+              <SourceDocViewer
+                auditLogId={result.audit_log_id}
+                format={result.format}
+              />
             )}
 
             {requiringDecisions.length > 0 && (

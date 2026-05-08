@@ -2505,6 +2505,22 @@ async def v3_document_analyze(
     except Exception as exc:
         logger.warning("v3 audit log write failed (analysis still returned): %s", exc)
 
+    # Persist the source document so the UI can show "where in the doc did
+    # this predikat come from" — page-level highlights in /api/v3/documents/.
+    if audit_id:
+        try:
+            from src.services import document_storage
+            await asyncio.to_thread(
+                document_storage.store,
+                audit_id,
+                content=content,
+                filename=file.filename or "",
+                kind=kind,
+                content_type=file.content_type,
+            )
+        except Exception as exc:
+            logger.warning("source document storage failed for %s: %s", audit_id, exc)
+
     return {
         "rule_engine_version": "3.0.0-alpha.5",
         "evaluated_at": datetime.now(UTC).isoformat(),
@@ -2533,6 +2549,219 @@ async def v3_document_analyze(
         "warnings": result.warnings,
         "audit_log_id": audit_id,
     }
+
+
+# ---------------------------------------------------------------------------
+# Document evidence endpoints (Step 9 — PDF annotering)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/v3/documents/{audit_log_id}/source")
+async def v3_document_source(audit_log_id: str):
+    """Stream the original uploaded PDF/DOCX back to the browser.
+
+    Used by the frontend to render the source document inline next to the
+    rule-engine output, so jurists can see WHICH PARAGRAPH yielded a
+    predikat instead of trusting the LLM's word.
+    """
+    from fastapi.responses import FileResponse
+    from src.services import document_storage
+
+    stored = await asyncio.to_thread(document_storage.find, audit_log_id)
+    if stored is None:
+        raise HTTPException(status_code=404, detail="Source document not found")
+    return FileResponse(
+        path=str(stored.path),
+        media_type=stored.content_type,
+        filename=stored.original_filename or stored.path.name,
+    )
+
+
+@app.get("/api/v3/documents/{audit_log_id}/highlights")
+async def v3_document_highlights(audit_log_id: str):
+    """Return per-rule and per-predikat evidence — which page/chunk of the
+    source document yielded each finding.
+
+    Shape:
+        {
+          "audit_log_id": "...",
+          "filename": "...",
+          "page_count_estimate": 12,
+          "rules": [
+            {"rule_id": "...", "pages": [3, 7], "chunks": [{"index":2,"page":3,"preview":"..."}]}
+          ],
+          "predikates": [
+            {"predikat_id":"...","value":"ja","pages":[3]}
+          ]
+        }
+    """
+    from src.database.connection import SessionLocal
+    from src.rule_engine import audit as v3_audit
+    from src.services import document_storage
+    from src.services.document_analyzer import chunk_text
+
+    stored = await asyncio.to_thread(document_storage.find, audit_log_id)
+    if stored is None:
+        raise HTTPException(status_code=404, detail="Source document not found")
+
+    db = SessionLocal()
+    try:
+        entry = v3_audit.get_by_id(db, audit_log_id)
+        if entry is None:
+            raise HTTPException(status_code=404, detail="Audit log not found")
+        request_payload = entry.request_payload or {}
+        response_payload = entry.response_payload or {}
+    finally:
+        db.close()
+
+    if request_payload.get("kind") != "document":
+        raise HTTPException(
+            status_code=400,
+            detail="This audit log is not a document analysis — no highlights available",
+        )
+
+    # Re-parse the document deterministically (no LLM) so we can rebuild
+    # the chunks → page map without re-running the analysis pipeline.
+    def _rebuild_evidence() -> dict:
+        from src.services.document_analyzer import parse_document
+
+        with stored.path.open("rb") as fh:
+            content = fh.read()
+
+        text, offsets, kind = parse_document(content, stored.original_filename)
+        chunks = chunk_text(text, offsets)
+        page_count = len({p for p, _, _ in offsets}) if offsets else 0
+
+        # Reconstruct the rule_engine output from the audit log
+        from src.rule_engine.models import RuleDecision
+
+        decisions_raw = response_payload.get("decisions") or []
+        triggered_rule_ids = [
+            d.get("rule_id") for d in decisions_raw
+            if d.get("triggered") or d.get("status") in ("betinget-go", "no-go")
+        ]
+        triggered_rule_ids = [rid for rid in triggered_rule_ids if rid]
+
+        # Build chunk → triggered rules map using the same rule-loader we
+        # already use elsewhere, so we get fresh rule trigger definitions.
+        try:
+            rules = _v3_load_rules()
+        except RuntimeError:
+            rules = []
+
+        # We didn't persist per-chunk signals in the audit log, so re-run
+        # signals over chunks using a NoOp extractor when no LLM is available.
+        # Since we only need chunk attribution (not signal values), we rely
+        # on chunk_rule_map's secondary pass: for each rule, look at which
+        # chunks contain trigger keywords from the rule's source citat.
+        # Cheap approximation, no LLM cost on this endpoint.
+        rules_by_id = {r.id: r for r in rules}
+
+        rule_to_chunks: dict[str, list[int]] = {}
+        for cid in triggered_rule_ids:
+            rule = rules_by_id.get(cid)
+            if rule is None:
+                continue
+            citat = (rule.kilde.citat if rule.kilde else "") or ""
+            keywords = _keywords_from_citat(citat)
+            hits = []
+            for chunk in chunks:
+                ctext = chunk.text.lower()
+                if any(kw and kw in ctext for kw in keywords):
+                    hits.append(chunk.index)
+            rule_to_chunks[cid] = hits
+
+        chunk_index_to_page: dict[int, Optional[int]] = {
+            c.index: c.page for c in chunks
+        }
+
+        rules_out: list[dict] = []
+        for cid in triggered_rule_ids:
+            chunk_idxs = rule_to_chunks.get(cid, [])
+            pages = sorted({chunk_index_to_page.get(i) for i in chunk_idxs} - {None})
+            rules_out.append({
+                "rule_id": cid,
+                "pages": pages,
+                "chunks": [
+                    {
+                        "index": ci,
+                        "page": chunk_index_to_page.get(ci),
+                        "preview": next(
+                            (c.text[:240] + ("…" if len(c.text) > 240 else "") for c in chunks if c.index == ci),
+                            "",
+                        ),
+                    }
+                    for ci in chunk_idxs
+                ],
+            })
+
+        # Predikat provenance — for each extracted predikat, search chunks
+        # for evidence of the predikat's question keywords.
+        predikates_out: list[dict] = []
+        extracted = response_payload.get("extracted_predicates") or {}
+        for pred_id, value in extracted.items():
+            pred_pages: set[int] = set()
+            # Search all rules for this predikat's question text
+            question = ""
+            for rule in rules:
+                for p in rule.predikater or []:
+                    if p.id == pred_id:
+                        question = p.spørgsmål or ""
+                        break
+                if question:
+                    break
+            if question:
+                keywords = _keywords_from_citat(question)
+                for chunk in chunks:
+                    ctext = chunk.text.lower()
+                    if any(kw and kw in ctext for kw in keywords):
+                        if chunk.page is not None:
+                            pred_pages.add(chunk.page)
+
+            predikates_out.append({
+                "predikat_id": pred_id,
+                "value": value,
+                "pages": sorted(pred_pages),
+            })
+
+        return {
+            "audit_log_id": audit_log_id,
+            "filename": stored.original_filename,
+            "kind": kind,
+            "page_count": page_count,
+            "rules": rules_out,
+            "predikates": predikates_out,
+        }
+
+    return await asyncio.to_thread(_rebuild_evidence)
+
+
+def _keywords_from_citat(text: str) -> list[str]:
+    """Pick high-signal lowercase tokens from a citation/question.
+
+    Skips stopwords and tokens shorter than 4 chars. Returns at most 8
+    tokens to keep the substring search cheap. Used by the highlights
+    endpoint to map predikates → chunks without an LLM call.
+    """
+    if not text:
+        return []
+    stopwords = {
+        "den", "det", "der", "som", "har", "være", "med", "for", "ved", "fra",
+        "ikke", "skal", "kan", "kun", "også", "men", "selv", "andre", "andet",
+        "samme", "denne", "dette", "disse", "deres", "sine", "sit", "sin",
+        "uden", "over", "under", "mellem", "ifølge", "efter", "før", "samt",
+        "blive", "bliver", "blevet", "bliver", "bliver",
+    }
+    words = re.findall(r"[A-Za-zÆØÅæøå]{4,}", text.lower())
+    seen: list[str] = []
+    for w in words:
+        if w in stopwords:
+            continue
+        if w not in seen:
+            seen.append(w)
+        if len(seen) >= 8:
+            break
+    return seen
 
 
 # ---------------------------------------------------------------------------
