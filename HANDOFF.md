@@ -1,4 +1,4 @@
-# Forseti v3 — Handoff
+# Tyr v3 — Handoff
 
 **Senest opdateret:** 7. maj 2026 (alpha.13)
 **Branch:** `v3-hjemmel` (på [Parthee-Vijaya/Judge_dredd](https://github.com/Parthee-Vijaya/Judge_dredd))
@@ -108,11 +108,11 @@ e8cf9c0  alpha.7   Design C global rebrand + nav-konsolidering
 - Bruges til at validere Kategori A-sletning
 
 **Forside** (`/`):
-- Rebrandet til Forseti (alpha.13). Educational cards om Forbudt AI / GPAI / Højrisiko.
+- Rebrandet til Tyr (alpha.13). Educational cards om Forbudt AI / GPAI / Højrisiko.
 
 ### Beslutninger der er taget
 
-- **Brand:** "Forseti" som arbejdstitel — "Project Judge Dredd" droppet undervejs
+- **Brand:** "Tyr" som arbejdstitel — "Project Judge Dredd" droppet undervejs
 - **Design:** Ren Design C ("editorial workspace") — cream-paper, Lora body, Source Serif Pro display, Inter chrome, JetBrains Mono mono. Sidenotes-kolonne for lov-citater
 - **Rulemotor:** Hybrid YAML + LLM. LLM må aldrig ændre afgørelsen — kun udtrække signaler og predikater fra fritekst
 - **Hosting:** Backend on-prem; LLM via API (Azure West Europe / LM Studio lokalt / OpenAI fallback)

@@ -533,7 +533,7 @@ const ResourcesPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Forseti · ressourcer"
+        eyebrow="Tyr · ressourcer"
         title="Relevante links"
         lede="Curated samling af juridiske, kommunale og europæiske kilder. EUR-Lex, Retsinformation, EDPB, Datatilsynet og fagspecifikke vejledninger — alle samlet ét sted."
         actions={

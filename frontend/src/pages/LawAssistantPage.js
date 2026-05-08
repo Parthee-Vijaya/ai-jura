@@ -377,7 +377,7 @@ const LawAssistantPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Forseti · lov-assistent"
+        eyebrow="Tyr · lov-assistent"
         title="Lov-assistent"
         lede="AI-genererede svar på juridiske spørgsmål forankret i 295 danske love. Kilder fremgår altid eksplicit, så du kan verificere mod regelrytter.dk og Retsinformation."
       />

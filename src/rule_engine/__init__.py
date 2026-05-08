@@ -1,4 +1,4 @@
-"""Forseti rule engine — declarative compliance rules backed by law citations.
+"""Tyr rule engine — declarative compliance rules backed by law citations.
 
 Rules live in /rules as YAML files, one per legal article. Each rule carries
 its source citation (lov, artikel, citat, url, sidst_verificeret), trigger

@@ -1160,7 +1160,7 @@ const V3VurderingPage = () => {
   if (!hasResult) {
     return (
       <Page>
-        <Eyebrow>Forseti · v3 rule_engine</Eyebrow>
+        <Eyebrow>Tyr · v3 rule_engine</Eyebrow>
         <Title>Vurdering</Title>
         <Lede>
           Beskriv AI-systemet i fri tekst. Backend kører den deterministiske

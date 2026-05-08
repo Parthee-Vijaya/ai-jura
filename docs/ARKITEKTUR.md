@@ -1,4 +1,4 @@
-# Forseti — arkitektur-overblik
+# Tyr — arkitektur-overblik
 
 *Single-page reference til komponenterne og hvordan de hænger sammen.*
 

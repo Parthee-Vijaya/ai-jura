@@ -1,38 +1,40 @@
 /**
- * Judge Dredd / Forseti — Design C ("Editorial workspace") theme
+ * Tyr — Northern Modern theme (Design system v2)
  *
- * Visuel kanon: cream-paper baggrund, Lora body + Source Serif Pro display,
- * Inter chrome (nav/UI), JetBrains Mono til audit/case-id.
+ * Skandinavisk civic-tech sobriety. Off-white papir, kongelig blå primær,
+ * bronze rune-accent. IBM Plex Sans + Mono + Serif italic.
  *
- * Primary brand: Kalundborg teglrød — bevares som accent, men er ikke længere
- * hovedbaggrund. C er en "rolig juridisk læsebog", ikke en alarm-rød panel.
+ * Reference: DESIGN.md (canonical source).
+ *
+ * Forløb: Project Judge Dredd → Hjemmel → Tyr → Tyr (alpha.18+).
  */
 
 const commonThemeTokens = {
   fonts: {
-    main: 'Lora, Georgia, "Times New Roman", serif',
-    body: 'Lora, Georgia, "Times New Roman", serif',
-    display: '"Source Serif Pro", Lora, Georgia, serif',
-    sans: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-    mono: '"JetBrains Mono", "SF Mono", Consolas, monospace',
+    main: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif',
+    body: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif',
+    display: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif',
+    sans: '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif',
+    serif: '"IBM Plex Serif", Georgia, "Times New Roman", serif',
+    mono: '"IBM Plex Mono", "SF Mono", Consolas, monospace',
   },
-  borderRadius: '8px',
-  borderRadiusLarge: '10px',
+  borderRadius: '4px',
+  borderRadiusLarge: '6px',
   shadows: {
-    sm: '0 1px 2px 0 rgb(20 17 13 / 0.04)',
-    md: '0 4px 8px -2px rgb(20 17 13 / 0.06)',
-    lg: '0 10px 20px -4px rgb(20 17 13 / 0.08)',
-    xl: '0 20px 30px -8px rgb(20 17 13 / 0.10)',
-    glass: '0 4px 16px 0 rgba(20, 17, 13, 0.06)',
-    glow: '0 0 16px rgba(201, 68, 22, 0.18)',
-    focus: '0 0 0 3px rgba(201, 68, 22, 0.15)',
+    sm: '0 1px 2px 0 rgba(20, 24, 31, 0.04)',
+    md: '0 4px 8px -2px rgba(20, 24, 31, 0.06)',
+    lg: '0 24px 48px -12px rgba(20, 24, 31, 0.16)',
+    xl: '0 32px 64px -16px rgba(20, 24, 31, 0.20)',
+    glass: '0 4px 16px 0 rgba(20, 24, 31, 0.08)',
+    glow: '0 0 0 3px rgba(13, 46, 84, 0.12)',
+    focus: '0 0 0 3px rgba(13, 46, 84, 0.18)',
   },
   animations: {
-    transition: '0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-    transitionFast: '0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-    transitionSlow: '0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-    spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    transition: '0.18s ease-out',
+    transitionFast: '0.1s ease-out',
+    transitionSlow: '0.28s ease-out',
+    bounce: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    spring: 'cubic-bezier(0.4, 0, 0.2, 1)',
   },
 };
 
@@ -40,122 +42,132 @@ export const lightTheme = {
   ...commonThemeTokens,
   mode: 'light',
   colors: {
-    // Brand (Kalundborg teglrød) — accent, ikke baggrund
-    primary: '#c94416',
-    primaryDark: '#a03612',
-    primaryLight: '#e85a28',
-    primarySoft: '#fbe9dd',
-    primaryBg: '#fdf2eb',
-    secondary: '#bc4d30',
+    // Primary — Kongelig blå (autoritet)
+    primary: '#0d2e54',
+    primaryDark: '#082040',
+    primaryLight: '#1c4a7d',
+    primarySoft: '#e2eaf3',
+    primaryBg: '#eef3f8',
+    secondary: '#0d2e54',
+
+    // Bronze — runen, sekundær accent
+    bronze: '#b08a4a',
+    bronzeDark: '#8e6e35',
+    bronzeLight: '#c9a360',
+    bronzeSoft: '#f3ead6',
 
     // Semantic
-    accent: '#b8860b',
-    success: '#2d6a31',
-    successSoft: '#ecf5ec',
-    warning: '#b8860b',
-    danger: '#a02020',
-    dangerSoft: '#fae6e6',
-    dark: '#14110d',
-    light: '#fbfaf6',
+    accent: '#b08a4a',
+    success: '#2f6b2f',
+    successSoft: '#e3eedc',
+    warning: '#b08a4a',
+    warningSoft: '#f3ead6',
+    danger: '#a52822',
+    dangerSoft: '#f4dfdc',
+
+    // Legacy alias (Kalundborg teglrød kun til ekstrem-CTA / NO-GO)
+    teglrod: '#c94416',
+
+    dark: '#14181f',
+    light: '#f5f4ef',
     white: '#ffffff',
 
-    // Surface — Design C cream-paper
-    background: '#faf8f5',          // paper
-    surface: '#ffffff',             // card
-    surfaceAlt: '#f3efe8',          // paper-soft
-    paper: '#faf8f5',
-    paperSoft: '#f3efe8',
+    // Surface — Northern Modern off-white
+    background: '#f5f4ef',
+    surface: '#ffffff',
+    surfaceAlt: '#ebe9e2',
+    paper: '#f5f4ef',
+    paperSoft: '#ebe9e2',
     card: '#ffffff',
 
     // Text
-    text: '#1a1614',                // ink
-    textMuted: '#6b5e4f',           // ink-soft
-    textFaded: '#9a8d7d',           // ink-faded
-    ink: '#1a1614',
-    inkSoft: '#6b5e4f',
-    inkFaded: '#9a8d7d',
+    text: '#14181f',
+    textMuted: '#555a64',
+    textFaded: '#8a8f96',
+    ink: '#14181f',
+    inkSoft: '#555a64',
+    inkFaded: '#8a8f96',
 
     // Lines
-    border: '#e8e2d6',              // line
-    borderSoft: '#f0ebe1',          // line-soft
-    line: '#e8e2d6',
-    lineSoft: '#f0ebe1',
+    border: '#d8d3c5',
+    borderSoft: '#ebe7da',
+    line: '#d8d3c5',
+    lineSoft: '#ebe7da',
     inputBackground: '#ffffff',
 
-    // Gray (preserved for legacy components — but warm-toned)
+    // Gray (preserved for legacy components)
     gray: {
-      50: '#faf8f5',
-      100: '#f3efe8',
-      200: '#e8e2d6',
-      300: '#d4ccba',
-      400: '#9a8d7d',
-      500: '#6b5e4f',
-      600: '#4a4035',
-      700: '#2f2823',
-      800: '#1a1614',
-      900: '#0d0a08',
+      50: '#f5f4ef',
+      100: '#ebe9e2',
+      200: '#d8d3c5',
+      300: '#bbb6a8',
+      400: '#8a8f96',
+      500: '#555a64',
+      600: '#3d4148',
+      700: '#262930',
+      800: '#14181f',
+      900: '#0a0c10',
     },
 
-    // Kalundborg-spec (legacy alias)
+    // Kalundborg-spec (legacy alias — bevares til NO-GO + Kalundborg-logo)
     kalundborg: {
       teglrod: '#c94416',
       teglrodDark: '#a03612',
       teglrodLight: '#e85a28',
-      buttonSecondary: '#bc4d30',
-      textDark: '#1a1614',
-      bronze: '#b8860b',
+      buttonSecondary: '#0d2e54',
+      textDark: '#14181f',
+      bronze: '#b08a4a',
       platinum: '#e5e4e2',
     },
 
-    // Gradients (kun i specielle steder; C er low-gradient)
+    // Gradients (sjælden brug — Northern Modern er low-gradient)
     gradients: {
-      primary: 'linear-gradient(135deg, #c94416 0%, #e85a28 100%)',
-      secondary: 'linear-gradient(135deg, #bc4d30 0%, #c94416 100%)',
-      hero: 'linear-gradient(135deg, #faf8f5 0%, #f3efe8 100%)',
-      card: 'linear-gradient(145deg, #ffffff 0%, #faf8f5 100%)',
-      glass: 'linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(250,248,245,0.75) 100%)',
-      danger: 'linear-gradient(135deg, #a02020 0%, #c53030 100%)',
-      gold: 'linear-gradient(135deg, #b8860b 0%, #d4af37 100%)',
+      primary: 'linear-gradient(135deg, #0d2e54 0%, #1c4a7d 100%)',
+      secondary: 'linear-gradient(135deg, #b08a4a 0%, #c9a360 100%)',
+      hero: 'linear-gradient(135deg, #f5f4ef 0%, #ebe9e2 100%)',
+      card: 'linear-gradient(145deg, #ffffff 0%, #f5f4ef 100%)',
+      glass: 'linear-gradient(145deg, rgba(255,255,255,0.92) 0%, rgba(245,244,239,0.85) 100%)',
+      danger: 'linear-gradient(135deg, #a52822 0%, #c53030 100%)',
+      gold: 'linear-gradient(135deg, #b08a4a 0%, #c9a360 100%)',
     },
   },
 
   glass: {
-    background: 'rgba(251, 250, 246, 0.88)',
-    border: '1px solid #e8e2d6',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '10px',
+    background: 'rgba(245, 244, 239, 0.92)',
+    border: '1px solid #d8d3c5',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '6px',
   },
 
   layout: {
     nav: {
-      background: 'rgba(251, 250, 246, 0.88)',
-      border: '#e8e2d6',
-      text: '#1a1614',
-      badgeBackground: '#fdf2eb',
+      background: 'rgba(255, 255, 255, 0.92)',
+      border: '#d8d3c5',
+      text: '#14181f',
+      badgeBackground: '#e2eaf3',
     },
     sidebar: {
-      // Design C: cream-paper, dark ink (ikke længere rød gradient)
-      background: '#fbfaf6',
-      backgroundSolid: '#fbfaf6',
-      border: '#e8e2d6',
-      text: '#1a1614',
-      muted: '#9a8d7d',
-      hoverBackground: '#f3efe8',
-      hoverText: '#1a1614',
-      activeBackground: '#fdf2eb',
-      activeBorder: '#c94416',
-      activeText: '#c94416',
-      badgeBackground: '#f3efe8',
+      background: '#ffffff',
+      backgroundSolid: '#ffffff',
+      border: '#d8d3c5',
+      text: '#14181f',
+      muted: '#8a8f96',
+      hoverBackground: '#ebe9e2',
+      hoverText: '#14181f',
+      activeBackground: '#e2eaf3',
+      activeBorder: '#0d2e54',
+      activeText: '#0d2e54',
+      badgeBackground: '#ebe9e2',
     },
     card: {
       background: '#ffffff',
-      border: '#e8e2d6',
+      border: '#d8d3c5',
     },
     ticker: {
-      background: '#fdf2eb',
-      text: '#a03612',
-      badgeBackground: '#fbe9dd',
-      badgeText: '#a03612',
+      background: '#e2eaf3',
+      text: '#0d2e54',
+      badgeBackground: '#f3ead6',
+      badgeText: '#8e6e35',
     },
   },
 };
@@ -164,146 +176,156 @@ export const darkTheme = {
   ...commonThemeTokens,
   mode: 'dark',
   colors: {
-    // Brand (lighter shade for dark mode)
-    primary: '#e85a28',
-    primaryDark: '#c94416',
-    primaryLight: '#f07040',
-    primarySoft: 'rgba(232, 90, 40, 0.18)',
-    primaryBg: 'rgba(232, 90, 40, 0.10)',
-    secondary: '#bc4d30',
+    // Primary — lighter blue for dark mode
+    primary: '#5a8ec4',
+    primaryDark: '#3d6da3',
+    primaryLight: '#7ca7d6',
+    primarySoft: 'rgba(90, 142, 196, 0.16)',
+    primaryBg: 'rgba(90, 142, 196, 0.10)',
+    secondary: '#5a8ec4',
+
+    // Bronze (lighter)
+    bronze: '#d4a866',
+    bronzeDark: '#b08a4a',
+    bronzeLight: '#e0bc7c',
+    bronzeSoft: 'rgba(212, 168, 102, 0.16)',
 
     // Semantic
-    accent: '#fbbf24',
-    success: '#4ade80',
-    successSoft: 'rgba(74, 222, 128, 0.10)',
-    warning: '#fbbf24',
-    danger: '#f87171',
-    dangerSoft: 'rgba(248, 113, 113, 0.10)',
-    dark: '#0a0907',
-    light: '#1a1614',
-    white: '#f5f3ee',
+    accent: '#d4a866',
+    success: '#7eaf78',
+    successSoft: 'rgba(126, 175, 120, 0.14)',
+    warning: '#d4a866',
+    warningSoft: 'rgba(212, 168, 102, 0.16)',
+    danger: '#d65c4d',
+    dangerSoft: 'rgba(214, 92, 77, 0.14)',
 
-    // Surface — dark warm
-    background: '#1a1614',
-    surface: '#231d18',
-    surfaceAlt: '#2a231d',
-    paper: '#1a1614',
-    paperSoft: '#231d18',
-    card: '#231d18',
+    teglrod: '#e85a28',
+
+    dark: '#0a0c10',
+    light: '#14181f',
+    white: '#f0eee9',
+
+    // Surface — dark cool warm
+    background: '#14181f',
+    surface: '#1c2129',
+    surfaceAlt: '#252a32',
+    paper: '#14181f',
+    paperSoft: '#1c2129',
+    card: '#1c2129',
 
     // Text
-    text: '#f0ebe1',
-    textMuted: '#b3a799',
-    textFaded: '#7a6e60',
-    ink: '#f0ebe1',
-    inkSoft: '#b3a799',
-    inkFaded: '#7a6e60',
+    text: '#f0eee9',
+    textMuted: '#a8aaae',
+    textFaded: '#6a6d72',
+    ink: '#f0eee9',
+    inkSoft: '#a8aaae',
+    inkFaded: '#6a6d72',
 
     // Lines
-    border: '#3a322a',
-    borderSoft: '#2a231d',
-    line: '#3a322a',
-    lineSoft: '#2a231d',
-    inputBackground: '#231d18',
+    border: '#2e333c',
+    borderSoft: '#252a32',
+    line: '#2e333c',
+    lineSoft: '#252a32',
+    inputBackground: '#1c2129',
 
     gray: {
-      50: '#1a1614',
-      100: '#231d18',
-      200: '#2a231d',
-      300: '#3a322a',
-      400: '#7a6e60',
-      500: '#b3a799',
-      600: '#d4c8b8',
-      700: '#e8e0d2',
-      800: '#f0ebe1',
-      900: '#faf8f5',
+      50: '#14181f',
+      100: '#1c2129',
+      200: '#252a32',
+      300: '#2e333c',
+      400: '#6a6d72',
+      500: '#a8aaae',
+      600: '#c8cacd',
+      700: '#e0e0e0',
+      800: '#f0eee9',
+      900: '#ffffff',
     },
 
     kalundborg: {
       teglrod: '#e85a28',
       teglrodDark: '#c94416',
       teglrodLight: '#f07040',
-      buttonSecondary: '#bc4d30',
-      textDark: '#f0ebe1',
-      bronze: '#f97316',
+      buttonSecondary: '#5a8ec4',
+      textDark: '#f0eee9',
+      bronze: '#d4a866',
       platinum: '#faf5ff',
     },
 
     gradients: {
-      primary: 'linear-gradient(135deg, #c94416 0%, #e85a28 100%)',
-      secondary: 'linear-gradient(135deg, #bc4d30 0%, #c94416 100%)',
-      hero: 'linear-gradient(135deg, #1a1614 0%, #231d18 100%)',
-      card: 'linear-gradient(145deg, #231d18 0%, #1a1614 100%)',
-      glass: 'linear-gradient(145deg, rgba(35,29,24,0.85) 0%, rgba(26,22,20,0.75) 100%)',
-      danger: 'linear-gradient(135deg, #a02020 0%, #ef4444 100%)',
-      gold: 'linear-gradient(135deg, #b8860b 0%, #fbbf24 100%)',
+      primary: 'linear-gradient(135deg, #0d2e54 0%, #5a8ec4 100%)',
+      secondary: 'linear-gradient(135deg, #b08a4a 0%, #d4a866 100%)',
+      hero: 'linear-gradient(135deg, #14181f 0%, #1c2129 100%)',
+      card: 'linear-gradient(145deg, #1c2129 0%, #14181f 100%)',
+      glass: 'linear-gradient(145deg, rgba(28,33,41,0.85) 0%, rgba(20,24,31,0.75) 100%)',
+      danger: 'linear-gradient(135deg, #a52822 0%, #d65c4d 100%)',
+      gold: 'linear-gradient(135deg, #b08a4a 0%, #d4a866 100%)',
     },
   },
 
   glass: {
-    background: 'rgba(26, 22, 20, 0.88)',
-    border: '1px solid #3a322a',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '10px',
+    background: 'rgba(20, 24, 31, 0.92)',
+    border: '1px solid #2e333c',
+    backdropFilter: 'blur(8px)',
+    borderRadius: '6px',
   },
 
   layout: {
     nav: {
-      background: 'rgba(26, 22, 20, 0.92)',
-      border: '#3a322a',
-      text: '#f0ebe1',
-      badgeBackground: 'rgba(232, 90, 40, 0.18)',
+      background: 'rgba(20, 24, 31, 0.92)',
+      border: '#2e333c',
+      text: '#f0eee9',
+      badgeBackground: 'rgba(90, 142, 196, 0.16)',
     },
     sidebar: {
-      background: '#1a1614',
-      backgroundSolid: '#1a1614',
-      border: '#3a322a',
-      text: '#f0ebe1',
-      muted: '#7a6e60',
-      hoverBackground: '#231d18',
+      background: '#14181f',
+      backgroundSolid: '#14181f',
+      border: '#2e333c',
+      text: '#f0eee9',
+      muted: '#6a6d72',
+      hoverBackground: '#1c2129',
       hoverText: '#ffffff',
-      activeBackground: 'rgba(232, 90, 40, 0.14)',
-      activeBorder: '#e85a28',
-      activeText: '#f07040',
+      activeBackground: 'rgba(90, 142, 196, 0.14)',
+      activeBorder: '#5a8ec4',
+      activeText: '#7ca7d6',
       badgeBackground: 'rgba(255, 255, 255, 0.06)',
     },
     card: {
-      background: '#231d18',
-      border: '#3a322a',
+      background: '#1c2129',
+      border: '#2e333c',
     },
     ticker: {
-      background: 'rgba(232, 90, 40, 0.14)',
-      text: '#f07040',
-      badgeBackground: 'rgba(232, 90, 40, 0.20)',
-      badgeText: '#f07040',
+      background: 'rgba(90, 142, 196, 0.14)',
+      text: '#7ca7d6',
+      badgeBackground: 'rgba(212, 168, 102, 0.20)',
+      badgeText: '#d4a866',
     },
   },
 };
 
 // Legacy juridical color aliases (preserved for components that still reference)
 lightTheme.colors.juridical = {
-  navy: '#c94416',
-  gold: '#b8860b',
-  darkGold: '#9a7209',
-  charcoal: '#1a1614',
-  lightNavy: '#e85a28',
-  deepNavy: '#a03612',
-  midNavy: '#bc4d30',
-  lightGold: '#d4af37',
-  bronze: '#cd7f32',
+  navy: '#0d2e54',
+  gold: '#b08a4a',
+  darkGold: '#8e6e35',
+  charcoal: '#14181f',
+  lightNavy: '#1c4a7d',
+  deepNavy: '#082040',
+  midNavy: '#15396a',
+  lightGold: '#c9a360',
+  bronze: '#b08a4a',
   platinum: '#e5e4e2',
 };
 
 darkTheme.colors.juridical = {
-  navy: '#e85a28',
-  gold: '#fbbf24',
-  darkGold: '#f59e0b',
-  charcoal: '#231d18',
-  lightNavy: '#f07040',
-  deepNavy: '#a03612',
-  midNavy: '#c94416',
-  lightGold: '#facc15',
-  bronze: '#f97316',
+  navy: '#5a8ec4',
+  gold: '#d4a866',
+  darkGold: '#b08a4a',
+  charcoal: '#1c2129',
+  lightNavy: '#7ca7d6',
+  deepNavy: '#0d2e54',
+  midNavy: '#3d6da3',
+  lightGold: '#e0bc7c',
+  bronze: '#d4a866',
   platinum: '#faf5ff',
 };
 

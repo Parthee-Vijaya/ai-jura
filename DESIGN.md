@@ -54,7 +54,7 @@
 - 3xl: 2.4rem (case-titel h1)
 - 4xl: 3rem+ (forside-hero — clamp(2.4rem, 5vw, 4rem))
 
-**Forbudte fonte:** Lora, Source Serif Pro (var i Forseti-perioden — droppes), Inter, Roboto, Arial, Helvetica, Open Sans, Montserrat, Poppins, Space Grotesk, Times New Roman, Comic Sans, Papyrus.
+**Forbudte fonte:** Lora, Source Serif Pro (var i Forseti/Hjemmel-perioden — droppes), Inter, Roboto, Arial, Helvetica, Open Sans, Montserrat, Poppins, Space Grotesk, Times New Roman, Comic Sans, Papyrus.
 
 ---
 
@@ -286,7 +286,7 @@ Før du commit'er ny UI-kode:
 5. **NewsSection.js** — IBM Plex fontfamilie
 6. **HomePage.js** — ny hero med Tyr + ᛏ
 7. **DataOverview-komponent** (NY) — stats-grid + ledger-tabel + citation-panel + status-bar — dropbar på alle hovedsider
-8. **YAML rules + schema** — `forfatter` opdateres fra "Forseti core team" → "Tyr core team"
+8. **YAML rules + schema** — `forfatter` opdateres fra "Tyr core team" → "Tyr core team"
 9. **README + CHANGELOG + HANDOFF** — rebrand
 10. **Index/manifest meta** — PWA-titel, beskrivelse
 
@@ -298,7 +298,7 @@ Backend kræver intet skift — kun frontend + brand-strenge.
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-05-08 | Brand-skift Forseti → **Tyr** | Norse mythology fit (Bifrost/Odin/Saga/Skynet konstellation), eksakt semantik (lov + ed-bindere), single-syllabel skarphed, Tiwaz-rune ᛏ som logo-mærke |
+| 2026-05-08 | Brand-skift Tyr → **Tyr** | Norse mythology fit (Bifrost/Odin/Saga/Skynet konstellation), eksakt semantik (lov + ed-bindere), single-syllabel skarphed, Tiwaz-rune ᛏ som logo-mærke |
 | 2026-05-08 | Visuel direction: **Northern Modern** (B + data-overview) | Skandinavisk civic-tech sobriety. Off-white #f5f4ef + kongelig blå #0d2e54 + bronze #b08a4a. Cream-papir editorial droppes — for varm til en domsguds-platform. |
 | 2026-05-08 | Typography: **IBM Plex** (Sans + Mono + Serif italic) | Open source, geometrisk, tabular-nums, italicserif til lov-citater (afløser Lora). Public-service-finger-print uden Times-New-Roman-konnotation. |
 | 2026-05-08 | **Data-overview-pattern** introduceres | Hver hovedside får dual-purpose: case-detail øverst, drift-overblik nederst. Sagsbehandlere skal altid kunne se "hvor står vi" uden at skifte side. |

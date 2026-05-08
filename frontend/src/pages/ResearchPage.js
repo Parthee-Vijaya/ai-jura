@@ -990,7 +990,7 @@ const ResearchPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Forseti · juridisk research"
+        eyebrow="Tyr · juridisk research"
         title="Juridisk research"
         lede="Dyb research i relevant lovgivning med præcise kildehenvisninger. Søg i autoritative kilder — EUR-Lex, Datatilsynet, EDPB guidelines og kommunale vejledninger."
       />

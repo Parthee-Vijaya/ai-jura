@@ -2,12 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 
 /**
- * Forseti — shared page chrome (Design C "editorial workspace")
+ * Tyr — shared page chrome (Northern Modern, Design system v2)
  *
- * Stil-anker for alle interne sider: cream-paper max-width container,
- * Source Serif Pro display-titler, Inter eyebrow, Lora lede.
+ * Stil-anker for alle interne sider: off-white max-width container,
+ * IBM Plex Sans display-titler + eyebrow, Plex Sans body lede.
  * Bruges til at give Videnbase / AI Løsninger / Research / Lov-assistent /
  * Ressourcer samme visuelle signatur som Vurdering / Sager / Historik.
+ *
+ * Reference: DESIGN.md (canonical source).
  */
 
 export const PageShell = styled.div`
@@ -143,7 +145,7 @@ export const EditorialCard = styled.div`
   }
 `;
 
-/** Primary action — Forseti rød fyldt */
+/** Primary action — Tyr rød fyldt */
 export const PrimaryButton = styled.button`
   font-family: ${(p) => p.theme.fonts.sans};
   font-size: 0.92rem;

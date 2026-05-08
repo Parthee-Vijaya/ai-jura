@@ -528,7 +528,7 @@ const ListMode = () => {
 
   return (
     <Page>
-      <Eyebrow>Forseti · v3 audit-log</Eyebrow>
+      <Eyebrow>Tyr · v3 audit-log</Eyebrow>
       <Title>Vurderingshistorik</Title>
       <Lede>
         Hver gennemført vurdering arkiveres uændret i en append-only audit-log.

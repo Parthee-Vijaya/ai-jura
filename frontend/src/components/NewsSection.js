@@ -4,7 +4,7 @@ import { FaSync } from 'react-icons/fa';
 import { NewsSkeletonLoader } from './SkeletonLoader';
 import { availableCategories, resolveSourceMeta } from '../utils/newsSourceMap';
 
-// ---- Design C — editorial news column ------------------------------------
+// ---- Northern Modern news column (Design system v2) ---------------------
 
 const NewsContainer = styled.section`
   background: ${(p) => p.theme.colors.surface};
@@ -465,7 +465,7 @@ const NewsSection = () => {
       <SectionHeader>
         <NewsHeader>
           <TitleBlock>
-            <Eyebrow>Forseti · live-feed</Eyebrow>
+            <Eyebrow>Tyr · live-feed</Eyebrow>
             <NewsTitle>Seneste AI- og juranews</NewsTitle>
           </TitleBlock>
           <HeaderInfo>

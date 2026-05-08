@@ -228,7 +228,7 @@ class ComplianceRuleEngine:
             ComplianceRule(
                 rule_id="FORV_001",
                 category=RuleCategory.FORVALTNINGSRET,
-                description="Forsetiskrav",
+                description="Tyrskrav",
                 conditions={
                     "public_authority": True,
                     "legal_basis_public": False
@@ -417,7 +417,7 @@ class ComplianceRuleEngine:
             # Forvaltningsartefakter
             "legal_basis_memo": EvidenceArtifact(
                 artifact_id="legal_basis_memo",
-                name="Forsetisnotat",
+                name="Tyrsnotat",
                 category="forvaltning",
                 description="Juridisk notat om lovhjemmel",
                 required_for=["public_authority_use"]

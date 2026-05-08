@@ -74,6 +74,14 @@ const BrandPrimary = styled.span`
     font-weight: 800;
   }
 
+  .brand-rune {
+    color: ${props => props.theme.colors.bronze};
+    font-weight: 600;
+    font-size: 1.05em;
+    margin: 0 4px 0 6px;
+    line-height: 1;
+  }
+
   .brand-version {
     font-family: ${props => props.theme.fonts.sans};
     font-size: 0.6rem;
@@ -399,9 +407,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <BrandContainer $collapsed={collapsed}>
           <BrandPrimary $collapsed={collapsed}>
             {collapsed ? (
-              <>H<span className="brand-dot">.</span></>
+              <>T<span className="brand-rune" aria-hidden="true">ᛏ</span></>
             ) : (
-              <>Forseti<span className="brand-dot">.</span><span className="brand-version">v3</span></>
+              <>Tyr<span className="brand-rune" aria-hidden="true">ᛏ</span><span className="brand-version">v3</span></>
             )}
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}

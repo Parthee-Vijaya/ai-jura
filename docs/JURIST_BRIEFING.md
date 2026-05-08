@@ -1,10 +1,10 @@
-# Jurist-briefing — Forseti v3 sektorlov-arbejde
+# Jurist-briefing — Tyr v3 sektorlov-arbejde
 
 *5 min læsning før interview*
 
-## Hvad er Forseti?
+## Hvad er Tyr?
 
-Forseti er Kalundborg Kommunes interne AI-compliance-platform der vurderer kommunale AI-projekter mod EU AI Act, GDPR og dansk lov inden idriftsættelse.
+Tyr er Kalundborg Kommunes interne AI-compliance-platform der vurderer kommunale AI-projekter mod EU AI Act, GDPR og dansk lov inden idriftsættelse.
 
 Den nuværende version (v3) har 15 deklarative regler dækkende:
 - **AI Act:** art. 5 (forbud), art. 6 (højrisiko), art. 13 (transparens), art. 14 (menneskelig overvågning), art. 50
@@ -76,9 +76,9 @@ Det er hvorfor vi har brug for **ordret citat**. Parafraser virker ikke — de b
 2. Jeg sender dem til dig til endelig godkendelse
 3. Når du siger god — vi fjerner `_template_`-prefix og reglerne aktiveres
 4. Citation-verifier kører dagligt og overvåger
-5. Sagsbehandlere kan udfylde predikat-svar i Forseti og få afgørelser hjemlet i din arbejde
+5. Sagsbehandlere kan udfylde predikat-svar i Tyr og få afgørelser hjemlet i din arbejde
 
-Det betyder også: når du siger noget i et interview-svar, ender det som **bindende krav** i Forseti-systemet. Det er den modsatte af "uforpligtende rådgivning" — vi koder din juridiske vurdering ind i et produktionssystem.
+Det betyder også: når du siger noget i et interview-svar, ender det som **bindende krav** i Tyr-systemet. Det er den modsatte af "uforpligtende rådgivning" — vi koder din juridiske vurdering ind i et produktionssystem.
 
 ## Tidsramme
 
@@ -92,4 +92,4 @@ Foreslået format: en time afsat tid hvor vi sidder sammen og går templaterne i
 
 **Spørgsmål inden interviewet?** Send mig en mail så afklarer vi inden mødet.
 
-— Forseti-team / Digitalisering og IT
+— Tyr-team / Digitalisering og IT

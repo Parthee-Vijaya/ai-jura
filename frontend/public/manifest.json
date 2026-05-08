@@ -1,7 +1,7 @@
 {
-  "short_name": "Forseti",
-  "name": "Forseti — kommunal AI-compliance",
-  "description": "Forseti hjemler hver AI-vurdering i konkret lovartikel. Deterministisk regelmotor + dagligt verificerede citater.",
+  "short_name": "Tyr",
+  "name": "Tyr — kommunal AI-compliance",
+  "description": "Tyr hjemler hver AI-vurdering i konkret lovartikel. Deterministisk regelmotor + dagligt verificerede citater.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,8 +21,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#1a365d",
-  "background_color": "#f7fafc",
+  "theme_color": "#0d2e54",
+  "background_color": "#f5f4ef",
   "orientation": "portrait-primary",
   "scope": "/",
   "categories": ["business", "legal", "compliance"],

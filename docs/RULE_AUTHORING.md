@@ -226,4 +226,4 @@ afgørelse:
 
 ## Kontakt
 
-Spørgsmål om regelmotorens kapabiliteter eller om hvordan en konkret juridisk situation skal modelleres? Skriv til Forseti core team.
+Spørgsmål om regelmotorens kapabiliteter eller om hvordan en konkret juridisk situation skal modelleres? Skriv til Tyr core team.

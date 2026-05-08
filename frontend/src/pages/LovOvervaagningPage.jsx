@@ -203,12 +203,12 @@ const LovOvervaagningPage = () => {
 
   return (
     <Page>
-      <Eyebrow>Forseti · lov-overvågning</Eyebrow>
+      <Eyebrow>Tyr · lov-overvågning</Eyebrow>
       <Title>Lov-overvågning</Title>
       <Lede>
         Daglig automatisk verifikation af hver regels lov-citat: Findes citatet
         stadig ordret i kilden? Hvis ikke, flagges reglen til juridisk review.
-        Det er en fitness-funktion der gør Forseti bevisbart frisk overfor
+        Det er en fitness-funktion der gør Tyr bevisbart frisk overfor
         EUR-Lex og Retsinformation — ikke bare ved sidst-verificeret-stempel.
       </Lede>
 

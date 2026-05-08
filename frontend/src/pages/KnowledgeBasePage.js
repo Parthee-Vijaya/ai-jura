@@ -1061,7 +1061,7 @@ const KnowledgeBasePage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Forseti · videnbase"
+        eyebrow="Tyr · videnbase"
         title="Vidensdatabase"
         lede="Opslagsværk med juridiske termer, AI-teknologi, compliance-begreber og videoressourcer. Kuration der gør det nemmere at orientere sig før du beslutter dig."
       />

@@ -88,6 +88,6 @@ llm_fortolkning:
     {"system.processes_personal_data": true|false|"usikker", ...}
 
 metadata:
-  forfatter: "Forseti core team"
+  forfatter: "Tyr core team"
   version: "1.0.0"
   tags: ["ai_act", "hojrisiko", "bilag_iii"]

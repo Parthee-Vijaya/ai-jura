@@ -71,6 +71,6 @@ llm_fortolkning:
     Returnér KUN gyldig JSON.
 
 metadata:
-  forfatter: "Forseti core team"
+  forfatter: "Tyr core team"
   version: "1.0.0"
   tags: ["ai_act", "art13", "transparens", "hojrisiko"]
