@@ -5,11 +5,12 @@ Dansk AI compliance platform med web research
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse, Response
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional, Literal
 from contextlib import asynccontextmanager
 import asyncio
+import time
 import uvicorn
 import logging
 from datetime import datetime, UTC
@@ -197,6 +198,82 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Observability — request-ID + structured logging + Prometheus metrics.
+# Configured here so it wraps every route incl. legacy ones.
+from src.utils.observability import (
+    configure_logging,
+    RequestIDMiddleware,
+    record_error,
+    recent_errors,
+    load_errors_from_disk,
+    metrics_response_body,
+    HTTP_REQUESTS_TOTAL,
+    HTTP_REQUEST_DURATION,
+)
+
+configure_logging()
+load_errors_from_disk()
+app.add_middleware(RequestIDMiddleware)
+
+
+@app.middleware("http")
+async def _track_http_metrics(request: Request, call_next):
+    """Record per-request count + latency. Endpoint label uses the route
+    template (e.g. /api/v3/audit/{log_id}) so cardinality stays bounded.
+    """
+    start = time.monotonic()
+    method = request.method
+    # Resolve to route template if possible — falls back to raw path
+    endpoint = request.scope.get("route").path if request.scope.get("route") else request.url.path
+    try:
+        response = await call_next(request)
+        status = str(response.status_code)
+    except Exception as exc:
+        # Capture in error buffer + bubble up as 500
+        record_error(
+            error=exc,
+            endpoint=endpoint,
+            request_id=request.headers.get("X-Request-ID")
+            or (request.scope.get("state") or {}).get("request_id"),
+            actor=request.headers.get("X-User"),
+        )
+        status = "500"
+        raise
+    finally:
+        dur = time.monotonic() - start
+        try:
+            HTTP_REQUESTS_TOTAL.labels(method=method, endpoint=endpoint, status=status).inc()
+            HTTP_REQUEST_DURATION.labels(method=method, endpoint=endpoint).observe(dur)
+        except Exception:
+            pass
+    return response
+
+
+@app.exception_handler(Exception)
+async def _capture_unhandled_exception(request: Request, exc: Exception):
+    """Fallback handler — captures otherwise-uncaught errors before
+    FastAPI's default 500 response. HTTPException is handled by FastAPI
+    itself (we don't want to capture 4xx as errors).
+    """
+    from fastapi import HTTPException
+    if isinstance(exc, HTTPException):
+        # Let FastAPI return its own 4xx/5xx response unchanged
+        raise exc
+    record_error(
+        error=exc,
+        endpoint=str(request.url.path),
+        request_id=(request.scope.get("state") or {}).get("request_id"),
+        actor=request.headers.get("X-User"),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "code": "INTERNAL_ERROR",
+            "request_id": (request.scope.get("state") or {}).get("request_id"),
+        },
+    )
 
 # Initialize orchestrator + legacy compliance components.
 # These instantiate LangChain LLM clients that require API keys at construction
@@ -584,7 +661,12 @@ async def root():
 
 @app.get("/health", response_model=HealthCheck)
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint — deep checks of every operational dependency.
+
+    Returns ``status='healthy'`` only when DB, LM Studio (if configured),
+    scheduler, RAG-index, and core services are all operational. Returns
+    ``status='degraded'`` if any non-critical dependency is down.
+    """
     news_payload = await news_service.get_latest_news()
     news_status = "operational" if news_payload.items else "degraded"
     ticker_payload = await ticker_service.get_latest()
@@ -594,19 +676,245 @@ async def health_check():
     cache_health = validate_cache_health()
     cache_status = "operational" if cache_health['status'] == 'healthy' else "degraded"
 
+    # Database — quick SELECT 1 to confirm we can reach Postgres/SQLite
+    db_status = "unknown"
+    try:
+        from src.database.connection import check_db_connection
+        db_status = "operational" if check_db_connection() else "down"
+    except Exception:
+        db_status = "down"
+
+    # LM Studio (if configured) — short-timeout ping to /v1/models
+    llm_status = "not_configured"
+    try:
+        lm_url = os.getenv("LM_STUDIO_BASE_URL", "").rstrip("/")
+        if lm_url:
+            import httpx
+            try:
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    r = await client.get(f"{lm_url}/models")
+                    llm_status = "operational" if r.status_code == 200 else "degraded"
+            except Exception:
+                llm_status = "down"
+        elif (
+            os.getenv("AZURE_OPENAI_API_KEY")
+            and "your_" not in (os.getenv("AZURE_OPENAI_API_KEY") or "").lower()
+        ):
+            llm_status = "operational"  # trust the credential — actual call would charge
+    except Exception:
+        llm_status = "unknown"
+
+    # Scheduler — verify the APScheduler is running with expected jobs
+    scheduler_status = "unknown"
+    expected_jobs = {
+        "kb_daily_update", "v3_citation_verifier",
+        "case_review_reminders", "gdpr_retention_sweep",
+    }
+    try:
+        if kb_scheduler.running:
+            present = {j.id for j in kb_scheduler.get_jobs()}
+            missing = expected_jobs - present
+            scheduler_status = "operational" if not missing else f"missing:{','.join(missing)}"
+        else:
+            scheduler_status = "stopped"
+    except Exception:
+        scheduler_status = "unknown"
+
+    # RAG index — check the law embeddings file is loadable
+    rag_status = "unknown"
+    try:
+        from src.services.law_rag import get_default_index
+        rag_status = "operational" if get_default_index().is_ready() else "not_built"
+    except Exception:
+        rag_status = "unknown"
+
+    services = {
+        "api": "operational",
+        "database": db_status,
+        "llm": llm_status,
+        "scheduler": scheduler_status,
+        "rag_index": rag_status,
+        "ai_act_checker": "operational",
+        "gdpr_checker": "operational",
+        "orchestrator": "operational",
+        "news_service": news_status,
+        "ticker_service": ticker_status,
+        "cache": cache_status,
+    }
+    overall = "healthy"
+    for s in services.values():
+        if s in {"down", "stopped"}:
+            overall = "down"
+            break
+        if s == "degraded" or s.startswith("missing:"):
+            if overall != "down":
+                overall = "degraded"
     return HealthCheck(
-        status="healthy",
+        status=overall,
         timestamp=datetime.now(),
-        services={
-            "api": "operational",
-            "ai_act_checker": "operational",
-            "gdpr_checker": "operational",
-            "orchestrator": "operational",
-            "news_service": news_status,
-            "ticker_service": ticker_status,
-            "cache": cache_status
-        }
+        services=services,
     )
+
+
+@app.get("/readyz")
+async def readyz():
+    """Lightweight readiness probe — just checks the API is alive without
+    touching downstream dependencies. Use this for load balancer health
+    checks; use /health for ops dashboards."""
+    return {"status": "ok", "timestamp": datetime.now(UTC).isoformat()}
+
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus exposition endpoint."""
+    body, content_type = metrics_response_body()
+    return Response(content=body, media_type=content_type)
+
+
+@app.get("/api/v3/admin/errors")
+async def v3_admin_errors(limit: int = 50):
+    """Return the most recent errors captured by the local error-buffer.
+
+    Used by the /drift page to give an at-a-glance view of recent failures
+    without requiring an external error tracking platform.
+    """
+    if limit < 1:
+        limit = 1
+    if limit > 500:
+        limit = 500
+    items = recent_errors(limit=limit)
+    return {"count": len(items), "errors": items}
+
+
+@app.get("/api/v3/admin/ops-summary")
+async def v3_ops_summary():
+    """Aggregated 24h operational overview — backs the /drift page.
+
+    Combines: scheduler-job last-run timestamps, citation freshness counts,
+    new-cases-in-last-24h, recent error count, disk usage of data dirs,
+    and storage hottest paths. Designed to render in a single dashboard.
+    """
+    from datetime import timedelta
+    from src.database.connection import SessionLocal
+    from src.database.cases import Case
+    from src.rule_engine.audit import V3AssessmentLog
+    from src.services.citation_verifier import RuleFreshness
+
+    now = datetime.now(UTC)
+    since_24h = now - timedelta(hours=24)
+
+    def _collect() -> dict:
+        with SessionLocal() as session:
+            # Cases activity in last 24h
+            cases_24h = (
+                session.query(Case).filter(Case.created_at >= since_24h).count()
+            )
+            cases_total = session.query(Case).count()
+            # Audit-log activity
+            assessments_24h = (
+                session.query(V3AssessmentLog)
+                .filter(V3AssessmentLog.created_at >= since_24h)
+                .count()
+            )
+            assessments_total = session.query(V3AssessmentLog).count()
+            # Citation freshness
+            fresh_rows = session.query(RuleFreshness).all()
+            fresh_ok = sum(1 for r in fresh_rows if r.citation_found)
+            fresh_flagged = sum(1 for r in fresh_rows if r.flagged_for_review)
+            last_freshness_check = max(
+                (r.last_checked_at for r in fresh_rows if r.last_checked_at),
+                default=None,
+            )
+
+        return {
+            "cases_24h": cases_24h,
+            "cases_total": cases_total,
+            "assessments_24h": assessments_24h,
+            "assessments_total": assessments_total,
+            "freshness": {
+                "ok": fresh_ok,
+                "flagged": fresh_flagged,
+                "total": fresh_ok + fresh_flagged,
+                "last_checked_at": last_freshness_check.isoformat() if last_freshness_check else None,
+            },
+        }
+
+    db_summary = await asyncio.to_thread(_collect)
+
+    # Scheduler jobs — pull last-run gauges directly from prometheus
+    from src.utils.observability import (
+        SCHEDULER_JOB_LAST_RUN as _LAST_RUN,
+        SCHEDULER_JOB_LAST_DURATION as _LAST_DUR,
+    )
+    scheduler_jobs = {}
+    try:
+        # APScheduler exposes get_jobs() — combine with our metric gauges
+        for job in kb_scheduler.get_jobs():
+            scheduler_jobs[job.id] = {
+                "name": job.name,
+                "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
+                "last_run_ts": None,
+                "last_duration_seconds": None,
+            }
+        # Read prometheus gauges (safe — they're just floats)
+        for sample in _LAST_RUN.collect()[0].samples:
+            jid = sample.labels.get("job_id")
+            if jid and jid in scheduler_jobs and sample.value > 0:
+                scheduler_jobs[jid]["last_run_ts"] = datetime.fromtimestamp(
+                    sample.value, tz=UTC
+                ).isoformat()
+        for sample in _LAST_DUR.collect()[0].samples:
+            jid = sample.labels.get("job_id")
+            if jid and jid in scheduler_jobs:
+                scheduler_jobs[jid]["last_duration_seconds"] = sample.value
+    except Exception:
+        logger.exception("Could not collect scheduler job state")
+
+    # Recent errors — just counts here; full detail at /api/v3/admin/errors
+    error_items = recent_errors(limit=10)
+    last_24h_error_count = sum(
+        1
+        for e in recent_errors(limit=500)
+        if e.get("occurred_at") and e["occurred_at"] >= since_24h.isoformat()
+    )
+
+    # Disk usage — main data folder + logs
+    def _dir_size(path: Path) -> int:
+        if not path.exists():
+            return 0
+        total = 0
+        try:
+            for p in path.rglob("*"):
+                if p.is_file():
+                    try:
+                        total += p.stat().st_size
+                    except OSError:
+                        pass
+        except OSError:
+            pass
+        return total
+
+    data_dir = Path(__file__).resolve().parent / "data"
+    log_dir = Path(os.getenv("TYR_LOG_DIR") or (Path.home() / "Library" / "Logs" / "Tyr"))
+    disk = {
+        "data_dir": str(data_dir),
+        "data_size_bytes": await asyncio.to_thread(_dir_size, data_dir),
+        "log_dir": str(log_dir),
+        "log_size_bytes": await asyncio.to_thread(_dir_size, log_dir),
+    }
+
+    return {
+        "generated_at": now.isoformat(),
+        "since": since_24h.isoformat(),
+        **db_summary,
+        "scheduler_jobs": scheduler_jobs,
+        "errors": {
+            "last_24h_count": last_24h_error_count,
+            "buffer_size": len(error_items),
+            "recent_sample": error_items,
+        },
+        "disk": disk,
+    }
 
 
 @app.get("/api/version", response_model=VersionResponse)

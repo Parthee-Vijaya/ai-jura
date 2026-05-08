@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 // Lazy loaded pages - Optimized code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
+const DriftPage = React.lazy(() => import('./pages/DriftPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
@@ -273,6 +274,9 @@ const AppInner = () => {
 
                   {/* GDPR persondatapolitik (synlig fra privacy-banneret) */}
                   <Route path="/privacy" element={<PrivacyPage />} />
+
+                  {/* Drift-dashboard — observability + ops (Modul 4) */}
+                  <Route path="/drift" element={<DriftPage />} />
 
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />

@@ -478,6 +478,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       section: 'Indstillinger',
       sectionKey: 'indstillinger',
       items: [
+        { path: '/drift', icon: FaCog, text: 'Drift' },
         { path: '/lov-overvaagning', icon: FaGavel, text: 'Lov-overvågning' },
         { path: '/indstillinger', icon: FaCog, text: 'Indstillinger' }
       ]
