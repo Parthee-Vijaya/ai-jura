@@ -1,82 +1,122 @@
 [
   {
-    "title": "DMA and GDPR: EDPB and European Commission endorse joint guidelines to clarify common touchpoints",
-    "url": "https://www.edpb.europa.eu/news/news/2025/dma-and-gdpr-edpb-and-european-commission-endorse-joint-guidelines-clarify-common_en",
+    "title": "Europe Day 2026: let’s celebrate together",
+    "url": "https://www.edpb.europa.eu/news/news/2026/europe-day-2026-lets-celebrate-together_en",
     "source": "EDPB",
     "category": "gdpr",
-    "summary": "EDPB og Kommissionen har godkendt fælles retningslinjer for at afklare forbindelserne mellem DMA og GDPR. Dette er vigtigt for virksomheder, der skal navigere i begge reguleringer.",
-    "published_at": "2025-10-12T13:37:42.237939Z",
-    "importance": "high",
+    "summary": "Brussels, 5 May – On 9 May each year, Europeans celebrate the anniversary of the Schuman Declaration, the key moment which led to the creation of the EU as we know it today. To mark this special occasion, the European institutions will open their doors to the public on 9 May 2026 , and we would be delighted to welcome you.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
+    "importance": "medium",
     "keywords": [
-      "GDPR",
-      "DMA",
-      "retningslinjer"
+      "gdpr",
+      "compliance"
     ],
-    "scraped_at": "2025-10-12T13:37:42.237939Z",
-    "content_snippet": "Artiklen er vigtig for compliance, da den giver retningslinjer for, hvordan virksomheder skal forholde sig til både GDPR og DMA."
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
   },
   {
-    "title": "Interplay between the DSA and the GDPR: EDPB adopts guidelines",
-    "url": "https://www.edpb.europa.eu/news/news/2025/interplay-between-dsa-and-gdpr-edpb-adopts-guidelines_en",
+    "title": "Marking 10 years of the GDPR: the evolution of the European data protection landscape",
+    "url": "https://www.edpb.europa.eu/news/news/2026/marking-10-years-gdpr-evolution-european-data-protection-landscape_en",
     "source": "EDPB",
     "category": "gdpr",
-    "summary": "EDPB har vedtaget retningslinjer for samspillet mellem DSA og GDPR. Dette er essentielt for at forstå, hvordan de to reguleringer påvirker hinanden.",
-    "published_at": "2025-10-12T13:37:42.237939Z",
-    "importance": "high",
+    "summary": "Brussels, 27 April – Today marks the 10th anniversary of the GDPR’s adoption, the first comprehensive data protection framework spanning an entire continent, establishing clear rights for individuals and obligations for organisations across Europe. The moment that led to the creation of the EDPB The GDPR led to the establishment of the European Data Protection Board (EDPB) on 25 May 2018, replacing the Article 29 Working Party that was previously in charge of dealing with…",
+    "published_at": "2026-05-08T09:50:17.512813Z",
+    "importance": "medium",
     "keywords": [
-      "GDPR",
-      "DSA",
-      "retningslinjer"
+      "gdpr",
+      "compliance"
     ],
-    "scraped_at": "2025-10-12T13:37:42.237939Z",
-    "content_snippet": "Retningslinjerne hjælper virksomheder med at forstå deres forpligtelser under begge reguleringer, hvilket er afgørende for compliance."
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
   },
   {
-    "title": "Targeted modifications of the GDPR: EDPB & EDPS welcome simplification of record keeping obligations and request further clarifications",
-    "url": "https://www.edpb.europa.eu/news/news/2025/targeted-modifications-gdpr-edpb-edps-welcome-simplification-record-keeping_en",
+    "title": "Stakeholder event on competition and data protection",
+    "url": "https://www.edpb.europa.eu/news/news/2026/stakeholder-event-competition-and-data-protection_en",
     "source": "EDPB",
     "category": "gdpr",
-    "summary": "EDPB og EDPS byder velkommen til forenklinger i GDPR's opbevaringsforpligtelser. De anmoder dog om yderligere afklaringer for at sikre korrekt implementering.",
-    "published_at": "2025-10-12T13:37:42.237939Z",
+    "summary": "Brussels, 23 April – The EDPB is organising a remote stakeholder event in the context of its joint work with the European Commission on upcoming guidelines on the interplay between competition and data protection . The event is an opportunity for stakeholders to inform and support the ongoing work on this topic.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
     "importance": "medium",
     "keywords": [
-      "GDPR",
-      "opbevaring",
-      "forenklinger"
+      "gdpr",
+      "compliance"
     ],
-    "scraped_at": "2025-10-12T13:37:42.237939Z",
-    "content_snippet": "Forenklinger i GDPR kan påvirke, hvordan virksomheder skal håndtere datalagring, hvilket er vigtigt for compliance."
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
   },
   {
-    "title": "Anonymisation and pseudonymisation: take part in the stakeholder event",
-    "url": "https://www.edpb.europa.eu/news/news/2025/anonymisation-and-pseudonymisation-take-part-stakeholder-event_en",
+    "title": "EDPB brings clarity to data processing for scientific research, speeds up the finalisation of the anonymisation guidelines and approves first European data protection seal as a tool for transfers",
+    "url": "https://www.edpb.europa.eu/news/news/2026/edpb-brings-clarity-data-processing-scientific-research-speeds-finalisation_en",
     "source": "EDPB",
-    "category": "eu_news",
-    "summary": "EDPB arrangerer et online arrangement for at indsamle input fra interessenter om anonymisering og pseudonymisering. Dette er vigtigt for at forstå bedste praksis.",
-    "published_at": "2025-10-12T13:37:42.237939Z",
+    "category": "gdpr",
+    "summary": "Brussels, 16 April – During its latest plenary, the EDPB has adopted Guidelines on processing of personal data for scientific research purposes . In addition, the Board has created a team to speed up the finalisation of the guidelines on anonymisation. The EDPB has also adopted two opinions on the two sets of the Europrivacy certification criteria for approval as European Data Protection Seals, one of which to be used as a tool for transfers.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
     "importance": "medium",
     "keywords": [
-      "anonymisering",
-      "pseudonymisering",
-      "interessenter"
+      "gdpr",
+      "compliance"
     ],
-    "scraped_at": "2025-10-12T13:37:42.237939Z",
-    "content_snippet": "Anonymisering og pseudonymisering er centrale aspekter af databeskyttelse, og input fra interessenter kan føre til bedre compliance-værktøjer."
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
   },
   {
-    "title": "Strengthening Schengen security and preventing irregular migration: EU Entry Exit System enters into operation",
-    "url": "https://www.edpb.europa.eu/news/news/2025/strengthening-schengen-security-and-preventing-irregular-migration-eu-entry-exit_en",
+    "title": "Enhancing compliance and consistency: EDPB adopts DPIA template",
+    "url": "https://www.edpb.europa.eu/news/news/2026/enhancing-compliance-and-consistency-edpb-adopts-dpia-template_en",
     "source": "EDPB",
-    "category": "eu_news",
-    "summary": "EU Entry Exit System træder i kraft for at styrke Schengen-sikkerheden. Dette system vil have betydning for håndtering af persondata ved grænsekontroller.",
-    "published_at": "2025-10-12T13:37:42.237939Z",
+    "category": "gdpr",
+    "summary": "Brussels, 14 April - In line with the EDPB’s Helsinki Statement to make GDPR compliance easier and strengthen consistency across Europe, the EDPB has adopted a template for Data Protection Impact Assessments (DPIA) . The template will help organisations structure, harmonise and evidence their DPIA reporting processes.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
     "importance": "medium",
     "keywords": [
-      "EU Entry Exit System",
-      "persondata",
-      "grænsekontrol"
+      "gdpr",
+      "compliance"
     ],
-    "scraped_at": "2025-10-12T13:37:42.237939Z",
-    "content_snippet": "Implementeringen af dette system kan påvirke, hvordan persondata håndteres, hvilket er vigtigt for databeskyttelse og compliance."
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
+  },
+  {
+    "title": "White House distances itself from tighter AI regulation",
+    "url": "https://www.politico.com/news/2026/05/07/white-house-ai-oversight-00910837?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO AI",
+    "category": "gdpr",
+    "summary": "The White House is looking for “partnership” with companies rather than pursuing “government regulation,” a senior White House official said.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "compliance"
+    ],
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
+  },
+  {
+    "title": "Wie KI die Industrie verändert. Mit Siemens-CEO Roland Busch",
+    "url": "https://www.politico.eu/podcast/power-and-policy/wie-ki-die-industrie-verandert-mit-siemens-ceo-roland-busch/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO AI",
+    "category": "gdpr",
+    "summary": "Deutschland und die EU diskutieren über Regulierung, während die Weltspitze bei der Künstlichen Intelligenz davoneilt. Während ChatGPT und Co. die Schlagzeilen beherrschen, entscheidet sich die Zukunft des Standorts Deutschland in den Fabrikhallen. Siemens-Chef Roland Busch steuert das wertvollste Unternehmen des Landes durch diese Transformation und findet im Gespräch mit POLITICO Executive Editor Gordon Repinski deutliche [&#8230;]",
+    "published_at": "2026-05-08T09:50:17.512813Z",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "compliance"
+    ],
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
+  },
+  {
+    "title": "Lawmakers, industry push EU to move faster on AI rule cuts",
+    "url": "https://www.politico.eu/article/eu-ai-rule-cuts-not-enough-lawmakers-industry-more-deregulation/?utm_source=RSS_Feed&utm_medium=RSS&utm_campaign=RSS_Syndication",
+    "source": "POLITICO AI",
+    "category": "gdpr",
+    "summary": "Thursday's deal leaves some lawmakers and lobby groups dissatisfied.",
+    "published_at": "2026-05-08T09:50:17.512813Z",
+    "importance": "medium",
+    "keywords": [
+      "gdpr",
+      "compliance"
+    ],
+    "scraped_at": "2026-05-08T09:50:17.512813Z",
+    "content_snippet": null
   }
 ]

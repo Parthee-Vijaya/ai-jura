@@ -1,37 +1,142 @@
 [
   {
-    "title": "OpenAI lancerer ny sikkerhedspolitik for virksomhedsbrug",
-    "url": "https://www.theverge.com/ai/2024/09/10/openai-enterprise-safety-update",
-    "source": "The Verge",
-    "published_at": "2024-09-10T08:00:00+00:00",
-    "scraped_at": "2024-09-10T08:05:00+00:00"
+    "title": "TikTok scales back AI-generated video descriptions after absurd errors",
+    "url": "https://www.bbc.com/news/articles/c5yerd05n01o?at_medium=RSS&at_campaign=rss",
+    "source": "www.bbc.com",
+    "published_at": "2026-05-08T09:20:40",
+    "scraped_at": "2026-05-08T09:54:57.914877Z"
   },
   {
-    "title": "EU investerer milliarder i ansvarlig AI-udvikling",
-    "url": "https://www.bbc.com/news/technology-eu-ai-investment",
-    "source": "BBC Technology",
-    "published_at": "2024-09-12T11:30:00+00:00",
-    "scraped_at": "2024-09-12T11:45:00+00:00"
+    "title": "Why you can never get your doctor to call you back",
+    "url": "https://techcrunch.com/2026/05/07/the-back-office-problem-that-explains-why-specialists-never-call-you-back/",
+    "source": "Connie Loizos",
+    "published_at": "2026-05-08T04:42:29",
+    "scraped_at": "2026-05-08T09:54:57.863255Z"
   },
   {
-    "title": "Regeringer øger fokus på global AI-regulering",
-    "url": "https://edition.cnn.com/2024/09/08/tech/government-ai-regulation/index.html",
-    "source": "CNN Technology",
-    "published_at": "2024-09-08T07:10:00+00:00",
-    "scraped_at": "2024-09-08T07:15:00+00:00"
+    "title": "The jury is still out on AI in finance",
+    "url": "https://www.ft.com/content/c0aec3de-b553-4089-b5d3-074c5b83be57",
+    "source": "www.ft.com",
+    "published_at": "2026-05-08T04:00:15",
+    "scraped_at": "2026-05-08T09:54:58.049742Z"
   },
   {
-    "title": "TechCrunch: Europæisk startup skalerer grøn AI",
-    "url": "https://techcrunch.com/2024/09/14/european-ai-startup-green/",
-    "source": "TechCrunch AI",
-    "published_at": "2024-09-14T09:20:00+00:00",
-    "scraped_at": "2024-09-14T09:25:00+00:00"
+    "title": "Big Tech’s $725bn AI spending spree sends free cash flow to a decade low",
+    "url": "https://www.ft.com/content/b3dfaba9-17a2-4fac-90fe-4ab3ca7c9494",
+    "source": "www.ft.com",
+    "published_at": "2026-05-08T04:00:14",
+    "scraped_at": "2026-05-08T09:54:58.049759Z"
   },
   {
-    "title": "Financial Times analyserer AI-økonomi",
-    "url": "https://www.ft.com/content/example-ai-economy",
-    "source": "Financial Times Tech",
-    "published_at": "2024-09-11T06:15:00+00:00",
-    "scraped_at": "2024-09-11T06:20:00+00:00"
+    "title": "Anthropic weighs deal for near $1tn valuation as revenue surges",
+    "url": "https://www.ft.com/content/a40cafcc-0fa4-4e70-9e24-90d826aea56d",
+    "source": "www.ft.com",
+    "published_at": "2026-05-08T04:00:14",
+    "scraped_at": "2026-05-08T09:54:58.049771Z"
+  },
+  {
+    "title": "Musk v. Altman Evidence Shows What Microsoft Executives Thought of OpenAI",
+    "url": "https://www.wired.com/story/microsoft-executives-discuss-openai-sam-altman-2018/",
+    "source": "Maxwell Zeff, Paresh Dave",
+    "published_at": "2026-05-08T01:42:14",
+    "scraped_at": "2026-05-08T09:54:57.912547Z"
+  },
+  {
+    "title": "Tech boom brings emerging markets and their rich cousins closer together",
+    "url": "https://www.ft.com/content/4c4df3f4-3108-41f4-a6e0-d3aa6be20481",
+    "source": "www.ft.com",
+    "published_at": "2026-05-08T00:00:00",
+    "scraped_at": "2026-05-08T09:54:58.049800Z"
+  },
+  {
+    "title": "IREN inks AI infrastructure deal with Nvidia",
+    "url": "https://www.cnbc.com/2026/05/07/iren-stock-ai-infrastructure-nvidia.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T23:27:56",
+    "scraped_at": "2026-05-08T09:54:58.304118Z"
+  },
+  {
+    "title": "Jim Cramer says the AI boom has 'the power to keep the country's economy humming'",
+    "url": "https://www.cnbc.com/2026/05/07/jim-cramer-ai-boom-stock-market-impact.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T22:58:55",
+    "scraped_at": "2026-05-08T09:54:58.304080Z"
+  },
+  {
+    "title": "Nvidia CEO says AI partnership with Corning will 'revitalize American manufacturing'",
+    "url": "https://www.cnbc.com/2026/05/07/nvidia-ceo-ai-partnership-corning-revitalize-american-manufacturing.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T22:57:30",
+    "scraped_at": "2026-05-08T09:54:58.304051Z"
+  },
+  {
+    "title": "OpenAI launches new voice intelligence features in its API",
+    "url": "https://techcrunch.com/2026/05/07/openai-launches-new-voice-intelligence-features-in-its-api/",
+    "source": "Lucas Ropek",
+    "published_at": "2026-05-07T22:24:50",
+    "scraped_at": "2026-05-08T09:54:57.863272Z"
+  },
+  {
+    "title": "Cloudflare stock sinks 18% after earnings as company cuts 1,100 employees due to AI changes",
+    "url": "https://www.cnbc.com/2026/05/07/cloudflare-net-q1-2026-stock-earnings-layoffs.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T22:19:17",
+    "scraped_at": "2026-05-08T09:54:58.304095Z"
+  },
+  {
+    "title": "OpenAI rolls out new model for cybersecurity teams a month after Anthropic's Mythos debut",
+    "url": "https://www.cnbc.com/2026/05/07/openai-rolls-out-new-gpt-5point5-cyber-to-vetted-cybersecurity-teams.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T22:06:20",
+    "scraped_at": "2026-05-08T09:54:58.304108Z"
+  },
+  {
+    "title": "Trump Pivots on AI Regulation, Worker Ousted by DOGE Runs for Office, and Hantavirus Explained",
+    "url": "https://www.wired.com/story/uncanny-valley-podcast-trump-pivots-ai-regulation-worker-ousted-by-doge-runs-for-office-hantavirus-explained/",
+    "source": "Brian Barrett, Zoë Schiffer, Leah Feiger",
+    "published_at": "2026-05-07T21:37:20",
+    "scraped_at": "2026-05-08T09:54:57.912559Z"
+  },
+  {
+    "title": "Voi founders’ new AI startup Pit has become the latest rising star out of Stockholm",
+    "url": "https://techcrunch.com/2026/05/07/voi-founders-new-ai-startup-pit-has-become-the-latest-rising-star-out-of-stockholm/",
+    "source": "Anna Heim",
+    "published_at": "2026-05-07T21:02:11",
+    "scraped_at": "2026-05-08T09:54:57.863282Z"
+  },
+  {
+    "title": "French prosecutors escalate probe of Elon Musk and X to criminal investigation",
+    "url": "https://www.cnbc.com/2026/05/07/french-prosecutors-probe-of-elon-musk-x-now-a-criminal-investigation.html",
+    "source": "www.cnbc.com",
+    "published_at": "2026-05-07T20:54:17",
+    "scraped_at": "2026-05-08T09:54:58.304130Z"
+  },
+  {
+    "title": "How to Disable Google's Gemini in Chrome",
+    "url": "https://www.wired.com/story/you-can-disable-gemini-in-chrome-if-its-freaking-you-out/",
+    "source": "Lily Hay Newman",
+    "published_at": "2026-05-07T20:31:57",
+    "scraped_at": "2026-05-08T09:54:57.912567Z"
+  },
+  {
+    "title": "OpenAI introduces new ‘Trusted Contact’ safeguard for cases of possible self-harm",
+    "url": "https://techcrunch.com/2026/05/07/openai-introduces-new-trusted-contact-safeguard-for-cases-of-possible-self-harm/",
+    "source": "Lucas Ropek",
+    "published_at": "2026-05-07T20:20:20",
+    "scraped_at": "2026-05-08T09:54:57.863292Z"
+  },
+  {
+    "title": "Perplexity’s Personal Computer is now available to everyone on Mac",
+    "url": "https://techcrunch.com/2026/05/07/perplexitys-personal-computer-is-now-available-everyone-on-mac/",
+    "source": "Sarah Perez",
+    "published_at": "2026-05-07T19:57:59",
+    "scraped_at": "2026-05-08T09:54:57.863299Z"
+  },
+  {
+    "title": "Mira Murati’s deposition pulled back the curtain on Sam Altman’s ouster",
+    "url": "https://www.theverge.com/ai-artificial-intelligence/926383/mira-murati-sam-altman-musk-trial-ouster",
+    "source": "Hayden Field",
+    "published_at": "2026-05-07T19:55:22",
+    "scraped_at": "2026-05-08T09:54:57.903926Z"
   }
 ]
