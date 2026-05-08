@@ -107,12 +107,15 @@ async def lifespan(app: FastAPI):
     if not news_refresh_task or news_refresh_task.done():
         news_refresh_task = asyncio.create_task(_refresh_news_periodically())
 
-    # Setup knowledge base scheduler - daglig opdatering kl. 03:00
+    # Setup knowledge base scheduler - ugentlig opdatering mandag kl. 03:00
     kb_scheduler.add_job(
         scheduled_kb_update,
-        CronTrigger(hour=3, minute=0),  # Kører kl. 03:00 hver nat
-        id='kb_daily_update',
-        name='Daily Knowledge Base Update',
+        # Ugentlig — mandag morgen kl. 03:00. Vidensbase-termer ændrer sig
+        # ikke hurtigere end ugentligt; det giver også LM Studio + cloud-
+        # fallbacks tid til at restitutere mellem kørsler.
+        CronTrigger(day_of_week='mon', hour=3, minute=0),
+        id='kb_weekly_update',
+        name='Weekly Knowledge Base Update',
         replace_existing=True
     )
     # Citation verifier (M3): daily at 04:00 — verify each rule's citat
@@ -146,7 +149,7 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
     kb_scheduler.start()
-    logger.info("Knowledge base scheduler started - daily updates at 03:00")
+    logger.info("Knowledge base scheduler started - weekly updates Monday at 03:00")
     logger.info("Citation verifier scheduled - daily at 04:00")
     logger.info("Case re-review reminders scheduled - daily at 08:00")
     logger.info("GDPR retention sweep scheduled - daily at 02:00")
