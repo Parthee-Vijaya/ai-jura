@@ -148,8 +148,20 @@ async def lifespan(app: FastAPI):
         name='Daily GDPR retention sweep',
         replace_existing=True,
     )
+    # AI projects catalog sync: ugentligt mandag 03:30, lige efter
+    # knowledge-base-jobbet kl. 03:00. Henter ~143 projekter fra
+    # offentlig-ai.dk og cacher dem lokalt til /ai-losninger-siden.
+    from src.services.ai_projects_updater import scheduled_ai_projects_sync
+    kb_scheduler.add_job(
+        scheduled_ai_projects_sync,
+        CronTrigger(day_of_week='mon', hour=3, minute=30),
+        id='ai_projects_weekly_sync',
+        name='Weekly AI projects catalog sync',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - weekly updates Monday at 03:00")
+    logger.info("AI projects sync scheduled - weekly Monday at 03:30")
     logger.info("Citation verifier scheduled - daily at 04:00")
     logger.info("Case re-review reminders scheduled - daily at 08:00")
     logger.info("GDPR retention sweep scheduled - daily at 02:00")
@@ -1756,6 +1768,36 @@ async def get_kb_stats():
     except Exception as e:
         logger.error(f"Failed to get KB stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== AI Projects Catalog ====================
+#
+# Syncs from offentlig-ai.dk weekly. Endpoints expose the cached catalog
+# for the /ai-losninger frontend page.
+
+@app.get("/api/ai-projects", response_model=Dict[str, Any])
+async def get_ai_projects():
+    """Returnér cached AI-projekt-katalog. Tom items-liste hvis intet
+    sync er kørt endnu (frontend falder tilbage til bundlet JSON)."""
+    from src.services.ai_projects_updater import load_ai_projects
+
+    data = await asyncio.to_thread(load_ai_projects)
+    return {
+        "items": data.get("items", []),
+        "fetched_at": data.get("fetched_at"),
+        "count": data.get("count", len(data.get("items", []))),
+        "source": data.get("source", "offentlig-ai.dk"),
+    }
+
+
+@app.post("/api/ai-projects/refresh", response_model=Dict[str, Any])
+async def refresh_ai_projects_endpoint():
+    """Manuel trigger af AI-projekt-katalog-syncen. Returnerer summary
+    af kørslen — tager 10-20s for ~143 projekter."""
+    from src.services.ai_projects_updater import refresh_ai_projects
+
+    summary = await refresh_ai_projects()
+    return summary
 
 
 @app.get("/api/search/global", response_model=Dict[str, Any])

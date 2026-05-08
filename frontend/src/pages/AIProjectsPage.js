@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 import {
   FaSearch,
   FaExternalLinkAlt,
@@ -8,10 +9,11 @@ import {
   FaCheckCircle,
   FaClock,
   FaMapMarkerAlt,
-  FaTimes
+  FaTimes,
+  FaSync
 } from 'react-icons/fa';
 
-import projectsData from '../data/aiProjectsFallback.json';
+import bundledProjectsFallback from '../data/aiProjectsFallback.json';
 import {
   PageShell,
   PageHeader,
@@ -317,21 +319,93 @@ const ExternalLink = styled.a`
 const AIProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedScope, setSelectedScope] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState(bundledProjectsFallback);
+  const [fetchedAt, setFetchedAt] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  const categories = useMemo(() => {
-    const cats = new Set(projectsData.map(p => p.category));
-    return ['all', ...Array.from(cats)];
+  // Hent live-katalog fra API ved mount; fall back til bundlet JSON hvis
+  // backend er nede eller cache er tom.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await axios.get('/api/ai-projects', { timeout: 8000 });
+        if (cancelled) return;
+        const items = r.data?.items || [];
+        if (items.length > 0) {
+          setProjects(items);
+          setFetchedAt(r.data?.fetched_at || null);
+        }
+      } catch (err) {
+        // Behold bundled fallback
+        console.warn('AI-projekt-katalog fetch fejlede, bruger bundlet fallback', err);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
+  const categories = useMemo(() => {
+    const cats = new Set(projects.map(p => p.category).filter(Boolean));
+    return ['all', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'da'))];
+  }, [projects]);
+
+  const scopes = useMemo(() => {
+    const s = new Set(projects.map(p => p.scope).filter(Boolean));
+    return ['all', ...Array.from(s).sort((a, b) => a.localeCompare(b, 'da'))];
+  }, [projects]);
+
+  const statuses = useMemo(() => {
+    const s = new Set(projects.map(p => p.status).filter(Boolean));
+    return ['all', ...Array.from(s).sort((a, b) => a.localeCompare(b, 'da'))];
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
-    return projectsData.filter(project => {
-      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           project.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase().trim();
+    return projects.filter(project => {
+      const matchesSearch = !q
+        || (project.title || '').toLowerCase().includes(q)
+        || (project.description || '').toLowerCase().includes(q)
+        || (project.category || '').toLowerCase().includes(q);
       const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesScope = selectedScope === 'all' || project.scope === selectedScope;
+      const matchesStatus = selectedStatus === 'all' || project.status === selectedStatus;
+      return matchesSearch && matchesCategory && matchesScope && matchesStatus;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [projects, searchTerm, selectedCategory, selectedScope, selectedStatus]);
+
+  const refreshFromSource = async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      const r = await axios.post('/api/ai-projects/refresh', null, { timeout: 60000 });
+      if (r.data?.cache_updated) {
+        const list = await axios.get('/api/ai-projects');
+        setProjects(list.data?.items || []);
+        setFetchedAt(list.data?.fetched_at || null);
+      } else if (r.data?.error) {
+        setError(r.data.error);
+      }
+    } catch (err) {
+      setError(err.message || 'Refresh fejlede');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const formatRelative = (iso) => {
+    if (!iso) return '';
+    const then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    const seconds = Math.round((Date.now() - then) / 1000);
+    if (seconds < 60) return `${seconds}s siden`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m siden`;
+    if (seconds < 86400) return `${Math.round(seconds / 3600)}t siden`;
+    return `${Math.round(seconds / 86400)}d siden`;
+  };
 
   return (
     <PageShell>
@@ -351,23 +425,100 @@ const AIProjectsPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </SearchField>
+        <button
+          type="button"
+          onClick={refreshFromSource}
+          disabled={refreshing}
+          title="Hent friske projekter fra offentlig-ai.dk"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.55rem 0.95rem',
+            fontFamily: 'inherit',
+            fontSize: '0.82rem',
+            fontWeight: 500,
+            border: '1px solid currentColor',
+            background: 'transparent',
+            borderRadius: 4,
+            cursor: refreshing ? 'wait' : 'pointer',
+            opacity: refreshing ? 0.6 : 1,
+          }}
+        >
+          <FaSync style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          {refreshing ? 'Henter…' : 'Opdatér fra kilde'}
+        </button>
       </Toolbar>
 
-      <FilterChips style={{ marginBottom: '1.25rem' }}>
-        {categories.map(cat => (
-          <OutlinePill
-            key={cat}
-            $active={selectedCategory === cat}
-            onClick={() => setSelectedCategory(cat)}
-          >
-            {cat === 'all' ? 'Alle kategorier' : cat}
-          </OutlinePill>
-        ))}
-      </FilterChips>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+        marginBottom: '1.25rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55, marginRight: '0.4rem' }}>Kategori</span>
+          <FilterChips style={{ flexWrap: 'wrap' }}>
+            {categories.slice(0, 12).map(cat => (
+              <OutlinePill
+                key={cat}
+                $active={selectedCategory === cat}
+                onClick={() => setSelectedCategory(cat)}
+              >
+                {cat === 'all' ? 'Alle' : cat}
+              </OutlinePill>
+            ))}
+          </FilterChips>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55, marginRight: '0.4rem' }}>Scope</span>
+          <FilterChips style={{ flexWrap: 'wrap' }}>
+            {scopes.map(s => (
+              <OutlinePill key={s} $active={selectedScope === s} onClick={() => setSelectedScope(s)}>
+                {s === 'all' ? 'Alle' : s}
+              </OutlinePill>
+            ))}
+          </FilterChips>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.12em', opacity: 0.55, marginRight: '0.4rem' }}>Status</span>
+          <FilterChips style={{ flexWrap: 'wrap' }}>
+            {statuses.map(s => (
+              <OutlinePill key={s} $active={selectedStatus === s} onClick={() => setSelectedStatus(s)}>
+                {s === 'all' ? 'Alle' : s}
+              </OutlinePill>
+            ))}
+          </FilterChips>
+        </div>
+      </div>
 
-      <ResultsCount>
-        Viser {filteredProjects.length} af {projectsData.length} projekter
+      <ResultsCount style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <span>Viser {filteredProjects.length} af {projects.length} projekter</span>
+        {fetchedAt ? (
+          <span style={{ fontFamily: 'monospace', fontSize: '0.74rem', opacity: 0.7 }}>
+            Synkroniseret {formatRelative(fetchedAt)} · offentlig-ai.dk
+          </span>
+        ) : (
+          <span style={{ fontFamily: 'monospace', fontSize: '0.74rem', opacity: 0.7 }}>
+            Bundlet fallback (12 projekter) — klik "Opdatér fra kilde" for fuld liste
+          </span>
+        )}
       </ResultsCount>
+
+      {error && (
+        <div style={{
+          background: 'rgba(160, 32, 32, 0.06)',
+          border: '1px solid rgba(160, 32, 32, 0.3)',
+          color: '#a02020',
+          padding: '0.6rem 0.9rem',
+          borderRadius: 4,
+          marginBottom: '1rem',
+          fontFamily: 'monospace',
+          fontSize: '0.84rem',
+        }}>
+          Refresh fejlede: {error}
+        </div>
+      )}
 
       <ProjectsGrid>
         {filteredProjects.map(project => (
