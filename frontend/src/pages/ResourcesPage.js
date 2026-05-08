@@ -1,562 +1,402 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaExternalLinkAlt,
-  FaUniversity,
-  FaGavel,
-  FaEuroSign,
   FaSearch,
-  FaBalanceScale,
-  FaGlobeEurope,
-  FaInfoCircle,
-  FaPlus,
   FaTimes,
-  FaSave
 } from 'react-icons/fa';
+
 import {
   PageShell,
   PageHeader,
   OutlinePill,
-  PrimaryButton,
   SearchField,
 } from '../components/page-chrome/PageChrome';
 
-const Toolbar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 1.5rem;
-`;
+import resourcesCatalog from '../data/resourcesCatalog.json';
 
-const CategoryFilters = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 1.5rem;
-`;
+// ---- Stat-bar -------------------------------------------------------------
 
 const StatsBar = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  padding: 16px 20px;
+  gap: 0;
   background: ${(p) => p.theme.colors.surface};
   border: 1px solid ${(p) => p.theme.colors.border};
   border-radius: ${(p) => p.theme.borderRadius};
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+`;
 
-  .stat {
-    text-align: left;
-    border-left: 2px solid ${(p) => p.theme.colors.borderSoft};
-    padding-left: 16px;
+const StatCell = styled.div`
+  padding: 14px 18px;
+  border-right: 1px solid ${(p) => p.theme.colors.borderSoft};
 
-    &:first-child { border-left: none; padding-left: 0; }
+  &:last-child { border-right: none; }
 
-    .number {
-      font-family: ${(p) => p.theme.fonts.display};
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: ${(p) => p.theme.colors.primary};
-      line-height: 1;
-    }
-
-    .label {
-      font-family: ${(p) => p.theme.fonts.sans};
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: ${(p) => p.theme.colors.textMuted};
-      margin-top: 6px;
-    }
+  .number {
+    font-family: ${(p) => p.theme.fonts.display};
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: ${(p) => p.theme.colors.ink};
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .label {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: ${(p) => p.theme.colors.textMuted};
+    margin-top: 6px;
+    font-weight: 600;
   }
 `;
 
-const ResourceGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-`;
+// ---- Toolbar --------------------------------------------------------------
 
-const ResourceCard = styled(motion.div)`
-  background: ${(p) => p.theme.colors.surface};
-  border: 1px solid ${(p) => p.theme.colors.border};
-  border-radius: ${(p) => p.theme.borderRadius};
-  padding: 1.5rem;
-  border-left: 3px solid ${(p) => {
-    switch (p.category) {
-      case 'eu': return p.theme.colors.warning;
-      case 'danish': return p.theme.colors.primary;
-      case 'legal': return p.theme.colors.success;
-      case 'international': return p.theme.colors.accent;
-      default: return p.theme.colors.borderSoft;
-    }
-  }};
-  transition: ${(p) => p.theme.animations.transition};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${(p) => p.theme.shadows.md};
-  }
-`;
-
-const ResourceHeader = styled.div`
+const Toolbar = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 1rem;
-
-  .icon {
-    background: transparent;
-    border: 1px solid ${(p) => {
-      switch (p.category) {
-        case 'eu': return p.theme.colors.warning;
-        case 'danish': return p.theme.colors.primary;
-        case 'legal': return p.theme.colors.success;
-        case 'international': return p.theme.colors.accent;
-        default: return p.theme.colors.border;
-      }
-    }};
-    color: ${(p) => {
-      switch (p.category) {
-        case 'eu': return p.theme.colors.warning;
-        case 'danish': return p.theme.colors.primary;
-        case 'legal': return p.theme.colors.success;
-        case 'international': return p.theme.colors.accent;
-        default: return p.theme.colors.textMuted;
-      }
-    }};
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
-  .content {
-    flex: 1;
-    min-width: 0;
-
-    h3 {
-      font-family: ${(p) => p.theme.fonts.display};
-      font-size: 1.18rem;
-      font-weight: 600;
-      letter-spacing: -0.005em;
-      color: ${(p) => p.theme.colors.text};
-      margin: 0 0 4px 0;
-      line-height: 1.3;
-    }
-
-    .meta {
-      color: ${(p) => p.theme.colors.textMuted};
-      font-family: ${(p) => p.theme.fonts.sans};
-      font-size: 0.78rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      letter-spacing: 0.02em;
-    }
-  }
-`;
-
-const ResourceDescription = styled.div`
-  font-family: ${(p) => p.theme.fonts.body};
-  color: ${(p) => p.theme.colors.text};
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  font-size: 0.96rem;
-`;
-
-const ResourceLinks = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const ResourceLink = styled.a`
-  font-family: ${(p) => p.theme.fonts.sans};
-  color: ${(p) => p.theme.colors.primary};
-  text-decoration: none;
-  font-size: 0.88rem;
-  padding: 8px 0;
-  border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  transition: ${(p) => p.theme.animations.transitionFast};
-
-  &:hover {
-    color: ${(p) => p.theme.colors.primaryDark};
-    text-decoration: underline;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  .external-icon {
-    font-size: 0.7rem;
-    opacity: 0.7;
-  }
-`;
-
-const ResourceFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 
-  .tags {
-    display: flex;
-    gap: 0.25rem;
-    flex-wrap: wrap;
+  .label {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: ${(p) => p.theme.colors.textMuted};
+    font-weight: 600;
+    margin-right: 0.4rem;
   }
+`;
 
-  .tag {
-    padding: 2px 10px;
+const FilterPills = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const ActiveFilters = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.85rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.78rem;
+  align-items: center;
+
+  .clear {
     background: transparent;
     border: 1px solid ${(p) => p.theme.colors.border};
     color: ${(p) => p.theme.colors.textMuted};
     border-radius: 999px;
-    font-family: ${(p) => p.theme.fonts.sans};
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-  }
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.72rem;
 
-  .info {
-    color: ${(p) => p.theme.colors.textMuted};
-    font-family: ${(p) => p.theme.fonts.sans};
-    font-size: 0.74rem;
-    letter-spacing: 0.02em;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+    &:hover {
+      border-color: ${(p) => p.theme.colors.primary};
+      color: ${(p) => p.theme.colors.primary};
+    }
   }
 `;
 
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  display: flex;
+const ActiveTag = styled.span`
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-`;
-
-const ModalContent = styled(motion.div)`
-  background: white;
-  border-radius: ${props => props.theme.borderRadiusLarge};
-  padding: 2rem;
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: ${props => props.theme.shadows.xl};
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h2 {
-    color: ${props => props.theme.colors.gray[800]};
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.colors.gray[500]};
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${props => props.theme.colors.gray[100]};
-    color: ${props => props.theme.colors.gray[700]};
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.5rem;
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: ${props => props.theme.colors.gray[700]};
-  }
-
-  input, textarea, select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid ${props => props.theme.colors.gray[300]};
-    border-radius: ${props => props.theme.borderRadius};
-    font-size: 0.875rem;
-    background: white;
-
-    &:focus {
-      border-color: ${props => props.theme.colors.primary};
-      outline: none;
-    }
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-`;
-
-const LinksSection = styled.div`
-  border: 1px solid ${props => props.theme.colors.gray[200]};
-  border-radius: ${props => props.theme.borderRadius};
-  padding: 1rem;
-  margin-bottom: 1rem;
-
-  .links-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-
-    h4 {
-      margin: 0;
-      color: ${props => props.theme.colors.gray[700]};
-    }
-  }
-
-  .link-item {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-
-    input {
-      flex: 1;
-    }
-
-    button {
-      background: ${props => props.theme.colors.danger};
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background: ${props => props.theme.colors.dangerDark || '#c53030'};
-      }
-    }
-  }
-`;
-
-const AddLinkButton = styled.button`
-  background: ${props => props.theme.colors.gray[100]};
-  color: ${props => props.theme.colors.gray[700]};
-  border: 1px dashed ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius};
-  padding: 0.75rem;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    background: ${props => props.theme.colors.gray[200]};
-    border-color: ${props => props.theme.colors.gray[400]};
-  }
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
+  gap: 4px;
+  background: ${(p) => p.theme.colors.primarySoft || 'rgba(13, 46, 84, 0.08)'};
+  color: ${(p) => p.theme.colors.primary};
+  border-radius: 999px;
+  padding: 3px 4px 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
 
   button {
-    padding: 0.75rem 1.5rem;
+    background: transparent;
     border: none;
-    border-radius: ${props => props.theme.borderRadius};
-    font-size: 0.875rem;
-    font-weight: 600;
+    color: inherit;
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: 0 4px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-
-    &.cancel {
-      background: ${props => props.theme.colors.gray[100]};
-      color: ${props => props.theme.colors.gray[700]};
-
-      &:hover {
-        background: ${props => props.theme.colors.gray[200]};
-      }
-    }
-
-    &.save {
-      background: ${props => props.theme.colors.primary};
-      color: white;
-
-      &:hover {
-        background: ${props => props.theme.colors.primaryDark || '#A03612'};
-      }
-    }
+    line-height: 1;
   }
 `;
 
-const initialResources = [
-    {
-      id: 1,
-      title: 'EU Databeskyttelse og AI Regulering',
-      category: 'eu',
-      icon: FaEuroSign,
-      description: 'Omfattende samling af EU lovgivning vedrørende databeskyttelse, kunstig intelligens og digitale tjenester. Inkluderer GDPR, AI Act og Digital Services Act.',
-      tags: ['GDPR', 'AI Act', 'Digital Services Act', 'Databeskyttelse'],
-      links: [
-        { title: 'GDPR - Databeskyttelsesforordningen', url: 'https://gdpr.eu/' },
-        { title: 'AI Act - Kunstig Intelligens Forordningen', url: 'https://artificialintelligenceact.eu/' },
-        { title: 'Digital Services Act', url: 'https://digital-strategy.ec.europa.eu/en/policies/digital-services-act-package' },
-        { title: 'Digital Markets Act', url: 'https://digital-strategy.ec.europa.eu/en/policies/digital-markets-act' }
-      ],
-      lastUpdated: '2025-01-15'
-    },
-    {
-      id: 2,
-      title: 'Danske Tilsynsmyndigheder',
-      category: 'danish',
-      icon: FaUniversity,
-      description: 'Officielle danske myndigheder og tilsynsorganer der regulerer digitalisering, databeskyttelse og compliance i den offentlige sektor.',
-      tags: ['Datatilsynet', 'Digst', 'Offentlig sektor', 'Tilsyn'],
-      links: [
-        { title: 'Datatilsynet', url: 'https://www.datatilsynet.dk/' },
-        { title: 'Digitaliseringsstyrelsen', url: 'https://digst.dk/' },
-        { title: 'Erhvervsstyrelsen', url: 'https://erhvervsstyrelsen.dk/' },
-        { title: 'Ankestyrelsen', url: 'https://www.ast.dk/' }
-      ],
-      lastUpdated: '2025-01-10'
-    },
-    {
-      id: 3,
-      title: 'Juridiske Database og Forskning',
-      category: 'legal',
-      icon: FaGavel,
-      description: 'Professionelle juridiske databaser og forskningsressourcer til compliance analyse og juridisk rådgivning inden for teknologi og AI.',
-      tags: ['Retsinformation', 'Karnov', 'Juridisk research', 'Lovgivning'],
-      links: [
-        { title: 'Retsinformation.dk', url: 'https://www.retsinformation.dk/' },
-        { title: 'Karnov Group', url: 'https://www.karnovgroup.dk/' },
-        { title: 'Advokatsamfundet', url: 'https://www.advokatsamfundet.dk/' },
-        { title: 'Domstolsstyrelsen', url: 'https://www.domstol.dk/' }
-      ],
-      lastUpdated: '2025-01-08'
-    },
-    {
-      id: 4,
-      title: 'Internationale Standarder og Certificering',
-      category: 'international',
-      icon: FaBalanceScale,
-      description: 'Internationale standarder og certificeringsorganer for informationssikkerhed, kvalitetsstyring og compliance indenfor AI og teknologi.',
-      tags: ['ISO 27001', 'IEEE', 'Certificering', 'Standarder'],
-      links: [
-        { title: 'ISO - International Organization for Standardization', url: 'https://www.iso.org/' },
-        { title: 'IEEE Standards Association', url: 'https://standards.ieee.org/' },
-        { title: 'NIST AI Risk Management Framework', url: 'https://www.nist.gov/itl/ai-risk-management-framework' },
-        { title: 'Partnership on AI', url: 'https://www.partnershiponai.org/' }
-      ],
-      lastUpdated: '2025-01-12'
-    }
-  ];
+const ResultsCount = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.86rem;
+  color: ${(p) => p.theme.colors.textMuted};
+`;
+
+// ---- Card grid (kartotek-stil) -------------------------------------------
+
+/* Færre kolonner end før: vi viser flere små kort i stedet for få store. */
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+`;
+
+/* Per-kategori farve på top-strip — gør det nemt at scanne kategorier visuelt
+   uden at skulle læse labels. */
+const CATEGORY_ACCENT = {
+  'EU lovgivning': '#0d2e54',
+  'Dansk myndighed': '#a03612',
+  'EU institution': '#5a8ec4',
+  Standard: '#2d6a31',
+  Sikkerhed: '#a02020',
+  Teknik: '#b08a4a',
+  Praksis: '#6b4a8a',
+  Værktøj: '#4a7a8a',
+  Politik: '#7a5a3a',
+  Internt: '#888',
+};
+
+const Card = styled.a`
+  display: flex;
+  flex-direction: column;
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: 4px;
+  padding: 14px 16px 14px;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: border-color 0.15s ease, transform 0.12s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${(p) => CATEGORY_ACCENT[p.$category] || '#888'};
+    opacity: 0.7;
+    border-radius: 4px 4px 0 0;
+  }
+
+  &:hover {
+    border-color: ${(p) => p.theme.colors.primary};
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(20, 24, 31, 0.06);
+
+    .external-icon { opacity: 1; }
+  }
+`;
+
+const CardTopRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+
+  .meta {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: ${(p) => p.theme.colors.textMuted};
+    flex-shrink: 0;
+  }
+
+  .external-icon {
+    color: ${(p) => p.theme.colors.textMuted};
+    opacity: 0.4;
+    font-size: 0.78rem;
+    transition: opacity 0.15s ease;
+  }
+`;
+
+const CardTitle = styled.div`
+  font-family: ${(p) => p.theme.fonts.display};
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${(p) => p.theme.colors.ink};
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+`;
+
+const CardHost = styled.div`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.74rem;
+  color: ${(p) => p.theme.colors.textMuted};
+  margin-bottom: 0.55rem;
+  word-break: break-all;
+`;
+
+const CardDescription = styled.p`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.86rem;
+  color: ${(p) => p.theme.colors.text};
+  line-height: 1.5;
+  margin: 0 0 0.7rem;
+  /* Truncate long descriptions to 4 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const CardFooter = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 0.4rem;
+  border-top: 1px dotted ${(p) => p.theme.colors.borderSoft};
+`;
+
+const Tag = styled.span`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.66rem;
+  background: ${(p) => p.theme.colors.paperSoft};
+  color: ${(p) => p.theme.colors.textMuted};
+  padding: 1px 7px;
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+`;
+
+const LangChip = styled.span`
+  display: inline-block;
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.66rem;
+  background: ${(p) => p.theme.colors.bronzeSoft || 'rgba(176,138,74,0.15)'};
+  color: ${(p) => p.theme.colors.bronze || '#b08a4a'};
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-left: 4px;
+  flex-shrink: 0;
+`;
+
+const Empty = styled.div`
+  padding: 2.5rem;
+  text-align: center;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-style: italic;
+  background: ${(p) => p.theme.colors.paperSoft};
+  border: 1px dashed ${(p) => p.theme.colors.border};
+  border-radius: 4px;
+`;
+
+// ---- Helpers --------------------------------------------------------------
+
+const hostFromUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('/')) return 'tyr.local';
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
+const formatDanishDate = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('da-DK', {
+    year: 'numeric', month: 'short', day: '2-digit',
+  });
+};
+
+// ---- Main page -----------------------------------------------------------
 
 const ResourcesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [resources, setResources] = useState(initialResources);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedLang, setSelectedLang] = useState('all');
 
-  const categories = [
-    { id: 'all', name: 'Alle', icon: FaGlobeEurope },
-    { id: 'eu', name: 'EU Regulering', icon: FaEuroSign },
-    { id: 'danish', name: 'Danske Myndigheder', icon: FaUniversity },
-    { id: 'legal', name: 'Juridiske Ressourcer', icon: FaGavel },
-    { id: 'international', name: 'Internationale', icon: FaBalanceScale }
-  ];
+  const categories = useMemo(() => {
+    const c = new Set(resourcesCatalog.map((r) => r.category).filter(Boolean));
+    return ['all', ...Array.from(c).sort((a, b) => a.localeCompare(b, 'da'))];
+  }, []);
 
-  const handleAddResource = (newResource) => {
-    const newId = Math.max(...resources.map(resource => resource.id)) + 1;
-    const resourceWithId = {
-      ...newResource,
-      id: newId,
-      links: newResource.links.filter(link => link.title && link.url),
-      lastUpdated: new Date().toISOString().split('T')[0]
-    };
-    setResources([...resources, resourceWithId]);
-    setShowAddModal(false);
+  const types = useMemo(() => {
+    const t = new Set(resourcesCatalog.map((r) => r.type).filter(Boolean));
+    return ['all', ...Array.from(t).sort((a, b) => a.localeCompare(b, 'da'))];
+  }, []);
+
+  const filtered = useMemo(() => {
+    const q = searchTerm.toLowerCase().trim();
+    return resourcesCatalog.filter((r) => {
+      const haystack = [
+        r.title, r.description, r.url, r.category, r.type,
+        ...(r.tags || []),
+      ].join(' ').toLowerCase();
+      const matchesSearch = !q || haystack.includes(q);
+      const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
+      const matchesType = selectedType === 'all' || r.type === selectedType;
+      const matchesLang = selectedLang === 'all' || r.language === selectedLang;
+      return matchesSearch && matchesCategory && matchesType && matchesLang;
+    });
+  }, [searchTerm, selectedCategory, selectedType, selectedLang]);
+
+  const hasActiveFilters =
+    selectedCategory !== 'all' || selectedType !== 'all' || selectedLang !== 'all' || searchTerm;
+
+  const clearAll = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedType('all');
+    setSelectedLang('all');
   };
 
-  const filteredResources = useMemo(() => {
-    return resources.filter(resource => {
-      const matchesCategory = activeCategory === 'all' || resource.category === activeCategory;
-      const matchesSearch = searchTerm === '' ||
-        resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [searchTerm, activeCategory, resources]);
-
-  const totalResources = resources.length;
-  const totalLinks = resources.reduce((sum, resource) => sum + resource.links.length, 0);
+  // Stats
+  const totalCategories = categories.length - 1;
+  const totalTypes = types.length - 1;
 
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Tyr · ressourcer"
+        eyebrow="Tyr · ressource-kartotek"
         title="Relevante links"
-        lede="Curated samling af juridiske, kommunale og europæiske kilder. EUR-Lex, Retsinformation, EDPB, Datatilsynet og fagspecifikke vejledninger — alle samlet ét sted."
-        actions={
-          <PrimaryButton onClick={() => setShowAddModal(true)}>
-            <FaPlus />
-            Tilføj ny ressource
-          </PrimaryButton>
-        }
+        lede="Kurateret kartotek af lovkilder, vejledninger, standarder og værktøjer relevante for kommunal AI-compliance. Søg, filtrér på kategori og type, eller klik direkte på et kort."
       />
 
       <StatsBar>
-        <div className="stat">
-          <div className="number">{totalResources}</div>
+        <StatCell>
+          <div className="number">{resourcesCatalog.length}</div>
+          <div className="label">Ressourcer</div>
+        </StatCell>
+        <StatCell>
+          <div className="number">{totalCategories}</div>
           <div className="label">Kategorier</div>
-        </div>
-        <div className="stat">
-          <div className="number">{totalLinks}</div>
-          <div className="label">Eksterne links</div>
-        </div>
-        <div className="stat">
-          <div className="number">{filteredResources.length}</div>
-          <div className="label">Viste ressourcer</div>
-        </div>
+        </StatCell>
+        <StatCell>
+          <div className="number">{totalTypes}</div>
+          <div className="label">Typer</div>
+        </StatCell>
+        <StatCell>
+          <div className="number">{filtered.length}</div>
+          <div className="label">Vist</div>
+        </StatCell>
       </StatsBar>
 
       <Toolbar>
@@ -564,248 +404,128 @@ const ResourcesPage = () => {
           <FaSearch />
           <input
             type="text"
-            placeholder="Søg i ressourcer, beskrivelser og tags…"
+            placeholder="Søg titel, beskrivelse, tag eller URL…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </SearchField>
       </Toolbar>
 
-      <CategoryFilters>
-        {categories.map(category => (
-          <OutlinePill
-            key={category.id}
-            $active={activeCategory === category.id}
-            onClick={() => setActiveCategory(category.id)}
-          >
-            <category.icon />
-            {category.name}
-          </OutlinePill>
-        ))}
-      </CategoryFilters>
+      <FilterRow>
+        <span className="label">Kategori</span>
+        <FilterPills>
+          {categories.map((c) => (
+            <OutlinePill key={c} $active={selectedCategory === c} onClick={() => setSelectedCategory(c)}>
+              {c === 'all' ? 'Alle' : c}
+            </OutlinePill>
+          ))}
+        </FilterPills>
+      </FilterRow>
 
-      <ResourceGrid>
-        {filteredResources.map((resource) => (
-          <ResourceCard
-            key={resource.id}
-            category={resource.category}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ResourceHeader category={resource.category}>
-              <resource.icon className="icon" />
-              <div className="content">
-                <h3>{resource.title}</h3>
-                <div className="meta">
-                  <FaInfoCircle />
-                  {resource.links.length} eksterne links
-                </div>
-              </div>
-            </ResourceHeader>
+      <FilterRow>
+        <span className="label">Type</span>
+        <FilterPills>
+          {types.map((t) => (
+            <OutlinePill key={t} $active={selectedType === t} onClick={() => setSelectedType(t)}>
+              {t === 'all' ? 'Alle' : t}
+            </OutlinePill>
+          ))}
+        </FilterPills>
+      </FilterRow>
 
-            <ResourceDescription>
-              {resource.description}
-            </ResourceDescription>
+      <FilterRow>
+        <span className="label">Sprog</span>
+        <FilterPills>
+          {['all', 'da', 'en'].map((l) => (
+            <OutlinePill key={l} $active={selectedLang === l} onClick={() => setSelectedLang(l)}>
+              {l === 'all' ? 'Alle' : l === 'da' ? 'Dansk' : 'English'}
+            </OutlinePill>
+          ))}
+        </FilterPills>
+      </FilterRow>
 
-            <ResourceLinks>
-              {resource.links.map((link, index) => (
-                <ResourceLink
-                  key={index}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {link.title}
-                  <FaExternalLinkAlt className="external-icon" />
-                </ResourceLink>
-              ))}
-            </ResourceLinks>
+      {hasActiveFilters && (
+        <ActiveFilters>
+          {searchTerm && (
+            <ActiveTag>
+              "{searchTerm}"
+              <button onClick={() => setSearchTerm('')} aria-label="Fjern søgning">
+                <FaTimes />
+              </button>
+            </ActiveTag>
+          )}
+          {selectedCategory !== 'all' && (
+            <ActiveTag>
+              {selectedCategory}
+              <button onClick={() => setSelectedCategory('all')} aria-label={`Fjern kategori ${selectedCategory}`}>
+                <FaTimes />
+              </button>
+            </ActiveTag>
+          )}
+          {selectedType !== 'all' && (
+            <ActiveTag>
+              {selectedType}
+              <button onClick={() => setSelectedType('all')} aria-label={`Fjern type ${selectedType}`}>
+                <FaTimes />
+              </button>
+            </ActiveTag>
+          )}
+          {selectedLang !== 'all' && (
+            <ActiveTag>
+              {selectedLang === 'da' ? 'Dansk' : 'English'}
+              <button onClick={() => setSelectedLang('all')} aria-label="Fjern sprog">
+                <FaTimes />
+              </button>
+            </ActiveTag>
+          )}
+          <button className="clear" onClick={clearAll}>Ryd alle</button>
+        </ActiveFilters>
+      )}
 
-            <ResourceFooter>
-              <div className="tags">
-                {resource.tags.map((tag, index) => (
-                  <span key={index} className="tag">{tag}</span>
-                ))}
-              </div>
-              <div className="info">
-                <FaInfoCircle />
-                Opdateret {resource.lastUpdated}
-              </div>
-            </ResourceFooter>
-          </ResourceCard>
-        ))}
-      </ResourceGrid>
+      <ResultsCount>
+        <span>Viser {filtered.length} af {resourcesCatalog.length}</span>
+        <span style={{ fontFamily: 'monospace', fontSize: '0.72rem' }}>
+          klik kort for at åbne link i ny fane
+        </span>
+      </ResultsCount>
 
-      <AnimatePresence>
-        {showAddModal && (
-          <AddResourceModal
-            onClose={() => setShowAddModal(false)}
-            onSave={handleAddResource}
-            categories={categories}
-          />
-        )}
-      </AnimatePresence>
-    </PageShell>
-  );
-};
-
-const AddResourceModal = ({ onClose, onSave, categories }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    category: 'eu',
-    description: '',
-    tags: '',
-    links: [{ title: '', url: '' }]
-  });
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleLinkChange = (index, field, value) => {
-    const newLinks = [...formData.links];
-    newLinks[index][field] = value;
-    setFormData(prev => ({ ...prev, links: newLinks }));
-  };
-
-  const addLink = () => {
-    setFormData(prev => ({
-      ...prev,
-      links: [...prev.links, { title: '', url: '' }]
-    }));
-  };
-
-  const removeLink = (index) => {
-    if (formData.links.length > 1) {
-      const newLinks = formData.links.filter((_, i) => i !== index);
-      setFormData(prev => ({ ...prev, links: newLinks }));
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.title && formData.description) {
-      const categoryIcon = categories.find(cat => cat.id === formData.category)?.icon || FaGlobeEurope;
-      const newResource = {
-        ...formData,
-        icon: categoryIcon,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-      };
-      onSave(newResource);
-    }
-  };
-
-  return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent
-        onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.2 }}
-      >
-        <ModalHeader>
-          <h2>
-            <FaPlus />
-            Tilføj ny ressource
-          </h2>
-          <CloseButton onClick={onClose}>
-            <FaTimes />
-          </CloseButton>
-        </ModalHeader>
-
-        <form onSubmit={handleSubmit}>
-          <FormGroup>
-            <label>Titel *</label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Fx: EU Databeskyttelse og AI Regulering"
-              required
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <label>Kategori *</label>
-            <select
-              value={formData.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
-              required
+      {filtered.length === 0 ? (
+        <Empty>Ingen ressourcer matcher dine filtre. Prøv at rydde dem.</Empty>
+      ) : (
+        <Grid>
+          {filtered.map((r) => (
+            <Card
+              key={r.id}
+              href={r.url}
+              target={r.url.startsWith('/') ? undefined : '_blank'}
+              rel={r.url.startsWith('/') ? undefined : 'noopener noreferrer'}
+              $category={r.category}
             >
-              {categories.filter(cat => cat.id !== 'all').map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </FormGroup>
-
-          <FormGroup>
-            <label>Beskrivelse *</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Beskriv ressourcen og hvad den indeholder..."
-              required
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <label>Tags (komma-separeret)</label>
-            <input
-              type="text"
-              value={formData.tags}
-              onChange={(e) => handleInputChange('tags', e.target.value)}
-              placeholder="GDPR, AI Act, Databeskyttelse"
-            />
-          </FormGroup>
-
-          <LinksSection>
-            <div className="links-header">
-              <h4>Links</h4>
-            </div>
-            {formData.links.map((link, index) => (
-              <div key={index} className="link-item">
-                <input
-                  type="text"
-                  placeholder="Link titel"
-                  value={link.title}
-                  onChange={(e) => handleLinkChange(index, 'title', e.target.value)}
-                />
-                <input
-                  type="url"
-                  placeholder="URL"
-                  value={link.url}
-                  onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
-                />
-                {formData.links.length > 1 && (
-                  <button type="button" onClick={() => removeLink(index)}>
-                    <FaTimes />
-                  </button>
+              <CardTopRow>
+                <span className="meta">
+                  {r.type}
+                  {r.language && <LangChip>{r.language}</LangChip>}
+                </span>
+                <FaExternalLinkAlt className="external-icon" aria-hidden="true" />
+              </CardTopRow>
+              <CardTitle>{r.title}</CardTitle>
+              <CardHost>{hostFromUrl(r.url)}</CardHost>
+              {r.description && <CardDescription>{r.description}</CardDescription>}
+              <CardFooter>
+                {(r.tags || []).slice(0, 3).map((t) => (
+                  <Tag key={t}>{t}</Tag>
+                ))}
+                {r.lastUpdated && (
+                  <Tag style={{ marginLeft: 'auto', opacity: 0.7 }}>
+                    {formatDanishDate(r.lastUpdated)}
+                  </Tag>
                 )}
-              </div>
-            ))}
-            <AddLinkButton type="button" onClick={addLink}>
-              <FaPlus />
-              Tilføj link
-            </AddLinkButton>
-          </LinksSection>
-
-          <ModalActions>
-            <button type="button" className="cancel" onClick={onClose}>
-              <FaTimes />
-              Annuller
-            </button>
-            <button type="submit" className="save">
-              <FaSave />
-              Gem ressource
-            </button>
-          </ModalActions>
-        </form>
-      </ModalContent>
-    </ModalOverlay>
+              </CardFooter>
+            </Card>
+          ))}
+        </Grid>
+      )}
+    </PageShell>
   );
 };
 
