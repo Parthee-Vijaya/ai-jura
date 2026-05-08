@@ -39,6 +39,10 @@ websockets==13.1
 # News & Scraping
 feedparser==6.0.11
 beautifulsoup4==4.12.3
+# Playwright is used by the citation-verifier as a fallback for SPA-rendered
+# law pages (EUR-Lex etc.) where requests can't see the citat. Browser binary
+# must be installed once with: `playwright install chromium`
+playwright==1.49.0
 
 # Configuration
 PyYAML==6.0.2

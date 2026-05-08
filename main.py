@@ -2728,8 +2728,12 @@ async def v3_law_freshness():
 @app.post("/api/v3/law/freshness/run")
 async def v3_law_freshness_run():
     """Manual trigger of the citation-verifier (for admin use / testing).
-    Runs synchronously so the response shows the verified state."""
-    _v3_run_citation_verifier()
+
+    Runs in a worker thread so the Playwright sync API (used by the SPA
+    fallback) doesn't trip on the asyncio event loop. ~3-8s per SPA rule
+    means this can take a couple of minutes.
+    """
+    await asyncio.to_thread(_v3_run_citation_verifier)
     return await v3_law_freshness()
 
 
@@ -2745,6 +2749,26 @@ async def v3_law_freshness_flagged():
         return {"flagged_rule_ids": sorted(flagged_rule_ids(db))}
     finally:
         db.close()
+
+
+@app.get("/api/v3/law/freshness/playwright/status")
+async def v3_law_freshness_playwright_status():
+    """Report whether the Playwright SPA-fallback is operational.
+
+    Why exposed: ops needs to know if a 13/15 freshness number is "all the
+    static rules pass + 2 SPAs unverified" or "Playwright is wired in and
+    we'll cover all 15".
+    """
+    from src.services.citation_verifier import is_playwright_available
+    available = await asyncio.to_thread(is_playwright_available)
+    return {
+        "available": available,
+        "install_hint": (
+            None
+            if available
+            else "pip install playwright && playwright install chromium"
+        ),
+    }
 
 
 @app.get("/api/v3/rules")

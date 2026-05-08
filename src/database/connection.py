@@ -164,6 +164,7 @@ def _ensure_runtime_columns() -> None:
     additive_columns = [
         # (table, column, ddl-fragment)
         ("cases", "last_reminder_sent_at", "TIMESTAMP NULL"),
+        ("rule_freshness", "verification_method", "VARCHAR(16) NULL"),
     ]
 
     for table, column, ddl in additive_columns:
