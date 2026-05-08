@@ -21,7 +21,7 @@ import {
 const NAVIGATION_ID = 'sidebar-navigation';
 
 const SidebarContainer = styled.aside`
-  width: ${props => props.collapsed ? '80px' : '250px'};
+  width: ${props => props.collapsed ? '76px' : '256px'};
   background: ${props => props.theme.layout.sidebar.background};
   color: ${props => props.theme.layout.sidebar.text};
   border-right: 1px solid ${props => props.theme.layout.sidebar.border};
@@ -29,25 +29,57 @@ const SidebarContainer = styled.aside`
   position: fixed;
   left: 0;
   top: 0;
-  padding: 1.75rem 0 0;
+  padding: 1.5rem 0 0;
   overflow-y: auto;
-  transition: ${props => props.theme.animations.transition};
+  transition: width ${props => props.theme.animations.transition};
   z-index: 1000;
   display: flex;
   flex-direction: column;
   font-family: ${props => props.theme.fonts.sans};
 
+  /* Decorative rule along the right edge — subtle Northern Modern detail */
+  background-image: linear-gradient(
+    to right,
+    transparent calc(100% - 1px),
+    ${props => props.theme.layout.sidebar.border} calc(100% - 1px)
+  );
+
+  /* Soft scrollbar */
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.layout.sidebar.border};
+    border-radius: 3px;
+  }
+
   @media (max-width: 768px) {
     transform: translateX(${props => props.collapsed ? '-100%' : '0'});
-    width: 250px;
+    width: 256px;
+    box-shadow: ${props => props.collapsed ? 'none' : '4px 0 24px rgba(20,24,31,0.12)'};
   }
 `;
 
 const SidebarHeader = styled.div`
   position: relative;
-  padding: 0 1.25rem 1.5rem;
-  border-bottom: 1px solid ${props => props.theme.layout.sidebar.border};
-  margin-bottom: 1.25rem;
+  padding: 0 1.25rem 1.4rem;
+  margin-bottom: 1rem;
+
+  /* Gradient hairline divider instead of plain border */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      ${props => props.theme.layout.sidebar.border} 20%,
+      ${props => props.theme.layout.sidebar.border} 80%,
+      transparent
+    );
+  }
 `;
 
 const BrandContainer = styled.div`
@@ -55,51 +87,55 @@ const BrandContainer = styled.div`
   flex-direction: column;
   align-items: ${props => props.$collapsed ? 'center' : 'flex-start'};
   text-align: ${props => props.$collapsed ? 'center' : 'left'};
-  gap: ${props => props.$collapsed ? '0.35rem' : '0.2rem'};
+  gap: ${props => props.$collapsed ? '0.4rem' : '0.35rem'};
   padding: ${props => props.$collapsed ? '0.5rem 0' : '0'};
 `;
 
 const BrandPrimary = styled.span`
   font-family: ${props => props.theme.fonts.display};
-  font-size: ${props => props.$collapsed ? '1.1rem' : '1.4rem'};
+  font-size: ${props => props.$collapsed ? '1.25rem' : '1.55rem'};
   font-weight: 700;
   letter-spacing: -0.02em;
   color: ${props => props.theme.layout.sidebar.text};
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
-
-  .brand-dot {
-    color: ${props => props.theme.colors.primary};
-    font-weight: 800;
-  }
+  gap: 2px;
+  line-height: 1;
 
   .brand-rune {
     color: ${props => props.theme.colors.bronze};
-    font-weight: 600;
+    font-weight: 500;
     font-size: 1.05em;
-    margin: 0 4px 0 6px;
+    margin: 0 6px 0 8px;
     line-height: 1;
+    /* Subtle glow so the rune feels intentional */
+    text-shadow: 0 0 12px rgba(176, 138, 74, 0.18);
   }
 
   .brand-version {
-    font-family: ${props => props.theme.fonts.sans};
-    font-size: 0.6rem;
+    font-family: ${props => props.theme.fonts.mono};
+    font-size: 0.62rem;
     font-weight: 600;
-    color: ${props => props.theme.layout.sidebar.muted};
+    color: ${props => props.theme.colors.bronze};
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    margin-left: 4px;
+    background: ${props => props.theme.colors.bronzeSoft || 'rgba(176, 138, 74, 0.12)'};
+    padding: 2px 6px 1px;
+    border-radius: 3px;
+    margin-left: 8px;
+    align-self: center;
+    line-height: 1.3;
   }
 `;
 
 const BrandSecondary = styled.span`
   font-family: ${props => props.theme.fonts.sans};
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: ${props => props.theme.layout.sidebar.muted};
-  font-weight: 600;
+  font-weight: 500;
+  margin-top: 2px;
 `;
 
 const NavList = styled.ul`
@@ -109,50 +145,75 @@ const NavList = styled.ul`
 `;
 
 const NavItem = styled.li`
-  margin-bottom: 0.25rem;
+  margin: 0;
 `;
 
 const NavLink = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.5rem 1.25rem;
-  margin: 0 0.5rem;
-  border-radius: 5px;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  margin: 1px 0.65rem;
+  border-radius: 4px;
   color: ${props => props.theme.layout.sidebar.muted};
   text-decoration: none;
-  transition: background-color ${props => props.theme.animations.transitionFast},
-              color ${props => props.theme.animations.transitionFast};
-  border-left: 2px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
   position: relative;
+
+  /* Active-state accent bar (bronze, Tyr brand) */
+  &::before {
+    content: '';
+    position: absolute;
+    left: -0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: ${props => props.theme.colors.bronze};
+    border-radius: 0 2px 2px 0;
+    transition: height 0.18s ease;
+  }
 
   &:hover {
     background: ${props => props.theme.layout.sidebar.hoverBackground};
     color: ${props => props.theme.layout.sidebar.hoverText};
+
+    .icon { color: ${props => props.theme.colors.bronze}; opacity: 0.85; }
   }
 
   &.active {
     background: ${props => props.theme.layout.sidebar.activeBackground};
     color: ${props => props.theme.layout.sidebar.activeText};
-    font-weight: 500;
+    font-weight: 600;
+
+    &::before { height: 60%; }
 
     .icon {
-      color: ${props => props.theme.layout.sidebar.activeText};
+      color: ${props => props.theme.colors.bronze};
+      opacity: 1;
     }
   }
 
+  &:focus-visible {
+    outline: 2px solid ${props => props.theme.colors.primary};
+    outline-offset: 2px;
+  }
+
   .icon {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     color: inherit;
+    opacity: 0.55;
     flex-shrink: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
   }
 
   .text {
     font-family: ${props => props.theme.fonts.sans};
-    font-size: 0.85rem;
+    font-size: 0.86rem;
     font-weight: 500;
     line-height: 1.4;
+    letter-spacing: 0.005em;
   }
 `;
 
@@ -162,30 +223,32 @@ const SectionTitle = styled.button`
   align-items: center;
   justify-content: space-between;
   font-family: ${props => props.theme.fonts.sans};
-  font-size: 0.66rem;
-  font-weight: 600;
-  color: ${props => props.theme.layout.sidebar.muted};
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.bronze};
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding: 0.5rem 1.25rem 0.35rem;
-  margin: 1.25rem 0 0.25rem;
+  letter-spacing: 0.16em;
+  padding: 0.4rem 1.5rem 0.35rem;
+  margin: 1.5rem 0 0.4rem;
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: ${props => props.theme.animations.transitionFast};
+  transition: color 0.15s ease;
+  opacity: 0.85;
 
   &:hover {
-    color: ${props => props.theme.colors.ink};
+    color: ${props => props.theme.colors.primary};
+    opacity: 1;
   }
 
   &:first-child {
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .chevron {
-    font-size: 0.58rem;
-    transition: ${props => props.theme.animations.transitionFast};
-    opacity: 0.6;
+    font-size: 0.55rem;
+    transition: transform 0.2s ease;
+    opacity: 0.55;
   }
 `;
 
@@ -198,33 +261,37 @@ const CollapsibleSection = styled.div`
 
 const ToggleButton = styled.button`
   position: absolute;
-  top: 1rem;
-  right: 0.75rem;
+  top: 0.6rem;
+  right: 0.6rem;
   background: transparent;
   color: ${props => props.theme.layout.sidebar.muted};
-  border: none;
+  border: 1px solid transparent;
   border-radius: 4px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   transition: all 0.2s ease;
   z-index: 1001;
-  opacity: 0.6;
+  opacity: 0.5;
 
   &:hover {
     background: ${props => props.theme.layout.sidebar.hoverBackground};
-    color: ${props => props.theme.layout.sidebar.hoverText};
+    border-color: ${props => props.theme.layout.sidebar.border};
+    color: ${props => props.theme.colors.bronze};
     opacity: 1;
-    transform: translateX(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${props => props.theme.colors.primary};
+    outline-offset: 2px;
+    opacity: 1;
   }
 
   @media (max-width: 768px) {
-    top: 1rem;
-    right: 1rem;
     opacity: 0.8;
   }
 `;
@@ -235,20 +302,53 @@ const NavContent = styled.div`
 `;
 
 const SidebarFooter = styled.div`
-  padding: 1.1rem 1.25rem 1.1rem;
-  border-top: 1px solid ${props => props.theme.layout.sidebar.border};
+  padding: 1rem 1.5rem 1.2rem;
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.55rem;
+  position: relative;
+
+  /* Top hairline matching the header style */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      ${props => props.theme.layout.sidebar.border} 20%,
+      ${props => props.theme.layout.sidebar.border} 80%,
+      transparent
+    );
+  }
+`;
+
+const FooterRune = styled.div`
+  font-family: ${props => props.theme.fonts.display};
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: ${props => props.theme.colors.bronze};
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .footer-rune-mark {
+    font-size: 1rem;
+    line-height: 1;
+  }
 `;
 
 const FooterNote = styled.div`
   font-family: ${props => props.theme.fonts.sans};
-  font-size: 0.7rem;
-  line-height: 1.45;
+  font-size: 0.68rem;
+  line-height: 1.5;
   color: ${props => props.theme.colors.inkFaded};
-  font-style: italic;
   letter-spacing: 0.02em;
 `;
 
@@ -470,7 +570,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
       {!collapsed && (
         <SidebarFooter>
-          <FooterNote>Kun til internt brug – Digitalisering og IT</FooterNote>
+          <FooterRune>
+            <span className="footer-rune-mark" aria-hidden="true">ᛏ</span>
+            Tyr · v3
+          </FooterRune>
+          <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>
         </SidebarFooter>
       )}
     </SidebarContainer>

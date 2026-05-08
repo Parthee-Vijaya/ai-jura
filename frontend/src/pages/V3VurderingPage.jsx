@@ -333,8 +333,27 @@ const FormCard = styled.form`
   background: ${(p) => p.theme.colors.card};
   border: 1px solid ${(p) => p.theme.colors.line};
   border-radius: 10px;
-  padding: 1.75rem;
+  padding: 1.75rem 1.85rem 1.5rem;
   margin-bottom: 2.5rem;
+  box-shadow: 0 1px 3px rgba(20, 24, 31, 0.04);
+  position: relative;
+
+  /* Decorative top hairline accent in bronze */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 1.85rem;
+    right: 1.85rem;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      ${(p) => p.theme.colors.bronze} 50%,
+      transparent
+    );
+    opacity: 0.4;
+  }
 `;
 
 const Label = styled.label`
@@ -458,48 +477,79 @@ const ToggleRow = styled.label`
 // ---- Document drop-zone --------------------------------------------------
 
 const DropZone = styled.label`
-  display: block;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.25rem;
   background: ${(p) => p.theme.colors.card};
-  border: 2px dashed ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.line)};
+  border: 1.5px dashed ${(p) => (p.$active ? p.theme.colors.primary : p.theme.colors.line)};
   border-radius: 10px;
-  padding: 1.6rem 1.5rem;
-  margin-bottom: 1.25rem;
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1.5rem;
   cursor: pointer;
-  transition: border-color ${(p) => p.theme.animations.transitionFast},
-              background ${(p) => p.theme.animations.transitionFast};
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.12s ease;
   text-align: left;
+  position: relative;
 
   &:hover {
     border-color: ${(p) => p.theme.colors.primary};
+    background: ${(p) => p.theme.colors.primaryShallow || 'rgba(13, 46, 84, 0.025)'};
+  }
+
+  &:focus-within {
+    outline: 2px solid ${(p) => p.theme.colors.primary};
+    outline-offset: 2px;
   }
 
   ${(p) =>
     p.$active &&
-    `background: ${p.theme.colors.primaryBg};`}
+    `background: ${p.theme.colors.primaryBg}; border-style: solid;`}
 
   input[type="file"] { display: none; }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+`;
+
+const DropIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: ${(p) => p.theme.colors.bronzeSoft || 'rgba(176, 138, 74, 0.12)'};
+  color: ${(p) => p.theme.colors.bronze};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-family: ${(p) => p.theme.fonts.display};
+  font-weight: 600;
+  flex-shrink: 0;
+
+  &::before { content: '↑'; }
 `;
 
 const DropTitle = styled.div`
   font-family: ${(p) => p.theme.fonts.display};
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 600;
   color: ${(p) => p.theme.colors.ink};
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
 `;
 
 const DropHint = styled.div`
   font-family: ${(p) => p.theme.fonts.body};
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: ${(p) => p.theme.colors.inkSoft};
   line-height: 1.5;
 `;
 
 const DropMeta = styled.div`
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: ${(p) => p.theme.colors.inkFaded};
-  margin-top: 0.55rem;
+  margin-top: 0.5rem;
   letter-spacing: 0.04em;
 `;
 
@@ -714,11 +764,31 @@ const ExampleCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  transition: border-color ${(p) => p.theme.animations.transitionFast};
+  transition: border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+  position: relative;
+  overflow: hidden;
+
+  /* Verdict-color top accent strip */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${(p) => STATUS_PILL_FG[p.$status]};
+    opacity: ${(p) => (p.$active ? 1 : 0.6)};
+  }
+
+  &:hover {
+    border-color: ${(p) => STATUS_BORDER[p.$status]};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(20, 24, 31, 0.06);
+  }
 
   ${(p) =>
     p.$active &&
-    `box-shadow: 0 0 0 3px ${STATUS_PILL_BG[p.$status]};`}
+    `box-shadow: 0 0 0 3px ${STATUS_PILL_BG[p.$status]}, 0 4px 12px rgba(20, 24, 31, 0.06);`}
 `;
 
 const ExamplePill = styled.span`
@@ -804,29 +874,96 @@ const ExampleExplanation = styled.div`
 
 // ---- Verdict banner (Northern Modern: surface + bronze left-border) ---
 
+/* Per-status verdict accent — pulled from the result aggregate. Falls back
+   to BETINGET-GO styling. */
+const VERDICT_ACCENT = {
+  GO: { bar: '#2d6a31', tint: 'rgba(45, 106, 49, 0.08)', pillFg: '#fff', pillBg: '#2d6a31' },
+  'BETINGET-GO': { bar: '#a03612', tint: '#fdf2eb', pillFg: '#fff', pillBg: '#b08a4a' },
+  'NO-GO': { bar: '#a02020', tint: 'rgba(160, 32, 32, 0.08)', pillFg: '#fff', pillBg: '#a02020' },
+};
+
 const VerdictBanner = styled.div`
-  background: ${(p) => p.theme.colors.primaryBg};
-  border-left: 4px solid ${(p) => p.theme.colors.primary};
-  border-radius: 0 6px 6px 0;
-  padding: 1.1rem 1.4rem;
-  margin: 1.75rem 0 2.5rem;
+  --bar: ${(p) => (VERDICT_ACCENT[p.$status] || VERDICT_ACCENT['BETINGET-GO']).bar};
+  --tint: ${(p) => (VERDICT_ACCENT[p.$status] || VERDICT_ACCENT['BETINGET-GO']).tint};
+
+  background: var(--tint);
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-left: 4px solid var(--bar);
+  border-radius: 0 8px 8px 0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.75rem 0 2.75rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+`;
+
+const VerdictPill = styled.div`
+  background: ${(p) => (VERDICT_ACCENT[p.$status] || VERDICT_ACCENT['BETINGET-GO']).pillBg};
+  color: ${(p) => (VERDICT_ACCENT[p.$status] || VERDICT_ACCENT['BETINGET-GO']).pillFg};
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.85rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  white-space: nowrap;
 `;
 
 const VerdictStatus = styled.div`
   font-family: ${(p) => p.theme.fonts.sans};
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: ${(p) => p.theme.colors.primary};
+  letter-spacing: 0.16em;
+  color: var(--bar);
   font-weight: 700;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
+  opacity: 0.85;
 `;
 
 const VerdictText = styled.div`
   font-family: ${(p) => p.theme.fonts.body};
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   color: ${(p) => p.theme.colors.ink};
-  line-height: 1.5;
+  line-height: 1.55;
+
+  b, strong { color: var(--bar); font-weight: 700; }
+`;
+
+const VerdictMetric = styled.div`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.72rem;
+  color: ${(p) => p.theme.colors.inkFaded};
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: right;
+  border-left: 1px solid ${(p) => p.theme.colors.line};
+  padding-left: 1.25rem;
+
+  .number {
+    font-family: ${(p) => p.theme.fonts.display};
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: ${(p) => p.theme.colors.ink};
+    letter-spacing: -0.01em;
+    display: block;
+    line-height: 1.05;
+    margin-bottom: 0.2rem;
+  }
+
+  @media (max-width: 720px) {
+    border-left: none;
+    border-top: 1px solid ${(p) => p.theme.colors.line};
+    padding-left: 0;
+    padding-top: 0.85rem;
+    text-align: left;
+  }
 `;
 
 // ---- Section ------------------------------------------------------------
@@ -852,35 +989,52 @@ const SectionLede = styled.p`
 // ---- Rule paragraph (document-style) ------------------------------------
 
 const Rule = styled.div`
-  padding: 2rem 0;
+  padding: 1.85rem 0 2rem;
   border-top: 1px solid ${(p) => p.theme.colors.line};
+  position: relative;
 
   &:last-child { border-bottom: 1px solid ${(p) => p.theme.colors.line}; }
+
+  /* Number indicator in the negative space on the left */
+  &::before {
+    content: '${(p) => p.$num || ''}';
+    position: absolute;
+    top: 1.85rem;
+    left: -3.2rem;
+    font-family: ${(p) => p.theme.fonts.display};
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: ${(p) => p.theme.colors.bronze};
+    opacity: 0.45;
+    line-height: 1;
+
+    @media (max-width: 1100px) { display: none; }
+  }
 `;
 
 const RuleHead = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.7rem;
 `;
 
 const RuleMarker = styled.span`
-  font-family: ${(p) => p.theme.fonts.sans};
-  font-size: 0.7rem;
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: ${(p) => p.theme.colors.primary};
-  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: ${(p) => p.theme.colors.inkFaded};
+  font-weight: 600;
 `;
 
 const RuleTitle = styled.h3`
   font-family: ${(p) => p.theme.fonts.display};
-  font-size: 1.35rem;
+  font-size: 1.32rem;
   font-weight: 600;
   letter-spacing: -0.012em;
-  line-height: 1.3;
+  line-height: 1.32;
   margin: 0 0 1rem;
   color: ${(p) => p.theme.colors.ink};
 `;
@@ -910,42 +1064,75 @@ const KravBlock = styled.div`
   background: ${(p) => p.theme.colors.paperSoft};
   border: 1px solid ${(p) => p.theme.colors.line};
   border-radius: 6px;
-  padding: 1.1rem 1.4rem;
+  padding: 1rem 1.3rem 1.1rem;
   margin-top: 1rem;
+  position: relative;
+
+  /* Subtle bronze rule on the left edge */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1rem;
+    bottom: 1rem;
+    width: 2px;
+    background: ${(p) => p.theme.colors.bronze};
+    opacity: 0.45;
+  }
 `;
 
 const KravHeader = styled.div`
   font-family: ${(p) => p.theme.fonts.sans};
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: ${(p) => p.theme.colors.inkFaded};
-  font-weight: 600;
-  margin-bottom: 0.7rem;
+  letter-spacing: 0.16em;
+  color: ${(p) => p.theme.colors.bronze};
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .count {
+    font-family: ${(p) => p.theme.fonts.mono};
+    background: ${(p) => p.theme.colors.bronzeSoft || 'rgba(176, 138, 74, 0.14)'};
+    color: ${(p) => p.theme.colors.bronze};
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
 `;
 
 const KravList = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 `;
 
 const KravItem = styled.li`
   display: grid;
-  grid-template-columns: 1.1rem 1fr;
-  gap: 0.55rem;
+  grid-template-columns: 1.4rem 1fr;
+  gap: 0.6rem;
   font-family: ${(p) => p.theme.fonts.sans};
   font-size: 0.92rem;
   line-height: 1.55;
   color: ${(p) => p.theme.colors.ink};
-  padding: 0.3rem 0;
+  padding: 0.4rem 0;
+  border-bottom: 1px dotted ${(p) => p.theme.colors.lineSoft};
+
+  &:last-child { border-bottom: none; }
 
   &::before {
     content: '§';
     font-family: ${(p) => p.theme.fonts.display};
     color: ${(p) => p.theme.colors.primary};
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.05rem;
+    line-height: 1.4;
   }
 `;
 
@@ -1381,20 +1568,22 @@ const V3VurderingPage = () => {
             onChange={onFileInputChange}
             disabled={documentMutation.isLoading}
           />
-          <DropTitle>
-            {documentMutation.isLoading
-              ? 'Analyserer dokument…'
-              : 'Upload kontrakt, DPIA eller policy'}
-          </DropTitle>
-          <DropHint>
-            Træk en PDF eller DOCX hertil — eller klik for at vælge en fil.
-            Backend chunker dokumentet, kører LLM-baseret signal-extraction
-            per afsnit og evaluerer reglerne mod den samlede signal-mængde.
-          </DropHint>
-          <DropMeta>
-            Understøtter .pdf og .docx · Max 10 MB · Tekst skal være søgbar
-            (ikke scannet billede)
-          </DropMeta>
+          <DropIcon aria-hidden="true" />
+          <div>
+            <DropTitle>
+              {documentMutation.isLoading
+                ? 'Analyserer dokument…'
+                : 'Upload kontrakt, DPIA eller policy'}
+            </DropTitle>
+            <DropHint>
+              Træk en PDF eller DOCX hertil — eller klik for at vælge en fil.
+              Backend chunker dokumentet, kører LLM-baseret signal-extraction
+              per afsnit og evaluerer reglerne mod den samlede signal-mængde.
+            </DropHint>
+            <DropMeta>
+              .pdf · .docx · max 10 MB · tekst skal være søgbar (ikke scannet billede)
+            </DropMeta>
+          </div>
         </DropZone>
 
         {documentMutation.isError && (
@@ -1573,29 +1762,50 @@ const V3VurderingPage = () => {
             );
           })()}
 
-          <VerdictBanner>
-            <VerdictStatus>{statusLabel(result.aggregate_status)}</VerdictStatus>
-            <VerdictText>
-              {result.aggregate_status === 'GO' && (
-                <>
-                  Ingen lovartikler udløser krav før idriftsættelse — systemet kan
-                  tages i brug uden særlige compliance-tiltag.
-                </>
-              )}
-              {result.aggregate_status === 'BETINGET-GO' && (
-                <>
-                  {requiringDecisions.length} af {result.rules_loaded} lovartikler udløser krav før idriftsættelse.
-                  {evidenceItems.length > 0 && (
-                    <> {evidenceItems.length} konkrete artefakter skal etableres; {totalKrav} dokumentationskrav skal opfyldes.</>
-                  )}
-                </>
-              )}
-              {result.aggregate_status === 'NO-GO' && (
-                <>
-                  Systemet er klassificeret som forbudt praksis. {requiringDecisions.length} regler giver NO-GO eller udløser krav. Systemet kan ikke idriftsættes i sin nuværende form.
-                </>
-              )}
-            </VerdictText>
+          <VerdictBanner $status={result.aggregate_status}>
+            <VerdictPill $status={result.aggregate_status}>{statusLabel(result.aggregate_status)}</VerdictPill>
+            <div>
+              <VerdictStatus>Samlet vurdering</VerdictStatus>
+              <VerdictText>
+                {result.aggregate_status === 'GO' && (
+                  <>
+                    Ingen lovartikler udløser krav før idriftsættelse — systemet kan
+                    tages i brug uden særlige compliance-tiltag.
+                  </>
+                )}
+                {result.aggregate_status === 'BETINGET-GO' && (
+                  <>
+                    <b>{requiringDecisions.length} af {result.rules_loaded}</b> lovartikler udløser krav før idriftsættelse.
+                    {evidenceItems.length > 0 && (
+                      <> {evidenceItems.length} konkrete artefakter skal etableres; {totalKrav} dokumentationskrav skal opfyldes.</>
+                    )}
+                  </>
+                )}
+                {result.aggregate_status === 'NO-GO' && (
+                  <>
+                    Systemet er klassificeret som <b>forbudt praksis</b>. {requiringDecisions.length} regler giver NO-GO eller udløser krav. Systemet kan ikke idriftsættes i sin nuværende form.
+                  </>
+                )}
+              </VerdictText>
+            </div>
+            {result.aggregate_status === 'BETINGET-GO' && requiringDecisions.length > 0 && (
+              <VerdictMetric>
+                <span className="number">{requiringDecisions.length}/{result.rules_loaded}</span>
+                Regler udløst
+              </VerdictMetric>
+            )}
+            {result.aggregate_status === 'GO' && (
+              <VerdictMetric>
+                <span className="number">{result.rules_loaded}</span>
+                Regler evalueret
+              </VerdictMetric>
+            )}
+            {result.aggregate_status === 'NO-GO' && (
+              <VerdictMetric>
+                <span className="number">{requiringDecisions.length}</span>
+                Blokerende regler
+              </VerdictMetric>
+            )}
           </VerdictBanner>
 
             {isDocumentResult && Object.keys(result.extracted_predicates || {}).length > 0 && (
@@ -1660,7 +1870,7 @@ const V3VurderingPage = () => {
                   const num = idx + 1;
                   const fnSup = toSuperscript(num);
                   return (
-                    <Rule key={decision.rule_id}>
+                    <Rule key={decision.rule_id} $num={String(num).padStart(2, '0')}>
                       <RuleHead>
                         <RuleMarker>Lovartikel {num} af {requiringDecisions.length}</RuleMarker>
                         <ComplianceVerdict status={decision.status || 'NEEDS_INPUT'} size="sm" />
@@ -1679,7 +1889,10 @@ const V3VurderingPage = () => {
 
                       {decision.outcome?.krav && decision.outcome.krav.length > 0 && (
                         <KravBlock>
-                          <KravHeader>Krav for compliance</KravHeader>
+                          <KravHeader>
+                            Krav for compliance
+                            <span className="count">{decision.outcome.krav.length}</span>
+                          </KravHeader>
                           <KravList>
                             {decision.outcome.krav.map((krav, i) => (
                               <KravItem key={i}>
