@@ -1593,7 +1593,9 @@ async def ask_law_assistant(request: LawAskRequest):
             "key_points": result.get('key_points'),
             "sources": result.get('sources'),
             "citations": result.get('citations'),
+            "follow_up_questions": result.get('follow_up_questions'),
             "retrieval": result.get('retrieval'),
+            "provider": result.get('provider'),
         }
 
     except Exception as e:
@@ -1627,6 +1629,46 @@ async def law_rag_stats():
     except Exception as e:
         logger.exception("Law RAG stats failed")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/law/ask/stream")
+async def ask_law_assistant_stream(request: LawAskRequest):
+    """Streaming variant of /api/law/ask using Server-Sent Events.
+
+    Event sequence:
+      1. retrieval — sources + retrieval mode info
+      2. delta(s) — prose tokens as they arrive
+      3. final — full answer + key_points + citations + follow-up suggestions
+
+    Frontend uses EventSource (or fetch + ReadableStream) to render
+    incrementally.
+    """
+    from src.law import LawAssistant
+
+    async def event_stream():
+        try:
+            async with LawAssistant() as assistant:
+                async for event in assistant.ask_stream(
+                    query=request.query,
+                    category=request.category,
+                    max_sources=5,
+                    mode=request.mode,
+                ):
+                    payload = json.dumps(event, ensure_ascii=False)
+                    yield f"data: {payload}\n\n"
+        except Exception as exc:
+            logger.exception("Law ask_stream failed")
+            err = json.dumps({"event": "error", "message": str(exc)}, ensure_ascii=False)
+            yield f"data: {err}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # disable nginx buffering if proxied
+        },
+    )
 
 
 @app.get("/api/law/categories", response_model=Dict[str, Any])
