@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
 import { filterNoiseWarnings } from '../utils/warnings';
+import DataOverview from '../components/data-overview/DataOverview';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
@@ -1523,6 +1524,7 @@ const V3VurderingPage = () => {
 
         <SidenotesColumn notes={sidenotes} />
       </Shell>
+      <DataOverview scope="vurdering" />
     </Page>
   );
 };

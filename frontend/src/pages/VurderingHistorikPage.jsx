@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { filterNoiseWarnings } from '../utils/warnings';
+import DataOverview from '../components/data-overview/DataOverview';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
@@ -594,6 +595,7 @@ const ListMode = () => {
           </Table>
         </>
       )}
+      <DataOverview scope="historik" />
     </Page>
   );
 };

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import DataOverview from '../components/data-overview/DataOverview';
 
 /**
  * SagerPage — Step 2 ("workflow state-machine") kanban over /api/v3/cases.
@@ -510,6 +511,7 @@ const SagerPage = () => {
           </ModalPanel>
         </ModalOverlay>
       )}
+      <DataOverview scope="sager" />
     </Page>
   );
 };
