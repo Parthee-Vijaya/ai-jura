@@ -53,6 +53,8 @@
   },
   "proxy": "http://localhost:8001",
   "devDependencies": {
+    "express": "^4.22.1",
+    "http-proxy-middleware": "^2.0.9",
     "serve": "^14.2.6"
   }
 }

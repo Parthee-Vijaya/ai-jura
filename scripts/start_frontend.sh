@@ -42,35 +42,30 @@ else
     echo "Bruger eksisterende frontend/build/ (sæt REBUILD=yes for at rebuilde)"
 fi
 
-# Find serve — kan være i root node_modules (npm workspace hejser shared deps)
-# eller i frontend/node_modules direkte
-SERVE_BIN=""
-for candidate in \
-    "$ROOT/node_modules/.bin/serve" \
-    "$ROOT/frontend/node_modules/.bin/serve"; do
-    if [[ -x "$candidate" ]]; then
-        SERVE_BIN="$candidate"
-        break
-    fi
-done
+# Find node binary
+NODE_BIN="$(command -v node || true)"
+if [[ -z "$NODE_BIN" ]]; then
+    echo "node ikke fundet i PATH. Installer Node.js først."
+    exit 1
+fi
 
-if [[ -z "$SERVE_BIN" ]]; then
-    echo "serve ikke installeret. Kør: cd $ROOT/frontend && npm install --save-dev serve"
+if [[ ! -d "$ROOT/node_modules/express" || ! -d "$ROOT/node_modules/http-proxy-middleware" ]]; then
+    echo "express/http-proxy-middleware mangler i node_modules. Kør: cd $ROOT/frontend && npm install"
     exit 1
 fi
 
 echo "Serverer frontend/build på http://$HOST:$PORT (Tailscale-tilgængelig)"
+echo "Proxy /api → http://localhost:${API_PORT:-8001}"
 echo "Console log → $CONSOLE_LOG"
-echo "serve binary: $SERVE_BIN"
 
-# `serve` flags:
-#   -s : single-page-app mode (alle 404 fallbacker til index.html — vigtig for React Router)
-#   -l : listen address (host:port)
-#   --no-clipboard : skip clipboard interactions
-nohup "$SERVE_BIN" \
-    -s build \
-    -l "tcp://$HOST:$PORT" \
-    --no-clipboard \
+# serve_prod.js er en lille Express+http-proxy-middleware server der både
+# serverer den statiske build OG proxy'er /api → backend så React-appen
+# kan fetche relative URLs som i dev-mode.
+export FRONTEND_PORT="$PORT"
+export FRONTEND_HOST="$HOST"
+export API_BACKEND="${API_BACKEND:-http://localhost:${API_PORT:-8001}}"
+
+nohup "$NODE_BIN" "$ROOT/frontend/serve_prod.js" \
     >> "$CONSOLE_LOG" 2>&1 &
 PID=$!
 echo "$PID" > "$PIDFILE"

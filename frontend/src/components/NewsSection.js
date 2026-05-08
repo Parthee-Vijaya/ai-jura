@@ -111,31 +111,61 @@ const RefreshButton = styled.button`
 `;
 
 const CategoryFilter = styled.div`
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 `;
 
-const CategoryButton = styled.button`
-  padding: 4px 12px;
-  border: 1px solid
-    ${(p) => (p.active ? p.theme.colors.primary : p.theme.colors.border)};
-  border-radius: 999px;
-  background: ${(p) =>
-    p.active ? p.theme.colors.primarySoft : 'transparent'};
-  color: ${(p) =>
-    p.active ? p.theme.colors.primary : p.theme.colors.textMuted};
+const FilterLabel = styled.span`
   font-family: ${(p) => p.theme.fonts.sans};
-  font-size: 0.74rem;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${(p) => p.theme.colors.textMuted};
+  font-weight: 600;
+`;
+
+/* Native <select> styled to match Tyr Northern Modern. Native fordi det
+ * giver os gratis tastaturnavigation, screen-reader-support, og iOS-/macOS-
+ * native dropdown-rendering. Custom-chevron via background-image. */
+const CategorySelect = styled.select`
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.82rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  color: ${(p) => p.theme.colors.text};
+  background: ${(p) => p.theme.colors.surface || '#fff'};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: 4px;
+  padding: 6px 32px 6px 12px;
   cursor: pointer;
-  transition: ${(p) => p.theme.animations.transitionFast};
+  min-width: 180px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  /* Bronze chevron icon */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23b08a4a' stroke-width='1.5'><path d='M2 2l4 4 4-4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px 7px;
 
   &:hover {
     border-color: ${(p) => p.theme.colors.primary};
-    color: ${(p) => p.theme.colors.primary};
   }
+
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: 0 0 0 3px ${(p) => p.theme.colors.primarySoft || 'rgba(13, 46, 84, 0.12)'};
+  }
+`;
+
+const CategoryCount = styled.span`
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.7rem;
+  color: ${(p) => p.theme.colors.textMuted};
+  letter-spacing: 0.04em;
 `;
 
 // ---- Item ---------------------------------------------------------------
@@ -491,15 +521,20 @@ const NewsSection = () => {
         </NewsHeader>
 
         <CategoryFilter>
-          {categories.map((category) => (
-            <CategoryButton
-              key={category.key}
-              active={selectedCategory === category.key}
-              onClick={() => handleCategoryChange(category.key)}
-            >
-              {category.label}
-            </CategoryButton>
-          ))}
+          <FilterLabel htmlFor="news-source-filter">Kilde</FilterLabel>
+          <CategorySelect
+            id="news-source-filter"
+            value={selectedCategory}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            aria-label="Filtrér nyheder efter kilde"
+          >
+            {categories.map((category) => (
+              <option key={category.key} value={category.key}>
+                {category.label}
+              </option>
+            ))}
+          </CategorySelect>
+          <CategoryCount>{news.length} af {rawItems.length}</CategoryCount>
         </CategoryFilter>
       </SectionHeader>
 
