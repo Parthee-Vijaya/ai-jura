@@ -71,6 +71,10 @@ class Case(Base):
     next_review_at = Column(DateTime(timezone=True), nullable=True, index=True)
     notes = Column(Text, nullable=True)
 
+    # Tracks when the case-reminder job last sent an email about this case.
+    # Used to throttle reminders to once per CASE_REMINDER_COOLDOWN_DAYS.
+    last_reminder_sent_at = Column(DateTime(timezone=True), nullable=True)
+
     # If the case has been linked to a specific assessment, point at the
     # latest one. Use list_assessments_for_case() for the full history.
     last_assessment_log_id = Column(String(36), nullable=True)
@@ -97,6 +101,7 @@ class Case(Base):
             "assigned_to": self.assigned_to,
             "next_review_at": self.next_review_at.isoformat() if self.next_review_at else None,
             "notes": self.notes,
+            "last_reminder_sent_at": self.last_reminder_sent_at.isoformat() if self.last_reminder_sent_at else None,
             "last_assessment_log_id": self.last_assessment_log_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

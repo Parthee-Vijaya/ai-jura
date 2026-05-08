@@ -123,9 +123,21 @@ async def lifespan(app: FastAPI):
         name='Daily citation verification (M3)',
         replace_existing=True,
     )
+    # Case re-review reminders: daily at 08:00 (start of work day) — flag
+    # cases whose next_review_at has passed so sektorlov-changes don't
+    # silently rot vurderinger.
+    from src.services.case_reminder_service import scheduled_reminder_job
+    kb_scheduler.add_job(
+        scheduled_reminder_job,
+        CronTrigger(hour=8, minute=0),
+        id='case_review_reminders',
+        name='Daily case re-review reminders',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - daily updates at 03:00")
     logger.info("Citation verifier scheduled - daily at 04:00")
+    logger.info("Case re-review reminders scheduled - daily at 08:00")
 
     if not ticker_refresh_task or ticker_refresh_task.done():
         ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
@@ -2536,6 +2548,44 @@ async def v3_cases_statuses():
             {"id": s, "label": CASE_STATUS_LABELS[s]} for s in CASE_STATUSES
         ]
     }
+
+
+@app.get("/api/v3/cases/reminders/preview")
+async def v3_cases_reminder_preview():
+    """List cases that would receive a reminder if the job ran now.
+
+    Read-only — does not send anything. Useful for verifying the job is
+    targeting the right cases before it fires at 08:00.
+    """
+    from src.services.case_reminder_service import find_cases_needing_reminder
+
+    cases = await asyncio.to_thread(find_cases_needing_reminder)
+    return {
+        "count": len(cases),
+        "cases": [
+            {
+                "id": c.id,
+                "case_id": c.case_id,
+                "title": c.title,
+                "status": c.status,
+                "assigned_to": c.assigned_to,
+                "next_review_at": c.next_review_at.isoformat() if c.next_review_at else None,
+                "last_reminder_sent_at": (
+                    c.last_reminder_sent_at.isoformat() if c.last_reminder_sent_at else None
+                ),
+            }
+            for c in cases
+        ],
+    }
+
+
+@app.post("/api/v3/cases/reminders/run")
+async def v3_cases_reminder_run():
+    """Manually trigger the case-reminder job. Returns a per-run summary."""
+    from src.services.case_reminder_service import send_due_reminders
+
+    summary = await asyncio.to_thread(send_due_reminders)
+    return summary
 
 
 # ---------------------------------------------------------------------------

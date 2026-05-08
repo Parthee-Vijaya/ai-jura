@@ -142,10 +142,42 @@ def init_db() -> None:
     try:
         logger.info("Initializing database tables...")
         Base.metadata.create_all(bind=engine)
+        _ensure_runtime_columns()
         logger.info("Database tables created successfully")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         raise
+
+
+def _ensure_runtime_columns() -> None:
+    """Add columns introduced after the initial schema, idempotently.
+
+    Why: SQLAlchemy's create_all only creates missing tables — it never alters
+    existing ones. When a new column is added to an ORM model, older databases
+    keep the old shape and SELECT/UPDATE fails on the column. Running ALTER
+    TABLE ... ADD COLUMN here at startup keeps dev SQLite databases in sync
+    without needing an Alembic step for trivial additive migrations.
+    """
+    from sqlalchemy import inspect
+
+    inspector = inspect(engine)
+    additive_columns = [
+        # (table, column, ddl-fragment)
+        ("cases", "last_reminder_sent_at", "TIMESTAMP NULL"),
+    ]
+
+    for table, column, ddl in additive_columns:
+        if not inspector.has_table(table):
+            continue
+        existing = {col["name"] for col in inspector.get_columns(table)}
+        if column in existing:
+            continue
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {column} {ddl}'))
+            logger.info(f"Added column {table}.{column}")
+        except Exception as exc:
+            logger.error(f"Failed to add column {table}.{column}: {exc}")
 
 
 def check_db_connection() -> bool:
