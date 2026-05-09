@@ -6,8 +6,40 @@ Manuel produktions-deploy af Tyr lokalt på Mac Studio. Tyr starter **ikke** aut
 
 - Python 3.11+ med venv på `./venv/`
 - Node 18+ med `frontend/node_modules/` installeret (kør `npm install` fra root én gang)
+- **PostgreSQL 16** — installeres med `brew install postgresql@16 && brew services start postgresql@16`
 - LM Studio kører lokalt med en chat-model og en embedding-model (`text-embedding-nomic-embed-text-v1.5` eller lignende)
 - `.env` udfyldt — kopier `.env.example` og sæt minimum `LM_STUDIO_BASE_URL` (eller en af de andre LLM-providere)
+
+## PostgreSQL-opsætning (engangs)
+
+Tyr kører på PostgreSQL 16 (Modul 2). SQLite var dev-setup, men understøtter kun én skriver ad gangen.
+
+```bash
+# Installér + start
+brew install postgresql@16
+brew services start postgresql@16
+
+# Opret rolle + database
+/opt/homebrew/opt/postgresql@16/bin/psql -d postgres <<SQL
+CREATE ROLE tyr WITH LOGIN PASSWORD 'tyr_local_dev';
+CREATE DATABASE tyr OWNER tyr;
+SQL
+
+# Verifikation
+/opt/homebrew/opt/postgresql@16/bin/psql -U tyr -h localhost -d tyr -c "SELECT current_user, current_database();"
+```
+
+Sæt i `.env`:
+```
+DATABASE_URL=postgresql+psycopg2://tyr:tyr_local_dev@localhost:5432/tyr
+```
+
+Hvis du migrerer fra en eksisterende SQLite (`judge_dredd.db`):
+```bash
+DATABASE_URL=postgresql+psycopg2://tyr:tyr_local_dev@localhost/tyr \
+  venv/bin/python scripts/migrate_sqlite_to_pg.py --reset
+```
+`--reset` dropper public schema før init — brug det kun ved første migration eller hvis du vil starte forfra.
 
 ## Daglig brug
 
@@ -103,6 +135,23 @@ cd frontend && npm install
 **Backend starter, men /health viser `llm: down`** — LM Studio er ikke i gang. Start LM Studio, indlæs en chat-model (fx `google/gemma-4-26b-a4b`) og en embedding-model.
 
 **Frontend viser "Application error" ved Tailscale-adgang** — sandsynligvis CORS-problem eller backend ikke nåbar fra Tailscale-IP. Tjek at backend er bundet til `0.0.0.0` (er default i scripts).
+
+## Backup af PostgreSQL
+
+Manuel ad-hoc backup:
+```bash
+mkdir -p ~/Backups/Tyr
+/opt/homebrew/opt/postgresql@16/bin/pg_dump -U tyr -h localhost -Fc tyr \
+  > ~/Backups/Tyr/tyr-$(date +%Y%m%d-%H%M%S).dump
+```
+
+Restore:
+```bash
+/opt/homebrew/opt/postgresql@16/bin/pg_restore -U tyr -h localhost -d tyr -c \
+  ~/Backups/Tyr/tyr-20260509-143200.dump
+```
+
+Modul 5 (planned): cron-job der kører ovenstående dagligt + rsyncer til ekstern disk eller Tailscale-tilgængelig NAS.
 
 ## Stop ved Mac-genstart
 

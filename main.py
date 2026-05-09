@@ -72,8 +72,16 @@ async def lifespan(app: FastAPI):
     # SQLite installs where the v3_assessment_log table must exist
     # before the first /api/v3/assess call.
     try:
-        from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
+        # Vigtig: importér ALLE moduler der definerer SQLAlchemy-tabeller
+        # før init_db() kaldes — ellers ser Base.metadata dem ikke og
+        # tabellen oprettes ikke (særligt mærkbart ved første-gang Postgres-
+        # init hvor SQLite's "schema-akkumulering på tværs af kørsler" ikke
+        # gælder).
+        from src.database import models as _legacy_models  # noqa: F401
+        from src.database import repository as _repo_models  # noqa: F401
+        from src.database import audit_access_log as _audit_access  # noqa: F401
         from src.database import cases as v3_cases  # noqa: F401 — registers Case + CaseTransition
+        from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
         from src.services import citation_verifier as v3_freshness  # noqa: F401 — registers RuleFreshness
         from src.database.connection import init_db
         init_db()
