@@ -471,6 +471,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         { path: '/ai-losninger', icon: FaRobot, text: 'AI Løsninger' },
         { path: '/research', icon: FaGlobeEurope, text: 'Juridisk Research' },
         { path: '/lov-assistent', icon: FaGavel, text: 'Lov Assistent' },
+        { path: '/eu-checker', icon: FaBalanceScale, text: 'EU AI Act Checker' },
         { path: '/ressourcer', icon: FaExternalLinkAlt, text: 'Relevante Links' }
       ]
     },

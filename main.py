@@ -178,6 +178,17 @@ async def lifespan(app: FastAPI):
         name='Daily database backup',
         replace_existing=True,
     )
+    # EU AI Act compliance checker — ugentligt mandag 04:30. Henter EC's
+    # logic.json + content_en.json så Tyr's wizard altid afspejler den
+    # autoritative EU-version.
+    from src.services.eu_ai_act_checker import scheduled_eu_checker_sync
+    kb_scheduler.add_job(
+        scheduled_eu_checker_sync,
+        CronTrigger(day_of_week='mon', hour=4, minute=30),
+        id='eu_ai_act_checker_sync',
+        name='Weekly EU AI Act checker sync',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - weekly updates Monday at 03:00")
     logger.info("AI projects sync scheduled - weekly Monday at 03:30")
@@ -744,6 +755,7 @@ async def health_check():
         "kb_weekly_update", "v3_citation_verifier",
         "case_review_reminders", "gdpr_retention_sweep",
         "ai_projects_weekly_sync", "database_daily_backup",
+        "eu_ai_act_checker_sync",
     }
     try:
         if kb_scheduler.running:
@@ -1820,6 +1832,33 @@ async def get_kb_stats():
     except Exception as e:
         logger.error(f"Failed to get KB stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== EU AI Act Compliance Checker ====================
+#
+# Speljles EC's officielle compliance checker (33 spørgsmål, 45 flags).
+# Hentet weekly fra europa.eu's CDN, cached lokalt for offline-brug.
+
+@app.get("/api/eu-ai-act-checker", response_model=Dict[str, Any])
+async def get_eu_ai_act_checker(lang: str = "en"):
+    """Returnér cached EU AI Act Compliance Checker payload.
+
+    `lang`: en (default) | de | fr | it | pl | es. Falder tilbage til
+    engelsk hvis sproget ikke er tilgængelig hos EC.
+    """
+    from src.services.eu_ai_act_checker import load_checker_payload
+    return await asyncio.to_thread(load_checker_payload, lang)
+
+
+@app.post("/api/eu-ai-act-checker/refresh", response_model=Dict[str, Any])
+async def refresh_eu_ai_act_checker():
+    """Manuel trigger — henter fresh logic.json + content_*.json fra EC.
+
+    Tager 1-3s. Returnerer summary med før/efter version-stempler så
+    UI kan markere når EC har opdateret deres logik.
+    """
+    from src.services.eu_ai_act_checker import refresh_checker
+    return await refresh_checker(langs=("en", "de", "fr", "it", "pl", "es"))
 
 
 # ==================== AI Projects Catalog ====================

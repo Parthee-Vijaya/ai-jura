@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const DriftPage = React.lazy(() => import('./pages/DriftPage'));
+const EuAiActCheckerPage = React.lazy(() => import('./pages/EuAiActCheckerPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
@@ -277,6 +278,9 @@ const AppInner = () => {
 
                   {/* Drift-dashboard — observability + ops (Modul 4) */}
                   <Route path="/drift" element={<DriftPage />} />
+
+                  {/* EU AI Act Compliance Checker — wizard fra europa.eu */}
+                  <Route path="/eu-checker" element={<EuAiActCheckerPage />} />
 
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />
