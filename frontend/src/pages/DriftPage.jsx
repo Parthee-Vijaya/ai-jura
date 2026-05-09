@@ -389,6 +389,34 @@ const DriftPage = () => {
           <div className="value">{formatBytes(ops?.disk?.log_size_bytes)}</div>
           <div className="delta">{ops?.disk?.log_dir?.split('/').slice(-2).join('/') || '—'}</div>
         </StatCard>
+        <StatCard $tone={ops?.backups?.latest ? 'success' : 'warn'}>
+          <div className="label">Seneste backup</div>
+          <div className="value">
+            {ops?.backups?.latest
+              ? formatRelative(ops.backups.latest.timestamp)
+              : 'Aldrig'}
+          </div>
+          <div className="delta">
+            {ops?.backups?.latest
+              ? `${ops.backups.latest.kind} · ${formatBytes(ops.backups.latest.size_bytes)}`
+              : 'pg_dump-job kører kl. 01:30'}
+          </div>
+        </StatCard>
+        <StatCard>
+          <div className="label">Backups gemt</div>
+          <div className="value">
+            {(ops?.backups?.by_kind?.daily ?? 0)
+              + (ops?.backups?.by_kind?.weekly ?? 0)
+              + (ops?.backups?.by_kind?.monthly ?? 0)
+              + (ops?.backups?.by_kind?.manual ?? 0)}
+          </div>
+          <div className="delta">
+            {ops?.backups?.by_kind
+              ? `${ops.backups.by_kind.daily ?? 0}d · ${ops.backups.by_kind.weekly ?? 0}u · ${ops.backups.by_kind.monthly ?? 0}m`
+              : '—'}
+            {ops?.backups?.rsync_target ? ' · off-site ✓' : ' · lokalt'}
+          </div>
+        </StatCard>
       </Grid>
 
       <SectionH>Services</SectionH>

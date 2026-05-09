@@ -167,6 +167,17 @@ async def lifespan(app: FastAPI):
         name='Weekly AI projects catalog sync',
         replace_existing=True,
     )
+    # Database backup: dagligt 01:30 — FØR retention-sweep (02:00) så
+    # vi har en backup AF det data der eventuelt slettes. Mandag laver
+    # jobbet automatisk en weekly-kopi, og den 1. i måneden en monthly.
+    from src.services.backup_service import scheduled_backup_job
+    kb_scheduler.add_job(
+        scheduled_backup_job,
+        CronTrigger(hour=1, minute=30),
+        id='database_daily_backup',
+        name='Daily database backup',
+        replace_existing=True,
+    )
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - weekly updates Monday at 03:00")
     logger.info("AI projects sync scheduled - weekly Monday at 03:30")
@@ -732,7 +743,7 @@ async def health_check():
     expected_jobs = {
         "kb_weekly_update", "v3_citation_verifier",
         "case_review_reminders", "gdpr_retention_sweep",
-        "ai_projects_weekly_sync",
+        "ai_projects_weekly_sync", "database_daily_backup",
     }
     try:
         if kb_scheduler.running:
@@ -793,6 +804,21 @@ async def metrics():
     """Prometheus exposition endpoint."""
     body, content_type = metrics_response_body()
     return Response(content=body, media_type=content_type)
+
+
+@app.get("/api/v3/admin/backups")
+async def v3_admin_backups():
+    """List eksisterende database-backups + retention-policy + rsync-mål."""
+    from src.services.backup_service import list_backups
+    return await asyncio.to_thread(list_backups)
+
+
+@app.post("/api/v3/admin/backups/run")
+async def v3_admin_backups_run():
+    """Manuel trigger af pg_dump-backup. Returnerer summary med path,
+    størrelse og varighed. Tager 0.5-3s for typiske dataset-størrelser."""
+    from src.services.backup_service import run_backup
+    return await asyncio.to_thread(run_backup, "manual")
 
 
 @app.get("/api/v3/admin/errors")
@@ -927,6 +953,22 @@ async def v3_ops_summary():
         "log_size_bytes": await asyncio.to_thread(_dir_size, log_dir),
     }
 
+    # Backup status — newest dump + count per kind
+    backup_summary: dict = {"latest": None, "by_kind": {}, "rsync_target": None}
+    try:
+        from src.services.backup_service import list_backups
+        bs = await asyncio.to_thread(list_backups)
+        items = bs.get("items", [])
+        backup_summary = {
+            "latest": items[0] if items else None,
+            "by_kind": bs.get("by_kind", {}),
+            "rsync_target": bs.get("rsync_target"),
+            "directory": bs.get("directory"),
+            "retention": bs.get("retention", {}),
+        }
+    except Exception:
+        logger.exception("backup-summary failed")
+
     return {
         "generated_at": now.isoformat(),
         "since": since_24h.isoformat(),
@@ -938,6 +980,7 @@ async def v3_ops_summary():
             "recent_sample": error_items,
         },
         "disk": disk,
+        "backups": backup_summary,
     }
 
 
