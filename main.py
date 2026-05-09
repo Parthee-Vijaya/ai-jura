@@ -196,6 +196,22 @@ async def lifespan(app: FastAPI):
     logger.info("Case re-review reminders scheduled - daily at 08:00")
     logger.info("GDPR retention sweep scheduled - daily at 02:00")
 
+    # Run config validator + log startup banner. Vises efter scheduler-start
+    # så cron-jobs er talt med.
+    try:
+        from src.config.validation import build_config_report, render_startup_banner
+        report = build_config_report(scheduler=kb_scheduler)
+        # Flerlinjet banner — print direkte så formatet bevares i
+        # backend.console.log (loguru ville folde det sammen).
+        print("\n" + render_startup_banner(report) + "\n", flush=True)
+        if report.critical_failures:
+            logger.error(
+                "Startup config validation found critical failures: %s",
+                ", ".join(report.critical_failures),
+            )
+    except Exception:
+        logger.exception("Startup config validation crashed (non-fatal)")
+
     if not ticker_refresh_task or ticker_refresh_task.done():
         ticker_refresh_task = asyncio.create_task(_refresh_ticker_periodically())
 
@@ -243,6 +259,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting — per-IP throttling på tunge LLM-endpoints. Modul 8a.
+from src.api.rate_limiting import limiter, LLM_HEAVY, LLM_LIGHT, ADMIN_WRITE
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Observability — request-ID + structured logging + Prometheus metrics.
 # Configured here so it wraps every route incl. legacy ones.
@@ -818,6 +842,22 @@ async def metrics():
     return Response(content=body, media_type=content_type)
 
 
+@app.get("/api/v3/admin/config")
+async def v3_admin_config():
+    """ConfigReport — bruges af build-time diagnostic-modal i frontend
+    + /drift's konfigurations-sektion.
+
+    Kører ~50ms (DB-ping + LM Studio-ping max 2s timeout). Sikker at kalde
+    ved hver page refresh.
+    """
+    from src.config.validation import build_config_report
+
+    def _build():
+        return build_config_report(scheduler=kb_scheduler).to_dict()
+
+    return await asyncio.to_thread(_build)
+
+
 @app.get("/api/v3/admin/backups")
 async def v3_admin_backups():
     """List eksisterende database-backups + retention-policy + rsync-mål."""
@@ -826,7 +866,8 @@ async def v3_admin_backups():
 
 
 @app.post("/api/v3/admin/backups/run")
-async def v3_admin_backups_run():
+@limiter.limit(ADMIN_WRITE)
+async def v3_admin_backups_run(request: Request):
     """Manuel trigger af pg_dump-backup. Returnerer summary med path,
     størrelse og varighed. Tager 0.5-3s for typiske dataset-størrelser."""
     from src.services.backup_service import run_backup
@@ -1450,15 +1491,16 @@ async def get_agent_config(agent_id: str):
 
 
 @app.post("/api/research/juridisk", response_model=Dict[str, Any])
-async def juridisk_research(request: ResearchRequest):
+@limiter.limit(LLM_LIGHT)
+async def juridisk_research(request: Request, body: ResearchRequest):
     """
     Udfører juridisk research med kildecitation med OpenAI + Web Search
     """
     try:
-        logger.info(f"Starter juridisk research (WebSearcher + OpenAI): {request.emne}")
+        logger.info(f"Starter juridisk research (WebSearcher + OpenAI): {body.emne}")
 
         # Track query for knowledge base updates
-        recent_research_queries.append(request.emne)
+        recent_research_queries.append(body.emne)
         if len(recent_research_queries) > MAX_STORED_QUERIES:
             recent_research_queries.pop(0)
 
@@ -1467,13 +1509,13 @@ async def juridisk_research(request: ResearchRequest):
 
         async with WebSearcher() as searcher:
             research_result = await searcher.research_topic(
-                query=request.emne,
-                focus_areas=request.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"]
+                query=body.emne,
+                focus_areas=body.fokusområder or ["EU AI Act", "GDPR", "dansk lovgivning"]
             )
 
         return {
             "success": True,
-            "emne": request.emne,
+            "emne": body.emne,
             "resultat": research_result,
             "message": f"Research afsluttet - {len(research_result.get('sources', []))} kilder fundet"
         }
@@ -1790,7 +1832,8 @@ async def get_knowledge_base():
 
 
 @app.post("/api/knowledge-base/update", response_model=Dict[str, Any])
-async def trigger_kb_update(background_tasks: BackgroundTasks):
+@limiter.limit(ADMIN_WRITE)
+async def trigger_kb_update(request: Request, background_tasks: BackgroundTasks):
     """Trigger manuel opdatering af vidensbasen."""
     try:
         # Import update_knowledge_base direkte (async version)
@@ -1851,7 +1894,8 @@ async def get_eu_ai_act_checker(lang: str = "en"):
 
 
 @app.post("/api/eu-ai-act-checker/refresh", response_model=Dict[str, Any])
-async def refresh_eu_ai_act_checker():
+@limiter.limit(ADMIN_WRITE)
+async def refresh_eu_ai_act_checker(request: Request):
     """Manuel trigger — henter fresh logic.json + content_*.json fra EC.
 
     Tager 1-3s. Returnerer summary med før/efter version-stempler så
@@ -1882,7 +1926,8 @@ async def get_ai_projects():
 
 
 @app.post("/api/ai-projects/refresh", response_model=Dict[str, Any])
-async def refresh_ai_projects_endpoint():
+@limiter.limit(ADMIN_WRITE)
+async def refresh_ai_projects_endpoint(request: Request):
     """Manuel trigger af AI-projekt-katalog-syncen. Returnerer summary
     af kørslen — tager 10-20s for ~143 projekter."""
     from src.services.ai_projects_updater import refresh_ai_projects
@@ -2019,7 +2064,8 @@ async def search_laws_api(request: LawSearchRequest):
 
 
 @app.post("/api/law/ask", response_model=Dict[str, Any])
-async def ask_law_assistant(request: LawAskRequest):
+@limiter.limit(LLM_HEAVY)
+async def ask_law_assistant(request: Request, body: LawAskRequest):
     """
     Ask legal question and get AI-generated answer with citations.
 
@@ -2030,19 +2076,19 @@ async def ask_law_assistant(request: LawAskRequest):
     try:
         from src.law import LawAssistant
 
-        logger.info(f"Law AI query (mode={request.mode}): {request.query}")
+        logger.info(f"Law AI query (mode={body.mode}): {body.query}")
 
         async with LawAssistant() as assistant:
             result = await assistant.ask(
-                query=request.query,
-                category=request.category,
+                query=body.query,
+                category=body.category,
                 max_sources=5,
-                mode=request.mode,
+                mode=body.mode,
             )
 
         return {
             "success": True,
-            "query": request.query,
+            "query": body.query,
             "answer": result.get('answer'),
             "confidence": result.get('confidence'),
             "key_points": result.get('key_points'),
@@ -2087,7 +2133,8 @@ async def law_rag_stats():
 
 
 @app.post("/api/law/ask/stream")
-async def ask_law_assistant_stream(request: LawAskRequest):
+@limiter.limit(LLM_HEAVY)
+async def ask_law_assistant_stream(request: Request, body: LawAskRequest):
     """Streaming variant of /api/law/ask using Server-Sent Events.
 
     Event sequence:
@@ -2104,10 +2151,10 @@ async def ask_law_assistant_stream(request: LawAskRequest):
         try:
             async with LawAssistant() as assistant:
                 async for event in assistant.ask_stream(
-                    query=request.query,
-                    category=request.category,
+                    query=body.query,
+                    category=body.category,
                     max_sources=5,
-                    mode=request.mode,
+                    mode=body.mode,
                 ):
                     payload = json.dumps(event, ensure_ascii=False)
                     yield f"data: {payload}\n\n"
@@ -2949,7 +2996,9 @@ async def v3_compare(request: V3CompareRequest):
 # ---------------------------------------------------------------------------
 
 @app.post("/api/v3/document/analyze")
+@limiter.limit(LLM_HEAVY)
 async def v3_document_analyze(
+    request: Request,
     file: UploadFile = File(...),
     case_id: Optional[str] = None,
     note: Optional[str] = None,
@@ -3734,7 +3783,8 @@ async def v3_law_freshness():
 
 
 @app.post("/api/v3/law/freshness/run")
-async def v3_law_freshness_run():
+@limiter.limit(ADMIN_WRITE)
+async def v3_law_freshness_run(request: Request):
     """Manual trigger of the citation-verifier (for admin use / testing).
 
     Runs in a worker thread so the Playwright sync API (used by the SPA

@@ -23,6 +23,9 @@ import { LoadingProvider } from './contexts/LoadingContext';
 import CommandPalette, { useCommandPaletteShortcut, useGotoShortcuts } from './components/command-palette/CommandPalette';
 import { useNavigate } from 'react-router-dom';
 
+// Build-time diagnostic modal — fjernes når vi går i pilot
+import BuildTimeConfigCheck from './components/BuildTimeConfigCheck';
+
 // Lazy loaded pages - Optimized code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
@@ -249,6 +252,10 @@ const AppInner = () => {
   return (
     <ThemeProvider theme={themeMode}>
       <GlobalStyle />
+      {/* Build-mode diagnostic — vises på hver page refresh så vi som
+          udviklere har øjeblikkeligt overblik over backend-status. Klik
+          OK for at lukke. Fjernes inden pilot. */}
+      <BuildTimeConfigCheck />
       <Router>
         <RouterShortcuts paletteOpen={paletteOpen} />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />

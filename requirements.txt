@@ -51,6 +51,10 @@ jsonschema==4.23.0
 # Scheduling
 apscheduler==3.11.2
 
+# Rate limiting (Modul 8a) — per-IP throttling på tunge LLM-endpoints så
+# en bash-loop ikke kan dræne LM Studio for alle.
+slowapi==0.1.9
+
 # Testing
 pytest==8.3.3
 pytest-asyncio==0.24.0
