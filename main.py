@@ -722,8 +722,9 @@ async def health_check():
     # Scheduler — verify the APScheduler is running with expected jobs
     scheduler_status = "unknown"
     expected_jobs = {
-        "kb_daily_update", "v3_citation_verifier",
+        "kb_weekly_update", "v3_citation_verifier",
         "case_review_reminders", "gdpr_retention_sweep",
+        "ai_projects_weekly_sync",
     }
     try:
         if kb_scheduler.running:
