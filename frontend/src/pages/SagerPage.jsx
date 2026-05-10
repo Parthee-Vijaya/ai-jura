@@ -441,29 +441,17 @@ const aggregatePill = (status) => {
   return '';
 };
 
-// Smart routing: hver sag åbner det MEST relevante view baseret på dens
-// progress. Kladder fortsætter i indkøbsproces-wizarden; vurderede åbner
-// historik; remediation åbner vurderingsskærmen så manglende felter kan
-// rettes; idriftsatte åbner historik som read-only.
-const cardClickPath = (c) => {
-  if (c.status === 'kladde') {
-    // Kladde — fortsæt indkøbsproces-wizarden
-    return `/indkoebsproces?case_id=${encodeURIComponent(c.case_id)}`;
-  }
-  if (c.last_assessment_log_id) {
-    // Har en konkret vurdering — åbn historikvisning
-    return `/historik/${c.last_assessment_log_id}`;
-  }
-  // Ingen vurdering endnu — åbn vurderingsskærmen prefilled med case_id
-  return `/vurdering?case_id=${encodeURIComponent(c.case_id)}`;
-};
+// Routing: ALLE sager åbner /sag/{case_id} (sag-detalje-side med 5 tabs).
+// Den side har quick-actions der dybt-linker til indkoebsproces/vurdering/
+// historik baseret på status. Det giver én pålidelig indgang per sag.
+const cardClickPath = (c) => `/sag/${encodeURIComponent(c.case_id)}`;
 
 const cardCtaLabel = (c) => {
-  if (c.status === 'kladde') return 'Fortsæt sagen';
-  if (c.status === 'remediation') return 'Ret manglende krav';
-  if (c.status === 'vurderet') return 'Åbn vurdering';
+  if (c.status === 'kladde') return 'Åbn sagen';
+  if (c.status === 'remediation') return 'Åbn (ret krav)';
+  if (c.status === 'vurderet') return 'Åbn sag';
   if (c.status === 'godkendt') return 'Se godkendelse';
-  if (c.status === 'idriftsat') return 'Se i drift-status';
+  if (c.status === 'idriftsat') return 'Se i drift';
   if (c.status === 'arkiveret') return 'Vis arkiv';
   return 'Åbn';
 };

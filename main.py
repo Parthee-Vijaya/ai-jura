@@ -3584,6 +3584,116 @@ async def v3_case_by_external_id(case_id: str):
         db.close()
 
 
+@app.get("/api/v3/cases/by-case-id/{case_id}/timeline")
+async def v3_case_timeline(case_id: str, limit: int = 50):
+    """Returnér samlet kronologisk feed for én sag — bruges af sag-detalje-siden.
+
+    Kombinerer:
+    - Vurderinger (v3_assessment_log)
+    - Status-transitions (case_transitions)
+    - Evidens-completions (evidence_artifacts.completed_at)
+    - Intake-state ændringer (case.updated_at — kun seneste)
+
+    Sorteret nyeste først. Hver entry har: {kind, timestamp, label, detail, link, actor}
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import find_case_by_external_id, Case, CaseTransition
+    from src.database.evidence import list_evidence_for_case
+    from src.rule_engine import audit as v3_audit
+
+    db = SessionLocal()
+    try:
+        case = await asyncio.to_thread(find_case_by_external_id, db, case_id)
+        if case is None:
+            raise HTTPException(status_code=404, detail=f"case_id not found: {case_id}")
+
+        events: List[Dict[str, Any]] = []
+
+        # 1) Vurderinger (audit log entries med matching case_id)
+        try:
+            assessments = v3_audit.list_recent(db, limit=limit, case_id=case_id)
+            for a in assessments:
+                events.append({
+                    "kind": "vurdering",
+                    "timestamp": a.created_at.isoformat() if a.created_at else None,
+                    "label": f"Vurdering: {a.aggregate_status}",
+                    "detail": (a.note or "")[:200],
+                    "link": f"/historik/{a.id}",
+                    "actor": a.user_id,
+                })
+        except Exception as exc:
+            logger.warning(f"timeline assessments fetch failed: {exc}")
+
+        # 2) Status-transitions
+        try:
+            transitions = (
+                db.query(CaseTransition)
+                .filter(CaseTransition.case_db_id == case.id)
+                .order_by(CaseTransition.changed_at.desc())
+                .limit(limit)
+                .all()
+            )
+            for t in transitions:
+                from_label = t.from_status or "(ny)"
+                events.append({
+                    "kind": "transition",
+                    "timestamp": t.changed_at.isoformat() if t.changed_at else None,
+                    "label": f"Status: {from_label} → {t.to_status}",
+                    "detail": t.note or "",
+                    "link": None,
+                    "actor": t.changed_by,
+                })
+        except Exception as exc:
+            logger.warning(f"timeline transitions fetch failed: {exc}")
+
+        # 3) Evidens-events (completion + creation)
+        try:
+            ev_rows = list_evidence_for_case(db, case_id)
+            for r in ev_rows:
+                if r.completed_at:
+                    events.append({
+                        "kind": "evidens_completed",
+                        "timestamp": r.completed_at.isoformat(),
+                        "label": f"Evidens færdig: {r.artifact_id.replace('_', ' ')}",
+                        "detail": "",
+                        "link": None,
+                        "actor": r.completed_by,
+                    })
+                elif r.created_at and r.status == "i_gang":
+                    events.append({
+                        "kind": "evidens_started",
+                        "timestamp": r.updated_at.isoformat() if r.updated_at else r.created_at.isoformat(),
+                        "label": f"Evidens påbegyndt: {r.artifact_id.replace('_', ' ')}",
+                        "detail": "",
+                        "link": None,
+                        "actor": r.last_edited_by,
+                    })
+        except Exception as exc:
+            logger.warning(f"timeline evidence fetch failed: {exc}")
+
+        # 4) Intake-state seneste opdatering
+        if case.intake_state and case.updated_at:
+            events.append({
+                "kind": "intake_updated",
+                "timestamp": case.updated_at.isoformat(),
+                "label": "Indkøbsproces opdateret",
+                "detail": case.get_intake_state().get("behov", "")[:200],
+                "link": f"/indkoebsproces?case_id={case.case_id}",
+                "actor": case.assigned_to,
+            })
+
+        # Sort newest first
+        events.sort(key=lambda e: e["timestamp"] or "", reverse=True)
+
+        return {
+            "case": case.to_dict(),
+            "count": len(events),
+            "events": events[:limit],
+        }
+    finally:
+        db.close()
+
+
 @app.put("/api/v3/cases/by-case-id/{case_id}/intake")
 @limiter.limit(ADMIN_WRITE)
 async def v3_case_upsert_intake(
