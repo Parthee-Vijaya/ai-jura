@@ -170,20 +170,96 @@ const Card = styled.div`
   background: ${(p) => p.theme.colors.card};
   border: 1px solid ${(p) => p.theme.colors.line};
   border-radius: 6px;
-  padding: 0.85rem 0.95rem;
-  cursor: grab;
+  padding: 0.75rem 0.9rem 0.65rem;
+  cursor: pointer;
   transition: border-color ${(p) => p.theme.animations.transitionFast},
-              box-shadow ${(p) => p.theme.animations.transitionFast};
+              box-shadow ${(p) => p.theme.animations.transitionFast},
+              transform ${(p) => p.theme.animations.transitionFast};
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  position: relative;
 
   &:hover {
     border-color: ${(p) => p.theme.colors.primary};
-    box-shadow: 0 2px 6px rgba(20, 17, 13, 0.06);
+    box-shadow: 0 4px 12px rgba(20, 17, 13, 0.08);
+    transform: translateY(-1px);
   }
 
-  &:active { cursor: grabbing; }
+  &:focus-visible {
+    outline: 2px solid ${(p) => p.theme.colors.primary};
+    outline-offset: 2px;
+  }
+
+  /* Drag-handle indicator — tydeliggør at kortet kan trækkes */
+  &::before {
+    content: '⋮⋮';
+    position: absolute;
+    top: 0.65rem;
+    right: 0.7rem;
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.78rem;
+    color: ${(p) => p.theme.colors.inkFaded};
+    letter-spacing: -2px;
+    cursor: grab;
+    opacity: 0.4;
+    transition: opacity 0.15s ease;
+  }
+  &:hover::before { opacity: 0.9; }
+  &:active::before { cursor: grabbing; }
+`;
+
+const CardPreview = styled.div`
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.82rem;
+  color: ${(p) => p.theme.colors.inkSoft};
+  line-height: 1.4;
+  margin-top: 0.1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const CardProgress = styled.div`
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: ${(p) => p.theme.fonts.mono};
+  font-size: 0.7rem;
+  color: ${(p) => p.theme.colors.inkFaded};
+
+  .bar {
+    flex: 1;
+    height: 4px;
+    background: ${(p) => p.theme.colors.line};
+    border-radius: 999px;
+    overflow: hidden;
+
+    .fill {
+      height: 100%;
+      background: ${(p) => p.theme.colors.primary};
+      transition: width 0.3s ease;
+    }
+  }
+`;
+
+const CardCta = styled.div`
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed ${(p) => p.theme.colors.line};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.78rem;
+  color: ${(p) => p.theme.colors.primary};
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .arrow {
+    transition: transform 0.15s ease;
+  }
 `;
 
 const CardCaseId = styled.div`
@@ -228,9 +304,52 @@ const EmptyHint = styled.div`
   font-family: ${(p) => p.theme.fonts.body};
   font-size: 0.82rem;
   color: ${(p) => p.theme.colors.inkFaded};
-  font-style: italic;
-  padding: 1rem 0.4rem;
+  padding: 1rem 0.5rem;
   text-align: center;
+  border: 1px dashed ${(p) => p.theme.colors.line};
+  border-radius: 6px;
+  margin-top: 0.3rem;
+`;
+
+const EmptyCta = styled.button`
+  background: transparent;
+  border: 1px solid ${(p) => p.theme.colors.primary};
+  color: ${(p) => p.theme.colors.primary};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 0.6rem;
+
+  &:hover {
+    background: ${(p) => p.theme.colors.primary};
+    color: white;
+  }
+`;
+
+const HelpHint = styled.div`
+  background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
+  border-left: 3px solid ${(p) => p.theme.colors.bronze};
+  padding: 0.6rem 0.95rem;
+  border-radius: 0 4px 4px 0;
+  margin: 0 0 1rem;
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.85rem;
+  color: ${(p) => p.theme.colors.inkSoft};
+  line-height: 1.5;
+
+  strong { color: ${(p) => p.theme.colors.ink}; }
+
+  kbd {
+    background: ${(p) => p.theme.colors.paper};
+    border: 1px solid ${(p) => p.theme.colors.line};
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.78rem;
+  }
 `;
 
 // ---- Modal --------------------------------------------------------------
@@ -320,6 +439,46 @@ const aggregatePill = (status) => {
   if (status === 'BETINGET-GO') return 'pill-betinget';
   if (status === 'NO-GO') return 'pill-no-go';
   return '';
+};
+
+// Smart routing: hver sag åbner det MEST relevante view baseret på dens
+// progress. Kladder fortsætter i indkøbsproces-wizarden; vurderede åbner
+// historik; remediation åbner vurderingsskærmen så manglende felter kan
+// rettes; idriftsatte åbner historik som read-only.
+const cardClickPath = (c) => {
+  if (c.status === 'kladde') {
+    // Kladde — fortsæt indkøbsproces-wizarden
+    return `/indkoebsproces?case_id=${encodeURIComponent(c.case_id)}`;
+  }
+  if (c.last_assessment_log_id) {
+    // Har en konkret vurdering — åbn historikvisning
+    return `/historik/${c.last_assessment_log_id}`;
+  }
+  // Ingen vurdering endnu — åbn vurderingsskærmen prefilled med case_id
+  return `/vurdering?case_id=${encodeURIComponent(c.case_id)}`;
+};
+
+const cardCtaLabel = (c) => {
+  if (c.status === 'kladde') return 'Fortsæt sagen';
+  if (c.status === 'remediation') return 'Ret manglende krav';
+  if (c.status === 'vurderet') return 'Åbn vurdering';
+  if (c.status === 'godkendt') return 'Se godkendelse';
+  if (c.status === 'idriftsat') return 'Se i drift-status';
+  if (c.status === 'arkiveret') return 'Vis arkiv';
+  return 'Åbn';
+};
+
+// Beregn progress for kladder baseret på udfyldte felter i intake_state
+const intakeProgress = (intake) => {
+  if (!intake || typeof intake !== 'object') return null;
+  const fields = ['behov', 'dobbeltsystem_tjekket', 'sagsnummer', 'serviceportal_dato',
+                  'indkoeb_eller_udvikling', 'system_description'];
+  const filled = fields.filter((k) => {
+    const v = intake[k];
+    if (typeof v === 'boolean') return v;
+    return typeof v === 'string' && v.trim() !== '';
+  }).length;
+  return { filled, total: fields.length, pct: Math.round((filled / fields.length) * 100), step: intake.current_step || 1 };
 };
 
 const SagerPage = () => {
@@ -417,6 +576,13 @@ const SagerPage = () => {
         </ErrorBox>
       )}
 
+      <HelpHint>
+        <strong>Klik et kort</strong> for at åbne sagen — kladder fortsætter
+        i indkøbsprocessen, vurderede åbner historikken, remediation åbner
+        vurderingsmotoren. <strong>Træk i prikkerne</strong> <kbd>⋮⋮</kbd> i
+        øverste højre hjørne for at flytte sagen til en anden kolonne.
+      </HelpHint>
+
       <KanbanGrid>
         {STATUSES.map((s) => {
           const items = grouped[s.id] || [];
@@ -433,34 +599,78 @@ const SagerPage = () => {
                 <ColumnCount>{items.length}</ColumnCount>
               </ColumnHead>
               {items.length === 0 && !isLoading && (
-                <EmptyHint>Ingen sager</EmptyHint>
+                <EmptyHint>
+                  {s.id === 'kladde' ? (
+                    <>
+                      Ingen kladder endnu
+                      <br />
+                      <EmptyCta type="button" onClick={() => navigate('/indkoebsproces')}>
+                        + Start ny sag
+                      </EmptyCta>
+                    </>
+                  ) : (
+                    <>Ingen sager i {s.label.toLowerCase()}</>
+                  )}
+                </EmptyHint>
               )}
-              {items.map((c) => (
-                <Card
-                  key={c.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, c.id)}
-                  onClick={() => {
-                    if (c.last_assessment_log_id) {
-                      navigate(`/historik/${c.last_assessment_log_id}`);
-                    }
-                  }}
-                  title={c.last_assessment_log_id ? 'Klik for at åbne seneste vurdering' : undefined}
-                >
-                  <CardCaseId>{c.case_id}</CardCaseId>
-                  <CardTitle>{c.title}</CardTitle>
-                  <CardMeta>
-                    {c.last_aggregate_status && (
-                      <span className={`pill ${aggregatePill(c.last_aggregate_status)}`}>
-                        {c.last_aggregate_status}
-                      </span>
+              {items.map((c) => {
+                const intake = c.intake_state || null;
+                const progress = c.status === 'kladde' ? intakeProgress(intake) : null;
+                const previewText = (intake?.behov || intake?.system_description || c.notes || '').trim();
+                const targetPath = cardClickPath(c);
+                return (
+                  <Card
+                    key={c.id}
+                    draggable
+                    role="link"
+                    tabIndex={0}
+                    onDragStart={(e) => handleDragStart(e, c.id)}
+                    onClick={() => navigate(targetPath)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(targetPath);
+                      }
+                    }}
+                    title={`${cardCtaLabel(c)} — ${c.case_id}`}
+                  >
+                    <CardCaseId>
+                      {c.case_id}
+                      {progress && ` · trin ${progress.step}/4`}
+                    </CardCaseId>
+                    <CardTitle>{c.title}</CardTitle>
+                    {previewText && (
+                      <CardPreview>{previewText}</CardPreview>
                     )}
-                    {c.next_review_at && (
-                      <span>review · {new Date(c.next_review_at).toLocaleDateString('da-DK')}</span>
+                    {progress && (
+                      <CardProgress>
+                        <span>{progress.pct}%</span>
+                        <div className="bar">
+                          <div className="fill" style={{ width: `${progress.pct}%` }} />
+                        </div>
+                        <span>{progress.filled}/{progress.total}</span>
+                      </CardProgress>
                     )}
-                  </CardMeta>
-                </Card>
-              ))}
+                    <CardMeta>
+                      {c.last_aggregate_status && (
+                        <span className={`pill ${aggregatePill(c.last_aggregate_status)}`}>
+                          {c.last_aggregate_status}
+                        </span>
+                      )}
+                      {c.next_review_at && (
+                        <span>review · {new Date(c.next_review_at).toLocaleDateString('da-DK')}</span>
+                      )}
+                      {c.updated_at && (
+                        <span>opdateret {new Date(c.updated_at).toLocaleDateString('da-DK')}</span>
+                      )}
+                    </CardMeta>
+                    <CardCta>
+                      <span>{cardCtaLabel(c)}</span>
+                      <span className="arrow">→</span>
+                    </CardCta>
+                  </Card>
+                );
+              })}
             </Column>
           );
         })}
