@@ -3836,6 +3836,63 @@ async def v3_global_search(q: str, limit: int = 20):
     return {"query": q, "count": len(deduped), "results": deduped}
 
 
+@app.get("/api/v3/cases/by-case-id/{case_id}/report")
+async def v3_case_report(case_id: str, format: str = "docx"):
+    """Eksportér samlet sag-rapport i DOCX eller PDF.
+
+    Format: docx (default, redigerbar) eller pdf (print-klar).
+
+    Indhold:
+    - Cover-side (sagsnummer, titel, status, verdict)
+    - Sammendrag (status, evidens-progress, krav-antal)
+    - Indkøbsproces (intake state)
+    - Bifrost-vurdering (per-rule decisions, krav, lovcitater)
+    - Evidens-checkliste (status pr. artefakt + udfyldt indhold)
+    - Audit-trail (transitions, evidens-completions)
+    """
+    from src.database.connection import SessionLocal
+    from src.services.case_report_generator import (
+        build_report_data,
+        render_docx,
+        render_pdf,
+    )
+
+    fmt = format.lower().strip()
+    if fmt not in ("docx", "pdf"):
+        raise HTTPException(status_code=400, detail="format must be 'docx' or 'pdf'")
+
+    db = SessionLocal()
+    try:
+        data = await asyncio.to_thread(build_report_data, db, case_id)
+        if data is None:
+            raise HTTPException(status_code=404, detail=f"case_id not found: {case_id}")
+
+        if fmt == "docx":
+            content = await asyncio.to_thread(render_docx, data)
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ext = "docx"
+        else:
+            content = await asyncio.to_thread(render_pdf, data)
+            media_type = "application/pdf"
+            ext = "pdf"
+
+        # Filnavn med slugified titel + dato
+        from datetime import datetime as _dt
+        date_str = _dt.now().strftime("%Y-%m-%d")
+        safe_case = case_id.replace("/", "-").replace(" ", "_")
+        filename = f"bifrost-rapport-{safe_case}-{date_str}.{ext}"
+
+        return Response(
+            content=content,
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    finally:
+        db.close()
+
+
 @app.get("/api/v3/cases/by-case-id/{case_id}/timeline")
 async def v3_case_timeline(case_id: str, limit: int = 50):
     """Returnér samlet kronologisk feed for én sag — bruges af sag-detalje-siden.

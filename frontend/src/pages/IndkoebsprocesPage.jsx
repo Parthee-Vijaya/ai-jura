@@ -11,6 +11,8 @@ import {
   FaCloudUploadAlt,
   FaCheck,
   FaFolderOpen,
+  FaFileWord,
+  FaFilePdf,
 } from 'react-icons/fa';
 import { EvidenceEditor } from '../components/rules';
 import { Breadcrumb } from '../components/ui';
@@ -534,6 +536,18 @@ function progressPct(intake) {
   return Math.round((filled / fields.length) * 100);
 }
 
+// Trigger browser-download af sag-rapport (DOCX eller PDF).
+function downloadCaseReport(caseId, format) {
+  if (!caseId) return;
+  const url = `/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/report?format=${format}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 // ---- Component -----------------------------------------------------------
 
 const IndkoebsprocesPage = () => {
@@ -1036,6 +1050,22 @@ const IndkoebsprocesPage = () => {
               <SecondaryButton onClick={() => setStep(3)}>← Tilbage</SecondaryButton>
             </div>
             <div className="right">
+              {sagsnummer && (
+                <>
+                  <SecondaryButton
+                    onClick={() => downloadCaseReport(sagsnummer, 'docx')}
+                    title="Download samlet rapport som Word-dokument"
+                  >
+                    <FaFileWord /> DOCX
+                  </SecondaryButton>
+                  <SecondaryButton
+                    onClick={() => downloadCaseReport(sagsnummer, 'pdf')}
+                    title="Download samlet rapport som print-klar PDF"
+                  >
+                    <FaFilePdf /> PDF
+                  </SecondaryButton>
+                </>
+              )}
               <PrimaryButton onClick={goVurdering}>
                 <FaCloudUploadAlt /> Kør Bifrost-vurdering
               </PrimaryButton>

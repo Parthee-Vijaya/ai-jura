@@ -2281,9 +2281,55 @@ const V3VurderingPage = () => {
     <Page>
       <Shell>
         <Doc>
-          <BackLink type="button" onClick={resetAll}>
-            ← Ny vurdering
-          </BackLink>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: '0.5rem' }}>
+            <BackLink type="button" onClick={resetAll}>
+              ← Ny vurdering
+            </BackLink>
+            {caseId && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const a = document.createElement('a');
+                    a.href = `/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/report?format=docx`;
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }}
+                  style={{
+                    fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 600,
+                    background: 'transparent', border: '1px solid currentColor',
+                    color: 'inherit', padding: '6px 12px', borderRadius: 5, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                  }}
+                  title="Download samlet sag-rapport som Word-dokument"
+                >
+                  📄 DOCX
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const a = document.createElement('a');
+                    a.href = `/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/report?format=pdf`;
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                  }}
+                  style={{
+                    fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 600,
+                    background: 'transparent', border: '1px solid currentColor',
+                    color: 'inherit', padding: '6px 12px', borderRadius: 5, cursor: 'pointer',
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                  }}
+                  title="Download samlet sag-rapport som PDF"
+                >
+                  📑 PDF
+                </button>
+              </div>
+            )}
+          </div>
 
           <BifrostBreadcrumb
             items={[

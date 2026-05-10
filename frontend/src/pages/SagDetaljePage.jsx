@@ -13,6 +13,9 @@ import {
   FaCircle,
   FaArrowRight,
   FaEdit,
+  FaFileWord,
+  FaFilePdf,
+  FaDownload,
 } from 'react-icons/fa';
 
 import {
@@ -293,6 +296,21 @@ const formatRelative = (iso) => {
   return formatDate(iso);
 };
 
+// Trigger browser download af rapport. Bruger window.open så vi får native
+// browser-download-prompt (i stedet for fetch + blob-rute som kan blokeres
+// af pop-up-blockers eller miste filename-headers).
+const downloadReport = (caseId, format) => {
+  if (!caseId) return;
+  const url = `/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/report?format=${format}`;
+  // Use a hidden link så download starter uden at åbne ny tab
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
 // ---- Main page ----------------------------------------------------------
 
 const SagDetaljePage = () => {
@@ -445,9 +463,25 @@ const SagDetaljePage = () => {
             <Button
               $variant="secondary"
               $size="sm"
+              onClick={() => downloadReport(case_id, 'docx')}
+              title="Download som Word-dokument du kan redigere videre"
+            >
+              <FaFileWord /> DOCX
+            </Button>
+            <Button
+              $variant="secondary"
+              $size="sm"
+              onClick={() => downloadReport(case_id, 'pdf')}
+              title="Download som print-klar PDF"
+            >
+              <FaFilePdf /> PDF
+            </Button>
+            <Button
+              $variant="secondary"
+              $size="sm"
               onClick={() => navigate(`/indkoebsproces?case_id=${encodeURIComponent(case_id)}`)}
             >
-              <FaEdit /> Rediger indkøb
+              <FaEdit /> Rediger
             </Button>
             <Button
               $variant="primary"
