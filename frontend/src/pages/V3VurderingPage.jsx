@@ -12,6 +12,7 @@ import {
   SidenotesColumn,
   toSuperscript,
 } from '../components/rules';
+import { Breadcrumb as BifrostBreadcrumb } from '../components/ui';
 
 /**
  * V3VurderingPage — Design C "Editorial workspace" rendering of the v3
@@ -1917,6 +1918,15 @@ const V3VurderingPage = () => {
   if (!hasResult) {
     return (
       <Page>
+        {caseId && (
+          <BifrostBreadcrumb
+            items={[
+              { label: 'Sager', to: '/sager' },
+              { label: caseId, to: `/sag/${encodeURIComponent(caseId)}` },
+              { label: 'Vurdering' },
+            ]}
+          />
+        )}
         <Eyebrow>Bifrost · v3 rule_engine</Eyebrow>
         <Title>Vurdering</Title>
         <Lede>
@@ -2275,13 +2285,13 @@ const V3VurderingPage = () => {
             ← Ny vurdering
           </BackLink>
 
-          <Breadcrumb>
-            <span>Sager</span>
-            <span className="crumb-sep">/</span>
-            <span>{displayTitle}</span>
-            <span className="crumb-sep">/</span>
-            <span className="crumb-current">Vurdering</span>
-          </Breadcrumb>
+          <BifrostBreadcrumb
+            items={[
+              { label: 'Sager', to: '/sager' },
+              ...(caseId ? [{ label: caseId, to: `/sag/${encodeURIComponent(caseId)}` }] : []),
+              { label: displayTitle || 'Vurdering' },
+            ]}
+          />
 
           {displayCaseId && <CaseId>Sag {displayCaseId}</CaseId>}
           <CaseTitle>{displayTitle}</CaseTitle>

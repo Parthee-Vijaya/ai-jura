@@ -13,6 +13,7 @@ import {
   FaFolderOpen,
 } from 'react-icons/fa';
 import { EvidenceEditor } from '../components/rules';
+import { Breadcrumb } from '../components/ui';
 
 /**
  * IndkoebsprocesPage — 4-trins wizard der matcher Kalundborg Kommunes
@@ -707,6 +708,15 @@ const IndkoebsprocesPage = () => {
 
   return (
     <Page>
+      {sagsnummer && (
+        <Breadcrumb
+          items={[
+            { label: 'Sager', to: '/sager' },
+            { label: sagsnummer, to: `/sag/${encodeURIComponent(sagsnummer)}` },
+            { label: 'Indkøbsproces' },
+          ]}
+        />
+      )}
       <Eyebrow>Bifrost · indkøbsproces</Eyebrow>
       <Title>Indkøb og udvikling af AI-løsninger</Title>
       <Lede>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   PageShell,
@@ -9,6 +9,7 @@ import {
   PrimaryButton,
   OutlinePill,
 } from '../components/page-chrome/PageChrome';
+import { Breadcrumb, Banner } from '../components/ui';
 
 // ---- Routing engine ------------------------------------------------------
 //
@@ -351,6 +352,8 @@ const VersionBadge = styled.span`
 
 const EuAiActCheckerPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromIndkoeb = searchParams.get('fromIndkoeb');
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
   // Sprog-vælger: default DA hvis tilgængelig, ellers EN. Persistes i localStorage.
@@ -526,6 +529,23 @@ const EuAiActCheckerPage = () => {
 
   return (
     <PageShell>
+      {fromIndkoeb && (
+        <>
+          <Breadcrumb
+            items={[
+              { label: 'Sager', to: '/sager' },
+              { label: fromIndkoeb, to: `/sag/${encodeURIComponent(fromIndkoeb)}` },
+              { label: 'EU AI Act-tjek' },
+            ]}
+          />
+          <Banner $tone="info">
+            <strong>Du kom fra indkøbsproces på sag {fromIndkoeb}.</strong>{' '}
+            Når wizarden er færdig kan du klikke <em>Fortsæt til Bifrost-vurdering</em>{' '}
+            — eller{' '}
+            <a href={`/sag/${encodeURIComponent(fromIndkoeb)}`}>← gå tilbage til sagen</a>.
+          </Banner>
+        </>
+      )}
       <PageHeader
         eyebrow="Bifrost · EU compliance checker"
         title="EU AI Act Compliance Checker"
