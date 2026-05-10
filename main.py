@@ -82,6 +82,7 @@ async def lifespan(app: FastAPI):
         from src.database import audit_access_log as _audit_access  # noqa: F401
         from src.database import cases as v3_cases  # noqa: F401 — registers Case + CaseTransition
         from src.database import evidence as v3_evidence  # noqa: F401 — registers EvidenceArtifact
+        from src.database import notifications as v3_notifications  # noqa: F401 — registers Notification
         from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
         from src.services import citation_verifier as v3_freshness  # noqa: F401 — registers RuleFreshness
         from src.database.connection import init_db
@@ -3584,6 +3585,71 @@ async def v3_case_by_external_id(case_id: str):
         db.close()
 
 
+# ==================== Notifications ===================================
+#
+# Auto-emit fra evidence-completions, case-transitions, citation-flagging.
+# Vises som bell-icon-badge i Bifrosts sidebar header.
+
+@app.get("/api/v3/notifications")
+async def v3_notifications_list(unread_only: bool = False, limit: int = 30):
+    """List notifikationer — bruges af bell-panel."""
+    from src.database.connection import SessionLocal
+    from src.database import notifications as notif_svc
+
+    db = SessionLocal()
+    try:
+        rows = await asyncio.to_thread(
+            notif_svc.list_recent, db, limit=limit, unread_only=unread_only,
+        )
+        unread = await asyncio.to_thread(notif_svc.count_unread, db)
+        return {
+            "count": len(rows),
+            "unread": unread,
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/notifications/{notification_id}/read")
+@limiter.limit(ADMIN_WRITE)
+async def v3_notification_mark_read(
+    request: Request,
+    response: Response,
+    notification_id: str,
+):
+    from src.database.connection import SessionLocal
+    from src.database import notifications as notif_svc
+
+    db = SessionLocal()
+    try:
+        n = await asyncio.to_thread(notif_svc.mark_read, db, notification_id)
+        if n is None:
+            raise HTTPException(status_code=404, detail="notification not found")
+        db.commit()
+        return n.to_dict()
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/notifications/read-all")
+@limiter.limit(ADMIN_WRITE)
+async def v3_notifications_mark_all_read(
+    request: Request,
+    response: Response,
+):
+    from src.database.connection import SessionLocal
+    from src.database import notifications as notif_svc
+
+    db = SessionLocal()
+    try:
+        count = await asyncio.to_thread(notif_svc.mark_all_read, db)
+        db.commit()
+        return {"marked_read": count}
+    finally:
+        db.close()
+
+
 @app.get("/api/v3/search")
 async def v3_global_search(q: str, limit: int = 20):
     """Global søgning på tværs af alle entities — bruges af Cmd+K spotlight.
@@ -4431,8 +4497,9 @@ async def v3_evidence_upsert(
     første gang sættes `completed_at` + `completed_by` automatisk.
     """
     from src.database.connection import SessionLocal
-    from src.database.evidence import upsert_evidence
+    from src.database.evidence import upsert_evidence, get_evidence
     from src.database.audit_access_log import record_access
+    from src.database import notifications as notif_svc
     from src.services.evidence_artifacts import compute_status, get_template
 
     template = get_template(artifact_id)
@@ -4440,6 +4507,10 @@ async def v3_evidence_upsert(
 
     db = SessionLocal()
     try:
+        # Pre-check: var artefaktet allerede færdigt? Hvis ja, ingen notifikation
+        prev = get_evidence(db, case_id, artifact_id)
+        was_already_completed = prev is not None and prev.status in ("faerdig", "godkendt")
+
         row = upsert_evidence(
             db,
             case_id=case_id,
@@ -4459,6 +4530,23 @@ async def v3_evidence_upsert(
             action="write",
             request_id=getattr(request.state, "request_id", None),
         )
+
+        # Auto-emit notifikation når et artefakt skifter til faerdig første gang
+        if computed in ("faerdig", "godkendt") and not was_already_completed:
+            try:
+                notif_svc.emit(
+                    db,
+                    kind="evidens_completed",
+                    title=f"Evidens færdig: {artifact_id.replace('_', ' ')}",
+                    message=f"Artefaktet '{template.title}' er nu udfyldt på sag {case_id}.",
+                    case_id=case_id,
+                    link_url=f"/sag/{case_id}?tab=evidens",
+                    severity="success",
+                    actor=body.user,
+                )
+            except Exception as exc:
+                logger.warning(f"notification emit failed: {exc}")
+
         db.commit()
         return {
             **row.to_dict(),

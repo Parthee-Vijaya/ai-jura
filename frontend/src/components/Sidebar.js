@@ -16,8 +16,10 @@ import {
   FaChevronUp,
   FaRobot,
   FaGavel,
-  FaShoppingCart
+  FaShoppingCart,
+  FaSearch,
 } from 'react-icons/fa';
+import NotificationsBell from './notifications/NotificationsBell';
 
 const NAVIGATION_ID = 'sidebar-navigation';
 
@@ -533,6 +535,42 @@ const Sidebar = ({ collapsed, onToggle }) => {
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}
         </BrandContainer>
+        {!collapsed && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            marginLeft: 'auto',
+            paddingRight: 4,
+          }}>
+            <button
+              type="button"
+              title="Søg (Cmd+K)"
+              onClick={() => {
+                // Trigger Cmd+K via fake keyboard event så GlobalSearch åbner
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid transparent',
+                color: 'var(--text-muted, #888)',
+                cursor: 'pointer',
+                padding: 6,
+                borderRadius: 6,
+                width: 34,
+                height: 34,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.95rem',
+              }}
+              aria-label="Åbn søgning"
+            >
+              <FaSearch />
+            </button>
+            <NotificationsBell />
+          </div>
+        )}
       </SidebarHeader>
 
       <NavContent id={NAVIGATION_ID}>
