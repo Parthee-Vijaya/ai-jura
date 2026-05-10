@@ -528,9 +528,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <BrandContainer $collapsed={collapsed}>
           <BrandPrimary $collapsed={collapsed}>
             {collapsed ? (
-              <>T<span className="brand-rune" aria-hidden="true">ᛏ</span></>
+              <>B<span className="brand-rune" aria-hidden="true">ᛒ</span></>
             ) : (
-              <>Bifrost<span className="brand-rune" aria-hidden="true">ᛏ</span><span className="brand-version">v3</span></>
+              <>Bifrost<span className="brand-rune" aria-hidden="true">ᛒ</span><span className="brand-version">beta 1</span></>
             )}
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}
@@ -628,8 +628,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       {!collapsed && (
         <SidebarFooter>
           <FooterRune>
-            <span className="footer-rune-mark" aria-hidden="true">ᛏ</span>
-            Bifrost · v3
+            <span className="footer-rune-mark" aria-hidden="true">ᛒ</span>
+            Bifrost · beta 1
           </FooterRune>
           <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>
           <Link

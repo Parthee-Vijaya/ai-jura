@@ -12,7 +12,7 @@ import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
  * Helt nyt layout der matcher DESIGN.md. Drop'er den gamle Forseti-hero
  * med rødt-gradient, version-card, system-status-block og 3-kolonne
  * icon-feature-grid (AI-slop). Erstattet af:
- *   1. Hero — wordmark "Bifrost ᛏ" + h1 + lede + primær/sekundær CTA
+ *   1. Hero — wordmark "Bifrost ᛒ" + h1 + lede + primær/sekundær CTA
  *   2. Sådan virker Bifrost — 4-trins workflow (hairline border, mono-tal)
  *   3. Hvad du bør vide — 3 rotating facts som editorial cards
  *   4. NewsSection (live RSS)
@@ -448,7 +448,7 @@ const HomePage = () => {
         <HeroPrimary>
           <Wordmark>
             <span>Bifrost</span>
-            <span className="rune" aria-hidden="true">ᛏ</span>
+            <span className="rune" aria-hidden="true">ᛒ</span>
             <span className="ver">v3 · Kalundborg</span>
           </Wordmark>
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>

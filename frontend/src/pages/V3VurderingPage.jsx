@@ -1927,7 +1927,7 @@ const V3VurderingPage = () => {
             ]}
           />
         )}
-        <Eyebrow>Bifrost · v3 rule_engine</Eyebrow>
+        <Eyebrow>Bifrost · beta 1 rule_engine</Eyebrow>
         <Title>Vurdering</Title>
         <Lede>
           Beskriv AI-systemet i fri tekst. Backend kører den deterministiske

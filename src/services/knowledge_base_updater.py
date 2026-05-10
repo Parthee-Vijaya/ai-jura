@@ -46,34 +46,175 @@ _DEFAULT_ICON = "FaFileAlt"
 # Lovlige kategorier — matcher det frontend forventer.
 _CATEGORIES = ("legal", "compliance", "ai", "operations")
 
-# Seed-liste af termer der ofte er aktuelle i 2025-2026 men måske ikke
-# allerede er i basen. Filtreres mod eksisterende termer før LLM-kald.
+# Curated seed-liste af 130+ termer der dækker pilot-relevante AI-jura,
+# compliance og tech-koncepter. Filtreres mod eksisterende termer før
+# LLM-kald så vi ikke genererer dubletter.
+#
+# Strukturen er flad — kategorisering sker i LLM-svaret. Termer er valgt
+# så vidensbasen kan svare på 80% af de spørgsmål en kommunal sagsbehandler
+# kan stille en EU AI Act / GDPR / forvaltningsret-AI-platform.
 _DEFAULT_SEED_TERMS = [
-    "AI red teaming",
-    "AI watermarking",
-    "Deepfake disclosure (AI Act Art. 50)",
-    "Algorithmic auditing",
-    "EU AI Office",
-    "GPAI Code of Practice",
-    "AI Pact (frivillig forpligtelse)",
-    "FRIA template (AI Office)",
-    "Differential privacy",
-    "Federated learning",
-    "Model card",
-    "Datablad (Datasheet for Datasets)",
-    "AI value chain (AI Act Art. 25)",
-    "Substantial modification",
-    "Post-market monitoring (AI Act Art. 72)",
-    "Serious incident reporting (AI Act Art. 73)",
-    "Prompt engineering governance",
-    "Evals (AI evaluations)",
-    "Constitutional AI",
-    "AI red teaming exercises",
-    "Hallucination detection",
-    "Tool-use auditing",
+    # ============ EU AI Act — overblik ============
+    "EU AI-forordningen (Forordning 2024/1689)",
+    "AI Act ikrafttrædelses-tidslinje 2025-2027",
+    "AI Act Annex III (højrisiko-områder)",
+    "AI Act Annex IV (teknisk dokumentation)",
+    "AI Act Annex VI (intern overensstemmelsesvurdering)",
+    "AI Act Annex VII (kvalitetsstyringssystem)",
+    "AI Act Annex VIII (EU-database-felter)",
+    "AI Act Bilag XI (model-evaluering)",
+    "Recital 12 (AI-system-definition)",
+    "Recital 99 (general-purpose-modeller)",
+    # ============ Roller + ansvarskæder ============
+    "Udbyder (provider) — AI Act Art. 16-22",
+    "Idriftsætter (deployer) — AI Act Art. 26",
+    "Importør — AI Act Art. 23",
+    "Distributør — AI Act Art. 24",
+    "Bemyndiget repræsentant — AI Act Art. 22",
+    "Produktproducent — AI Act Art. 25",
+    "Downstream-modifikator — AI Act Art. 53(5)",
+    "AI value chain — Art. 25 + ansvarsoverdragelse",
+    "Substantial modification — hvornår skifter man rolle?",
+    # ============ Forbudte praksisser (Art. 5) ============
+    "Subliminale eller manipulerende teknikker — Art. 5(1)(a)",
+    "Udnyttelse af sårbarhed (alder, handicap) — Art. 5(1)(b)",
+    "Social scoring i offentlig kontekst — Art. 5(1)(c)",
+    "Kriminalitetsrisikovurdering alene baseret på profilering — Art. 5(1)(d)",
+    "Ansigtsgenkendelses-databaser via untargeted scraping — Art. 5(1)(e)",
+    "Følelsesgenkendelse på arbejdspladsen — Art. 5(1)(f)",
+    "Biometrisk kategorisering på særlige kategorier — Art. 5(1)(g)",
+    "Realtids-fjern-biometrisk identifikation — Art. 5(1)(h)",
+    # ============ Højrisiko-krav (Art. 8-15) ============
+    "Risikostyringssystem — Art. 9",
+    "Datasæt + data governance — Art. 10",
+    "Teknisk dokumentation — Art. 11 + Annex IV",
+    "Logning + traceability — Art. 12",
+    "Transparens + brugsanvisning — Art. 13",
+    "Menneskelig overvågning — Art. 14",
+    "Nøjagtighed, robusthed og cybersikkerhed — Art. 15",
+    "Kvalitetsstyringssystem (QMS) — Art. 17",
+    "EU-overensstemmelseserklæring — Art. 47",
+    "CE-mærkning af AI-systemer — Art. 48",
+    "EU-database-registrering — Art. 49 + 71",
+    "Konsekvensanalyse for grundlæggende rettigheder (FRIA) — Art. 27",
+    # ============ Transparens (Art. 50) ============
+    "Chatbot-transparens — Art. 50(1)",
+    "Følelsesgenkendelse-oplysning — Art. 50(3)",
+    "Syntetisk indhold maskinlæsbar mærkning — Art. 50(2)",
+    "Deepfake-mærkning — Art. 50(4)",
+    "AI-genereret tekst om offentlig interesse — Art. 50(4)",
+    # ============ GPAI ============
+    "General-purpose AI (GPAI) — Art. 51-55",
+    "Systemisk risiko-tærskel — 10^25 FLOPs (Art. 51)",
+    "GPAI Code of Practice (juli 2025)",
+    "GPAI træningsdata-summary — Art. 53(1)(d)",
+    "GPAI copyright-policy — Art. 53(1)(c)",
+    "GPAI-model-evaluering + red teaming — Art. 55",
+    "Open-source GPAI-undtagelse — Art. 53(2)",
+    # ============ Håndhævelse + sanktioner ============
+    "AI Office (EU-Kommissionen)",
+    "National kompetent myndighed (Digitaliseringsstyrelsen i DK)",
+    "Markedsovervågnings-myndighed",
+    "Bemyndiget organ (notified body)",
+    "AI Act bøder — op til 35 mio. EUR / 7% omsætning",
+    "Serious incident reporting — Art. 73",
+    "Post-market monitoring plan — Art. 72",
+    # ============ GDPR + databeskyttelse ============
+    "GDPR Art. 5 — principper for behandling",
+    "GDPR Art. 6 — retsgrundlag",
+    "GDPR Art. 9 — særlige kategorier",
+    "GDPR Art. 22 — automatiserede individuelle afgørelser",
+    "GDPR Art. 25 — privacy by design + default",
+    "GDPR Art. 30 — fortegnelse over behandlingsaktiviteter",
+    "GDPR Art. 32 — sikkerhed ved behandling",
+    "GDPR Art. 33-34 — brud-anmeldelse",
+    "GDPR Art. 35 — DPIA (konsekvensanalyse)",
+    "GDPR Art. 36 — forhåndshøring af Datatilsynet",
+    "Databeskyttelsesloven (DK) §11 — CPR-behandling",
+    "Datatilsynets DPIA-skabelon (2024 + 2025 AI-version)",
+    "WP248 — DPIA guidelines (Article 29 WP)",
+    "WP251 — automated individual decision-making guidelines",
+    # ============ Dansk forvaltningsret + AI ============
+    "Forvaltningsloven §3 — inhabilitet",
+    "Forvaltningsloven §19 — partshøring",
+    "Forvaltningsloven §22 — begrundelsespligt",
+    "Forvaltningsloven §24 — begrundelsens indhold",
+    "Forvaltningsloven §25 — klagevejledning",
+    "Offentlighedsloven §13 — dataudtræk og sammenstilling",
+    "God forvaltningsskik + AI — kvitteringer + frister",
+    "Lighedsgrundsætningen i AI-kontekst",
+    "Officialprincippet i automatiseret sagsbehandling",
+    "Saglighedsprincippet ved algoritmisk skøn",
+    # ============ Sektorlov + kommunal kontekst ============
+    "Servicelov §11 — rådgivning og vejledning",
+    "Servicelov §50 — børnefaglig undersøgelse + AI",
+    "Servicelov §102 — særlig støtte til voksne",
+    "Beskæftigelseslov §11 — kontaktforløbet + profilering",
+    "Beskæftigelseslov §27 — jobplan + AI-genereret indhold",
+    "Sundhedsloven §23 — patientinformation + AI",
+    "Folkeskoleloven + AI i undervisningen",
+    # ============ Tekniske AI-koncepter ============
+    "Large Language Model (LLM) — basics",
+    "Retrieval-Augmented Generation (RAG)",
+    "Fine-tuning vs. RAG vs. prompt engineering",
+    "Embeddings + vektordatabaser",
+    "Prompt injection + jailbreaking",
+    "Hallucination detection + citation grounding",
+    "Tool-use og agentic workflows",
     "Multi-agent orchestration",
-    "AI safety institute (UK / US AISI)",
-    "Bletchley Declaration",
+    "Constitutional AI + RLHF",
+    "Federated learning + differential privacy",
+    "Model card + datasheet for datasets",
+    "AI Bill of Materials (AI BOM)",
+    "Watermarking + content provenance (C2PA)",
+    "AI red teaming + safety evaluations",
+    "Evals (LM-evaluation harnesses)",
+    "AI agent / agentic AI patterns",
+    "Model Context Protocol (MCP)",
+    "Model deployment patterns (cloud / on-prem / edge)",
+    "Vector databases (Qdrant, Pinecone, pgvector)",
+    "Synthetic data + generation",
+    "Dataset bias detection + mitigation",
+    # ============ International + standards ============
+    "ISO/IEC 42001 — AI Management System",
+    "ISO/IEC 23894 — AI risk management",
+    "ISO/IEC 5338 — AI system life cycle processes",
+    "ISO/IEC 24029 — neural network robustness",
+    "NIST AI Risk Management Framework (AI RMF 1.0)",
+    "OECD AI Principles + indicators",
+    "Council of Europe AI Convention 2024",
+    "Bletchley Declaration (AI Safety Summit 2023)",
+    "Seoul Declaration (AI Safety Summit 2024)",
+    "AI Pact (frivillig EU-forpligtelse)",
+    # ============ Tilstødende EU-regulering ============
+    "Digital Services Act (DSA) + AI",
+    "Digital Markets Act (DMA) + AI",
+    "Data Act + AI training data",
+    "Data Governance Act + offentlige datasæt",
+    "NIS2 (cybersikkerhed) + AI-systemer",
+    "DORA (digital operational resilience) + AI",
+    "AI Liability Directive (AILD) — udkast",
+    "Product Liability Directive (revideret 2024)",
+    "EHDS (European Health Data Space) + AI",
+    # ============ Praktiske compliance-værktøjer ============
+    "AI inventory / AI register",
+    "Shadow AI — uregistreret AI i organisationen",
+    "Model governance committee",
+    "AI ethics board / oversight committee",
+    "Data protection officer (DPO) — rolle ved AI",
+    "Algoritmic impact assessment (AIA)",
+    "AI procurement checklist (Kalundborgs egen)",
+    "DBS-databehandleraftale (kommunal standardskabelon)",
+    "Tilsynskoncept 1-6 (DBS — risikobaseret tilsyn)",
+    "Vibe coding + governance",
+    # ============ Pilot + organisatorisk ============
+    "Pilot vs. produktion — gates til idriftsættelse",
+    "AI literacy (Art. 4) — træningsbehov",
+    "Sagsbehandler-træning + automation bias",
+    "Stikprøvekontrol af AI-output",
+    "Override-logning + audit trail",
+    "AI-sagsoplysning til borgere",
+    "Bestridelsesret + menneskelig indgriben",
 ]
 
 
@@ -416,9 +557,13 @@ def _generate_entry_for_term(term: str, provider: _LLMProvider) -> Optional[dict
 async def update_knowledge_base(
     recent_queries: Optional[list[str]] = None,
     *,
-    max_new_terms: int = 5,
+    max_new_terms: int = 15,
 ) -> dict[str, Any]:
     """Opdater vidensbasen med op til ``max_new_terms`` nye termer.
+
+    Default ændret fra 5 → 15 termer/uge så vi når 100+ inden for ~5
+    ugentlige cron-kørsler. Manuel trigger via /api/knowledge-base/update
+    accepterer en højere værdi til engangs-fyld.
 
     Hvis ``recent_queries`` er givet, ekstraheres kandidater derfra (ellers
     bruges default-seed-listen). Termer der allerede findes (case-insensitive
@@ -531,9 +676,11 @@ def _extract_terms_from_queries(queries: list[str]) -> list[str]:
 
 def run_knowledge_base_update(
     recent_queries: Optional[list[str]] = None,
+    *,
+    max_new_terms: int = 15,
 ) -> dict[str, Any]:
     """Synkron wrapper — bekvem til scheduler-kald."""
-    return asyncio.run(update_knowledge_base(recent_queries))
+    return asyncio.run(update_knowledge_base(recent_queries, max_new_terms=max_new_terms))
 
 
 __all__ = [

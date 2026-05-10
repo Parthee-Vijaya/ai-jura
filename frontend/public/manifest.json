@@ -1,7 +1,7 @@
 {
-  "short_name": "Tyr",
-  "name": "Tyr — kommunal AI-compliance",
-  "description": "Tyr hjemler hver AI-vurdering i konkret lovartikel. Deterministisk regelmotor + dagligt verificerede citater.",
+  "short_name": "Bifrost",
+  "name": "Bifrost — kommunal AI-compliance",
+  "description": "Bifrost hjemler hver AI-vurdering i konkret lovartikel. Deterministisk regelmotor + dagligt verificerede citater.",
   "icons": [
     {
       "src": "favicon.ico",
