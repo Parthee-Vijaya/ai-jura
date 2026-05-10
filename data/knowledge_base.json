@@ -834,5 +834,1085 @@
     "auto_generated": true,
     "added_at": "2026-05-08T20:33:28.717667+00:00",
     "id": 42
+  },
+  {
+    "term": "EU AI-forordningen (Forordning 2024/1689)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "EU AI-forordningen (Forordning 2024/1689) er den fælles lovgivning, der regulerer anvendelse af kunstig intelligens i EU. Den fastsætter krav til risikostyring, transparens og ansvarlighed for AI-systemer.",
+    "context": "For kommunale myndigheder er forordningen afgørende, da den indfører nye forpligtelser ved brug af AI til beslutningstagning og serviceudlevering. Sagsbehandlere skal sikre, at AI-løsninger er klassificeret korrekt efter risikoniveau og overholder krav til dokumentation, datakvalitet og brugerinvolvering.",
+    "tags": [
+      "EU AI",
+      "forordning",
+      "risikostyring",
+      "transparens",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:52:51.771770+00:00",
+    "id": 43
+  },
+  {
+    "term": "AI Act ikrafttrædelses-tidslinje 2025-2027",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act ikrafttrædelses-tidslinje 2025-2027 beskriver de trin og datoer, hvor EU’s AI-lovgivning træder i kraft og implementeres på nationalt niveau.",
+    "context": "Kommunale myndigheder skal sikre, at deres AI-systemer overholder EU‑AI Act fra den første ikrafttrædelsesdato. Tidslinjen fastsætter, hvornår krav til risikovurdering, registrering og rapportering gælder. Sagsbehandlere skal kende de specifikke datoer for at planlægge compliance-tiltag og undgå sanktioner.",
+    "tags": [
+      "AI Act",
+      "ikrafttrædelse",
+      "EU-lovgivning",
+      "compliance",
+      "tidslinje"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:52:53.767720+00:00",
+    "id": 44
+  },
+  {
+    "term": "AI Act Annex III (højrisiko-områder)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Annex III indeholder en liste over AI-systemer, der anses for højrisiko. Disse systemer skal opfylde særlige krav til risikostyring, transparens og efterlevelse af EU‑regulativ.",
+    "context": "Kommunale enheder kan anvende AI til beslutningstagning, planlægning eller service. Hvis systemet falder ind under Annex III (fx sundhed, transport, kritisk infrastruktur), er der krav om dokumentation, datakvalitet og menneskelig overvågning. Sagsbehandlere skal identificere om deres AI‑løsninger er klassificeret som højrisiko og sikre, at de opfylder de tilsvarende krav.",
+    "tags": [
+      "AI Act",
+      "højrisiko",
+      "Annex III",
+      "EU-regulativ",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:52:55.929046+00:00",
+    "id": 45
+  },
+  {
+    "term": "AI Act Annex IV (teknisk dokumentation)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Annex IV (teknisk dokumentation) er en del af EU's AI-forskrift, der kræver detaljeret teknisk dokumentation for højrisiko‑AI-systemer. Dokumentationen skal beskrive systemets design, funktion og risikovurdering.",
+    "context": "Kommunale myndigheder skal sikre, at AI‑systemer, der anvendes i offentlige tjenester og beslutningsprocesser, opfylder kravene. Sagsbehandlere skal kunne gennemgå og verificere den tekniske dokumentation for at bekræfte overholdelse af sikkerhed, sporbarhed og gennemsigtighed i henhold til AI Act.",
+    "tags": [
+      "AI Act",
+      "Annex IV",
+      "teknisk dokumentation",
+      "højrisiko AI",
+      "EU-regulering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:52:57.961975+00:00",
+    "id": 46
+  },
+  {
+    "term": "AI Act Annex VI (intern overensstemmelsesvurdering)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Annex VI omhandler den interne overensstemmelsesvurdering, som virksomheder skal udføre for at dokumentere, at deres AI-systemer overholder EU‑AI‑Act’s krav til risikostyring, datasikkerhed og gennemsigtighed.",
+    "context": "Kommunale myndigheder skal sikre, at AI‑løsninger de anvender eller udvikler, er i overensstemmelse med EU‑AI‑Act. Den interne vurdering giver en systematisk metode til at identificere, vurdere og dokumentere risici samt implementere passende tekniske og organisatoriske foranstaltninger. Sagsbehandlere skal kunne gennemgå og verificere disse vurderinger som del af compliance‑processen.",
+    "tags": [
+      "AI Act",
+      "Annex VI",
+      "overensstemmelsesvurdering",
+      "EU‑regulering",
+      "risikostyring"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:00.204995+00:00",
+    "id": 47
+  },
+  {
+    "term": "AI Act Annex VII (kvalitetsstyringssystem)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Annex VII beskriver kravene til et kvalitetsstyringssystem (QSS) for AI‑produkter, herunder planlægning, risikovurdering, dokumentation og løbende overvågning.",
+    "context": "I kommunal AI‑compliance er et QSS nødvendigt for at sikre, at AI‑løsninger lever op til EU’s krav om sikkerhed og pålidelighed. Sagsbehandleren skal kende de konkrete processer for dokumentation, revision og forbedring samt sikre, at QSS er integreret i kommunens øvrige styringssystemer.",
+    "tags": [
+      "AI Act",
+      "kvalitetsstyring",
+      "risikovurdering",
+      "dokumentation",
+      "revision"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:02.103940+00:00",
+    "id": 48
+  },
+  {
+    "term": "AI Act Annex VIII (EU-database-felter)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Annex VIII specificerer felter i EU‑databaser, som skal registreres for AI-systemer. Det omfatter metadata og tekniske oplysninger, der er nødvendige for sporbarhed og vurdering af risikoklassifikation.",
+    "context": "For kommunale sagsbehandlere er det afgørende at sikre, at AI-systemer, der anvendes i offentlige processer, registreres korrekt i EU‑databaser. Manglende eller fejlregistrering kan medføre manglende overholdelse af AI‑Act, hvilket kan resultere i sanktioner eller krav om systemændring. Sagsbehandleren skal derfor kende de relevante felter og sikre, at data indsamles i overensstemmelse med Annex VIII.",
+    "tags": [
+      "AI Act",
+      "EU database",
+      "registrering",
+      "sporbarhed",
+      "kommunal AI compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:04.312452+00:00",
+    "id": 49
+  },
+  {
+    "term": "AI Act Bilag XI (model-evaluering)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Act Bilag XI omhandler model-evaluering, dvs. systematisk vurdering af AI-modellers ydeevne og risikoprofil før udrulning eller efter ændringer.",
+    "context": "Kommunale myndigheder anvender AI til beslutningsstøtte og service. Bilag XI kræver dokumenteret evaluering af modeller for at sikre, at de lever op til krav om sikkerhed, pålidelighed og ikke-diskrimination. Sagsbehandlere skal kunne dokumentere evalueringens metode, resultater og eventuelle justeringer.",
+    "tags": [
+      "AI Act",
+      "model-evaluering",
+      "risikovurdering",
+      "dokumentation",
+      "kommunal AI compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:06.195567+00:00",
+    "id": 50
+  },
+  {
+    "term": "Recital 12 (AI-system-definition)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Recital 12 i EU‑AI-lovgivningen (Artificial Intelligence Act) fastsætter definitionen af et AI-system som enhver software, der er designet til at generere output baseret på input eller data og kan anvendes i en bred vifte af kontekster, herunder kommunale tjenester.",
+    "context": "For kommunal sagsbehandling er det afgørende at identificere, hvilke systemer der falder under AI‑definitionen, da de er omfattet af strengere krav til risikovurdering, gennemsigtighed og databeskyttelse. Sagsbehandlere skal kunne afgøre, om et system er et AI‑system og dermed aktivere de relevante compliance‑procedurer.",
+    "tags": [
+      "AI-system",
+      "EU AI Act",
+      "definition",
+      "kommunal sagsbehandling",
+      "compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:08.311899+00:00",
+    "id": 51
+  },
+  {
+    "term": "Recital 99 (general-purpose-modeller)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Recital 99 i EU's AI Act beskriver generelle formålsmæssige modeller (general‑purpose models) som AI-systemer, der er designet til at udføre en bred vifte af opgaver uden specifik domæneorientering.",
+    "context": "I kommunal AI‑compliance er det vigtigt at identificere, om anvendte modeller falder ind under Recital 99. Disse modeller er ofte klassificeret som højrisiko, hvilket kræver dokumentation af risikovurdering, træningsdata og løbende overvågning. Sagsbehandlere skal sikre, at de overholder krav om transparens og ansvarlighed i henhold til den danske implementering af EU‑AI‑Act (2025/26).",
+    "tags": [
+      "recital99",
+      "general-purpose-models",
+      "AI Act",
+      "højrisiko",
+      "compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:10.483160+00:00",
+    "id": 52
+  },
+  {
+    "term": "Udbyder (provider) — AI Act Art. 16-22",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Udbyder (provider) er den juridiske enhed, der leverer eller distribuerer AI-systemet til brugere i henhold til EU's AI Act, artikler 16-22.",
+    "context": "I kommunal AI-compliance er det afgørende at identificere, om en leverandør er defineret som udbyder under AI Act. Udbydere har ansvar for at sikre, at deres systemer opfylder krav til risikovurdering, dokumentation og overvågning. Kommunen skal derfor verificere udbyderens registrering, certificering og overholdelse af EU-krav.",
+    "tags": [
+      "AI Act",
+      "provider",
+      "compliance",
+      "EU",
+      "risk assessment"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:12.834076+00:00",
+    "id": 53
+  },
+  {
+    "term": "Idriftsætter (deployer) — AI Act Art. 26",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Idriftsætter (deployer) er den person eller organisation, der implementerer og anvender en AI‑løsning i praksis, jf. EU‑AI Act art. 26.",
+    "context": "I kommunal AI‑compliance er det afgørende at identificere idriftsætteren, da denne er ansvarlig for at sikre overholdelse af AI‑Act’s krav til risikostyring, transparens og overvågning. Sagsbehandlere skal dokumentere hvem der er idriftsætter, og hvilke foranstaltninger de har truffet.",
+    "tags": [
+      "AI Act",
+      "idriftsætter",
+      "compliance",
+      "risikostyring",
+      "transparens"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:15.223601+00:00",
+    "id": 54
+  },
+  {
+    "term": "Importør — AI Act Art. 23",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Importør er en person eller virksomhed, der importerer AI-systemer til EU-markedet og dermed er ansvarlig for at sikre overholdelse af EU’s AI-lovgivning, herunder krav til registrering og risikovurdering.",
+    "context": "For kommunale sagsbehandlere er det vigtigt at vide, at importører af AI-systemer skal registrere deres produkter i EU’s AI-register og dokumentere, at systemerne opfylder relevante sikkerheds- og transparenskrav. Manglende overholdelse kan medføre bøder og forbud mod brug i offentlige tjenester.",
+    "tags": [
+      "importør",
+      "AI Act",
+      "EU-regulering",
+      "registrering",
+      "risikovurdering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:17.258584+00:00",
+    "id": 55
+  },
+  {
+    "term": "Distributør — AI Act Art. 24",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Distributør i AI Act Art. 24 er en part, der formidler eller sælger AI-systemer til slutbrugere og dermed kan påvirke systemets anvendelse.",
+    "context": "I kommunal AI-compliance er distributører centrale, da de kan være ansvarlige for at sikre, at AI-systemer lever op til krav om risikovurdering, dokumentation og overvågning. Sagsbehandlere skal verificere, at distributøren har de nødvendige certificeringer og overholder rapporteringspligter i henhold til EU‑AI Act.",
+    "tags": [
+      "AI Act",
+      "distributør",
+      "risikovurdering",
+      "EU-regulering",
+      "dokumentation"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:19.109008+00:00",
+    "id": 56
+  },
+  {
+    "term": "Bemyndiget repræsentant — AI Act Art. 22",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Bemyndiget repræsentant er den person eller det organ, som har fået beføjelse til at handle på vegne af en organisation i henhold til EU’s AI Act, art. 22.",
+    "context": "I kommunal AI-compliance er det afgørende at identificere og udpege en bemyndiget repræsentant for at sikre, at AI-systemer overholder EU‑reglerne. Repræsentanten skal kunne indgå i dialog med myndigheder, håndtere rapportering og sikre, at de nødvendige tekniske og organisatoriske foranstaltninger er implementeret.",
+    "tags": [
+      "AI Act",
+      "bemyndiget repræsentant",
+      "EU-regulering",
+      "kommunal AI",
+      "ansvarlighed"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:21.105567+00:00",
+    "id": 57
+  },
+  {
+    "term": "Produktproducent — AI Act Art. 25",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Produktproducent er den juridiske enhed, der fremstiller eller distribuerer AI-systemet. Ifølge EU‑AI Act art. 25 er producenten ansvarlig for at sikre, at systemet overholder lovens krav.",
+    "context": "I kommunal AI‑compliance er det afgørende at identificere, hvem der er produktproducenten, da denne enhed skal gennemføre risikovurdering, dokumentation og overholdelse af registreringskrav. Sagsbehandlere skal sikre, at producenten har leveret de nødvendige tekniske og juridiske oplysninger til kommunen.",
+    "tags": [
+      "AI Act",
+      "produktproducent",
+      "compliance",
+      "EU-regulering",
+      "ansvar"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:23.113652+00:00",
+    "id": 58
+  },
+  {
+    "term": "Downstream-modifikator — AI Act Art. 53(5)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "En downstream-modifikator er en teknisk eller organisatorisk ændring, der foretages efter AI-systemets udvikling og før det anvendes i praksis. Ifølge EU‑AI Act Art. 53(5) skal sådanne ændringer dokumenteres og vurderes for at sikre, at systemet fortsat overholder lovgivningen.",
+    "context": "I kommunal AI‑compliance er det afgørende at registrere og dokumentere alle downstream-modifikatorer, da de kan påvirke risikoklassificeringen og kravene til overvågning. Sagsbehandlere skal sikre, at ændringerne er i overensstemmelse med Art. 53(5) og opdaterer eventuelle risikovurderinger, certificeringer og brugervejledninger.",
+    "tags": [
+      "AI Act",
+      "downstream-modifikator",
+      "dokumentation",
+      "risikovurdering",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:25.395400+00:00",
+    "id": 59
+  },
+  {
+    "term": "AI value chain — Art. 25 + ansvarsoverdragelse",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI‑valuekæden beskriver de faser, hvor en AI‑løsning udvikles, implementeres og vedligeholdes. Art. 25 i EU‑AI-lovgivningen kræver, at leverandører dokumenterer og sikrer ansvar i hele kæden.",
+    "context": "Kommunale sagsbehandlere skal forstå, at AI‑løsninger kan involvere flere tredjepartsleverandører. Art. 25 stiller krav om, at hver aktør dokumenterer risikostyring og ansvarsoverdragelse, så kommunen kan efterprøve overholdelse og sikre retssikkerhed ved beslutninger.",
+    "tags": [
+      "AI",
+      "ansvar",
+      "Art. 25",
+      "leverandør",
+      "dokumentation"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:27.379122+00:00",
+    "id": 60
+  },
+  {
+    "term": "Substantial modification — hvornår skifter man rolle?",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Substantial modification er en ændring i AI-systemets funktion eller output, der gør den nye version væsentligt anderledes end den oprindelige. Det kan omfatte ændringer i algoritme, data eller træningssæt, som påvirker systemets beslutningstagning.",
+    "context": "I kommunal AI-compliance skal sagsbehandleren vurdere, hvornår en ændring kræver ny godkendelse eller revision. Når en AI-modifikation er substantiel, anses systemet som ny, hvilket medfører krav om dokumentation, risikovurdering og eventuel opdateret overensstemmelse med GDPR og AI-lovgivning (2025/26).",
+    "tags": [
+      "AI",
+      "ændring",
+      "godkendelse",
+      "risikovurdering",
+      "GDPR"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:29.420031+00:00",
+    "id": 61
+  },
+  {
+    "term": "Subliminale eller manipulerende teknikker — Art. 5(1)(a)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Subliminale eller manipulerende teknikker er metoder, der påvirker brugere uden bevidst opmærksomhed eller med hensigt at ændre deres beslutningstagning, i strid med Art. 5(1)(a) i EU‑AI-loven.",
+    "context": "Kommunale AI-systemer må ikke anvende teknikker, der skjult påvirker borgere. Sagsbehandlere skal sikre, at algoritmerne kun bruger transparente og etisk forsvarlige input og output. Overtrædelse kan føre til sanktioner og tab af tillid.",
+    "tags": [
+      "subliminal",
+      "manipulation",
+      "AI-lov",
+      "transparens",
+      "etik"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:31.246364+00:00",
+    "id": 62
+  },
+  {
+    "term": "Udnyttelse af sårbarhed (alder, handicap) — Art. 5(1)(b)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Udnyttelse af sårbarhed (alder, handicap) betyder at udnytte eller udstille personer med særlige sårbarheder for at få økonomisk, social eller anden fordel. Det er forbudt i EU‑forordningen om AI (Art. 5(1)(b)).",
+    "context": "Kommunale sagsbehandlere skal sikre, at AI‑løsninger ikke udnytter eller diskriminerer borgere på grund af alder, handicap eller andre sårbarheder. Overholdelse kræver risikovurdering, klare retningslinjer for dataindsamling og gennemsigtighed i beslutningsprocessen.",
+    "tags": [
+      "AI",
+      "sårbarhed",
+      "diskrimination",
+      "EU-regulation",
+      "databeskyttelse"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:33.326465+00:00",
+    "id": 63
+  },
+  {
+    "term": "Social scoring i offentlig kontekst — Art. 5(1)(c)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Social scoring i offentlig kontekst henviser til anvendelse af algoritmiske vurderinger, der tildeler borgere eller grupper sociale point eller rangeringer baseret på data, som kan påvirke offentlige beslutninger.",
+    "context": "Art. 5(1)(c) i EU’s generelle databeskyttelsesforordning (GDPR) forbyder anvendelse af automatiserede beslutningsprocesser, herunder social scoring, som har juridisk effekt på enkeltpersoner. Kommunale myndigheder skal sikre, at beslutninger om f.eks. boligudlejning eller sociale ydelser ikke er baseret på sådanne scorer, medmindre der foreligger klare undtagelser og dokumenteret retfærdighed.",
+    "tags": [
+      "social scoring",
+      "GDPR",
+      "offentlige beslutninger",
+      "automatiseret vurdering",
+      "databeskyttelse"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:35.674578+00:00",
+    "id": 64
+  },
+  {
+    "term": "Kriminalitetsrisikovurdering alene baseret på profilering — Art. 5(1)(d)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Kriminalitetsrisikovurdering alene baseret på profilering henviser til brugen af algoritmer, der vurderer en persons risiko for kriminalitet udelukkende på baggrund af demografiske eller andre profileringsegenskaber, som beskrevet i EU-forordningen Art. 5(1)(d).",
+    "context": "I kommunal AI‑compliance er det afgørende, at sagsbehandlere forstår, at anvendelse af sådanne risikovurderinger er ulovlig under GDPR og EU‑forordningen om AI. Det kan føre til diskrimination, kræve omfattende dokumentation og begrænse anvendelsen af AI i beslutningsprocesser, der påvirker borgerne.",
+    "tags": [
+      "AI",
+      "profilering",
+      "diskrimination",
+      "GDPR",
+      "compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:37.779654+00:00",
+    "id": 65
+  },
+  {
+    "term": "Ansigtsgenkendelses-databaser via untargeted scraping — Art. 5(1)(e)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Databaser med ansigtsgenkendelsesdata oprettet ved uafhængig, ikke-målrettet scraping af offentlige eller private kilder uden samtykke, som omfatter automatisk indsamling og lagring af biometriske oplysninger.",
+    "context": "Art. 5(1)(e) i GDPR kræver, at behandling af personoplysninger skal være lovlig og rimelig. Udenfor målrettet scraping er der ingen tydelig legitimes grund, hvilket kan udgøre en overtrædelse af krav om samtykke eller legitim interesse. Kommunale sagsbehandlere skal sikre, at eventuelle ansigtsgenkendelsesdatabaser er baseret på en klar juridisk grundlag og gennemgås for samtykke, nødvendighed og proportionalitet.",
+    "tags": [
+      "ansigtsgenkendelse",
+      "scraping",
+      "GDPR",
+      "dataetik",
+      "biometriskdata"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:40.234120+00:00",
+    "id": 66
+  },
+  {
+    "term": "Følelsesgenkendelse på arbejdspladsen — Art. 5(1)(f)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Følelsesgenkendelse på arbejdspladsen er anvendelse af AI til at identificere, måle eller fortolke medarbejdernes følelsesmæssige tilstande baseret på data som ansigtsudtryk, stemmeintensitet eller biometrisk information.",
+    "context": "Art. 5(1)(f) i EU‑GDPR forbyder behandling af følsomme personoplysninger, herunder følelsesmæssige data, uden udtrykkelig samtykke eller lovlig grund. På kommunalt niveau kan følelser blive indsamlet i forbindelse med sundhed, trivsel eller sikkerhed. Sagsbehandlere skal sikre, at der foreligger samtykke, nødvendigheds- og proportionalitetsvurdering samt passende tekniske og organisatoriske foranstaltninger.",
+    "tags": [
+      "GDPR",
+      "følsomme data",
+      "samtykke",
+      "AI-trivsel",
+      "biometrisk overvågning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:42.639362+00:00",
+    "id": 67
+  },
+  {
+    "term": "Biometrisk kategorisering på særlige kategorier — Art. 5(1)(g)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Biometrisk kategorisering på særlige kategorier henviser til behandling af biometriske data, der identificerer en persons etnicitet eller race, i henhold til GDPR Art. 5(1)(g).",
+    "context": "I kommunal AI-compliance er det afgørende at forstå, at biometriske data om etnicitet eller race betragtes som særlige personoplysninger. Sagsbehandlere skal sikre, at sådanne data kun behandles med udtrykkelig samtykke eller under strenge undtagelser, og at der er passende tekniske og organisatoriske foranstaltninger.",
+    "tags": [
+      "biometrisk",
+      "GDPR",
+      "særlige kategorier",
+      "etnicitet",
+      "samtykke"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:44.638803+00:00",
+    "id": 68
+  },
+  {
+    "term": "Realtids-fjern-biometrisk identifikation — Art. 5(1)(h)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Realtids‑fjernbiometrisk identifikation er automatisk registrering og vurdering af biometriske data (fx ansigts-, stemme‑ eller fingeraftryksgenkendelse) i realtid via fjernadgang, uden fysisk kontakt.",
+    "context": "Art. 5(1)(h) i EU‑GDPR forbyder behandling af biometriske data, der identificerer en person, medmindre der foreligger et specifikt undtagelsesgrundlag. Kommunale sagsbehandlere skal sikre, at der er samtykke eller anden lovlig basis, før de anvender realtids‑fjernbiometrisk identifikation til fx adgangskontrol eller bekræftelse af borgeridentitet.",
+    "tags": [
+      "biometrisk",
+      "realtid",
+      "fjernidentifikation",
+      "GDPR",
+      "samtykke"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:46.970082+00:00",
+    "id": 69
+  },
+  {
+    "term": "Risikostyringssystem — Art. 9",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Et Risikostyringssystem (Art. 9) er et struktureret sæt af processer, der identificerer, vurderer og håndterer risici i forbindelse med AI-systemers anvendelse.",
+    "context": "I kommunal AI-compliance sikrer Art. 9, at sagsbehandlere systematisk dokumenterer risikoevalueringer og forebyggende foranstaltninger. Det er påkrævet ved alle AI-implementeringer, der påvirker borgernes rettigheder eller offentlige funktioner.",
+    "tags": [
+      "AI",
+      "risikostyring",
+      "lovgivning",
+      "kommunal",
+      "Art.9"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:48.807323+00:00",
+    "id": 70
+  },
+  {
+    "term": "Datasæt + data governance — Art. 10",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Art. 10 i EU's AI-forordning kræver, at data, som anvendes til træning eller evaluering af AI-systemer, er korrekt dokumenteret og underlagt data governance‑processer for at sikre kvalitet, rettighedssikring og sporbarhed.",
+    "context": "For kommunale AI‑projekter betyder Art. 10, at alle datasæt skal have en tydelig data governance‑ramme: kilde, samtykke, rettighedsstatus og kvalitetssikring. Sagsbehandlere skal sikre, at data er dokumenteret i en data‑atlas og overholder både GDPR‑krav og AI‑forordningens krav til transparens og ansvarlighed.",
+    "tags": [
+      "AI",
+      "data governance",
+      "Art. 10",
+      "EU AI-forordning",
+      "datasæt"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:51.062575+00:00",
+    "id": 71
+  },
+  {
+    "term": "Teknisk dokumentation — Art. 11 + Annex IV",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Teknisk dokumentation i henhold til Art. 11 og Bilag IV er en systematisk samling af beskrivelser, analyser og beviser, der dokumenterer AI-systemets design, funktionalitet, risikovurdering og overholdelse af EU-reguleringen.",
+    "context": "Kommunale myndigheder skal sikre, at AI-systemer de anvender eller udvikler er dokumenteret i overensstemmelse med EU’s AI-forordning. Art. 11 kræver, at leverandører fremlægger teknisk dokumentation, mens Bilag IV specificerer indholdet og strukturen. Sagsbehandlere skal kunne gennemgå dokumentationen for at verificere, at systemet opfylder krav om gennemsigtighed, risikostyring og sporbarhed.",
+    "tags": [
+      "AI-regulering",
+      "teknisk dokumentation",
+      "EU AI-forordning",
+      "risikovurdering",
+      "sporbarhed"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:53.436993+00:00",
+    "id": 72
+  },
+  {
+    "term": "Logning + traceability — Art. 12",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Art. 12 i GDPR kræver, at dataansvarlige giver klare oplysninger om behandling og sikrer sporbarhed af beslutningsprocesser, herunder AI‑systemers logning.",
+    "context": "I kommunal AI‑compliance skal sagsbehandlere dokumentere, hvilke data der behandles, og hvordan AI‑modeller træffer beslutninger. Logning og traceability er nødvendige for at kunne demonstrere overholdelse af Art. 12, sikre retssikkerhed og muliggøre revision.",
+    "tags": [
+      "gdpr",
+      "art12",
+      "logging",
+      "traceability",
+      "ai compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:55.955067+00:00",
+    "id": 73
+  },
+  {
+    "term": "Transparens + brugsanvisning — Art. 13",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Transparens og brugsanvisning – Art. 13 fastsætter krav om, at oplysninger om AI-systemer skal præsenteres klart og forståeligt for brugerne.",
+    "context": "I kommunal AI‑compliance er det afgørende, at borgere og ansatte kan forstå, hvordan et AI-system fungerer, hvilke data der anvendes, og hvilke konsekvenser det kan have. Art. 13 kræver, at kommunerne udarbejder og offentliggør en brugervenlig brugsanvisning, som beskriver systemets formål, funktion og begrænsninger. Sagsbehandlere skal sikre, at disse oplysninger er tilgængelige og opdaterede i overensstemmelse med GDPR‑og AI-reguleringen.",
+    "tags": [
+      "transparens",
+      "brugsanvisning",
+      "art.13",
+      "AI-regulering",
+      "borgerservice"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:53:58.274630+00:00",
+    "id": 74
+  },
+  {
+    "term": "Menneskelig overvågning — Art. 14",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Menneskelig overvågning — Art. 14 refererer til kravet i EU’s AI-forordning om, at beslutningsprocesser, hvor en AI-system anvendes til kritisk infrastruktur eller offentlige tjenester, skal overvåges af kvalificeret menneskelig personale for at sikre korrekt og ansvarlig anvendelse.",
+    "context": "I kommunal AI-compliance er kravet afgørende for at beskytte borgernes rettigheder og sikre, at AI-baserede beslutninger ikke fører til diskrimination eller fejl. Sagsbehandlere skal sikre, at der er etableret klare procedurer for menneskelig kontrol, dokumentation af beslutningssteg og træning af personale i AI-systemernes funktion.",
+    "tags": [
+      "AI-regulering",
+      "menneskelig kontrol",
+      "AI-forordning",
+      "borgerrettigheder",
+      "kommunal praksis"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:00.439831+00:00",
+    "id": 75
+  },
+  {
+    "term": "Nøjagtighed, robusthed og cybersikkerhed — Art. 15",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Art. 15 i EU‑AI-lovgivningen stiller krav om, at AI-systemer skal demonstrere nøjagtighed, robusthed og cybersikkerhed gennem dokumenteret test og risikovurdering.",
+    "context": "Kommunale sagsbehandlere skal sikre, at AI‑løsninger, der anvendes til beslutningstagning eller automatiseret behandling af borgerdata, opfylder Art. 15‑kravene. Det indebærer løbende test af præcision, modstandskraft over for fejl og beskyttelse mod cyberangreb. Overholdelse er afgørende for at undgå juridisk ansvar og opretholde borgernes tillid.",
+    "tags": [
+      "AI-regulering",
+      "datakvalitet",
+      "cybersikkerhed",
+      "robusthed",
+      "EU-lovgivning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:02.878582+00:00",
+    "id": 76
+  },
+  {
+    "term": "Kvalitetsstyringssystem (QMS) — Art. 17",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Kvalitetsstyringssystem (QMS) – Art. 17 er en samling af procedurer, processer og dokumentation, der sikrer, at AI-løsninger lever op til krav om kvalitet, sikkerhed og pålidelighed i overensstemmelse med EU-reguleringen.",
+    "context": "I kommunal AI-compliance er QMS Art. 17 afgørende for at dokumentere og overvåge AI-systemers ydeevne, risikoanalyse og korrekthed. Sagsbehandlere skal sikre, at QMS'en indeholder krav til datahåndtering, testning og løbende evaluering for at opfylde lovgivningsmæssige forpligtelser og beskytte borgernes rettigheder.",
+    "tags": [
+      "QMS",
+      "AI-regulering",
+      "datahåndtering",
+      "risikostyring",
+      "borgerrettigheder"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:05.129677+00:00",
+    "id": 77
+  },
+  {
+    "term": "EU-overensstemmelseserklæring — Art. 47",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "EU‑overensstemmelseserklæring – Art. 47 er en erklæring, som EU‑medlemsstater kan afgive om, at deres nationale lovgivning er i overensstemmelse med EU‑direktiver vedrørende AI.",
+    "context": "I kommunal AI‑compliance er erklæringen afgørende for at dokumentere, at de anvendte AI‑systemer overholder EU‑direktiver (fx AI‑Lovgivning). Sagsbehandlere skal sikre, at erklæringen er opdateret og tilgængelig for myndighedsrevisionen.",
+    "tags": [
+      "EU",
+      "AI‑lovgivning",
+      "overensstemmelse",
+      "erklæring",
+      "direktiver"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:07.216224+00:00",
+    "id": 78
+  },
+  {
+    "term": "CE-mærkning af AI-systemer — Art. 48",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "CE-mærkning af AI-systemer — Art. 48 er en bestemmelse i EU's AI-lovgivning, der kræver, at visse AI-systemer skal være CE-mærket for at kunne sælges eller anvendes inden for EU.",
+    "context": "For kommunale myndigheder er det afgørende at sikre, at AI-løsninger, der anvendes i offentlige processer, opfylder CE-mærkningskravene. Manglende mærkning kan medføre, at systemet ikke er lovligt i EU og dermed forhindrer brugen af det. Sagsbehandlere skal derfor verificere CE-status og dokumentation, før de godkender eller implementerer AI-systemer.",
+    "tags": [
+      "CE-mærkning",
+      "AI-lovgivning",
+      "EU-regulering",
+      "compliance",
+      "dokumentation"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:09.365546+00:00",
+    "id": 79
+  },
+  {
+    "term": "EU-database-registrering — Art. 49 + 71",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "EU-database-registrering – registrering af en database i EU‑registeret, jf. Art. 49 og 71 i EU’s databaseforordning (2001/296/EF).",
+    "context": "I kommunal AI‑compliance er registrering nødvendig, når en kommune opbevarer og anvender data i form af en database, som er betydelig for AI‑systemer. Registreringen sikrer lovlighed i henhold til EU‑forordningen og giver offentligheden adgang til oplysninger om databasen.",
+    "tags": [
+      "EU databaseforordning",
+      "registrering",
+      "Art. 49",
+      "Art. 71",
+      "AI compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:11.179380+00:00",
+    "id": 80
+  },
+  {
+    "term": "Konsekvensanalyse for grundlæggende rettigheder (FRIA) — Art. 27",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Konsekvensanalyse for grundlæggende rettigheder (FRIA) – Art. 27 er en juridisk metode, der kræver systematisk vurdering af AI-systemers indvirkning på grundlæggende rettigheder, som fastsat i EU’s Grundloven og FN’s menneskerettighedskonvention.",
+    "context": "I kommunal AI-compliance er FRIA et centralt værktøj til at identificere og mitigere risici for borgernes rettigheder, fx privatliv, ligestilling og ret til information. Sagsbehandlere skal sikre, at alle AI-løsninger gennemgår en FRIA, dokumenterer resultater og implementerer nødvendige foranstaltninger inden for 12 måneder efter systemets udrulning.",
+    "tags": [
+      "FRIA",
+      "AI-risikovurdering",
+      "grundlæggende rettigheder",
+      "EU-lovgivning",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:13.494203+00:00",
+    "id": 81
+  },
+  {
+    "term": "Chatbot-transparens — Art. 50(1)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Chatbot‑transparens (Art. 50(1) EU‑AI‑Lov) er kravet om, at brugere skal informeres tydeligt og let forståeligt, når de interagerer med en AI‑driven chatbot, herunder formålet, databehandling og muligheder for at kontakte menneskelig support.",
+    "context": "Dette krav sikrer, at borgerne i kommunen kan vurdere og forstå AI‑interaktioner. Sagsbehandlere skal dokumentere, at chatbot‑grænseflader indeholder en klar “jeg er en AI”‑meddelelse, samt oplysninger om dataindsamling og ret til at få hjælp fra en menneskelig medarbejder. Overholdelse er afgørende for både databeskyttelses- og AI‑lovgivning.",
+    "tags": [
+      "AI",
+      "chatbot",
+      "transparens",
+      "EU‑AI‑Lov",
+      "borgerrettigheder"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:15.912471+00:00",
+    "id": 82
+  },
+  {
+    "term": "Følelsesgenkendelse-oplysning — Art. 50(3)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Følelsesgenkendelse-oplysning – Art. 50(3) er en bestemmelse i EU‑GDPR, som forbyder at give oplysninger om en persons følelsesmæssige tilstand baseret på automatisk behandling, medmindre der foreligger særskilt samtykke eller lovmæssig grund.",
+    "context": "I kommunal AI‑compliance er det afgørende at undgå uautoriseret følelserelateret profilering, fx i sociale ydelser eller sundhedstjenester. Sagsbehandlere skal sikre, at systemer ikke indsamler eller anvender sådanne data uden samtykke eller en klar juridisk hjemmel.",
+    "tags": [
+      "GDPR",
+      "følelser",
+      "automatisk behandling",
+      "samtykke",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:18.030442+00:00",
+    "id": 83
+  },
+  {
+    "term": "Syntetisk indhold maskinlæsbar mærkning — Art. 50(2)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Syntetisk indhold maskinlæsbar mærkning — Art. 50(2) er en EU-krav, der pålægger, at kunstigt genereret tekst eller billede skal indeholde en maskinlæsbar (e.g. JSON, RDF) metadata, som tydeligt angiver at indholdet er syntetisk.",
+    "context": "I kommunal AI-compliance sikrer mærkningen, at borgere og interne brugere kan identificere syntetisk indhold uden manuel gennemgang. Det er afgørende for gennemsigtighed, ansvar og efterlevelse af GDPR‑relaterede krav om informerede samtykke og dataetik. Sagsbehandlere skal sikre, at alle AI‑systemer, der producerer indhold til offentlige publikationer eller beslutningsstøtte, implementerer denne mærkning.",
+    "tags": [
+      "syntetisk",
+      "metadata",
+      "maskinlæsbar",
+      "EU-regulering",
+      "AI-etik"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:20.461833+00:00",
+    "id": 84
+  },
+  {
+    "term": "Deepfake-mærkning — Art. 50(4)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Deepfake‑mærkning er et krav i EU‑forordningen om kunstig intelligens (Art. 50(4)), der pålægger, at enhver AI‑genereret eller manipuleret audiovisuel indhold skal mærkes tydeligt som kunstigt.",
+    "context": "I kommunal praksis skal sagsbehandlere sikre, at AI‑produkter, der kan skabe eller distribuere deepfake‑indhold (fx i kommunale informationskampagner), overholder mærkningskravet. Manglende mærkning kan udgøre et brud på EU‑AI‑forordningen og medføre sanktioner samt skade tilliden til kommunens digitale ydelser.",
+    "tags": [
+      "deepfake",
+      "mærkning",
+      "AI‑forordning",
+      "EU",
+      "kommunal compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:22.500337+00:00",
+    "id": 85
+  },
+  {
+    "term": "AI-genereret tekst om offentlig interesse — Art. 50(4)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Art. 50(4) i den danske AI-lovgivning omhandler krav til, at AI-genereret tekst, der berører offentlig interesse, skal være tydeligt mærket som sådan og give adgang til kildeinformation.",
+    "context": "Sagsbehandlere skal sikre, at enhver AI-genereret tekst, der påvirker borgernes rettigheder eller offentlige beslutninger, er korrekt identificeret og dokumenteret. Dette sikrer gennemsigtighed, ansvarlighed og overholdelse af både AI-lovgivningen og borgerrettighederne.",
+    "tags": [
+      "AI",
+      "offentlig interesse",
+      "gennemsigtighed",
+      "kildeinformation",
+      "lovgivning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:24.345502+00:00",
+    "id": 86
+  },
+  {
+    "term": "General-purpose AI (GPAI) — Art. 51-55",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "General‑purpose AI (GPAI) er AI-systemer, der kan anvendes på tværs af flere domæner og opgaver uden specifik tilpasning. Artikler 51‑55 i EU‑AI-lovgivningen fastsætter særregler for GPAI, herunder krav til risikovurdering og transparens.",
+    "context": "GPAI er særligt relevant for kommuner, da de kan anvendes i mange offentlige processer (f.eks. sagsbehandling, beslutningsstøtte). Sagsbehandlere skal sikre, at GPAI-systemer overholder EU‑AI-lovgivningens krav om dokumentation, overvågning og ansvarlighed samt at de er tilpasset kommunens specifikke risikoprofil.",
+    "tags": [
+      "GPAI",
+      "EU AI law",
+      "risk assessment",
+      "transparency",
+      "public sector"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:26.597456+00:00",
+    "id": 87
+  },
+  {
+    "term": "Systemisk risiko-tærskel — 10^25 FLOPs (Art. 51)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Systemisk risiko-tærskel er den maksimale mængde beregningskraft (10^25 FLOPs) en AI-model må anvende, før den anses for at udgøre systemisk risiko i henhold til Art. 51.",
+    "context": "Tærsklen er fastsat for at begrænse potentielle negative konsekvenser af AI-systemer, der kan påvirke hele samfundet. Kommunale sagsbehandlere skal sikre, at AI-løsninger, der anvendes i offentlige processer, ikke overstiger denne grænse og dokumentere overholdelse.",
+    "tags": [
+      "AI-regulering",
+      "systemisk risiko",
+      "FLOPs",
+      "Art. 51",
+      "compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:28.520171+00:00",
+    "id": 88
+  },
+  {
+    "term": "GPAI Code of Practice (juli 2025)",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "GPAI Code of Practice (juli 2025) er en vejledende ramme udarbejdet af Global Partnership on AI, der fastsætter principper og retningslinjer for ansvarlig udvikling og anvendelse af kunstig intelligens.",
+    "context": "Kommunale myndigheder, der anvender eller udvikler AI‑løsninger, skal sikre overholdelse af internationale standarder. GPAI’s kode giver konkrete krav til transparens, datasikkerhed og menneskelig kontrol, som er relevante for kommunal AI‑compliance og kan indgå i interne politikker.",
+    "tags": [
+      "GPAI",
+      "AI‑ethik",
+      "ansvarlig AI",
+      "transparens",
+      "datasikkerhed"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:30.429858+00:00",
+    "id": 89
+  },
+  {
+    "term": "GPAI træningsdata-summary — Art. 53(1)(d)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GPAI træningsdata‑summary er en kortfattet beskrivelse af de data, der anvendes til at træne Generative Pre‑trained Artificial Intelligence (GPAI) modeller, som fremgår af Art. 53(1)(d) i EU‑AI-lovgivningen.",
+    "context": "Kommunale sagsbehandlere skal sikre, at alle data, der anvendes til træning af GPAI‑modeller, er dokumenteret og beskrevet i overensstemmelse med Art. 53(1)(d). Dette er afgørende for at kunne demonstrere overholdelse af krav om gennemsigtighed, datakvalitet og beskyttelse af personoplysninger i AI‑projekter.",
+    "tags": [
+      "AI",
+      "GDPR",
+      "dataethik",
+      "gennemsigtighed",
+      "træningsdata"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:32.566836+00:00",
+    "id": 90
+  },
+  {
+    "term": "GPAI copyright-policy — Art. 53(1)(c)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Art. 53(1)(c) i EU‑AI‑Act fastsætter, at AI-systemer må ikke anvende ophavsretligt beskyttet materiale uden tilladelse, medmindre materialet er offentligt tilgængeligt eller der foreligger en gyldig undtagelse.",
+    "context": "Denne bestemmelse er central for kommunal AI‑compliance, da den begrænser brugen af tekst, billeder og andre ophavsretligt beskyttede data i AI‑modeller. Sagsbehandlere skal sikre, at alle dataindsamlinger og modeltræningsprocesser overholder art. 53(1)(c) for at undgå ophavsretskrænkelser og potentielle retssager.",
+    "tags": [
+      "AI",
+      "copyright",
+      "EU‑AI‑Act",
+      "compliance",
+      "dataetik"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:35.350735+00:00",
+    "id": 91
+  },
+  {
+    "term": "GPAI-model-evaluering + red teaming — Art. 55",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GPAI-model-evaluering + red teaming — Art. 55 refererer til den danske lovgivning, der pålægger offentlige myndigheder at gennemføre en systematisk evaluering af generativ kunstig intelligens (GPAI) og anvende red teaming for at identificere potentielle risici og fejl.",
+    "context": "Art. 55 i den danske AI-lov kræver, at kommunale sagsbehandlere vurderer GPAI-modeller for bias, sikkerhed og pålidelighed. Red teaming bruges til at teste systemets modstandsdygtighed over for angreb og utilsigtede konsekvenser. Sagsbehandleren skal sikre, at evalueringen dokumenteres og opdateres løbende i overensstemmelse med 2025/2026-standarden for AI-sikkerhed.",
+    "tags": [
+      "GPAI",
+      "red team",
+      "Art.55",
+      "AI-evaluering",
+      "offentlig sikkerhed"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:37.737280+00:00",
+    "id": 92
+  },
+  {
+    "term": "Open-source GPAI-undtagelse — Art. 53(2)",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Open‑source GPAI-undtagelse (Art. 53(2) GDPR) er en undtagelse, der tillader brug af generativ AI på offentlige data uden at kræve samtykke, såfremt behandlingen er nødvendig for at levere offentlige tjenester og overholder strenge sikkerheds- og gennemsigtighedskrav.",
+    "context": "I kommunal AI‑compliance er undtagelsen relevant, fordi den giver en juridisk ramme for at anvende generativ AI på offentlige data til fx automatiseret sagsbehandling og beslutningsstøtte. Sagsbehandlere skal sikre, at behandlingen er nødvendig, proportionel og dokumenteret samt overholde krav om dataminimering, sikkerhed og mulighed for at give borgeren adgang til oplysninger.",
+    "tags": [
+      "GDPR",
+      "generativ AI",
+      "offentlige data",
+      "sagsbehandling",
+      "compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:40.347103+00:00",
+    "id": 93
+  },
+  {
+    "term": "AI Office (EU-Kommissionen)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "AI Office er den centrale enhed i EU-Kommissionen, der koordinerer udviklingen og implementeringen af EU’s kunstig intelligensstrategi samt sikrer overholdelse af AI-lovgivning.",
+    "context": "AI Office udarbejder retningslinjer, overvåger teknologisk udvikling og koordinerer samarbejde mellem medlemsstaterne. For kommunale sagsbehandlere er det vigtigt at kende AI Office’s anbefalinger, da de påvirker nationale AI-regulativer og krav til ansvarlig anvendelse af AI i offentlige tjenester.",
+    "tags": [
+      "AI Office",
+      "EU-Kommissionen",
+      "AI-regulering",
+      "ansvarlig AI",
+      "offentlige tjenester"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:42.245738+00:00",
+    "id": 94
+  },
+  {
+    "term": "National kompetent myndighed (Digitaliseringsstyrelsen i DK)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "National kompetent myndighed er den statslige institution, der har beføjelse til at regulere og overvåge AI-implementering i Danmark. I 2025 er Digitaliseringsstyrelsen (DS) udpeget som den primære myndighed for AI‑relaterede standarder og compliance.",
+    "context": "DS fastsætter retningslinjer for AI‑systemers sikkerhed, gennemsigtighed og etik. Kommunale sagsbehandlere skal sikre, at AI‑løsninger lever op til DS’ krav om databeskyttelse, risikovurdering og rapportering. Overholdelse er et juridisk krav ved offentlige anskaffelser.",
+    "tags": [
+      "Digitaliseringsstyrelsen",
+      "AI-regulering",
+      "national myndighed",
+      "compliance",
+      "2025"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:44.346087+00:00",
+    "id": 95
+  },
+  {
+    "term": "Markedsovervågnings-myndighed",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Markedsovervågningsmyndighed er en statslig eller kommunal instans med beføjelse til at overvåge, regulere og håndhæve regler for markedsaktiviteter, herunder AI-løsninger.",
+    "context": "I kommunal AI-compliance er det vigtigt at kende den relevante myndighed, som kan fastsætte krav til databeskyttelse, produktansvar og markedsføring af AI. Sagsbehandleren skal sikre, at AI-løsninger overholder myndighedens retningslinjer og indberetningskrav, samt at der er dokumenteret overholdelse ved eventuelle audits.",
+    "tags": [
+      "AI-regulering",
+      "markedsovervågning",
+      "databeskyttelse",
+      "produktansvar",
+      "myndighedsforhold"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:46.416124+00:00",
+    "id": 96
+  },
+  {
+    "term": "Bemyndiget organ (notified body)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Bemyndiget organ (notified body) er en uafhængig tredjepart, som EU-kommissionen har godkendt til at udføre specifikke vurderinger og certificeringer i henhold til EU-lovgivning.",
+    "context": "I kommunal AI-compliance er bemyndigede organer centrale for at sikre, at AI-systemer overholder EU's AI-forordning og andre tekniske standarder. Sagsbehandlere skal kende organets rolle, hvilke certificeringer de kan udstede, og hvordan man indhenter deres vurderinger i beslutningsprocessen.",
+    "tags": [
+      "AI",
+      "EU-forordning",
+      "certificering",
+      "bemyndiget organ",
+      "tredjepartsvurdering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:48.393170+00:00",
+    "id": 97
+  },
+  {
+    "term": "AI Act bøder — op til 35 mio. EUR / 7% omsætning",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "AI Act bøder kan blive pålagt op til 35 mio. EUR eller 7 % af den årlige globale omsætning for virksomheder, der overtræder EU's AI-forordning.",
+    "context": "Kommunale myndigheder skal sikre, at deres AI-løsninger overholder AI Act for at undgå betydelige bøder. Det er vigtigt at vurdere risikoklassificering, dokumentation og overvågning af AI-systemer for at minimere overtrædelsesrisikoen.",
+    "tags": [
+      "AI Act",
+      "bøder",
+      "compliance",
+      "EU-regulering",
+      "risikostyring"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:50.162006+00:00",
+    "id": 98
+  },
+  {
+    "term": "Serious incident reporting — Art. 73",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Serious incident reporting — Art. 73 refererer til kravet i GDPR om, at en person eller organisation skal indberette alvorlige databrud til den relevante tilsynsmyndighed inden for 72 timer, medmindre bruddet ikke er sandsynligt at medføre risiko for rettigheder og frihedsrettigheder.",
+    "context": "I kommunal AI-compliance er det afgørende, at sagsbehandlere ved, hvornår et AI-system kan forårsage et alvorligt databrud. Kommunen skal sikre, at der er etableret procedurer for indberetning til Datatilsynet og beredskabsplaner, så kravet overholdes og eventuelle sanktioner undgås.",
+    "tags": [
+      "GDPR",
+      "incident reporting",
+      "AI compliance",
+      "databrud",
+      "72 timer"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:52.604363+00:00",
+    "id": 99
+  },
+  {
+    "term": "Post-market monitoring plan — Art. 72",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Post‑market monitoring plan (Art. 72) er en dokumenteret procedure, som AI-udbyderen skal etablere for at overvåge og rapportere systemets ydeevne, risici og eventuelle fejl efter produktet er sat på markedet.",
+    "context": "Planen sikrer, at kommunen kan dokumentere overholdelse af EU AI‑Act og nationale krav ved at indsamle data om systemets drift, identificere afvigelser og træffe korrigerende foranstaltninger. Sagsbehandleren skal kende kravene til indsamling, analyse og rapportering samt tidsrammen for opdateringer.",
+    "tags": [
+      "AI Act",
+      "post‑market monitoring",
+      "Art. 72",
+      "risikostyring",
+      "rapportering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:54.912476+00:00",
+    "id": 100
+  },
+  {
+    "term": "GDPR Art. 5 — principper for behandling",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "GDPR Art. 5 fastsætter de grundlæggende principper for behandling af personoplysninger: lovlighed, rimelighed og gennemsigtighed; formålsbegrænsning; dataminimering; nøjagtighed; opbevaringsbegrænsning og integritet/fortrolighed.",
+    "context": "Disse principper er centrale for kommunal AI-compliance, da de bestemmer, hvordan data kan indsamles, anvendes og opbevares i AI-systemer. Sagsbehandlere skal sikre, at alle AI-processer overholder lovlighed, formålsbegrænsning og dataminimering for at undgå brud på persondata og efterfølgende sanktioner.",
+    "tags": [
+      "GDPR",
+      "databeskyttelse",
+      "AI-compliance",
+      "principper",
+      "kommunaladministration"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:57.132043+00:00",
+    "id": 101
+  },
+  {
+    "term": "GDPR Art. 6 — retsgrundlag",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "GDPR Art. 6 fastsætter de lovlige retsgrundlag for behandling af personoplysninger, herunder samtykke, kontrakt, retlig forpligtelse, vital interesse, offentligt myndighedsopgave og berettigede interesser.",
+    "context": "I kommunal AI-compliance skal sagsbehandlere sikre, at enhver dataindsamling eller -analyse har et gyldigt retsgrundlag. Manglende overholdelse kan medføre bøder og tab af tillid til borgerne. Det er afgørende at dokumentere og kunne retfærdiggøre valget af retsgrundlag i alle AI-relaterede processer.",
+    "tags": [
+      "GDPR",
+      "retsgrundlag",
+      "databeskyttelse",
+      "AI-compliance",
+      "kommunalforvaltning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-05-10T14:54:59.282809+00:00",
+    "id": 102
   }
 ]
