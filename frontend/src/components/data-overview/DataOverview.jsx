@@ -23,27 +23,35 @@ import axios from 'axios';
 // stables vertikalt så hver får fuld bredde (ingen klemte rule_ids).
 
 const Wrap = styled.section`
-  margin-top: 24px;
-  padding-top: 20px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid ${(p) => p.theme.colors.borderSoft};
 `;
 
-const Eyebrow = styled.div`
-  font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: ${(p) => p.theme.colors.bronze};
-  margin: 0 0 6px;
-`;
+// Inline header: eyebrow + status-label på samme linje, ingen H2
+const SectionHead = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 
-const Heading = styled.h2`
-  font-family: ${(p) => p.theme.fonts.display};
-  font-weight: 600;
-  font-size: 1.15rem;
-  letter-spacing: -0.01em;
-  color: ${(p) => p.theme.colors.text};
-  margin: 0 0 14px;
+  .eyebrow {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: ${(p) => p.theme.colors.bronze};
+    font-weight: 600;
+  }
+
+  .meta {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.68rem;
+    color: ${(p) => p.theme.colors.textMuted};
+    letter-spacing: 0.04em;
+  }
 `;
 
 // 4-stat grid (kompakt — mindre padding + font)
@@ -53,7 +61,7 @@ const Stats = styled.div`
   background: ${(p) => p.theme.colors.surface};
   border: 1px solid ${(p) => p.theme.colors.border};
   border-radius: ${(p) => p.theme.borderRadius};
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 
   @media (max-width: 720px) {
     grid-template-columns: repeat(2, 1fr);
@@ -61,8 +69,11 @@ const Stats = styled.div`
 `;
 
 const Stat = styled.div`
-  padding: 12px 16px;
+  padding: 8px 14px;
   border-right: 1px solid ${(p) => p.theme.colors.border};
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 
   &:last-child { border-right: none; }
 
@@ -73,16 +84,15 @@ const Stat = styled.div`
 
   .label {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: ${(p) => p.theme.colors.textFaded};
-    margin-bottom: 4px;
   }
   .value {
     font-family: ${(p) => p.theme.fonts.display};
     font-weight: 700;
-    font-size: 1.45rem;
+    font-size: 1.3rem;
     letter-spacing: -0.02em;
     color: ${({ $tone, theme }) => {
       if ($tone === 'bronze') return theme.colors.bronze;
@@ -91,11 +101,10 @@ const Stat = styled.div`
       return theme.colors.text;
     }};
     line-height: 1;
-    margin-bottom: 3px;
   }
   .delta {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     color: ${(p) => p.theme.colors.textMuted};
   }
 `;
@@ -105,8 +114,8 @@ const Stat = styled.div`
 const DataRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 10px;
 `;
 
 const Panel = styled.div`
@@ -120,25 +129,25 @@ const PanelHead = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 9px 16px;
+  padding: 6px 14px;
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
   background: ${(p) => p.theme.colors.background};
 
   .title {
     font-family: ${(p) => p.theme.fonts.display};
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: ${(p) => p.theme.colors.text};
   }
   .meta {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     letter-spacing: 0.06em;
     color: ${(p) => p.theme.colors.textMuted};
   }
   a {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.66rem;
+    font-size: 0.64rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: ${(p) => p.theme.colors.primary};
@@ -147,14 +156,14 @@ const PanelHead = styled.div`
   }
 `;
 
-// Ledger table — kompakt række med mindre padding + font
+// Ledger table — meget kompakt række
 const LedgerRow = styled.div`
   display: grid;
-  grid-template-columns: 120px 1fr 90px 80px 50px;
+  grid-template-columns: 110px 1fr 85px 70px 44px;
   align-items: center;
-  padding: 7px 16px;
+  padding: 5px 14px;
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
-  font-size: 0.84rem;
+  font-size: 0.82rem;
 
   &:last-child { border-bottom: none; }
 
@@ -162,10 +171,10 @@ const LedgerRow = styled.div`
     background: ${(p) => p.theme.colors.background};
     color: ${(p) => p.theme.colors.textFaded};
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    padding: 6px 16px;
+    padding: 4px 14px;
   }
 
   .cid {
@@ -234,11 +243,11 @@ const CitationRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 16px;
+  padding: 4px 14px;
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
   border-right: 1px solid ${(p) => p.theme.colors.borderSoft};
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   gap: 8px;
 
   &:nth-child(2n) { border-right: none; }
@@ -291,19 +300,21 @@ const StatusBar = styled.div`
 `;
 
 const StatusCell = styled.div`
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-right: 1px solid ${(p) => p.theme.colors.border};
   font-family: ${(p) => p.theme.fonts.mono};
   font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 
   &:last-child { border-right: none; }
 
   .label {
-    font-size: 0.58rem;
+    font-size: 0.56rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: ${(p) => p.theme.colors.textFaded};
-    margin-bottom: 2px;
   }
   .value {
     color: ${({ $tone, theme }) =>
@@ -312,7 +323,7 @@ const StatusCell = styled.div`
       $tone === 'danger' ? theme.colors.danger :
       theme.colors.text};
     font-weight: 500;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
   }
 
   @media (max-width: 720px) {
@@ -408,8 +419,10 @@ const DataOverview = ({ scope = 'global' }) => {
 
   return (
     <Wrap>
-      <Eyebrow>Drift-overblik</Eyebrow>
-      <Heading>Aktuel status på tværs af alle sager og regler</Heading>
+      <SectionHead>
+        <span className="eyebrow">Drift-overblik</span>
+        <span className="meta">{loading ? 'henter…' : `${cases.items?.length || 0} sager · ${freshness.counts.total} regler`}</span>
+      </SectionHead>
 
       {/* 4-stat grid */}
       <Stats>
