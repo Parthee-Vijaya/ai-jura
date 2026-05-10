@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from 'react-query';
 import axios from 'axios';
@@ -61,28 +62,27 @@ const BellButton = styled.button`
   }
 `;
 
+// Panelet renders via React Portal til document.body så det ikke
+// klippes af sidebaren's overflow eller andre parent-clipping rules.
+// Position beregnes dynamisk fra bell-knappens getBoundingClientRect.
 const Panel = styled.div`
-  position: absolute;
-  top: calc(100% + 6px);
-  /* Bell sidder i venstre sidebar — panel skal poppe ud TIL HØJRE
-     ind i main-content-area, ikke til venstre off-screen. */
-  left: 0;
+  position: fixed;
+  top: ${(p) => p.$top}px;
+  left: ${(p) => p.$left}px;
   width: 360px;
   max-height: 480px;
   background: ${(p) => p.theme.colors.surface || '#fff'};
   border: 1px solid ${(p) => p.theme.colors.border};
   border-radius: 8px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-  z-index: 1200;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
   @media (max-width: 720px) {
-    /* På mobile er bell'en evt. flyttet — fallback: fixed centreret
-       så panelet altid passer i viewport. */
-    position: fixed;
-    top: 56px;
+    /* På mobile fylder panelet næsten hele bredden + er offset fra top */
+    top: 60px;
     left: 12px;
     right: 12px;
     width: auto;
@@ -211,6 +211,9 @@ export const NotificationsBell = () => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
+  const bellRef = useRef(null);
+  const panelRef = useRef(null);
+  const [panelPos, setPanelPos] = useState({ top: 0, left: 0 });
 
   const { data } = useQuery(
     'notifications',
@@ -224,10 +227,30 @@ export const NotificationsBell = () => {
   const unread = data?.unread || 0;
   const items = data?.items || [];
 
-  // Close on outside click
+  // Compute panel-position fra bell-knappens viewport-koordinater når den åbnes
+  useEffect(() => {
+    if (!open || !bellRef.current) return;
+    const rect = bellRef.current.getBoundingClientRect();
+    const PANEL_WIDTH = 360;
+    const VIEWPORT_PAD = 12;
+    // Foretrækker at åbne TIL HØJRE for bell. Hvis det går off-screen,
+    // fall back til at åbne mod venstre.
+    let left = rect.right + 6;
+    if (left + PANEL_WIDTH > window.innerWidth - VIEWPORT_PAD) {
+      left = Math.max(VIEWPORT_PAD, rect.left - PANEL_WIDTH - 6);
+    }
+    setPanelPos({
+      top: rect.bottom + 6,
+      left,
+    });
+  }, [open]);
+
+  // Close on outside click — checker både wrap (bell) og panel (portal-rendered)
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+      const inWrap = wrapRef.current && wrapRef.current.contains(e.target);
+      const inPanel = panelRef.current && panelRef.current.contains(e.target);
+      if (!inWrap && !inPanel) {
         setOpen(false);
       }
     };
@@ -261,9 +284,55 @@ export const NotificationsBell = () => {
     }
   };
 
+  // Renderer panel via React Portal direkte til document.body så ingen
+  // parent-overflow eller transform-stacking kontekster kan klippe det.
+  const panelEl = open ? createPortal(
+    <Panel
+      ref={panelRef}
+      $top={panelPos.top}
+      $left={panelPos.left}
+      role="region"
+      aria-label="Notifikations-panel"
+    >
+      <PanelHead>
+        <h3>Notifikationer</h3>
+        <button onClick={handleMarkAll} disabled={unread === 0}>
+          <FaCheckDouble /> Markér alle
+        </button>
+      </PanelHead>
+      <List>
+        {items.length === 0 ? (
+          <EmptyHint>Ingen notifikationer</EmptyHint>
+        ) : (
+          items.map((it) => (
+            <Item
+              key={it.id}
+              $unread={!it.is_read}
+              $severity={it.severity}
+              onClick={() => handleClick(it)}
+            >
+              <span className="marker" aria-hidden="true" />
+              <div>
+                <div className="title">{it.title}</div>
+                {it.message && <div className="message">{it.message}</div>}
+                <div className="meta">
+                  {formatRelative(it.created_at)}
+                  {it.case_id && ` · sag ${it.case_id}`}
+                  {it.is_read && <> · <FaCheck style={{ opacity: 0.5 }} /></>}
+                </div>
+              </div>
+            </Item>
+          ))
+        )}
+      </List>
+    </Panel>,
+    document.body,
+  ) : null;
+
   return (
     <Wrap ref={wrapRef}>
       <BellButton
+        ref={bellRef}
         onClick={() => setOpen((v) => !v)}
         aria-label={`Notifikationer${unread > 0 ? ` (${unread} ulæste)` : ''}`}
         aria-expanded={open}
@@ -272,7 +341,10 @@ export const NotificationsBell = () => {
         {unread > 0 && <span className="badge">{unread > 99 ? '99+' : unread}</span>}
       </BellButton>
 
-      {open && (
+      {panelEl}
+
+      {/* Legacy in-tree panel — fjernes når portal er bekræftet */}
+      {false && open && (
         <Panel role="region" aria-label="Notifikations-panel">
           <PanelHead>
             <h3>Notifikationer</h3>

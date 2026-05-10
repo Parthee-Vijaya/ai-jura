@@ -449,7 +449,7 @@ const HomePage = () => {
           <Wordmark>
             <span>Bifrost</span>
             <span className="rune" aria-hidden="true">ᛒ</span>
-            <span className="ver">v3 · Kalundborg</span>
+            <span className="ver">beta 1 · Kalundborg</span>
           </Wordmark>
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
           <HeroLede>
