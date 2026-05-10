@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { ToastProvider } from './components/ui';
+import GlobalSearch from './components/search/GlobalSearch';
 
 // Theme
 import { lightTheme, darkTheme } from './theme';
@@ -263,6 +264,7 @@ const AppInner = () => {
       <Router>
         <RouterShortcuts paletteOpen={paletteOpen} />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
+        <GlobalSearch />
         <AppContainer>
           <PageErrorBoundary title="Navigation fejl" message="Der opstod en fejl i sidebar. Siden kan stadig fungere.">
             <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />

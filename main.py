@@ -3584,6 +3584,192 @@ async def v3_case_by_external_id(case_id: str):
         db.close()
 
 
+@app.get("/api/v3/search")
+async def v3_global_search(q: str, limit: int = 20):
+    """Global søgning på tværs af alle entities — bruges af Cmd+K spotlight.
+
+    Søger efter `q` i:
+    - cases (case_id, title, intake_state.behov, intake_state.system_description)
+    - v3_assessment_log (note, case_id, aggregate_status)
+    - evidence_artifacts (artifact_id, case_id, content_json)
+    - rules (rule.id, kilde.lov, kilde.artikel)
+    - data/knowledge_base.json (term, definition)
+
+    Returnerer pr. resultat: {type, label, sublabel, url, score} sorted by score.
+    Score: prefix-match=100, contains=50.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import Case
+    from src.database.evidence import EvidenceArtifact
+    from src.rule_engine import audit as v3_audit
+    from src.services.evidence_artifacts import ARTIFACT_TEMPLATES
+
+    if not q or len(q.strip()) < 2:
+        return {"query": q, "count": 0, "results": []}
+
+    needle = q.strip().lower()
+    results: List[Dict[str, Any]] = []
+
+    def score(text: Optional[str]) -> int:
+        if not text:
+            return 0
+        t = str(text).lower()
+        if t.startswith(needle):
+            return 100
+        if needle in t:
+            return 50
+        return 0
+
+    db = SessionLocal()
+    try:
+        # Cases
+        try:
+            for c in db.query(Case).all():
+                s = max(
+                    score(c.case_id),
+                    score(c.title),
+                    score((c.get_intake_state() or {}).get("behov", "")),
+                    score((c.get_intake_state() or {}).get("system_description", "")),
+                )
+                if s > 0:
+                    results.append({
+                        "type": "case",
+                        "label": c.case_id,
+                        "sublabel": c.title,
+                        "url": f"/sag/{c.case_id}",
+                        "score": s,
+                        "meta": c.status,
+                    })
+        except Exception as exc:
+            logger.warning(f"search cases failed: {exc}")
+
+        # Audit log entries (vurderinger)
+        try:
+            entries = v3_audit.list_recent(db, limit=200)
+            for e in entries:
+                s = max(
+                    score(e.case_id),
+                    score(e.note),
+                    score(e.aggregate_status),
+                )
+                if s > 0:
+                    results.append({
+                        "type": "vurdering",
+                        "label": f"{e.aggregate_status} — {e.case_id or 'ukendt sag'}",
+                        "sublabel": (e.note or "")[:120],
+                        "url": f"/historik/{e.id}",
+                        "score": s - 5,  # vurderinger lidt lavere prio end cases
+                        "meta": e.aggregate_status,
+                    })
+        except Exception as exc:
+            logger.warning(f"search audit failed: {exc}")
+
+        # Evidence artifacts
+        try:
+            for ev in db.query(EvidenceArtifact).all():
+                s = max(
+                    score(ev.artifact_id),
+                    score(ev.case_id),
+                )
+                # Også gennemsøg content for keyword
+                if s == 0 and ev.content_json:
+                    s = score(ev.content_json[:1000])
+                if s > 0:
+                    results.append({
+                        "type": "evidens",
+                        "label": ev.artifact_id.replace("_", " "),
+                        "sublabel": f"sag {ev.case_id} · {ev.status}",
+                        "url": f"/sag/{ev.case_id}?tab=evidens",
+                        "score": s - 10,
+                        "meta": ev.status,
+                    })
+        except Exception as exc:
+            logger.warning(f"search evidence failed: {exc}")
+
+        # Evidence templates (jur. skabeloner — søgbare uden sag-tilknytning)
+        try:
+            for tid, tmpl in ARTIFACT_TEMPLATES.items():
+                s = max(
+                    score(tid),
+                    score(tmpl.title),
+                    score(tmpl.summary),
+                )
+                if s > 0:
+                    results.append({
+                        "type": "skabelon",
+                        "label": tmpl.title,
+                        "sublabel": tmpl.summary[:120],
+                        "url": f"/api/v3/evidence/templates/{tid}",  # API-link; frontend kan beslutte
+                        "score": s - 15,
+                        "meta": tmpl.category,
+                    })
+        except Exception as exc:
+            logger.warning(f"search templates failed: {exc}")
+
+        # Rules
+        try:
+            from main import _v3_load_rules  # noqa: F401 — defined elsewhere in this file
+            rules = _v3_load_rules()
+            for r in rules:
+                s = max(
+                    score(r.id),
+                    score(r.kilde.lov),
+                    score(r.kilde.artikel),
+                    score(r.kilde.citat[:200] if r.kilde.citat else ""),
+                )
+                if s > 0:
+                    results.append({
+                        "type": "regel",
+                        "label": f"{r.kilde.lov} {r.kilde.artikel}",
+                        "sublabel": r.id,
+                        "url": "/lov-overvaagning",
+                        "score": s - 20,
+                        "meta": "rule",
+                    })
+        except Exception as exc:
+            logger.warning(f"search rules failed: {exc}")
+
+        # Knowledge base
+        try:
+            import json
+            from pathlib import Path
+            kb_path = Path(__file__).parent / "data" / "knowledge_base.json"
+            if kb_path.exists():
+                kb = json.loads(kb_path.read_text(encoding="utf-8"))
+                for item in kb:
+                    s = max(
+                        score(item.get("term")),
+                        score(item.get("definition")),
+                    )
+                    if s > 0:
+                        results.append({
+                            "type": "videnbase",
+                            "label": item.get("term", ""),
+                            "sublabel": (item.get("definition", "") or "")[:120],
+                            "url": "/videnbase",
+                            "score": s - 25,
+                            "meta": item.get("category", ""),
+                        })
+        except Exception as exc:
+            logger.warning(f"search KB failed: {exc}")
+
+    finally:
+        db.close()
+
+    # Sort by score desc + dedupe by url
+    seen = set()
+    deduped = []
+    for r in sorted(results, key=lambda x: -x["score"]):
+        if r["url"] in seen:
+            continue
+        seen.add(r["url"])
+        deduped.append(r)
+        if len(deduped) >= limit:
+            break
+
+    return {"query": q, "count": len(deduped), "results": deduped}
+
+
 @app.get("/api/v3/cases/by-case-id/{case_id}/timeline")
 async def v3_case_timeline(case_id: str, limit: int = 50):
     """Returnér samlet kronologisk feed for én sag — bruges af sag-detalje-siden.
