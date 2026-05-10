@@ -2620,6 +2620,1292 @@ _AI_INDKOEB_TJEKLISTE = ArtifactTemplate(
 
 
 # ============================================================================
+# P1 + P2 nye skabeloner (2026-05-10) — research-baseret
+# ============================================================================
+#
+# Tilføjet baseret på research mod virksomhedsguiden.dk, KL-videncenter,
+# EU Public Buyers Community og PwC AI-compliance. Dækker konkrete huller
+# for danske kommuner ved AI-indkøb og udvikling.
+
+# ---- P1.1: EU Model Contractual Clauses checklist --------------------------
+
+_EU_MCC_KLAUSULER = ArtifactTemplate(
+    id="eu_mcc_klausuler",
+    title="EU MCC-klausuler — checklist for AI-leverandørkontrakt",
+    summary=(
+        "Strukturet checklist for AI-leverandørkontrakter mod EU's Model "
+        "Contractual Clauses for AI procurement (september 2023, opdateret 2024). "
+        "MCC'erne fastlægger ansvarsfordeling mellem provider og deployer "
+        "i hele AI-systemets værdikæde. Brug denne checklist til at "
+        "verificere at jeres kontrakt indeholder de centrale klausuler "
+        "INDEN underskrift. Er klausuler fjernet eller tilpasset, skal "
+        "afvigelsen begrundes og godkendes af jurist."
+    ),
+    category="forvaltning",
+    estimated_minutes=90,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 25",
+            citat=(
+                "Forpligtelser i forsyningskæden. Enhver distributør, importør, "
+                "idriftsætter eller anden tredjepart anses for at være udbyder "
+                "af et højrisiko-AI-system og er underlagt de relevante "
+                "forpligtelser, hvis de [...] sætter deres navn på systemet."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 27",
+            citat=(
+                "Konsekvensvurderinger om grundlæggende rettigheder for "
+                "højrisiko-AI-systemer (FRIA). Idriftsættere der er offentlige "
+                "myndigheder skal foretage en FRIA inden ibrugtagning."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="Forvaltningsloven",
+            artikel="§ 3 + § 24",
+            citat=(
+                "Sagligheds- og begrundelseskrav gælder også når en kommune "
+                "overlader sagsbehandling til en leverandør. Kontrakten skal "
+                "sikre at kommunen kan opfylde sine forvaltningsretlige forpligtelser."
+            ),
+            url=_FVL_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="EU MCC for AI procurement — high-risk systems (DA + 23 sprog)",
+            publisher="EU Public Buyers Community",
+            url="https://public-buyers-community.ec.europa.eu/communities/procurement-ai/resources/ai-procurement-clauses",
+            description=(
+                "Officielle EU-skabelonklausuler for indkøb af højrisiko-AI. "
+                "Findes på alle 24 EU-sprog som downloadbare PDF + DOCX. "
+                "Anbefalet brug ved alle kommunale AI-indkøb."
+            ),
+        ),
+        ExternalResource(
+            title="EU MCC for AI procurement — non-high-risk systems",
+            publisher="EU Public Buyers Community",
+            url="https://public-buyers-community.ec.europa.eu/communities/procurement-ai/resources/ai-procurement-clauses",
+            description=(
+                "Letvægts-klausuler for ikke-højrisiko AI-systemer. Mindre "
+                "byrde end high-risk-versionen men dækker stadig core-ansvar."
+            ),
+        ),
+        ExternalResource(
+            title="Digitaliseringsstyrelsen — AI-indkøb og kontrakter",
+            publisher="Digitaliseringsstyrelsen",
+            url="https://digst.dk/tilsyn/ai-forordningen/",
+        ),
+    ],
+    sections=[
+        Section(
+            key="kontrakt_id",
+            heading="Kontrakt-ID / sagsnummer",
+            prompt="Reference til kontrakten i jeres journalsystem.",
+            field_type="text",
+            placeholder="fx Kontrakt #2026-AI-042",
+            required=True,
+        ),
+        Section(
+            key="leverandoer",
+            heading="Leverandør",
+            prompt="Navn + CVR/registreringsnummer + AI Act-rolle.",
+            field_type="text",
+            placeholder="Acme AI ApS, CVR 12345678, provider",
+            required=True,
+        ),
+        Section(
+            key="mcc_version_brugt",
+            heading="MCC-version brugt som baseline",
+            prompt="Hvilken EU MCC-version er kontrakten baseret på?",
+            field_type="enum",
+            enum_values=[
+                "high_risk_2024",
+                "general_purpose_2024",
+                "high_risk_2023",
+                "egen_skabelon_med_MCC_inspiration",
+                "ingen_MCC",
+            ],
+            required=True,
+        ),
+        Section(
+            key="klausul_definitioner",
+            heading="Klausul: standarddefinitioner (AI-system, provider, deployer)",
+            prompt=(
+                "Bruger kontrakten EU MCC's standarddefinitioner, så der "
+                "ikke opstår fortolkningstvivl ift. AI Act?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_ansvar_AI_Act",
+            heading="Klausul: klar ansvarsfordeling provider/deployer",
+            prompt=(
+                "Er det entydigt hvem der er provider (Art. 16) og deployer "
+                "(Art. 26) — og hvem der bærer hvilke pligter ved CE-mærkning, "
+                "logning, transparens og incident reporting?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_dokumentation_adgang",
+            heading="Klausul: adgang til teknisk dokumentation (Art. 11)",
+            prompt=(
+                "Garanterer leverandøren kommunen adgang til den tekniske "
+                "dokumentation jf. Art. 11 + Bilag IV — inkl. opdateringer "
+                "ved ændringer i systemet?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_logning_overvaagning",
+            heading="Klausul: adgang til logfiler og overvågning (Art. 12)",
+            prompt=(
+                "Sikrer kontrakten kommunens adgang til automatisk genererede "
+                "logfiler i hele systemets brugsperiode — i format der kan "
+                "auditeres af Digitaliseringsstyrelsen?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_incidents_indberetning",
+            heading="Klausul: Art. 73 incident reporting-samarbejde",
+            prompt=(
+                "Forpligter leverandøren sig til at understøtte kommunens "
+                "Art. 73-indberetninger ved alvorlige hændelser — inkl. "
+                "tidsfristen på 15 dage / 2 dage for kritisk infrastruktur?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_fundamental_rights",
+            heading="Klausul: FRIA-samarbejde + grundrettigheds-garanti",
+            prompt=(
+                "Forpligter leverandøren sig til at bistå kommunen ved "
+                "Fundamental Rights Impact Assessment (Art. 27) — og garanterer "
+                "at systemet ikke krænker grundlæggende rettigheder?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_subprocessors",
+            heading="Klausul: underdatabehandlere godkendt + listet",
+            prompt=(
+                "Er alle underdatabehandlere navngivet, godkendt af kommunen "
+                "og forpligtet på samme krav som leverandøren (kaskadering)?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_data_anvendelse",
+            heading="Klausul: kommunens data må ikke bruges til træning",
+            prompt=(
+                "Er det eksplicit udelukket at leverandøren bruger kommunens "
+                "data til at træne egne modeller — uden separat samtykke?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="klausul_eksit_dataudtraek",
+            heading="Klausul: eksit-strategi + dataudtræk i åbent format",
+            prompt=(
+                "Garanterer kontrakten dataudtræk i åbent, dokumenteret "
+                "format ved kontraktophør — uden ekstra omkostning?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="afvigelser",
+            heading="Afvigelser fra MCC-baselinen — begrundelse",
+            prompt=(
+                "Hvilke MCC-klausuler er fjernet, ændret eller tilføjet? "
+                "Begrund hver afvigelse — og angiv hvem der har godkendt."
+            ),
+            default_text=(
+                "1. **Klausul:** [navn]\n"
+                "   - Ændring: [beskrivelse]\n"
+                "   - Begrundelse: [hvorfor]\n"
+                "   - Godkendt af: [jurist navn, dato]\n\n"
+                "2. **Klausul:** [...]"
+            ),
+            required=False,
+        ),
+        Section(
+            key="juridisk_godkendelse",
+            heading="Juridisk godkendelse",
+            prompt=(
+                "Hvem har gennemgået kontrakten ift. EU MCC + AI Act + GDPR? "
+                "Angiv navn, dato, initialer og afdeling."
+            ),
+            field_type="text",
+            placeholder="Navn, jurist, AI-enheden, 2026-05-10, INI",
+            required=True,
+        ),
+    ],
+)
+
+
+# ---- P1.2: AI-færdighedsprogram (Art. 4) ------------------------------------
+
+_AI_FAERDIGHEDER_PROGRAM = ArtifactTemplate(
+    id="ai_faerdigheder_program",
+    title="AI-færdighedsprogram (AI Act Art. 4)",
+    summary=(
+        "AI Act Art. 4 trådte i kraft 2. februar 2025 og pålægger ALLE "
+        "udbydere og idriftsættere — inkl. kommuner — at sikre tilstrækkeligt "
+        "AI-kompetenceniveau hos personale der udvikler, drifter eller "
+        "anvender AI-systemer. Pligten gælder for alle AI-systemer, ikke "
+        "kun højrisiko. Denne skabelon dokumenterer kommunens program: "
+        "målgrupper, kompetencemål, kursusplan, gennemførelse og opfølgning. "
+        "Bygger på KL's inspirationskatalog."
+    ),
+    category="ai_act",
+    estimated_minutes=120,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 4",
+            citat=(
+                "Udbydere og idriftsættere af AI-systemer træffer foranstaltninger "
+                "til så vidt muligt at sikre, at deres personale og andre personer, "
+                "der på deres vegne beskæftiger sig med drift og anvendelse af "
+                "AI-systemer, har et tilstrækkeligt AI-kompetenceniveau, idet "
+                "der tages hensyn til disse personers tekniske viden, erfaring, "
+                "uddannelse og oplæring og den kontekst, AI-systemerne skal "
+                "anvendes i, samt under hensyntagen til de personer eller "
+                "grupper af personer, som AI-systemerne skal anvendes på."
+            ),
+            url=_AI_ACT_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="KL: Inspirationskatalog til AI-færdighedsprogram",
+            publisher="KL — Kommunernes Landsforening",
+            url="https://videncenter.kl.dk/viden-og-vaerktoejer/digitalisering-og-ny-teknologi/kunstig-intelligens-ai/",
+            description=(
+                "KL's inspirationskatalog til hvordan kommuner kan bygge et "
+                "AI-literacy-program for forskellige roller — fra sagsbehandler "
+                "til ledelse til borgerservice. Indeholder kompetencemål, "
+                "kursusforslag og praktiske eksempler."
+            ),
+        ),
+        ExternalResource(
+            title="EU AI Office — Living repository of AI literacy practices",
+            publisher="EU-Kommissionen, AI Office",
+            url="https://digital-strategy.ec.europa.eu/en/library/living-repository-foster-learning-and-exchange-ai-literacy",
+            description=(
+                "Levende katalog over AI literacy-tiltag fra europæiske "
+                "organisationer. Søgbar på sektor, rolle og format."
+            ),
+        ),
+        ExternalResource(
+            title="Digitaliseringsstyrelsen — AI-kompetencer i den offentlige sektor",
+            publisher="Digitaliseringsstyrelsen",
+            url="https://digst.dk/tilsyn/ai-forordningen/",
+        ),
+    ],
+    sections=[
+        Section(
+            key="programansvarlig",
+            heading="Programansvarlig",
+            prompt=(
+                "Hvem ejer AI-færdighedsprogrammet i kommunen? Navn, titel, "
+                "afdeling, e-mail."
+            ),
+            field_type="text",
+            placeholder="Navn, AI-enhedschef, Digitalisering, navn@kalundborg.dk",
+            required=True,
+        ),
+        Section(
+            key="maalgrupper",
+            heading="Målgrupper",
+            prompt=(
+                "Hvilke roller er omfattet af programmet? Kun de der "
+                "drifter/anvender AI tæller — men husk at det inkluderer "
+                "både direkte brugere og personer der modtager output "
+                "(fx ledere der træffer afgørelser baseret på AI)."
+            ),
+            default_text=(
+                "1. **Sagsbehandlere** — direkte brugere af AI-beslutningsstøtte\n"
+                "2. **Ledere** — modtager AI-genererede analyser, godkender afgørelser\n"
+                "3. **AI-enhed** — udvikler/konfigurerer AI-systemer\n"
+                "4. **Borgerservice** — møder borgere der spørger til AI-brug\n"
+                "5. **IT-sikkerhed** — vurderer AI-leverandører\n"
+                "6. **Jurist** — vurderer AI Act-compliance"
+            ),
+            required=True,
+        ),
+        Section(
+            key="kompetencemaal_per_rolle",
+            heading="Kompetencemål per rolle",
+            prompt=(
+                "Hvilket kompetenceniveau skal hver målgruppe opnå? Vær "
+                "konkret — fx 'kan forklare AI-systemets begrænsninger til "
+                "borgere på borgerens niveau' eller 'kan identificere bias-risici "
+                "i AI-output'."
+            ),
+            default_text=(
+                "**Sagsbehandlere**\n"
+                "- Forstå AI-systemets formål, datagrundlag og begrænsninger\n"
+                "- Kan identificere når AI-output bør tilsidesættes\n"
+                "- Kender Art. 14-pligten til menneskelig overvågning\n\n"
+                "**Ledere**\n"
+                "- Kan stille kritiske spørgsmål til AI-baserede analyser\n"
+                "- Forstår eget ansvar for endelige afgørelser\n\n"
+                "**AI-enhed**\n"
+                "- Mestrer AI Act-klassificering og DPIA-tærskeltest\n"
+                "- Kan udføre Fundamental Rights Impact Assessment (Art. 27)"
+            ),
+            required=True,
+        ),
+        Section(
+            key="eksisterende_kompetenceniveau",
+            heading="Vurdering af eksisterende kompetenceniveau",
+            prompt=(
+                "Hvordan har I afdækket nuværende kompetenceniveau? "
+                "(survey, samtale, test). Resultater per målgruppe."
+            ),
+            required=True,
+        ),
+        Section(
+            key="kursusplan",
+            heading="Kursus- og oplæringsplan",
+            prompt=(
+                "Hvilke konkrete kurser, workshops, e-learning eller intern "
+                "oplæring leverer kompetencerne? Per kursus: navn, format, "
+                "varighed, leverandør, målgruppe, dato."
+            ),
+            default_text=(
+                "1. **Kursus:** [navn]\n"
+                "   - Format: [e-learning / workshop / klasseundervisning]\n"
+                "   - Varighed: [timer/dage]\n"
+                "   - Leverandør: [intern / ekstern navn]\n"
+                "   - Målgruppe: [rolle(r)]\n"
+                "   - Plan: [dato eller frekvens]\n\n"
+                "2. **Kursus:** [...]"
+            ),
+            required=True,
+        ),
+        Section(
+            key="dokumentation_metode",
+            heading="Dokumentation af gennemførelse",
+            prompt=(
+                "Hvordan dokumenteres at den enkelte medarbejder har "
+                "gennemført? Skal kunne fremvises ved tilsyn."
+            ),
+            field_type="enum",
+            enum_values=[
+                "kursusbevis_pr_medarbejder",
+                "intern_log_pr_medarbejder",
+                "ekstern_certificering",
+                "kombination",
+            ],
+            required=True,
+        ),
+        Section(
+            key="opfoelgning_frekvens",
+            heading="Opfølgning og opfriskning",
+            prompt=(
+                "Hvor ofte revurderes kompetenceniveau? AI-feltet udvikler "
+                "sig hurtigt — anbefalet halvårligt eller årligt."
+            ),
+            field_type="enum",
+            enum_values=["aarlig", "halvaarlig", "kvartalsvis", "ad_hoc"],
+            required=True,
+        ),
+        Section(
+            key="onboarding_nye_medarbejdere",
+            heading="Onboarding af nye medarbejdere",
+            prompt=(
+                "Hvordan sikres at nye medarbejdere kommer på samme niveau "
+                "INDEN de bruger AI? Beskriv onboarding-proceduren."
+            ),
+            required=True,
+        ),
+        Section(
+            key="budget_finansiering",
+            heading="Budget og finansiering (valgfri)",
+            prompt=(
+                "Årligt budget til programmet — kursusafgifter, intern "
+                "tidsforbrug, eventuelle eksterne konsulenter."
+            ),
+            required=False,
+        ),
+    ],
+)
+
+
+# ---- P1.3: Leverandør due-diligence ----------------------------------------
+
+_LEVERANDOER_DUE_DILIGENCE = ArtifactTemplate(
+    id="leverandoer_due_diligence",
+    title="Leverandør due-diligence ved AI-indkøb",
+    summary=(
+        "Struktureret leverandørvurdering INDEN kontrakt indgås. Bygger på "
+        "EU Public Buyers Community's standardspørgsmål + danske krav til "
+        "behandlersikkerhed (GDPR Art. 28 + Datatilsynets vejledning). "
+        "Skal udfyldes for ALLE eksterne AI-leverandører — også når systemet "
+        "indkøbes som SaaS eller bundles med øvrige IT-løsninger. "
+        "Vurderingen arkiveres i sagen og kan kræves fremvist ved tilsyn."
+    ),
+    category="forvaltning",
+    estimated_minutes=120,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 25",
+            citat=(
+                "Forpligtelser i forsyningskæden. Ansvarsfordeling skal "
+                "være klar mellem alle parter i AI-systemets værdikæde."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="Databeskyttelsesforordningen (GDPR)",
+            artikel="Artikel 28, stk. 1",
+            citat=(
+                "Hvis en behandling skal foretages på vegne af en "
+                "dataansvarlig, benytter den dataansvarlige udelukkende "
+                "databehandlere, der kan stille de fornødne garantier "
+                "for [...] passende tekniske og organisatoriske foranstaltninger."
+            ),
+            url=_GDPR_URL,
+        ),
+        LegalReference(
+            lov="Forvaltningsloven",
+            artikel="§ 3",
+            citat=(
+                "Forsvarlighed og saglighed gælder også når kommunen "
+                "vælger leverandør — vurderingen skal være dokumenteret."
+            ),
+            url=_FVL_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="EU Public Buyers Community — Standard supplier questions for AI",
+            publisher="EU-Kommissionen",
+            url="https://public-buyers-community.ec.europa.eu/communities/procurement-ai",
+        ),
+        ExternalResource(
+            title="Datatilsynet — Vejledning om databehandlere",
+            publisher="Datatilsynet",
+            url="https://www.datatilsynet.dk/Media/637657742019930000/Vejledning_om_databehandleraftaler.pdf",
+        ),
+        ExternalResource(
+            title="ISO/IEC 42001:2023 — AI management system",
+            publisher="ISO",
+            url="https://www.iso.org/standard/81230.html",
+            description=(
+                "Den første internationale ledelsesstandard for AI. "
+                "Leverandører med ISO 42001-certificering har dokumenteret "
+                "modne AI-styringsprocesser."
+            ),
+        ),
+        ExternalResource(
+            title="Digitaliseringsstyrelsen — Højrisiko-AI-systemer",
+            publisher="Digitaliseringsstyrelsen",
+            url="https://digst.dk/tilsyn/ai-forordningen/reglerne-i-ai-forordningen/hoejrisiko-ai-systemer/",
+        ),
+    ],
+    sections=[
+        Section(
+            key="leverandoer_navn",
+            heading="Leverandør",
+            prompt="Officielt navn + CVR + hovedsæde-land + moderselskab.",
+            field_type="text",
+            placeholder="Acme AI ApS, CVR 12345678, DK, ejet af Acme Corp Inc., USA",
+            required=True,
+        ),
+        Section(
+            key="ai_act_rolle",
+            heading="AI Act-rolle",
+            prompt=(
+                "Hvilken rolle påtager leverandøren sig under AI Act? "
+                "Påvirker hvilke pligter der ligger hos hvem."
+            ),
+            field_type="enum",
+            enum_values=[
+                "provider",
+                "deployer",
+                "distributor",
+                "importer",
+                "ikke_AI_Act_relevant",
+            ],
+            required=True,
+        ),
+        Section(
+            key="certificeringer",
+            heading="Certificeringer + auditeringer",
+            prompt=(
+                "Hvilke relevante certificeringer har leverandøren? "
+                "Per certificering: standard, organ, gyldighed, omfang."
+            ),
+            default_text=(
+                "- **ISO 27001** (informationssikkerhed): [organ, dato, scope]\n"
+                "- **ISO 27701** (privacy): [organ, dato, scope]\n"
+                "- **ISO 42001** (AI management): [organ, dato, scope]\n"
+                "- **SOC 2 Type II**: [revisor, periode, scope]\n"
+                "- **CSA STAR**: [niveau]\n"
+                "- **Andre:** [...]"
+            ),
+            required=True,
+        ),
+        Section(
+            key="underdatabehandlere",
+            heading="Underdatabehandlere",
+            prompt=(
+                "Liste alle underdatabehandlere (sub-processors) — inkl. "
+                "cloud-leverandør, model-host, support-firmaer. Per: navn, "
+                "land, rolle, audit-status."
+            ),
+            default_text=(
+                "1. **AWS** (cloud) — Frankfurt (EU) — auditeret iht. SOC 2\n"
+                "2. **OpenAI** (LLM API) — USA — DPA underskrevet [dato]\n"
+                "3. **[...]**"
+            ),
+            required=True,
+        ),
+        Section(
+            key="audit_rapporter",
+            heading="Audit-rapporter — adgang og sidst-modtaget",
+            prompt=(
+                "Hvilke audit-rapporter (SOC 2, penetrationstest, ISO-audit) "
+                "har leverandøren og hvornår sidst delt med jer?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="sikkerhedsincidenter_24m",
+            heading="Sikkerhedsincidenter sidste 24 måneder",
+            prompt=(
+                "Har leverandøren oplevet relevante sikkerhedsincidenter "
+                "(brud, model-misbrug, data-lækage)? Per: dato, omfang, "
+                "håndtering, lessons learned."
+            ),
+            default_text=(
+                "Ingen kendte incidenter sidste 24 måneder.\n\n"
+                "ELLER:\n\n"
+                "1. **[Dato]** — [Beskrivelse]\n"
+                "   - Omfang: [berørte kunder/data]\n"
+                "   - Håndtering: [tiltag]\n"
+                "   - Lessons learned: [...]"
+            ),
+            required=True,
+        ),
+        Section(
+            key="finansiel_sundhed",
+            heading="Finansiel sundhed + virksomhedshistorik",
+            prompt=(
+                "Kort vurdering af finansiel stabilitet (kreditvurdering, "
+                "år i drift, ejerskab, eventuelle planer om opkøb)."
+            ),
+            required=True,
+        ),
+        Section(
+            key="eksit_strategi",
+            heading="Eksit-strategi",
+            prompt=(
+                "Hvad sker der ved kontraktophør eller leverandør-konkurs? "
+                "Dataudtræks-format, opbevaringsperiode, transitions-support, "
+                "model-portability."
+            ),
+            required=True,
+        ),
+        Section(
+            key="compliance_attestering",
+            heading="Compliance-attestering",
+            prompt=(
+                "Har leverandøren skriftligt attesteret compliance med "
+                "AI Act + GDPR + dansk databeskyttelseslovgivning?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="referencer_andre_kommuner",
+            heading="Referencer fra andre danske kommuner",
+            prompt=(
+                "Har leverandøren leveret til andre danske kommuner? "
+                "Spørg disse om erfaringer (compliance, support, hændelser)."
+            ),
+            required=False,
+        ),
+        Section(
+            key="konklusion",
+            heading="Konklusion + anbefaling",
+            prompt=(
+                "Samlet vurdering på baggrund af ovenstående."
+            ),
+            field_type="enum",
+            enum_values=[
+                "godkendt",
+                "godkendt_med_betingelser",
+                "kraever_yderligere_dokumentation",
+                "afvist",
+            ],
+            required=True,
+        ),
+        Section(
+            key="ansvarlig_vurderer",
+            heading="Ansvarlig vurderer",
+            prompt="Hvem har lavet due-diligence-vurderingen? Navn, dato, initialer.",
+            field_type="text",
+            required=True,
+        ),
+    ],
+)
+
+
+# ---- P2.1: Trustworthy AI rating (HLEG 7 dimensioner) ----------------------
+
+_TRUSTWORTHY_AI_RATING = ArtifactTemplate(
+    id="trustworthy_ai_rating",
+    title="Trustworthy AI-vurdering (HLEG 7 principper)",
+    summary=(
+        "Selvvurdering mod EU's High-Level Expert Group's 7 principper for "
+        "Trustworthy AI. Bygger på ALTAI (Assessment List for Trustworthy AI). "
+        "Selv om HLEG-principperne ikke er bindende lov, anbefaler "
+        "Digitaliseringsstyrelsen at offentlige myndigheder bruger dem som "
+        "kvalitetsramme — særligt for højrisiko-systemer. Vurderingen "
+        "scorer hver dimension 1-5 og dokumenterer begrundelse."
+    ),
+    category="ai_act",
+    estimated_minutes=180,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Præambel, betragtning 27",
+            citat=(
+                "[...] AI-systemer bør udvikles og anvendes som et redskab, "
+                "der tjener mennesker, respekterer menneskets værdighed og "
+                "personlige autonomi, og som fungerer på en måde, der er "
+                "menneskecentreret, sikker, troværdig og etisk forsvarlig."
+            ),
+            url=_AI_ACT_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="ALTAI — Assessment List for Trustworthy AI",
+            publisher="EU High-Level Expert Group on AI",
+            url="https://digital-strategy.ec.europa.eu/en/library/assessment-list-trustworthy-artificial-intelligence-altai-self-assessment",
+            description=(
+                "Officiel selvvurderings-tjekliste fra EU HLEG. 7 sektioner "
+                "med konkrete spørgsmål per princip. Tilgængelig som "
+                "interaktivt værktøj + PDF."
+            ),
+        ),
+        ExternalResource(
+            title="Ethics Guidelines for Trustworthy AI",
+            publisher="EU High-Level Expert Group on AI",
+            url="https://digital-strategy.ec.europa.eu/en/library/ethics-guidelines-trustworthy-ai",
+        ),
+    ],
+    sections=[
+        Section(
+            key="menneskeligt_tilsyn_score",
+            heading="1. Menneskeligt tilsyn — score (1-5)",
+            prompt=(
+                "Hvor godt understøtter systemet menneskelig autonomi og "
+                "tilsyn? 1=mindst, 5=bedst."
+            ),
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="menneskeligt_tilsyn_begrundelse",
+            heading="1. Menneskeligt tilsyn — begrundelse",
+            prompt=(
+                "Hvilke konkrete mekanismer sikrer menneskeligt tilsyn? "
+                "(human-in-the-loop, override-funktion, eskalation, "
+                "transparens-til-bruger). Hvad mangler?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="teknisk_robusthed_score",
+            heading="2. Teknisk robusthed + sikkerhed — score (1-5)",
+            prompt=(
+                "Robusthed mod adversariel manipulation, fejltolerance, "
+                "reproducerbarhed."
+            ),
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="teknisk_robusthed_begrundelse",
+            heading="2. Teknisk robusthed — begrundelse",
+            prompt=(
+                "Penetration-tests udført? Adversarial testing? Backup/failover? "
+                "Mål for nøjagtighed/precision/recall? Drift-monitorering?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="privatliv_data_governance_score",
+            heading="3. Privatliv + data governance — score (1-5)",
+            prompt="Dataminimering, anonymisering, samtykke, dataadgang.",
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="privatliv_data_governance_begrundelse",
+            heading="3. Privatliv + data governance — begrundelse",
+            prompt=(
+                "Er DPIA gennemført? Datakvalitet sikret? Samtykke-grundlag? "
+                "Adgangskontrol? Sletteprocedurer?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="transparens_score",
+            heading="4. Transparens + forklarbarhed — score (1-5)",
+            prompt="Sporbarhed, dokumentation, forklaring til berørte.",
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="transparens_begrundelse",
+            heading="4. Transparens + forklarbarhed — begrundelse",
+            prompt=(
+                "Modelkort? Datakort? Forklaringsgrad til sagsbehandlere + "
+                "borgere? Audit-trail komplet?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="fairness_score",
+            heading="5. Diversitet, ikke-diskrimination + fairness — score (1-5)",
+            prompt="Bias-test, fair representation, tilgængelighed.",
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="fairness_begrundelse",
+            heading="5. Fairness — begrundelse",
+            prompt=(
+                "Bias-audit gennemført? Differentielle effekter målt på "
+                "beskyttede karakteristika? WCAG-tilgængelig? "
+                "Alternativ for borgere der ikke vil bruge AI?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="samfundsmaessig_velvaere_score",
+            heading="6. Samfundsmæssig + miljømæssig velvære — score (1-5)",
+            prompt="Bæredygtighed, demokratisk indflydelse, social påvirkning.",
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="samfundsmaessig_velvaere_begrundelse",
+            heading="6. Samfundsmæssig velvære — begrundelse",
+            prompt=(
+                "Energiforbrug? CO2-aftryk? Påvirkning på medarbejderes "
+                "arbejdsforhold? Bredere samfundsmæssige konsekvenser?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="ansvarlighed_score",
+            heading="7. Ansvarlighed — score (1-5)",
+            prompt="Auditerbarhed, redress-mekanismer, governance.",
+            field_type="enum",
+            enum_values=["1", "2", "3", "4", "5"],
+            required=True,
+        ),
+        Section(
+            key="ansvarlighed_begrundelse",
+            heading="7. Ansvarlighed — begrundelse",
+            prompt=(
+                "Klagevej for borgere? Dokumentation til myndighedstilsyn? "
+                "Risikostyringsplan? Whistleblower-proces?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="samlet_vurdering",
+            heading="Samlet vurdering",
+            prompt=(
+                "Hvilke dimensioner scorer lavt og hvilke tiltag igangsættes? "
+                "Næste revurderings-dato."
+            ),
+            required=True,
+        ),
+        Section(
+            key="vurderet_af",
+            heading="Vurderet af + dato",
+            prompt="Navn, rolle, dato.",
+            field_type="text",
+            required=True,
+        ),
+    ],
+)
+
+
+# ---- P2.2: CE-mærkning step-by-step guide ----------------------------------
+
+_CE_MAERKNING_GUIDE = ArtifactTemplate(
+    id="ce_maerkning_guide",
+    title="CE-mærkning af højrisiko-AI — step-by-step",
+    summary=(
+        "Trin-for-trin guide til CE-mærkning af et højrisiko-AI-system. "
+        "Strukturen følger AI Act Art. 43-49: konformitetsvurdering, "
+        "EU-konformitetserklæring, CE-mærkning, EU-database-registrering. "
+        "Pligterne ligger primært hos provider, men kommunen som deployer "
+        "skal verificere at systemet er korrekt CE-mærket INDEN ibrugtagning. "
+        "Distinkt fra eu_database_registrering, som kun dækker trin 7."
+    ),
+    category="ai_act",
+    estimated_minutes=120,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 43",
+            citat=(
+                "Konformitetsvurderingsprocedurer for højrisiko-AI-systemer. "
+                "Provider skal vælge mellem intern kontrol (Bilag VI) eller "
+                "vurdering ved bemyndiget organ (Bilag VII)."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 47",
+            citat=(
+                "Provider udsteder en EU-konformitetserklæring for hvert "
+                "højrisiko-AI-system og opbevarer den i 10 år efter idriftsættelse."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 48",
+            citat=(
+                "CE-mærkningen anbringes synligt, læseligt og uudsletteligt "
+                "på højrisiko-AI-systemet eller i dets dokumentation."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 49",
+            citat=(
+                "Højrisiko-AI-systemer registreres i EU-databasen før "
+                "idriftsættelse eller markedsføring."
+            ),
+            url=_AI_ACT_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="Digitaliseringsstyrelsen — CE-mærkning af AI",
+            publisher="Digitaliseringsstyrelsen",
+            url="https://digst.dk/tilsyn/ai-forordningen/reglerne-i-ai-forordningen/hoejrisiko-ai-systemer/",
+        ),
+        ExternalResource(
+            title="NANDO — bemyndigede organer for AI Act",
+            publisher="EU-Kommissionen",
+            url="https://ec.europa.eu/growth/tools-databases/nando/",
+            description=(
+                "EU-database over bemyndigede organer (notified bodies). "
+                "Filtrér på 'Regulation (EU) 2024/1689' for AI Act-organer."
+            ),
+        ),
+        ExternalResource(
+            title="EU-database for højrisiko-AI",
+            publisher="EU-Kommissionen",
+            url="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+        ),
+    ],
+    sections=[
+        Section(
+            key="trin_1_klassificering_status",
+            heading="Trin 1: Højrisiko-klassificering bekræftet",
+            prompt=(
+                "Er systemet bekræftet som højrisiko jf. Art. 6 + Bilag III? "
+                "Reference til Bifrosts /eu-checker + /vurdering."
+            ),
+            field_type="enum",
+            enum_values=[
+                "bekraeftet_hojrisiko",
+                "ikke_hojrisiko",
+                "afventer_klassificering",
+                "uklart",
+            ],
+            required=True,
+        ),
+        Section(
+            key="trin_2_konformitetsvurderingsrute",
+            heading="Trin 2: Konformitetsvurderings-rute valgt (Art. 43)",
+            prompt=(
+                "Bilag VI = intern kontrol (provider selv). "
+                "Bilag VII = ekstern vurdering ved bemyndiget organ. "
+                "Sidstnævnte er obligatorisk for biometri-systemer."
+            ),
+            field_type="enum",
+            enum_values=[
+                "bilag_VI_intern_kontrol",
+                "bilag_VII_ekstern_bemyndiget_organ",
+                "ikke_relevant",
+                "afventer_beslutning",
+            ],
+            required=True,
+        ),
+        Section(
+            key="trin_3_bemyndiget_organ",
+            heading="Trin 3: Bemyndiget organ (kun ved Bilag VII)",
+            prompt=(
+                "Hvis Bilag VII: navn på bemyndiget organ + identifikations-nr. "
+                "(slå op i NANDO-databasen). Status på vurderingen."
+            ),
+            field_type="text",
+            placeholder="DEKRA Certification GmbH, NB 0158, vurdering startet 2026-01-15",
+            required=False,
+        ),
+        Section(
+            key="trin_4_teknisk_dokumentation",
+            heading="Trin 4: Teknisk dokumentation komplet (Art. 11 + Bilag IV)",
+            prompt=(
+                "Reference til artefakt teknisk_dokumentation_art11. "
+                "Status på fuldstændighed."
+            ),
+            field_type="enum",
+            enum_values=[
+                "komplet_godkendt",
+                "komplet_under_review",
+                "delvis",
+                "ikke_paabegyndt",
+            ],
+            required=True,
+        ),
+        Section(
+            key="trin_5_eu_konformitetserklaering",
+            heading="Trin 5: EU-konformitetserklæring udstedt (Art. 47)",
+            prompt=(
+                "Har provider udstedt EU-konformitetserklæring? Dato + reference. "
+                "Skal opbevares i 10 år efter idriftsættelse."
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="trin_5_ek_dato_reference",
+            heading="Trin 5: EK-erklæring dato + opbevaringssted",
+            prompt="Dato for udstedelse + hvor erklæringen opbevares.",
+            field_type="text",
+            placeholder="Udstedt 2026-04-01 — opbevaret i Acta sag 2026-AI-042",
+            required=False,
+        ),
+        Section(
+            key="trin_6_ce_maerkning_paafoert",
+            heading="Trin 6: CE-mærkning påført (Art. 48)",
+            prompt=(
+                "Er CE-mærket påført synligt, læseligt og uudsletteligt på "
+                "systemet eller dets dokumentation? Hvis Bilag VII: "
+                "skal også indeholde NB-nummer."
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="trin_7_eu_database_registreret",
+            heading="Trin 7: EU-database-registrering (Art. 49)",
+            prompt=(
+                "Er systemet registreret i EU-databasen INDEN idriftsættelse? "
+                "Reference til artefakt eu_database_registrering."
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="ansvarlig_provider",
+            heading="Ansvarlig provider + kontaktperson",
+            prompt=(
+                "Hvem er provider (juridisk enhed)? Kontaktperson + e-mail."
+            ),
+            field_type="text",
+            required=True,
+        ),
+        Section(
+            key="kommunens_deployer_verifikation",
+            heading="Kommunens (deployer) verifikation INDEN ibrugtagning",
+            prompt=(
+                "Som deployer skal kommunen verificere at: CE-mærket findes, "
+                "EU-konformitetserklæring foreligger, brugsanvisning er på "
+                "dansk, og systemet er registreret i EU-databasen. Bekræft "
+                "med dato + initialer."
+            ),
+            required=True,
+        ),
+        Section(
+            key="dato_for_idriftsaettelse",
+            heading="Planlagt eller faktisk dato for idriftsættelse",
+            prompt="Dato.",
+            field_type="date",
+            required=True,
+        ),
+        Section(
+            key="bemaerkninger",
+            heading="Bemærkninger",
+            prompt="Eventuelle udeståender eller særlige forhold.",
+            required=False,
+        ),
+    ],
+)
+
+
+# ---- P2.3: Incident reporting (Art. 73) ------------------------------------
+
+_INCIDENT_REPORTING_ART73 = ArtifactTemplate(
+    id="incident_reporting_art73",
+    title="Indberetning af alvorlig hændelse (AI Act Art. 73)",
+    summary=(
+        "Skabelon til indberetning af alvorlige hændelser fra højrisiko-AI-"
+        "systemer til markedsovervågningsmyndigheden (i Danmark: "
+        "Digitaliseringsstyrelsen). Tidsfristerne er korte: 2 dage ved "
+        "kritisk infrastruktur, 10 dage ved dødsfald, 15 dage ved øvrige. "
+        "Distinkt fra incident_response_plan, som er den interne håndterings-"
+        "proces. Denne skabelon dokumenterer selve indberetningen til "
+        "myndigheden + opfølgning."
+    ),
+    category="ai_act",
+    estimated_minutes=90,
+    legal_basis=[
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 73, stk. 1",
+            citat=(
+                "Udbydere af højrisiko-AI-systemer, der bringes i omsætning "
+                "på EU-markedet, skal indberette enhver alvorlig hændelse til "
+                "markedsovervågningsmyndighederne i de medlemsstater, hvor "
+                "den pågældende hændelse er indtruffet."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 73, stk. 2-4",
+            citat=(
+                "Indberetning skal ske umiddelbart efter at udbyderen har "
+                "fastslået sammenhæng — under alle omstændigheder senest 15 dage "
+                "efter at udbyderen er blevet bekendt med hændelsen. Ved "
+                "udbredt overtrædelse eller hændelse på kritisk infrastruktur "
+                "er fristen 2 dage. Ved dødsfald 10 dage."
+            ),
+            url=_AI_ACT_URL,
+        ),
+        LegalReference(
+            lov="EU AI-forordningen (Forordning 2024/1689)",
+            artikel="Artikel 79",
+            citat=(
+                "Hver medlemsstat udpeger én national kompetent myndighed "
+                "som markedsovervågningsmyndighed. I Danmark: Digitaliseringsstyrelsen."
+            ),
+            url=_AI_ACT_URL,
+        ),
+    ],
+    external_resources=[
+        ExternalResource(
+            title="Digitaliseringsstyrelsen — AI-tilsyn og indberetning",
+            publisher="Digitaliseringsstyrelsen",
+            url="https://digst.dk/tilsyn/ai-forordningen/",
+            description=(
+                "Officielle kontaktoplysninger og indberetningsformular for "
+                "Art. 73-hændelser. Bekræft aktuel kontaktadresse INDEN "
+                "indberetning."
+            ),
+        ),
+        ExternalResource(
+            title="EU-Kommissionen — Vejledning om Art. 73 incident reporting",
+            publisher="EU-Kommissionen",
+            url="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+        ),
+        ExternalResource(
+            title="Datatilsynet — Anmeldelse af brud på persondatasikkerheden",
+            publisher="Datatilsynet",
+            url="https://www.datatilsynet.dk/hvad-skal-jeg-goere/anmeld-brud-paa-persondatasikkerheden",
+            description=(
+                "Hvis hændelsen også involverer brud på persondata, skal "
+                "der parallelt anmeldes til Datatilsynet inden 72 timer (GDPR Art. 33)."
+            ),
+        ),
+    ],
+    sections=[
+        Section(
+            key="haendelse_id",
+            heading="Hændelses-ID + sagsnummer",
+            prompt="Intern hændelses-id + reference til kommunens journalsag.",
+            field_type="text",
+            placeholder="HND-2026-0042 / Sag #2026-AI-042",
+            required=True,
+        ),
+        Section(
+            key="dato_tid_haendelse",
+            heading="Hændelsens dato + tidspunkt",
+            prompt="Hvornår indtraf hændelsen?",
+            field_type="date",
+            required=True,
+        ),
+        Section(
+            key="dato_tid_opdaget",
+            heading="Dato + tidspunkt for opdagelse",
+            prompt=(
+                "Hvornår blev kommunen / provider bekendt med hændelsen? "
+                "Tidsfristerne tæller fra dette tidspunkt."
+            ),
+            field_type="date",
+            required=True,
+        ),
+        Section(
+            key="ai_system_navn",
+            heading="Berørt AI-system",
+            prompt="Navn + version + provider + EU-database-registrerings-id.",
+            field_type="text",
+            required=True,
+        ),
+        Section(
+            key="alvorsklassifikation",
+            heading="Alvorsklassifikation (Art. 3, nr. 49)",
+            prompt=(
+                "Hvilken type alvorlig hændelse? Bestemmer indberetningsfrist."
+            ),
+            field_type="enum",
+            enum_values=[
+                "doedsfald",
+                "alvorlig_skade_paa_sundhed",
+                "krænkelse_grundlaeggende_rettigheder",
+                "kritisk_infrastruktur_forstyrrelse",
+                "alvorlig_skade_paa_ejendom_eller_miljoe",
+            ],
+            required=True,
+        ),
+        Section(
+            key="beskrivelse",
+            heading="Beskrivelse af hændelsen",
+            prompt=(
+                "Detaljeret beskrivelse: hvad skete, hvornår, hvor, hvordan blev "
+                "det opdaget. Reference til AI-systemets rolle."
+            ),
+            required=True,
+        ),
+        Section(
+            key="beroerte_personer_antal",
+            heading="Antal og type berørte personer",
+            prompt=(
+                "Antal berørte borgere/medarbejdere/tredjepart. Type "
+                "(særligt sårbare grupper?)."
+            ),
+            required=True,
+        ),
+        Section(
+            key="oejeblikkelige_tiltag",
+            heading="Øjeblikkelige tiltag",
+            prompt=(
+                "Hvad gjorde I umiddelbart? (system stoppet, manuel "
+                "håndtering aktiveret, berørte personer informeret, m.m.)"
+            ),
+            required=True,
+        ),
+        Section(
+            key="indberetningsfrist_relevant",
+            heading="Indberetningsfrist for denne hændelsestype",
+            prompt=(
+                "Bestem hvilken frist der gælder — tæller fra opdagelse."
+            ),
+            field_type="enum",
+            enum_values=[
+                "2_dage_kritisk_infrastruktur",
+                "10_dage_doedsfald",
+                "15_dage_oevrige",
+            ],
+            required=True,
+        ),
+        Section(
+            key="dato_indberetning_indsendt",
+            heading="Dato for indberetning indsendt",
+            prompt="Hvornår blev indberetningen sendt til myndigheden?",
+            field_type="date",
+            required=True,
+        ),
+        Section(
+            key="modtager_myndighed",
+            heading="Modtager-myndighed(er)",
+            prompt=(
+                "Hvilke myndigheder er informeret? Husk at GDPR-brud "
+                "også kræver indberetning til Datatilsynet inden 72 timer."
+            ),
+            field_type="enum",
+            enum_values=[
+                "kun_digitaliseringsstyrelsen",
+                "digitaliseringsstyrelsen_og_datatilsynet",
+                "digitaliseringsstyrelsen_og_sektor_specifik",
+                "alle_tre",
+            ],
+            required=True,
+        ),
+        Section(
+            key="provider_informeret",
+            heading="AI-provider informeret",
+            prompt=(
+                "Er provider af AI-systemet informeret om hændelsen + "
+                "samarbejde om indberetning?"
+            ),
+            field_type="boolean",
+            required=True,
+        ),
+        Section(
+            key="opfoelgning_aabne_punkter",
+            heading="Opfølgning + åbne punkter",
+            prompt=(
+                "Hvilke åbne punkter resterer? Tidsplan for løsning. "
+                "Behov for systemændring inden genoptagelse?"
+            ),
+            required=True,
+        ),
+        Section(
+            key="lessons_learned",
+            heading="Lessons learned (valgfri)",
+            prompt=(
+                "Hvad lærte I? Skal andre kommuner / provider informeres? "
+                "Skal jeres risikostyringsplan opdateres?"
+            ),
+            required=False,
+        ),
+        Section(
+            key="ansvarlig_indberetter",
+            heading="Ansvarlig indberetter",
+            prompt="Navn, rolle, kontaktinfo.",
+            field_type="text",
+            required=True,
+        ),
+    ],
+)
+
+
+# ============================================================================
 # Den fulde katalog
 # ============================================================================
 
@@ -2650,6 +3936,14 @@ ARTIFACT_TEMPLATES: dict[str, ArtifactTemplate] = {
     "dpia_taerskelsvurdering": _DPIA_TAERSKELSVURDERING,
     "databehandleraftale_dbs": _DATABEHANDLERAFTALE_DBS,
     "ai_indkoeb_tjekliste": _AI_INDKOEB_TJEKLISTE,
+    # P1: Indkøb + leverandør + literacy (3) — nye 2026-05-10
+    "eu_mcc_klausuler": _EU_MCC_KLAUSULER,
+    "ai_faerdigheder_program": _AI_FAERDIGHEDER_PROGRAM,
+    "leverandoer_due_diligence": _LEVERANDOER_DUE_DILIGENCE,
+    # P2: Trustworthy AI + CE-mærkning + Art. 73 (3) — nye 2026-05-10
+    "trustworthy_ai_rating": _TRUSTWORTHY_AI_RATING,
+    "ce_maerkning_guide": _CE_MAERKNING_GUIDE,
+    "incident_reporting_art73": _INCIDENT_REPORTING_ART73,
 }
 
 

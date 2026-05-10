@@ -546,5 +546,49 @@
     "tags": ["Tyr", "Drift", "DEPLOY"],
     "language": "da",
     "lastUpdated": "2026-05-08"
+  },
+  {
+    "id": "eu-mcc-high-risk",
+    "title": "EU Model Contractual Clauses for AI procurement — high-risk",
+    "url": "https://public-buyers-community.ec.europa.eu/communities/procurement-ai/resources/ai-procurement-clauses",
+    "category": "EU institution",
+    "type": "Skabelon",
+    "description": "EU-Kommissionens officielle standardklausuler for indkøb af højrisiko-AI-systemer. Findes på alle 24 EU-sprog som downloadbar PDF + DOCX. Anbefalet brug ved alle kommunale AI-indkøb. Senest opdateret 2024.",
+    "tags": ["EU MCC", "AI Act", "Indkøb", "Højrisiko", "Kontrakt"],
+    "language": "da",
+    "lastUpdated": "2024-09-30"
+  },
+  {
+    "id": "eu-mcc-non-high-risk",
+    "title": "EU Model Contractual Clauses for AI procurement — non-high-risk",
+    "url": "https://public-buyers-community.ec.europa.eu/communities/procurement-ai/resources/ai-procurement-clauses",
+    "category": "EU institution",
+    "type": "Skabelon",
+    "description": "Letvægts-version af EU MCC for AI-systemer der ikke er højrisiko. Mindre administrativ byrde, men dækker stadig kerne-ansvar mellem provider og deployer. Sammen med high-risk-versionen udgør det EU's standardramme for AI-indkøb.",
+    "tags": ["EU MCC", "AI Act", "Indkøb", "Kontrakt"],
+    "language": "da",
+    "lastUpdated": "2024-09-30"
+  },
+  {
+    "id": "kl-ai-faerdigheder",
+    "title": "KL: Inspirationskatalog til AI-færdighedsprogram (Art. 4)",
+    "url": "https://videncenter.kl.dk/viden-og-vaerktoejer/digitalisering-og-ny-teknologi/kunstig-intelligens-ai/",
+    "category": "Dansk myndighed",
+    "type": "Vejledning",
+    "description": "KL's konkrete inspirationskatalog til hvordan kommuner kan opbygge et AI-literacy-program for forskellige roller — sagsbehandler, leder, borgerservice, AI-enhed. Indeholder kompetencemål, kursusforslag og praktiske eksempler. Direkte støtte til AI Act Art. 4 (gælder fra 2. feb 2025).",
+    "tags": ["KL", "AI Act", "Art. 4", "Literacy", "Færdigheder", "Kompetence"],
+    "language": "da",
+    "lastUpdated": "2025-02-02"
+  },
+  {
+    "id": "altai-self-assessment",
+    "title": "ALTAI — Assessment List for Trustworthy AI",
+    "url": "https://digital-strategy.ec.europa.eu/en/library/assessment-list-trustworthy-artificial-intelligence-altai-self-assessment",
+    "category": "EU institution",
+    "type": "Værktøj",
+    "description": "EU High-Level Expert Group's officielle selvvurderings-tjekliste for Trustworthy AI. Strukturerer vurdering af et AI-system mod 7 principper: menneskeligt tilsyn, teknisk robusthed, privatliv & data governance, transparens, fairness, samfundsmæssig velvære, ansvarlighed. Tilgængelig som interaktivt webværktøj + PDF.",
+    "tags": ["ALTAI", "HLEG", "Trustworthy AI", "Selvvurdering"],
+    "language": "en",
+    "lastUpdated": "2020-07-17"
   }
 ]

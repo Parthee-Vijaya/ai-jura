@@ -66,12 +66,18 @@ afgørelse:
       - logningsspecifikation
       - human_oversight_protokol
       - eu_database_registrering
+      - ai_faerdigheder_program
+      - trustworthy_ai_rating
+      - ce_maerkning_guide
+      - incident_reporting_art73
   ellers:
     status: GO
     begrundelse: "Systemet falder ikke ind under Bilag III, eller udfører kun snæver forberedende opgave uden profilering. Klassificeres som ikke-højrisiko under AI Act art. 6."
     krav:
       - "Vurder om transparenskrav i art. 50 gælder (chatbots, syntetisk indhold)"
-    evidens_påkrævet: []
+      - "AI Act Art. 4 — sørg for tilstrækkeligt AI-kompetenceniveau hos personale"
+    evidens_påkrævet:
+      - ai_faerdigheder_program
 
 llm_fortolkning:
   rolle: "Du fortolker fritekst-beskrivelse af et AI-system og foreslår hvilke trigger-signaler der matcher. Du må IKKE selv klassificere systemet som højrisiko eller ej — det gør reglen."

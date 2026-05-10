@@ -518,6 +518,9 @@ const ARTIFACTS = [
   { id: 'dpia_taerskelsvurdering', desc: '9-kriterie tærskeltest — Datatilsynet/WP248' },
   { id: 'dpia_dokument', desc: 'KL/Datatilsynets 5-trin DPIA (hvis tærsklen udløst)' },
   { id: 'databehandleraftale_dbs', desc: 'DBS-standard, kvalitetstjek af IT-sikkerhed@kalundborg' },
+  { id: 'eu_mcc_klausuler', desc: 'EU Model Contractual Clauses — checklist (provider/deployer-ansvar)' },
+  { id: 'leverandoer_due_diligence', desc: 'Leverandørvurdering — certificeringer, sub-processors, eksit-strategi' },
+  { id: 'ai_faerdigheder_program', desc: 'AI Act Art. 4 — kompetenceniveau hos personale (gælder ALLE AI)' },
   { id: 'risikostyringsplan', desc: 'AI Act Art. 9, ISO/IEC 23894-baseret' },
   { id: 'transparenstekst_til_registrerede', desc: 'GDPR Art. 13/14 + AI-oplysning' },
 ];
