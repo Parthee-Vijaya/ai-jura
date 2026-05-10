@@ -398,7 +398,7 @@ const SagerPage = () => {
     <Page>
       <Header>
         <div>
-          <Eyebrow>Tyr · sager</Eyebrow>
+          <Eyebrow>Bifrost · sager</Eyebrow>
           <Title>Sager</Title>
           <Lede>
             Hver sag aggregerer én eller flere v3-vurderinger og lever igennem

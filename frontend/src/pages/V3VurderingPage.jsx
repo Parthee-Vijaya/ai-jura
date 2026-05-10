@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useMutation, useQuery } from 'react-query';
 import axios from 'axios';
@@ -7,6 +8,7 @@ import DataOverview from '../components/data-overview/DataOverview';
 import {
   ComplianceVerdict,
   EvidenceChecklist,
+  EvidenceEditor,
   SidenotesColumn,
   toSuperscript,
 } from '../components/rules';
@@ -1228,6 +1230,173 @@ const FlaggedBanner = styled.div`
   a { color: ${(p) => p.theme.colors.primary}; font-weight: 500; }
 `;
 
+// ---- EC-funnel banner + predicate-card ---------------------------------
+
+const EcBanner = styled.div`
+  background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-left: 4px solid ${(p) => p.theme.colors.primary};
+  border-radius: 0 8px 8px 0;
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.95rem;
+  color: ${(p) => p.theme.colors.ink};
+  line-height: 1.55;
+
+  .eyebrow {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: ${(p) => p.theme.colors.primary};
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .summary { font-weight: 500; margin-bottom: 0.6rem; }
+
+  .infos {
+    margin: 0.5rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.86rem;
+    color: ${(p) => p.theme.colors.inkSoft};
+  }
+  .infos li { margin-bottom: 0.25rem; }
+
+  .actions {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+`;
+
+const ClearEcButton = styled.button`
+  background: transparent;
+  color: ${(p) => p.theme.colors.inkSoft};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.82rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 5px;
+  cursor: pointer;
+  &:hover { color: ${(p) => p.theme.colors.primary}; border-color: ${(p) => p.theme.colors.primary}; }
+`;
+
+const PredicatesCard = styled.div`
+  background: ${(p) => p.theme.colors.card};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  margin: 1.25rem 0 2rem;
+`;
+
+const PredicatesHeader = styled.div`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: ${(p) => p.theme.colors.inkSoft};
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+
+  .req-count {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.72rem;
+    color: ${(p) => (p.$allFilled ? '#2d6a31' : '#a03612')};
+  }
+`;
+
+const RuleBlock = styled.div`
+  border-top: 1px dashed ${(p) => p.theme.colors.line};
+  padding: 0.85rem 0 0.5rem;
+  &:first-child { border-top: none; padding-top: 0; }
+
+  .rule-id {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.74rem;
+    color: ${(p) => p.theme.colors.inkFaded};
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+`;
+
+const PredField = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid ${(p) => (p.$required && !p.$filled ? '#a03612' : 'transparent')};
+  border-radius: 5px;
+  background: ${(p) => (p.$required && !p.$filled ? 'rgba(160, 54, 18, 0.04)' : 'transparent')};
+
+  .q {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.92rem;
+    line-height: 1.4;
+    color: ${(p) => p.theme.colors.ink};
+
+    .req { color: #a03612; font-weight: 700; margin-left: 0.25rem; }
+  }
+
+  .help {
+    grid-column: 1 / -1;
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.78rem;
+    color: ${(p) => p.theme.colors.inkFaded};
+    font-style: italic;
+    line-height: 1.45;
+    margin-top: 0.3rem;
+    white-space: pre-wrap;
+  }
+`;
+
+const BoolToggle = styled.div`
+  display: inline-flex;
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 4px;
+  overflow: hidden;
+  background: ${(p) => p.theme.colors.paper};
+
+  button {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border: none;
+    background: transparent;
+    color: ${(p) => p.theme.colors.inkSoft};
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &.active-true { background: #2d6a31; color: white; }
+    &.active-false { background: #a02020; color: white; }
+    &:hover:not(.active-true):not(.active-false) {
+      background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
+    }
+  }
+`;
+
+const EnumSelect = styled.select`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.88rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-radius: 4px;
+  background: ${(p) => p.theme.colors.paper};
+  color: ${(p) => p.theme.colors.ink};
+  min-width: 240px;
+  &:focus {
+    outline: none;
+    border-color: ${(p) => p.theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(13, 46, 84, 0.08);
+  }
+`;
+
 // ---- API + helpers ------------------------------------------------------
 
 async function postAssess(body) {
@@ -1255,6 +1424,18 @@ async function fetchFlaggedRuleIds() {
 async function fetchDocumentHighlights(auditLogId) {
   if (!auditLogId) return null;
   const res = await axios.get(`/api/v3/documents/${auditLogId}/highlights`);
+  return res.data;
+}
+
+// EC-checker funnel: tag rejste flag → returnér pre-fyldt RuleInput-state
+async function postEcPrefill(flags) {
+  const res = await axios.post('/api/v3/assess/from-ec-checker', { flags });
+  return res.data;
+}
+
+// Hent regelkorpus så vi kan rendere predikat-input dynamisk
+async function fetchRules() {
+  const res = await axios.get('/api/v3/rules');
   return res.data;
 }
 
@@ -1364,17 +1545,36 @@ const SourceDocViewer = ({ auditLogId, format }) => {
   );
 };
 
+// Map fra server-side evidence-status (mangler|i_gang|faerdig|godkendt)
+// til checklist-komponentens internal status (done|in_progress|pending|blocked)
+const _STATUS_TO_CHECKLIST = {
+  mangler: 'pending',
+  i_gang: 'in_progress',
+  faerdig: 'done',
+  godkendt: 'done',
+};
+
 const buildEvidenceItems = (decisions, statusMap = {}) => {
   const all = new Set();
   decisions.forEach((d) => {
     (d.outcome?.evidens_påkrævet || []).forEach((e) => all.add(e));
   });
-  return Array.from(all).map((id) => ({
-    id,
-    label: id.replace(/_/g, ' '),
-    status: statusMap[id]?.status || 'pending',
-    metadata: statusMap[id]?.metadata,
-  }));
+  return Array.from(all).map((id) => {
+    const serverRow = statusMap[id];
+    const checklistStatus = serverRow
+      ? _STATUS_TO_CHECKLIST[serverRow.status] || 'pending'
+      : 'pending';
+    return {
+      id,
+      label: id.replace(/_/g, ' '),
+      status: checklistStatus,
+      metadata: serverRow?.completed_at
+        ? `gemt ${new Date(serverRow.updated_at).toLocaleDateString('da-DK')}`
+        : serverRow
+        ? `påbegyndt ${new Date(serverRow.updated_at).toLocaleDateString('da-DK')}`
+        : 'klik for at udfylde',
+    };
+  });
 };
 
 const ruleHumanTitle = (decision) => {
@@ -1420,6 +1620,8 @@ const formatDanishDate = (iso) => {
 // ---- Page ---------------------------------------------------------------
 
 const V3VurderingPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [description, setDescription] = useState('');
   const [caseId, setCaseId] = useState('');
   const [note, setNote] = useState('');
@@ -1429,8 +1631,134 @@ const V3VurderingPage = () => {
   const [loadedExample, setLoadedExample] = useState(null);
   const [expandedExplanations, setExpandedExplanations] = useState({});
 
+  // ---- EC-checker funnel state ------------------------------------------
+  const [ecPrefill, setEcPrefill] = useState(null); // server response from /api/v3/assess/from-ec-checker
+  const [ecPredicates, setEcPredicates] = useState({}); // user-edited values (start = prefill.predicates)
+  const [ecError, setEcError] = useState(null);
+  const [showAllRules, setShowAllRules] = useState(false);
+
+  // ---- Evidens-editor modal state -------------------------------------
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorArtifactId, setEditorArtifactId] = useState(null);
+  const [evidenceCounter, setEvidenceCounter] = useState(0); // bump to refetch after save
+
   const mutation = useMutation(postAssess);
   const documentMutation = useMutation(postDocumentAnalyze);
+  const rulesQuery = useQuery('v3-rules-corpus', fetchRules, {
+    staleTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Mount-effect: hvis brugeren kom fra /eu-checker → /vurdering?from=ec-checker,
+  // læs de gemte flag fra sessionStorage og kald backend-mapperen
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('from') !== 'ec-checker') return;
+    if (typeof window === 'undefined') return;
+    const stored = sessionStorage.getItem('tyrEcCheckerFlags');
+    if (!stored) return;
+    let parsed;
+    try {
+      parsed = JSON.parse(stored);
+    } catch {
+      return;
+    }
+    if (!parsed?.flags) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await postEcPrefill(parsed.flags);
+        if (cancelled) return;
+        setEcPrefill(data);
+        // Initialize editable predicates with the prefilled values from server
+        setEcPredicates({ ...(data.predicates || {}) });
+      } catch (err) {
+        setEcError(err?.response?.data?.detail || err?.message || 'EC-prefill fejlede');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [location.search]);
+
+  // Mount-effect: hvis brugeren kom fra /indkoebsproces → /vurdering?from=indkoeb&case_id=...,
+  // hent intake_state fra backend og pre-fyld description + caseId
+  const [indkoebPrefill, setIndkoebPrefill] = useState(null); // {behov, system_description, case_id}
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('from') !== 'indkoeb') return;
+    const cid = params.get('case_id');
+    if (!cid) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(cid)}`);
+        if (cancelled) return;
+        const intake = r.data?.intake_state || {};
+        const text = intake.system_description || intake.behov || '';
+        if (text && !description) {
+          setDescription(text);
+        }
+        if (!caseId && cid) {
+          setCaseId(cid);
+        }
+        setIndkoebPrefill({
+          case_id: cid,
+          behov: intake.behov,
+          system_description: intake.system_description,
+        });
+      } catch (err) {
+        // 404 = ikke en eksisterende sag, ignorér
+        if (err?.response?.status !== 404) {
+          console.error('Indkøb prefill failed', err);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
+  const clearEcPrefill = () => {
+    setEcPrefill(null);
+    setEcPredicates({});
+    setEcError(null);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('tyrEcCheckerFlags');
+    }
+    // Strip ?from=ec-checker from URL so a refresh doesn't re-trigger
+    navigate('/vurdering', { replace: true });
+  };
+
+  // Tjek om alle required predikater er udfyldt (= værdi defineret + ikke tom)
+  const requiredPredicateIds = useMemo(() => {
+    if (!ecPrefill?.required_predicates) return [];
+    const ids = new Set();
+    Object.values(ecPrefill.required_predicates).forEach((arr) => {
+      (arr || []).forEach((id) => ids.add(id));
+    });
+    return Array.from(ids);
+  }, [ecPrefill]);
+
+  const allRequiredFilled = useMemo(() => {
+    if (!ecPrefill) return true;
+    return requiredPredicateIds.every((id) => {
+      const v = ecPredicates[id];
+      return v !== undefined && v !== null && v !== '';
+    });
+  }, [ecPrefill, requiredPredicateIds, ecPredicates]);
+
+  // Surfaced rules + their full predicate-defs (joining mapper output with /api/v3/rules)
+  const surfacedRulesData = useMemo(() => {
+    if (!ecPrefill || !rulesQuery.data?.rules) return [];
+    const ruleById = new Map(rulesQuery.data.rules.map((r) => [r.id, r]));
+    return (ecPrefill.surfaced_rules || [])
+      .map((rid) => ruleById.get(rid))
+      .filter(Boolean);
+  }, [ecPrefill, rulesQuery.data]);
+
+  const otherRulesData = useMemo(() => {
+    if (!rulesQuery.data?.rules) return [];
+    const surfaced = new Set(ecPrefill?.surfaced_rules || []);
+    return rulesQuery.data.rules.filter((r) => !surfaced.has(r.id));
+  }, [ecPrefill, rulesQuery.data]);
   // Background fetch of which rules are flagged for juridisk review
   // (citation-verifier output). Used to draw a warning-banner if a
   // *triggered* rule sits on top of a flagged citation.
@@ -1442,6 +1770,18 @@ const V3VurderingPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // EC-prefill mode: signals + predicates kommer fra mapperen + brugerens edits
+    if (ecPrefill) {
+      mutation.mutate({
+        system_description: description.trim() || undefined,
+        signals: ecPrefill.signals || {},
+        predicates: { ...(ecPrefill.predicates || {}), ...ecPredicates },
+        use_llm_extraction: !!description.trim(),
+        case_id: caseId.trim() || undefined,
+        note: note.trim() || `EC-funnel: ${ecPrefill.matched_flags?.length || 0} flag mapped`,
+      });
+      return;
+    }
     mutation.mutate({
       system_description: description.trim() || undefined,
       signals: loadedExample?.signals || {},
@@ -1504,9 +1844,34 @@ const V3VurderingPage = () => {
     () => decisions.filter((d) => d.status === 'BETINGET-GO' || d.status === 'NO-GO'),
     [decisions],
   );
+  // Reuse the case ID for evidence-fetch
+  const _evidenceCaseId = caseId || (result?.audit_log_id ? result.audit_log_id.slice(0, 8) : '');
+
+  // Fetch saved evidence rows for this case so we can show green checkmarks
+  // for already-completed artifacts. Refetches when evidenceCounter bumps
+  // (after editor save) or when the case-id changes.
+  const { data: evidenceRowsResp } = useQuery(
+    ['case-evidence', _evidenceCaseId, evidenceCounter],
+    async () => {
+      if (!_evidenceCaseId) return { items: [] };
+      const res = await axios.get(
+        `/api/v3/cases/${encodeURIComponent(_evidenceCaseId)}/evidence`,
+      );
+      return res.data;
+    },
+    { enabled: !!_evidenceCaseId, staleTime: 5_000 },
+  );
+  const evidenceStatusMap = useMemo(() => {
+    const m = {};
+    (evidenceRowsResp?.items || []).forEach((row) => {
+      m[row.artifact_id] = row;
+    });
+    return m;
+  }, [evidenceRowsResp]);
+
   const evidenceItems = useMemo(
-    () => buildEvidenceItems(requiringDecisions),
-    [requiringDecisions],
+    () => buildEvidenceItems(requiringDecisions, evidenceStatusMap),
+    [requiringDecisions, evidenceStatusMap],
   );
   const totalKrav = requiringDecisions.reduce(
     (sum, d) => sum + (d.outcome?.krav?.length || 0),
@@ -1552,7 +1917,7 @@ const V3VurderingPage = () => {
   if (!hasResult) {
     return (
       <Page>
-        <Eyebrow>Tyr · v3 rule_engine</Eyebrow>
+        <Eyebrow>Bifrost · v3 rule_engine</Eyebrow>
         <Title>Vurdering</Title>
         <Lede>
           Beskriv AI-systemet i fri tekst. Backend kører den deterministiske
@@ -1560,6 +1925,59 @@ const V3VurderingPage = () => {
           signaler. Hver afgørelse hjemles i en konkret lovartikel — citater
           står i marginen til højre.
         </Lede>
+
+        {ecError && (
+          <ErrorBox>
+            EC-prefill fejlede: {String(ecError)}. Du kan stadig udfylde formen
+            manuelt.
+          </ErrorBox>
+        )}
+
+        {indkoebPrefill && (
+          <EcBanner>
+            <div className="eyebrow">Forudfyldt fra indkøbsproces</div>
+            <div className="summary">
+              Behovsbeskrivelse + system-beskrivelse fra sag{' '}
+              <strong>{indkoebPrefill.case_id}</strong> er overført. Du kan
+              redigere teksten herunder før vurdering.
+            </div>
+            <div className="actions">
+              <ClearEcButton
+                type="button"
+                onClick={() => navigate(`/indkoebsproces?case_id=${encodeURIComponent(indkoebPrefill.case_id)}`)}
+              >
+                ← Tilbage til indkøbsprocessen
+              </ClearEcButton>
+              <span style={{ fontSize: '0.78rem', opacity: 0.65, alignSelf: 'center' }}>
+                Evidens-artefakter gemmes på samme sags-ID
+              </span>
+            </div>
+          </EcBanner>
+        )}
+
+        {ecPrefill && (
+          <EcBanner>
+            <div className="eyebrow">Forudvurdering fra EU AI Act-tjekken</div>
+            <div className="summary">{ecPrefill.ec_summary}</div>
+            {ecPrefill.info_messages?.length > 0 && (
+              <ul className="infos">
+                {ecPrefill.info_messages.map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            )}
+            <div className="actions">
+              <ClearEcButton type="button" onClick={clearEcPrefill}>
+                Ryd EC-data og start forfra
+              </ClearEcButton>
+              <span style={{ fontSize: '0.78rem', opacity: 0.65, alignSelf: 'center' }}>
+                {ecPrefill.matched_flags?.length || 0} flag mapped ·{' '}
+                {ecPrefill.surfaced_rules?.length || 0} regler relevante af{' '}
+                {ecPrefill.all_rules_count || rulesQuery.data?.count || '?'}
+              </span>
+            </div>
+          </EcBanner>
+        )}
 
         <DropZone $active={documentMutation.isLoading}>
           <input
@@ -1628,12 +2046,28 @@ const V3VurderingPage = () => {
           </MetaRow>
 
           <Controls>
-            <PrimaryButton type="submit" disabled={mutation.isLoading}>
+            <PrimaryButton
+              type="submit"
+              disabled={
+                mutation.isLoading ||
+                (ecPrefill ? !allRequiredFilled : false)
+              }
+              title={
+                ecPrefill && !allRequiredFilled
+                  ? `Udfyld de ${requiredPredicateIds.filter((id) => ecPredicates[id] === undefined || ecPredicates[id] === '').length} påkrævede felter først`
+                  : undefined
+              }
+            >
               {mutation.isLoading ? 'Vurderer…' : 'Vurder'}
             </PrimaryButton>
             {loadedExample && (
               <SecondaryButton type="button" onClick={clearExample}>
                 Ryd eksempel
+              </SecondaryButton>
+            )}
+            {ecPrefill && (
+              <SecondaryButton type="button" onClick={clearEcPrefill}>
+                Ryd EC-data
               </SecondaryButton>
             )}
             {loadedExample && (
@@ -1643,8 +2077,137 @@ const V3VurderingPage = () => {
                 </strong>
               </ToggleRow>
             )}
+            {ecPrefill && (
+              <ToggleRow as="span" style={{ marginLeft: 'auto', cursor: 'default' }}>
+                EC-prefill aktiv ·{' '}
+                <strong
+                  style={{
+                    marginLeft: 4,
+                    color: allRequiredFilled ? '#2d6a31' : '#a03612',
+                  }}
+                >
+                  {requiredPredicateIds.length === 0
+                    ? 'klar'
+                    : `${requiredPredicateIds.filter((id) => ecPredicates[id] !== undefined && ecPredicates[id] !== '').length}/${requiredPredicateIds.length} udfyldt`}
+                </strong>
+              </ToggleRow>
+            )}
           </Controls>
         </FormCard>
+
+        {ecPrefill && surfacedRulesData.length > 0 && (
+          <PredicatesCard>
+            <PredicatesHeader $allFilled={allRequiredFilled}>
+              <span>
+                Predikater · {surfacedRulesData.length} regler relevante
+              </span>
+              <span className="req-count">
+                {requiredPredicateIds.length === 0
+                  ? 'ingen krav-felter'
+                  : `${requiredPredicateIds.filter((id) => ecPredicates[id] !== undefined && ecPredicates[id] !== '').length}/${requiredPredicateIds.length} påkrævede udfyldt`}
+              </span>
+            </PredicatesHeader>
+
+            {surfacedRulesData.map((rule) => {
+              const requiredForRule = new Set(
+                ecPrefill.required_predicates?.[rule.id] || [],
+              );
+              return (
+                <RuleBlock key={rule.id}>
+                  <div className="rule-id">
+                    {rule.id} · {rule.kilde?.lov} {rule.kilde?.artikel}
+                  </div>
+                  {(rule.predikater || []).map((p) => {
+                    const isRequired = requiredForRule.has(p.id);
+                    const value = ecPredicates[p.id];
+                    const filled = value !== undefined && value !== null && value !== '';
+                    return (
+                      <PredField
+                        key={p.id}
+                        $required={isRequired}
+                        $filled={filled}
+                      >
+                        <div className="q">
+                          {p['spørgsmål'] || p.id}
+                          {isRequired && <span className="req">*</span>}
+                        </div>
+                        {p.type === 'boolean' && (
+                          <BoolToggle>
+                            <button
+                              type="button"
+                              className={value === true ? 'active-true' : ''}
+                              onClick={() =>
+                                setEcPredicates((prev) => ({ ...prev, [p.id]: true }))
+                              }
+                            >
+                              Ja
+                            </button>
+                            <button
+                              type="button"
+                              className={value === false ? 'active-false' : ''}
+                              onClick={() =>
+                                setEcPredicates((prev) => ({ ...prev, [p.id]: false }))
+                              }
+                            >
+                              Nej
+                            </button>
+                          </BoolToggle>
+                        )}
+                        {p.type === 'enum' && (
+                          <EnumSelect
+                            value={value === undefined ? '' : value}
+                            onChange={(e) =>
+                              setEcPredicates((prev) => ({
+                                ...prev,
+                                [p.id]: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">— vælg —</option>
+                            {(p.enum_values || []).map((ev) => (
+                              <option key={ev} value={ev}>
+                                {ev.replace(/_/g, ' ')}
+                              </option>
+                            ))}
+                          </EnumSelect>
+                        )}
+                        {(p.type === 'text' || p.type === 'number') && (
+                          <Input
+                            type={p.type === 'number' ? 'number' : 'text'}
+                            value={value ?? ''}
+                            onChange={(e) =>
+                              setEcPredicates((prev) => ({
+                                ...prev,
+                                [p.id]: p.type === 'number' ? Number(e.target.value) : e.target.value,
+                              }))
+                            }
+                            style={{ minWidth: 240 }}
+                          />
+                        )}
+                        {p['hjælp'] && <div className="help">{p['hjælp']}</div>}
+                      </PredField>
+                    );
+                  })}
+                </RuleBlock>
+              );
+            })}
+
+            {otherRulesData.length > 0 && (
+              <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--line, #e2e2e2)', paddingTop: '0.85rem' }}>
+                <SecondaryButton type="button" onClick={() => setShowAllRules((s) => !s)}>
+                  {showAllRules ? 'Skjul' : 'Vis'} {otherRulesData.length} ikke-surfaced regler
+                </SecondaryButton>
+                {showAllRules && (
+                  <div style={{ marginTop: '0.75rem', fontFamily: 'monospace', fontSize: '0.78rem', opacity: 0.7 }}>
+                    {otherRulesData.map((r) => (
+                      <div key={r.id}>{r.id}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </PredicatesCard>
+        )}
 
         {mutation.isError && (
           <ErrorBox>
@@ -1924,8 +2487,16 @@ const V3VurderingPage = () => {
                 <SectionH>Evidens-checkliste</SectionH>
                 <SectionLede>
                   {evidenceItems.length} artefakter er identificeret på tværs af de ramte regler.
+                  Klik på et artefakt for at udfylde det med en lov-baseret skabelon —
+                  færdige artefakter får et grønt checkmark.
                 </SectionLede>
-                <EvidenceChecklist items={evidenceItems} />
+                <EvidenceChecklist
+                  items={evidenceItems}
+                  onToggle={(id) => {
+                    setEditorArtifactId(id);
+                    setEditorOpen(true);
+                  }}
+                />
               </>
             )}
 
@@ -1949,6 +2520,15 @@ const V3VurderingPage = () => {
         <SidenotesColumn notes={sidenotes} />
       </Shell>
       <DataOverview scope="vurdering" />
+
+      <EvidenceEditor
+        open={editorOpen}
+        artifactId={editorArtifactId}
+        caseId={_evidenceCaseId}
+        user={typeof window !== 'undefined' ? localStorage.getItem('tyrUser') || undefined : undefined}
+        onClose={() => setEditorOpen(false)}
+        onSaved={() => setEvidenceCounter((n) => n + 1)}
+      />
     </Page>
   );
 };

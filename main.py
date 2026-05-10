@@ -81,6 +81,7 @@ async def lifespan(app: FastAPI):
         from src.database import repository as _repo_models  # noqa: F401
         from src.database import audit_access_log as _audit_access  # noqa: F401
         from src.database import cases as v3_cases  # noqa: F401 — registers Case + CaseTransition
+        from src.database import evidence as v3_evidence  # noqa: F401 — registers EvidenceArtifact
         from src.rule_engine import audit as v3_audit  # noqa: F401 — registers V3AssessmentLog
         from src.services import citation_verifier as v3_freshness  # noqa: F401 — registers RuleFreshness
         from src.database.connection import init_db
@@ -179,7 +180,7 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
     # EU AI Act compliance checker — ugentligt mandag 04:30. Henter EC's
-    # logic.json + content_en.json så Tyr's wizard altid afspejler den
+    # logic.json + content_en.json så Bifrost's wizard altid afspejler den
     # autoritative EU-version.
     from src.services.eu_ai_act_checker import scheduled_eu_checker_sync
     kb_scheduler.add_job(
@@ -998,7 +999,7 @@ async def v3_ops_summary():
         return total
 
     data_dir = Path(__file__).resolve().parent / "data"
-    log_dir = Path(os.getenv("TYR_LOG_DIR") or (Path.home() / "Library" / "Logs" / "Tyr"))
+    log_dir = Path(os.getenv("TYR_LOG_DIR") or (Path.home() / "Library" / "Logs" / "Bifrost"))
     disk = {
         "data_dir": str(data_dir),
         "data_size_bytes": await asyncio.to_thread(_dir_size, data_dir),
@@ -1886,11 +1887,19 @@ async def get_kb_stats():
 async def get_eu_ai_act_checker(lang: str = "en"):
     """Returnér cached EU AI Act Compliance Checker payload.
 
-    `lang`: en (default) | de | fr | it | pl | es. Falder tilbage til
+    `lang`: en (default) | da | de | fr | it | pl | es. Falder tilbage til
     engelsk hvis sproget ikke er tilgængelig hos EC.
+
+    DA-oversættelsen er produceret lokalt af Bifrosts translator-service
+    (POST /api/eu-ai-act-checker/translate) og er ikke jurist-curateret;
+    UI viser et banner når translation_status = machine_uncurated.
     """
     from src.services.eu_ai_act_checker import load_checker_payload
-    return await asyncio.to_thread(load_checker_payload, lang)
+    from src.services.eu_checker_translator import translation_meta
+
+    payload = await asyncio.to_thread(load_checker_payload, lang)
+    payload["translation"] = translation_meta()
+    return payload
 
 
 @app.post("/api/eu-ai-act-checker/refresh", response_model=Dict[str, Any])
@@ -1903,6 +1912,33 @@ async def refresh_eu_ai_act_checker(request: Request):
     """
     from src.services.eu_ai_act_checker import refresh_checker
     return await refresh_checker(langs=("en", "de", "fr", "it", "pl", "es"))
+
+
+@app.post("/api/eu-ai-act-checker/translate", response_model=Dict[str, Any])
+@limiter.limit(ADMIN_WRITE)
+async def translate_eu_ai_act_checker(request: Request):
+    """Producér dansk oversættelse af EC's compliance-checker.
+
+    Læser content_en.json som kilde, kalder LLM (Azure / OpenAI / LM Studio)
+    pr. spørgsmål + flag med en glossar-låst prompt der bevarer
+    juridiske termer (højrisiko, udbyder, idriftsætter, FRIA, …) og
+    skriver content_da.json.
+
+    Tager typisk 5-10 minutter på LM Studio (gpt-oss-20b). Markerer
+    output som translation_status=machine_uncurated så UI viser et
+    review-banner.
+    """
+    from src.services.eu_checker_translator import translate_checker_async
+
+    return await translate_checker_async(source_lang="en", overwrite=True)
+
+
+@app.get("/api/eu-ai-act-checker/mapping-stats", response_model=Dict[str, Any])
+async def eu_ai_act_checker_mapping_stats():
+    """Statistik over EC-flag → Bifrost-regelmotor-mappingen — bruges af /drift."""
+    from src.services.ec_to_tyr_mapper import mapping_stats
+
+    return await asyncio.to_thread(mapping_stats)
 
 
 # ==================== AI Projects Catalog ====================
@@ -2750,6 +2786,81 @@ async def v3_assess(request: V3AssessRequest):
     return response
 
 
+# ---- EC-checker → Bifrost-vurdering funnel ------------------------------------
+
+
+class V3FromEcCheckerRequest(BaseModel):
+    """Input til funnel-endpoint: rejste flag fra EC compliance-checker.
+
+    Værdierne kan være bool, string, number — vi behandler alle truthy
+    værdier som "flag rejst". Tom dict eller alle-false giver fallback
+    til standard fuld-form.
+    """
+
+    flags: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="EC-flag-navn → værdi (bool/str/num). Truthy = rejst.",
+    )
+    system_description: Optional[str] = Field(
+        default=None,
+        description=(
+            "Valgfri fritekst-beskrivelse af systemet. Bruges ikke direkte "
+            "af mapperen, men returneres så frontend kan pre-fylde feltet."
+        ),
+    )
+
+
+@app.post("/api/v3/assess/from-ec-checker")
+async def v3_assess_from_ec_checker(body: V3FromEcCheckerRequest):
+    """Tag EC compliance-checker-flag → producér pre-fyldt Bifrost-vurdering-state.
+
+    Den her endpoint *evaluerer ikke* reglerne — den returnerer kun hvilke
+    signals/predicates der pre-fyldes, hvilke regler der bør vises som
+    relevante, og hvilke predikater der skal markeres som påkrævede inden
+    sagsbehandleren kan trykke 'Vurdér'.
+
+    Frontend bruger denne payload til at åbne /vurdering med banner +
+    pre-fill + required-marking. Når sagsbehandleren har udfyldt resten
+    laver frontend et almindeligt POST til /api/v3/assess.
+
+    Returnerer:
+      {
+        signals,                   # dict pre-fyldte signals
+        predicates,                # dict pre-fyldte predikater
+        surfaced_rules,            # list rule_ids der bør vises
+        required_predicates,       # {rule_id: [predicate_id, ...]}
+        ec_summary,                # 1-2 sætnings dansk resumé
+        info_messages,             # liste af danske info-tekster
+        matched_flags,             # hvilke EC-flag fra request der mappede
+        fallback_to_full_form,     # true → frontend bør vise fuld form
+        all_rules_count,           # total regler i Bifrost's korpus
+      }
+    """
+    from src.services.ec_to_tyr_mapper import map_ec_flags_to_tyr
+
+    pre = await asyncio.to_thread(map_ec_flags_to_tyr, body.flags or {})
+
+    # Tæl total regler så frontend kan vise "9 af 21 regler relevante"
+    try:
+        rules = _v3_load_rules()
+        all_rules_count = len(rules)
+    except Exception:
+        all_rules_count = None
+
+    return {
+        "signals": pre.signals,
+        "predicates": pre.predicates,
+        "surfaced_rules": pre.surfaced_rules,
+        "required_predicates": pre.required_predicates,
+        "ec_summary": pre.ec_summary,
+        "info_messages": pre.info_messages,
+        "matched_flags": pre.matched_flags,
+        "fallback_to_full_form": pre.fallback_to_full_form,
+        "all_rules_count": all_rules_count,
+        "system_description": body.system_description,
+    }
+
+
 @app.get("/api/v3/audit")
 async def v3_audit_list(
     limit: int = 50,
@@ -3408,6 +3519,104 @@ async def v3_cases_list(
         db.close()
 
 
+# ==================== Indkøbsproces — case intake state ===================
+#
+# Persisterer indkøbsproces-wizardens state pr. sag så brugeren kan lukke
+# browseren + komme tilbage senere + cross-device-tilgang via Tailscale.
+# VIGTIGT: Disse routes skal stå FØR `/api/v3/cases/{case_db_id}` ellers
+# matcher den catch-all "drafts" og "by-case-id" som UUID-paths.
+
+class IntakeStatePayload(BaseModel):
+    """State fra IndkoebsprocesPage's 4-trins wizard."""
+
+    intake_state: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Wizard-state — alle 4 trin's felter samlet i én dict.",
+    )
+    title: Optional[str] = Field(
+        default=None,
+        description="Valgfri titel — udledes fra behov hvis ikke angivet.",
+    )
+    user: Optional[str] = Field(
+        default=None,
+        description="Bruger der gemte (audit + assigned_to).",
+    )
+
+
+@app.get("/api/v3/cases/drafts")
+async def v3_case_drafts(limit: int = 50):
+    """List alle sager med intake_state (= drafts i indkøbsprocessen).
+
+    Bruges af 'Mine sager'-stripen øverst på /indkoebsproces. Sorteret
+    efter sidst opdateret (nyeste først).
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import list_drafts_with_intake
+
+    db = SessionLocal()
+    try:
+        rows = await asyncio.to_thread(list_drafts_with_intake, db, limit=limit)
+        return {
+            "count": len(rows),
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases/by-case-id/{case_id}")
+async def v3_case_by_external_id(case_id: str):
+    """Hent case-row + intake_state for et eksternt sagsnummer.
+
+    Returnerer 200 med case-data hvis sagen findes, ellers 404 så frontend
+    kan vide om det er en ny eller eksisterende sag.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import find_case_by_external_id
+
+    db = SessionLocal()
+    try:
+        case = await asyncio.to_thread(find_case_by_external_id, db, case_id)
+        if case is None:
+            raise HTTPException(status_code=404, detail=f"case_id not found: {case_id}")
+        return case.to_dict()
+    finally:
+        db.close()
+
+
+@app.put("/api/v3/cases/by-case-id/{case_id}/intake")
+@limiter.limit(ADMIN_WRITE)
+async def v3_case_upsert_intake(
+    request: Request,
+    response: Response,
+    case_id: str,
+    body: IntakeStatePayload,
+):
+    """Gem/opdatér indkøbsproces-state for en sag.
+
+    Opretter case-rækken hvis den ikke findes (status='kladde'). Idempotent
+    — kald flere gange overskriver intake_state. Bruges af frontend's
+    debounced auto-save.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import upsert_intake_state
+
+    db = SessionLocal()
+    try:
+        case = await asyncio.to_thread(
+            upsert_intake_state,
+            db,
+            case_id=case_id,
+            intake_state=body.intake_state,
+            title=body.title,
+            user=body.user,
+        )
+        db.commit()
+        return case.to_dict()
+    finally:
+        db.close()
+
+
 @app.get("/api/v3/cases/{case_db_id}")
 async def v3_cases_detail(case_db_id: str):
     from src.database import cases as v3_cases
@@ -3501,7 +3710,7 @@ async def v3_cases_reminder_run():
 # to data portability) skal kommunen kunne eksportere og slette alt der er
 # gemt om en konkret sag. Disse endpoints implementerer flowet på sags-
 # niveau — i praksis er case_id kommunens link til borgeren, så at slette en
-# sag = at slette de borger-knyttede oplysninger Tyr har om vedkommende.
+# sag = at slette de borger-knyttede oplysninger Bifrost har om vedkommende.
 #
 # Adgangskontrol: I denne fase er der ingen auth — endpoints er bag
 # Tailscale-grænsen og logges. Når Modul 5 (auth) lander, skal disse
@@ -3510,7 +3719,7 @@ async def v3_cases_reminder_run():
 
 @app.get("/api/v3/admin/dsar/export/{case_id}")
 async def v3_dsar_export(case_id: str, request: Request):
-    """Eksportér alt Tyr har om en case_id som JSON-bundle.
+    """Eksportér alt Bifrost har om en case_id som JSON-bundle.
 
     Indeholder: case-record, alle transitions, alle audit-logs hvor
     request_payload/response_payload nævner case_id, freshness-status for
@@ -3624,7 +3833,7 @@ async def v3_dsar_export(case_id: str, request: Request):
 
 @app.delete("/api/v3/admin/dsar/case/{case_id}")
 async def v3_dsar_delete_case(case_id: str, request: Request):
-    """Slet alle persondata Tyr har om en case_id.
+    """Slet alle persondata Bifrost har om en case_id.
 
     Dette er "right to erasure" (artikel 17). Sletter cases, transitions,
     audit-logs, dokument-filer og rule_freshness-spor (hvis sidstnævnte
@@ -3827,6 +4036,141 @@ async def v3_law_freshness_playwright_status():
             else "pip install playwright && playwright install chromium"
         ),
     }
+
+
+# ==================== Evidence artifacts (interactive checklist) ===========
+#
+# V3VurderingPage's evidens-checkliste: hvert artefakt-ID i en regels
+# `evidens_påkrævet` får en klikbar editor med pre-fyldt skabelon.
+
+class EvidenceSavePayload(BaseModel):
+    """Sagsbehandlerens udfyldte indhold for ét artefakt."""
+
+    content: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Dict {section_key: value} med svar pr. sektion.",
+    )
+    notes: Optional[str] = Field(
+        default=None,
+        description="Valgfri intern note (ikke vist i auditrapporten).",
+    )
+    user: Optional[str] = Field(
+        default=None,
+        description="Bruger der gemte (audit-trail).",
+    )
+
+
+@app.get("/api/v3/evidence/templates")
+async def v3_evidence_list_templates():
+    """List alle 19 curated artefakt-skabeloner.
+
+    Returnerer fuld template-spec inkl. sections, lovhjemmel og eksterne
+    ressourcer. Bruges af /drift's stat-card og af evt. katalog-side.
+    """
+    from src.services.evidence_artifacts import list_templates, all_known_ids
+    templates = list_templates()
+    return {
+        "count": len(templates),
+        "all_known_artifact_ids_count": len(all_known_ids()),
+        "templates": templates,
+    }
+
+
+@app.get("/api/v3/evidence/templates/{artifact_id}")
+async def v3_evidence_get_template(artifact_id: str):
+    """Hent én skabelon — faldback til generic hvis ikke curated."""
+    from src.services.evidence_artifacts import get_template
+    tmpl = get_template(artifact_id)
+    return tmpl.to_dict()
+
+
+@app.get("/api/v3/cases/{case_id}/evidence")
+async def v3_evidence_list_for_case(case_id: str, request: Request):
+    """List sagsbehandlerens udfyldte artefakter for én sag.
+
+    Returnerer både sparede rows (med content + status) og nul-rækker
+    for kendte artefakt-IDs som endnu ikke er begyndt — så frontend kan
+    rendere fuld checkliste i ét hop.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.evidence import list_evidence_for_case
+    from src.database.audit_access_log import record_access
+
+    db = SessionLocal()
+    try:
+        rows = list_evidence_for_case(db, case_id)
+        record_access(
+            db,
+            target_type="case_evidence",
+            target_id=case_id,
+            actor=request.headers.get("X-Bifrost-User"),
+            actor_ip=(request.client.host if request.client else None),
+            user_agent=request.headers.get("user-agent"),
+            action="read",
+            request_id=getattr(request.state, "request_id", None),
+        )
+        db.commit()
+        return {
+            "case_id": case_id,
+            "count": len(rows),
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.put("/api/v3/cases/{case_id}/evidence/{artifact_id}")
+@limiter.limit(ADMIN_WRITE)
+async def v3_evidence_upsert(
+    request: Request,
+    response: Response,
+    case_id: str,
+    artifact_id: str,
+    body: EvidenceSavePayload,
+):
+    """Gem/opdatér ét artefakt-indhold.
+
+    Status beregnes server-side baseret på hvilke required-sektioner der
+    har indhold (mangler / i_gang / faerdig). Når status går til 'faerdig'
+    første gang sættes `completed_at` + `completed_by` automatisk.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.evidence import upsert_evidence
+    from src.database.audit_access_log import record_access
+    from src.services.evidence_artifacts import compute_status, get_template
+
+    template = get_template(artifact_id)
+    computed = compute_status(template, body.content)
+
+    db = SessionLocal()
+    try:
+        row = upsert_evidence(
+            db,
+            case_id=case_id,
+            artifact_id=artifact_id,
+            content=body.content,
+            computed_status=computed,
+            user=body.user,
+            notes=body.notes,
+        )
+        record_access(
+            db,
+            target_type="case_evidence",
+            target_id=f"{case_id}/{artifact_id}",
+            actor=body.user or request.headers.get("X-Bifrost-User"),
+            actor_ip=(request.client.host if request.client else None),
+            user_agent=request.headers.get("user-agent"),
+            action="write",
+            request_id=getattr(request.state, "request_id", None),
+        )
+        db.commit()
+        return {
+            **row.to_dict(),
+            "computed_status": computed,
+            "required_section_keys": sorted(template.required_section_keys()),
+        }
+    finally:
+        db.close()
 
 
 @app.get("/api/v3/rules")

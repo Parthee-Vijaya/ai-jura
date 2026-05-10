@@ -125,7 +125,7 @@ const FilterLabel = styled.span`
   font-weight: 600;
 `;
 
-/* Native <select> styled to match Tyr Northern Modern. Native fordi det
+/* Native <select> styled to match Bifrost Northern Modern. Native fordi det
  * giver os gratis tastaturnavigation, screen-reader-support, og iOS-/macOS-
  * native dropdown-rendering. Custom-chevron via background-image. */
 const CategorySelect = styled.select`
@@ -495,7 +495,7 @@ const NewsSection = () => {
       <SectionHeader>
         <NewsHeader>
           <TitleBlock>
-            <Eyebrow>Tyr · live-feed</Eyebrow>
+            <Eyebrow>Bifrost · live-feed</Eyebrow>
             <NewsTitle>Seneste AI- og juranews</NewsTitle>
           </TitleBlock>
           <HeaderInfo>

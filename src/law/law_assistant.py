@@ -300,7 +300,7 @@ class _LLMProvider:
 
 # ---- Prompts ---------------------------------------------------------------
 
-_SYSTEM_PROMPT = """Du er Tyr — en dansk juridisk AI-assistent for kommunal sagsbehandling.
+_SYSTEM_PROMPT = """Du er Bifrost — en dansk juridisk AI-assistent for kommunal sagsbehandling.
 
 Stil: præcis, kortfattet, embedsmandsdansk uden floskler. Hver påstand skal kunne hjemles i en konkret lovparagraf der er sendt til dig som kontekst.
 

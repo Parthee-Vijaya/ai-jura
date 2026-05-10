@@ -44,3 +44,13 @@ judge_dredd.db
 # Local preview symlinks
 frontend/public/mockups
 
+# Claude Code worktrees + scratch
+.claude/worktrees/
+
+# Uploaded documents (PII risk + local-only)
+data/documents/
+
+# News/ticker fallbacks (auto-regenerated)
+# data/news_fallback.json — bevares fordi det er bundlet baseline
+# data/ticker_fallback.json — bevares fordi det er bundlet baseline
+

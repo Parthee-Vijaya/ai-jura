@@ -307,6 +307,18 @@ const DriftPage = () => {
     { refetchInterval: 30_000, staleTime: 25_000 },
   );
 
+  const { data: ecMapping } = useQuery(
+    ['ec-mapping-stats', refreshKey],
+    () => axios.get('/api/eu-ai-act-checker/mapping-stats').then((r) => r.data),
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+  );
+
+  const { data: ecCheckerPayload } = useQuery(
+    ['ec-checker-meta', refreshKey],
+    () => axios.get('/api/eu-ai-act-checker?lang=da').then((r) => r.data),
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+  );
+
   const errors = errorsResp?.errors || [];
 
   const overall = health?.status || 'unknown';
@@ -320,7 +332,7 @@ const DriftPage = () => {
 
   return (
     <Page>
-      <Eyebrow>Tyr · drift</Eyebrow>
+      <Eyebrow>Bifrost · drift</Eyebrow>
       <Title>Driftoverblik</Title>
       <Lede>
         Status på tværs af services, planlagte jobs og seneste fejl. Opdateres automatisk
@@ -415,6 +427,49 @@ const DriftPage = () => {
               ? `${ops.backups.by_kind.daily ?? 0}d · ${ops.backups.by_kind.weekly ?? 0}u · ${ops.backups.by_kind.monthly ?? 0}m`
               : '—'}
             {ops?.backups?.rsync_target ? ' · off-site ✓' : ' · lokalt'}
+          </div>
+        </StatCard>
+        <StatCard
+          $tone={
+            ecMapping
+              ? (ecMapping.unmapped_in_ec?.length || 0) > 0
+                ? 'warn'
+                : 'success'
+              : undefined
+          }
+        >
+          <div className="label">EC-flag mapping</div>
+          <div className="value">
+            {ecMapping
+              ? `${ecMapping.mapped_flags}/${ecMapping.actual_flags_in_ec_logic}`
+              : '—'}
+          </div>
+          <div className="delta">
+            {ecMapping
+              ? `${ecMapping.active_mappings} aktive · ${ecMapping.info_only_mappings} info-only`
+              : '—'}
+            {(ecMapping?.unmapped_in_ec?.length ?? 0) > 0
+              ? ` · ${ecMapping.unmapped_in_ec.length} nye flag fra EC ⚠`
+              : ''}
+          </div>
+        </StatCard>
+        <StatCard
+          $tone={
+            ecCheckerPayload?.translation?.available
+              ? 'success'
+              : 'warn'
+          }
+        >
+          <div className="label">EC-tjekker oversættelse</div>
+          <div className="value">
+            {ecCheckerPayload?.translation?.available
+              ? `${ecCheckerPayload.translation.n_questions || 0}Q · ${ecCheckerPayload.translation.n_flags || 0}F`
+              : 'mangler'}
+          </div>
+          <div className="delta">
+            {ecCheckerPayload?.translation?.available
+              ? `${ecCheckerPayload.translation.translation_status} · ${formatRelative(ecCheckerPayload.translation.translated_at)}`
+              : 'kør POST /api/eu-ai-act-checker/translate'}
           </div>
         </StatCard>
       </Grid>

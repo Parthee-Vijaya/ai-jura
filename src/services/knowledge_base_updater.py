@@ -1,4 +1,4 @@
-"""Automatisk vidensbase-opdatering — Tyr-stil.
+"""Automatisk vidensbase-opdatering — Bifrost-stil.
 
 Kører ugentligt (mandag 03:00) og:
 
@@ -6,7 +6,7 @@ Kører ugentligt (mandag 03:00) og:
    eller default-listen af aktuelle 2025-2026 emner).
 2. Filtrerer termer der allerede findes.
 3. Genererer for hver ny term en kort definition + kontekst via samme
-   LLM provider chain Tyr bruger andre steder (Azure → OpenAI → LM Studio
+   LLM provider chain Bifrost bruger andre steder (Azure → OpenAI → LM Studio
    med placeholder-detektion).
 4. Skriver entries med ENSARTET skema — samme felter som de håndkurerede
    entries (id, term, category, iconKey, definition, context, tags,
@@ -94,7 +94,7 @@ class _LLMProvider:
     """Azure OpenAI → OpenAI → LM Studio for chat completions.
 
     Identical pattern til src/law/law_assistant.py så vi har én konsistent
-    måde at finde en LLM på i Tyr.
+    måde at finde en LLM på i Bifrost.
     """
 
     def __init__(self) -> None:

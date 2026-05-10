@@ -5,7 +5,7 @@ ingen ekstern observability-platform) — alt under Tailscale-grænsen.
 
 Komponenter:
 - ``configure_logging()`` — sætter loguru op til at skrive JSON-linjer til
-  ~/Library/Logs/Tyr/backend.log med dag-rotation (7 dages bevarelse).
+  ~/Library/Logs/Bifrost/backend.log med dag-rotation (7 dages bevarelse).
 - ``RequestIDMiddleware`` — sikrer at hver request har en X-Request-ID; den
   bruges i logs og fejlbufferen så et UI-issue kan kortlægges til en
   konkret request linje for linje.
@@ -46,7 +46,7 @@ def _log_dir() -> Path:
     if override:
         return Path(override)
     # Mac default — matches the Skynet pattern for Bifrost / Odin / Saga
-    return Path.home() / "Library" / "Logs" / "Tyr"
+    return Path.home() / "Library" / "Logs" / "Bifrost"
 
 
 def _errors_path() -> Path:
@@ -271,7 +271,7 @@ def load_errors_from_disk() -> int:
 # Request-level
 HTTP_REQUESTS_TOTAL = Counter(
     "tyr_http_requests_total",
-    "Total HTTP requests served by Tyr.",
+    "Total HTTP requests served by Bifrost.",
     ["method", "endpoint", "status"],
 )
 HTTP_REQUEST_DURATION = Histogram(

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import {
   PageShell,
@@ -269,6 +270,72 @@ const FlagRow = styled.div`
   }
 `;
 
+const LangPicker = styled.div`
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: 4px;
+  padding: 2px;
+  background: ${(p) => p.theme.colors.surface};
+`;
+
+const LangButton = styled.button`
+  font-family: ${(p) => p.theme.fonts.sans};
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: ${(p) => (p.$active ? (p.theme.colors.primary || '#0d2e54') : 'transparent')};
+  color: ${(p) => (p.$active ? '#fff' : p.theme.colors.textMuted)};
+  border: none;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { color: ${(p) => (p.$active ? '#fff' : p.theme.colors.text)}; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+`;
+
+const TranslationBanner = styled.div`
+  background: ${(p) => p.theme.colors.bronzeSoft || 'rgba(176,138,74,0.12)'};
+  border-left: 3px solid ${(p) => p.theme.colors.bronze || '#b08a4a'};
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-family: ${(p) => p.theme.fonts.body};
+  font-size: 0.86rem;
+  color: ${(p) => p.theme.colors.text};
+  line-height: 1.5;
+  border-radius: 0 4px 4px 0;
+
+  strong { color: ${(p) => p.theme.colors.bronze || '#b08a4a'}; }
+`;
+
+const FunnelCard = styled.div`
+  margin-top: 1.5rem;
+  background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
+  border: 1px solid ${(p) => p.theme.colors.primary || '#0d2e54'};
+  border-radius: 6px;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .copy {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.95rem;
+    color: ${(p) => p.theme.colors.text};
+    line-height: 1.5;
+    flex: 1;
+    min-width: 280px;
+
+    strong { color: ${(p) => p.theme.colors.primary || '#0d2e54'}; }
+  }
+`;
+
 const VersionBadge = styled.span`
   display: inline-block;
   background: ${(p) => p.theme.colors.bronzeSoft || 'rgba(176,138,74,0.15)'};
@@ -283,8 +350,14 @@ const VersionBadge = styled.span`
 // ---- Main page ----------------------------------------------------------
 
 const EuAiActCheckerPage = () => {
+  const navigate = useNavigate();
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
+  // Sprog-vælger: default DA hvis tilgængelig, ellers EN. Persistes i localStorage.
+  const [lang, setLang] = useState(() => {
+    if (typeof window === 'undefined') return 'da';
+    return localStorage.getItem('tyrEuCheckerLang') || 'da';
+  });
 
   const [currentQid, setCurrentQid] = useState('Q1');
   const [answer, setAnswer] = useState(null); // number for radio, array for checkbox
@@ -296,7 +369,7 @@ const EuAiActCheckerPage = () => {
     let cancelled = false;
     (async () => {
       try {
-        const r = await axios.get('/api/eu-ai-act-checker?lang=en');
+        const r = await axios.get(`/api/eu-ai-act-checker?lang=${encodeURIComponent(lang)}`);
         if (cancelled) return;
         setPayload(r.data);
       } catch (err) {
@@ -304,7 +377,29 @@ const EuAiActCheckerPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [lang]);
+
+  const switchLang = (next) => {
+    setLang(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tyrEuCheckerLang', next);
+    }
+  };
+
+  // Send EC's rejste flag til /vurdering med ?from=ec-checker
+  const continueToVurdering = (raisedFlagMap) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(
+        'tyrEcCheckerFlags',
+        JSON.stringify({
+          flags: raisedFlagMap,
+          captured_at: new Date().toISOString(),
+          lang,
+        }),
+      );
+    }
+    navigate('/vurdering?from=ec-checker');
+  };
 
   const questionsLogic = payload?.logic?.questions_logic || {};
   const questionsContent = payload?.content?.questions_content || {};
@@ -403,7 +498,7 @@ const EuAiActCheckerPage = () => {
     return (
       <PageShell>
         <PageHeader
-          eyebrow="Tyr · EU compliance checker"
+          eyebrow="Bifrost · EU compliance checker"
           title="EU AI Act Compliance Checker"
           lede="EC's officielle wizard kunne ikke hentes."
         />
@@ -416,7 +511,7 @@ const EuAiActCheckerPage = () => {
     return (
       <PageShell>
         <PageHeader
-          eyebrow="Tyr · EU compliance checker"
+          eyebrow="Bifrost · EU compliance checker"
           title="EU AI Act Compliance Checker"
           lede="Henter checker-data fra EC…"
         />
@@ -432,7 +527,7 @@ const EuAiActCheckerPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Tyr · EU compliance checker"
+        eyebrow="Bifrost · EU compliance checker"
         title="EU AI Act Compliance Checker"
         lede="Officiel beslutningsstøtte fra Europa-Kommissionen. 33 spørgsmål der kortlægger om dit AI-system falder under AI Act, og hvilke obligationer der gælder. Cached lokalt fra ai-act-service-desk.ec.europa.eu og opdateres ugentligt."
       />
@@ -442,10 +537,49 @@ const EuAiActCheckerPage = () => {
           EC last update: <VersionBadge>{meta.last_update_date || '?'}</VersionBadge>{' '}
           synkroniseret {meta.fetched_at ? new Date(meta.fetched_at).toLocaleString('da-DK') : '—'}
         </span>
-        {history.length > 0 && (
-          <StepProgress>Trin {history.length + 1}{isEnd ? ' (resultat)' : ''}</StepProgress>
-        )}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}>
+          <LangPicker role="group" aria-label="Sprog-vælger">
+            <LangButton
+              type="button"
+              $active={lang === 'da'}
+              onClick={() => switchLang('da')}
+              title="Dansk (maskinoversat fra engelsk)"
+            >
+              DA
+            </LangButton>
+            <LangButton
+              type="button"
+              $active={lang === 'en'}
+              onClick={() => switchLang('en')}
+              title="English (autoritativ kilde)"
+            >
+              EN
+            </LangButton>
+          </LangPicker>
+          {history.length > 0 && (
+            <StepProgress>Trin {history.length + 1}{isEnd ? ' (resultat)' : ''}</StepProgress>
+          )}
+        </span>
       </Toolbar>
+
+      {lang === 'da' && payload?.translation?.translation_status === 'machine_uncurated' && (
+        <TranslationBanner>
+          <strong>Maskinel oversættelse</strong> — under review af jurist. Den
+          engelske kildetekst er den autoritative version. Skift til EN i toolbar
+          hvis der opstår tvivl. Oversat:{' '}
+          {payload.translation.translated_at
+            ? new Date(payload.translation.translated_at).toLocaleDateString('da-DK')
+            : '—'}{' '}
+          via {payload.translation.provider} ({payload.translation.model}).
+        </TranslationBanner>
+      )}
+
+      {lang === 'da' && payload?.translation?.available === false && (
+        <TranslationBanner>
+          <strong>Dansk oversættelse mangler</strong> — vises på engelsk indtil
+          en administrator har kørt <code>POST /api/eu-ai-act-checker/translate</code>.
+        </TranslationBanner>
+      )}
 
       {!isEnd && currentLogic && currentContent && (
         <QuestionCard>
@@ -549,10 +683,33 @@ const EuAiActCheckerPage = () => {
             )}
           </FlagList>
 
-          <div style={{ marginTop: '1.5rem' }}>
-            <PrimaryButton type="button" onClick={reset}>
-              Start forfra
+          <FunnelCard>
+            <div className="copy">
+              <strong>Klar til at gå videre?</strong> Bifrost's danske vurderingsmotor
+              tager EC-resultatet og kombinerer det med dansk forvaltningsret +
+              GDPR + sektorlov. Du springer direkte til de relevante regler — og
+              de felter EC ikke spurgte om markeres som påkrævede.
+            </div>
+            <PrimaryButton
+              type="button"
+              onClick={() => {
+                // Send kun *rejste* flag (truthy values)
+                const raised = {};
+                for (const [k, v] of Object.entries(flags)) {
+                  if (v === false || v === undefined || v === null) continue;
+                  raised[k] = v;
+                }
+                continueToVurdering(raised);
+              }}
+            >
+              Fortsæt til Bifrost-vurdering →
             </PrimaryButton>
+          </FunnelCard>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <SecondaryButton type="button" onClick={reset}>
+              Start forfra
+            </SecondaryButton>
           </div>
         </ResultCard>
       )}

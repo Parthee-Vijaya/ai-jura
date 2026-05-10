@@ -375,7 +375,7 @@ const ResourcesPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Tyr · ressource-kartotek"
+        eyebrow="Bifrost · ressource-kartotek"
         title="Relevante links"
         lede="Kurateret kartotek af lovkilder, vejledninger, standarder og værktøjer relevante for kommunal AI-compliance. Søg, filtrér på kategori og type, eller klik direkte på et kort."
       />

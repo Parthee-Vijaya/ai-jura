@@ -1,7 +1,7 @@
 """Audit-log på audit-log: hvem har set hvad og hvornår.
 
 GDPR-krav (artikel 32): kommunen skal kunne dokumentere hvem der har
-tilgået hvilke persondata. Tyrs primære audit-log (V3AssessmentLog) gemmer
+tilgået hvilke persondata. Bifrosts primære audit-log (V3AssessmentLog) gemmer
 fritekst der KAN indeholde PII selv efter redaction. Hver gang en bruger
 henter en audit-log via API, registreres adgangen her.
 

@@ -1,12 +1,12 @@
 /**
- * Tyr — Northern Modern theme (Design system v2)
+ * Bifrost — Northern Modern theme (Design system v2)
  *
  * Skandinavisk civic-tech sobriety. Off-white papir, kongelig blå primær,
  * bronze rune-accent. IBM Plex Sans + Mono + Serif italic.
  *
  * Reference: DESIGN.md (canonical source).
  *
- * Forløb: Project Judge Dredd → Hjemmel → Tyr → Tyr (alpha.18+).
+ * Forløb: Project Judge Dredd → Hjemmel → Bifrost → Bifrost (alpha.18+).
  */
 
 const commonThemeTokens = {

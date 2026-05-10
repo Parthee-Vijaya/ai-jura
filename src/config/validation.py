@@ -431,7 +431,7 @@ def _check_sentry(report: ConfigReport) -> None:
             name="Sentry",
             status="info",
             summary="ikke konfigureret",
-            detail="lokal error-buffer aktiv (~/Library/Logs/Tyr/errors.jsonl)",
+            detail="lokal error-buffer aktiv (~/Library/Logs/Bifrost/errors.jsonl)",
         ))
 
 

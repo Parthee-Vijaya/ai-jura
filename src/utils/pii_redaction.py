@@ -1,7 +1,7 @@
 """PII redaction for free-text inputs that may contain personoplysninger.
 
 Sagsbehandlere indtaster fritekst (system-beskrivelser, sags-noter, dokument-
-upload) der kan indeholde CPR, navne, mailadresser, telefonnumre. Tyrs audit-
+upload) der kan indeholde CPR, navne, mailadresser, telefonnumre. Bifrosts audit-
 log gemmer denne fritekst, og det er PII der ikke nødvendigvis er retmæssigt
 behandlet i dette system. Denne modul fjerner / pseudonymiserer PII *før*
 fritekst persistes.

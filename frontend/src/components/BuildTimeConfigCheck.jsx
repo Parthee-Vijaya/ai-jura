@@ -5,7 +5,7 @@
  * får et øjeblik til at se config-status før vi navigerer rundt. Klik
  * "OK" lukker den for resten af denne tab-session — fjernes på næste F5.
  *
- * Når Tyr går i pilot, fjernes denne komponent (eller den gates på
+ * Når Bifrost går i pilot, fjernes denne komponent (eller den gates på
  * REACT_APP_BUILD_MODE=true).
  */
 import React, { useEffect, useState } from 'react';
@@ -256,7 +256,7 @@ const BuildTimeConfigCheck = () => {
     <Overlay onClick={() => setDismissed(true)}>
       <Card onClick={(e) => e.stopPropagation()}>
         <Eyebrow>Build mode · diagnostic</Eyebrow>
-        <Title>Tyr · konfigurations-check</Title>
+        <Title>Bifrost · konfigurations-check</Title>
         <Lede>
           {failCount > 0 ? '✗ Kritiske fejl ' : warnCount > 0 ? '⚠ Status med advarsler' : '✓ Alt grønt'}
           {' — '}

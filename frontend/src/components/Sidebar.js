@@ -15,7 +15,8 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaRobot,
-  FaGavel
+  FaGavel,
+  FaShoppingCart
 } from 'react-icons/fa';
 
 const NAVIGATION_ID = 'sidebar-navigation';
@@ -160,7 +161,7 @@ const NavLink = styled(Link)`
   transition: background-color 0.15s ease, color 0.15s ease;
   position: relative;
 
-  /* Active-state accent bar (bronze, Tyr brand) */
+  /* Active-state accent bar (bronze, Bifrost brand) */
   &::before {
     content: '';
     position: absolute;
@@ -458,6 +459,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       sectionKey: null,
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
+        { path: '/indkoebsproces', icon: FaShoppingCart, text: 'Indkøbsproces' },
         { path: '/vurdering', icon: FaClipboardList, text: 'Vurdering' },
         { path: '/sager', icon: FaBalanceScale, text: 'Sager' },
         { path: '/historik', icon: FaHistory, text: 'Historik' }
@@ -511,7 +513,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             {collapsed ? (
               <>T<span className="brand-rune" aria-hidden="true">ᛏ</span></>
             ) : (
-              <>Tyr<span className="brand-rune" aria-hidden="true">ᛏ</span><span className="brand-version">v3</span></>
+              <>Bifrost<span className="brand-rune" aria-hidden="true">ᛏ</span><span className="brand-version">v3</span></>
             )}
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}
@@ -574,7 +576,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <SidebarFooter>
           <FooterRune>
             <span className="footer-rune-mark" aria-hidden="true">ᛏ</span>
-            Tyr · v3
+            Bifrost · v3
           </FooterRune>
           <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>
           <Link

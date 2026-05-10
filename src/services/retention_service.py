@@ -1,7 +1,7 @@
 """Data-retention service — auto-anonymisering / sletning per GDPR-policy.
 
 GDPR artikel 5(1)(e) kræver at persondata ikke opbevares længere end nødvendigt.
-Tyrs egne logs, sager og dokumenter har et formål, men det formål udløber.
+Bifrosts egne logs, sager og dokumenter har et formål, men det formål udløber.
 Dette modul kører dagligt og:
 
 1. Sletter `V3AssessmentLog`-entries ældre end ASSESSMENT_LOG_RETENTION_DAYS.

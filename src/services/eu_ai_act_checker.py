@@ -8,7 +8,7 @@ public JSON-filer på europa.eu:
   logic.json      — questions_logic + flags_logic + last_update_date
   content_en.json — questions_content + flags_content (på engelsk)
 
-Vi cacher begge filer lokalt så Tyr's wizard fungerer offline + så vi
+Vi cacher begge filer lokalt så Bifrost's wizard fungerer offline + så vi
 selv kan markere "stale" hvis EC's version-stempel rykker uventet.
 
 Cron: ugentligt mandag 04:30 (efter citation-verifier 04:00).
@@ -36,7 +36,7 @@ _CONTENT_URL_TEMPLATE = (
 )
 
 # Per maj 2026 leverer EC engelsk + 5 sprog. Vi henter EN som primær —
-# Tyr har dansk UI men juridiske AI Act-citater er authoritative på engelsk.
+# Bifrost har dansk UI men juridiske AI Act-citater er authoritative på engelsk.
 SUPPORTED_LANGS = ("en", "da", "de", "fr", "it", "pl", "es")
 PRIMARY_LANG = "en"
 
@@ -46,7 +46,7 @@ CONTENT_PATH_TEMPLATE = "content_{lang}.json"
 META_PATH = CACHE_DIR / "_meta.json"
 
 _REQUEST_TIMEOUT = 30.0
-_USER_AGENT = "Tyr/v3 ec-checker-sync (Kalundborg Kommune)"
+_USER_AGENT = "Bifrost/v3 ec-checker-sync (Kalundborg Kommune)"
 
 
 # ---- Cache I/O -------------------------------------------------------------

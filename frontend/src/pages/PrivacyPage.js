@@ -81,7 +81,7 @@ const Page = styled.article`
 
 // Markdown loaded inline so the page works without a backend round-trip and
 // the privacy policy stays version-locked with the frontend bundle.
-const PRIVACY_POLICY_MD = `# Persondatapolitik — Tyr (intern beta)
+const PRIVACY_POLICY_MD = `# Persondatapolitik — Bifrost (intern beta)
 
 **Senest opdateret:** 2026-05-08
 **Version:** intern-beta-1
@@ -90,15 +90,15 @@ const PRIVACY_POLICY_MD = `# Persondatapolitik — Tyr (intern beta)
 
 ---
 
-## Hvad er Tyr?
+## Hvad er Bifrost?
 
-Tyr er Kalundborg Kommunes interne AI-compliance-platform der hjælper sagsbehandlere med at vurdere AI-systemer mod EU AI Act, GDPR og dansk forvaltningsret. Platformen anvendes lige nu i intern beta af digitaliseringsteamet.
+Bifrost er Kalundborg Kommunes interne AI-compliance-platform der hjælper sagsbehandlere med at vurdere AI-systemer mod EU AI Act, GDPR og dansk forvaltningsret. Platformen anvendes lige nu i intern beta af digitaliseringsteamet.
 
-## Hvilke persondata behandler Tyr?
+## Hvilke persondata behandler Bifrost?
 
 ### Kategorier af registrerede
 
-- **Sagsbehandlere** der bruger Tyr (navn, brugernavn fra netværket, IP-adresse, tidsstempel for handlinger)
+- **Sagsbehandlere** der bruger Bifrost (navn, brugernavn fra netværket, IP-adresse, tidsstempel for handlinger)
 - **Borgere** der nævnes i fritekst (sags-beskrivelser, uploadede DPIA'er, kontrakter) — i form af det sagsbehandleren selv indtaster eller uploader
 
 ### Datakategorier
@@ -110,7 +110,7 @@ Tyr er Kalundborg Kommunes interne AI-compliance-platform der hjælper sagsbehan
 
 ### Følsomme persondata
 
-Tyr er **ikke designet til** at behandle særlige kategorier (artikel 9): helbreds-, race-, religiøse, politiske, fagforenings- eller seksualitetsoplysninger. Sagsbehandlere må ikke indtaste sådanne oplysninger. Hvis det alligevel sker, vil det blive fanget af PII-redaktion (CPR + navn-detektion) og logges ikke i klar form.
+Bifrost er **ikke designet til** at behandle særlige kategorier (artikel 9): helbreds-, race-, religiøse, politiske, fagforenings- eller seksualitetsoplysninger. Sagsbehandlere må ikke indtaste sådanne oplysninger. Hvis det alligevel sker, vil det blive fanget af PII-redaktion (CPR + navn-detektion) og logges ikke i klar form.
 
 ## Retsgrundlag
 
@@ -130,9 +130,9 @@ Disse perioder kan tilpasses via miljøvariabler.
 
 ## Hvor opbevares data?
 
-Tyr kører lokalt på Kalundborg Kommunes Mac Studio i Digitalisering & IT-afdelingen. Data forlader **ikke** kommunens netværk. Adgang sker kun via Tailscale-VPN. LLM-kald (sprogmodel-kald) går til en **lokal** instans af LM Studio — ikke til skytjenester.
+Bifrost kører lokalt på Kalundborg Kommunes Mac Studio i Digitalisering & IT-afdelingen. Data forlader **ikke** kommunens netværk. Adgang sker kun via Tailscale-VPN. LLM-kald (sprogmodel-kald) går til en **lokal** instans af LM Studio — ikke til skytjenester.
 
-**Undtagelse:** Når lov-citatfriskhed verificeres dagligt kl. 04:00, sender Tyr HTTP-anmodninger til offentligt tilgængelige juridiske kilder (eur-lex.europa.eu, retsinformation.dk). Disse anmodninger indeholder ingen persondata.
+**Undtagelse:** Når lov-citatfriskhed verificeres dagligt kl. 04:00, sender Bifrost HTTP-anmodninger til offentligt tilgængelige juridiske kilder (eur-lex.europa.eu, retsinformation.dk). Disse anmodninger indeholder ingen persondata.
 
 ## Sikkerhedsforanstaltninger
 
@@ -144,7 +144,7 @@ Tyr kører lokalt på Kalundborg Kommunes Mac Studio i Digitalisering & IT-afdel
 
 ## Dine rettigheder
 
-- **Indsigt (artikel 15)** — få udleveret en kopi af alle persondata Tyr har om dig
+- **Indsigt (artikel 15)** — få udleveret en kopi af alle persondata Bifrost har om dig
 - **Berigtigelse (artikel 16)** — få rettet forkerte oplysninger
 - **Sletning (artikel 17)** — få slettet dine oplysninger
 - **Begrænsning (artikel 18)** — få behandlingen begrænset

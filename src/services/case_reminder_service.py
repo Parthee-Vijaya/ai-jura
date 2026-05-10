@@ -63,7 +63,7 @@ def _public_app_url() -> str:
 def _build_reminder_email(case: Case, app_url: str) -> EmailMessage:
     """Compose a single-case reminder email."""
     msg = EmailMessage()
-    msg["Subject"] = f"[Tyr] Re-review forfalden: {case.title}"
+    msg["Subject"] = f"[Bifrost] Re-review forfalden: {case.title}"
     msg["From"] = (
         os.getenv("SMTP_FROM")
         or os.getenv("SMTP_USER")
@@ -88,7 +88,7 @@ def _build_reminder_email(case: Case, app_url: str) -> EmailMessage:
         f"Status nu: {case.status}\n"
         f"Sidste samlet status: {case.last_aggregate_status or '-'}\n\n"
         f"Åbn sagen: {case_link}\n\n"
-        f"Tyr ᛏ — kommunal AI-compliance\n"
+        f"Bifrost ᛏ — kommunal AI-compliance\n"
     )
     msg.set_content(body)
     return msg

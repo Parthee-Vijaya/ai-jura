@@ -7,13 +7,13 @@ import DataOverview from '../components/data-overview/DataOverview';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
 
 /**
- * Tyr — HomePage (Northern Modern, Design system v2)
+ * Bifrost — HomePage (Northern Modern, Design system v2)
  *
  * Helt nyt layout der matcher DESIGN.md. Drop'er den gamle Forseti-hero
  * med rødt-gradient, version-card, system-status-block og 3-kolonne
  * icon-feature-grid (AI-slop). Erstattet af:
- *   1. Hero — wordmark "Tyr ᛏ" + h1 + lede + primær/sekundær CTA
- *   2. Sådan virker Tyr — 4-trins workflow (hairline border, mono-tal)
+ *   1. Hero — wordmark "Bifrost ᛏ" + h1 + lede + primær/sekundær CTA
+ *   2. Sådan virker Bifrost — 4-trins workflow (hairline border, mono-tal)
  *   3. Hvad du bør vide — 3 rotating facts som editorial cards
  *   4. NewsSection (live RSS)
  *   5. DataOverview (drift-overblik nederst — version + system-status)
@@ -447,13 +447,13 @@ const HomePage = () => {
       <Hero>
         <HeroPrimary>
           <Wordmark>
-            <span>Tyr</span>
+            <span>Bifrost</span>
             <span className="rune" aria-hidden="true">ᛏ</span>
             <span className="ver">v3 · Kalundborg</span>
           </Wordmark>
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
           <HeroLede>
-            Tyr er Kalundborg Kommunes interne AI-compliance-platform. Beskriv et AI-system,
+            Bifrost er Kalundborg Kommunes interne AI-compliance-platform. Beskriv et AI-system,
             upload kontrakt eller DPIA — og få en hjemlet GO / BETINGET-GO / NO-GO med
             ordret citat fra EU AI Act, GDPR, forvaltningslov og offentlighedslov.
           </HeroLede>
@@ -486,7 +486,7 @@ const HomePage = () => {
       {/* ============ WORKFLOW ============ */}
       <Section>
         <SectionHeader>
-          <SectionEyebrow>Sådan virker Tyr</SectionEyebrow>
+          <SectionEyebrow>Sådan virker Bifrost</SectionEyebrow>
           <SectionTitle>Fire trin fra fri tekst til hjemlet vurdering</SectionTitle>
           <SectionLede>
             Fra sagsbehandlerens beskrivelse til en deterministisk afgørelse med live-verificerede
@@ -511,7 +511,7 @@ const HomePage = () => {
             <SectionEyebrow>Hvad du bør vide</SectionEyebrow>
             <SectionTitle>Faglig baggrund — kuration der roterer</SectionTitle>
             <SectionLede>
-              Korte essays om de teknologier og lovrammer Tyr bygger på.
+              Korte essays om de teknologier og lovrammer Bifrost bygger på.
               {facts.length > 3 ? ` Roterer hvert andet minut · ${factOffset + 1}–${factOffset + 3} af ${facts.length}.` : ''}
             </SectionLede>
           </SectionHeader>
@@ -546,7 +546,7 @@ const HomePage = () => {
 
       {/* ============ FOOTER ribbon ============ */}
       <Footer>
-        <span>Tyr · kommunal AI-compliance · Kalundborg Kommune</span>
+        <span>Bifrost · kommunal AI-compliance · Kalundborg Kommune</span>
         <span>Kun til internt brug · Digitalisering og IT</span>
       </Footer>
     </Page>

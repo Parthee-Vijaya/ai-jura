@@ -121,11 +121,11 @@ const PrivacyNotice = () => {
       </CloseButton>
       <BannerHeader>
         <FaShieldAlt className="icon" aria-hidden="true" />
-        Tyr behandler persondata
+        Bifrost behandler persondata
       </BannerHeader>
       <div>
         Indtast <b>ikke</b> borger-data (navn, CPR, mail, telefonnummer) i fritekst eller
-        upload — Tyr er en compliance-platform <i>om</i> AI-systemer, ikke en sagsbehandlings-
+        upload — Bifrost er en compliance-platform <i>om</i> AI-systemer, ikke en sagsbehandlings-
         platform. PII redigeres automatisk ud, men du har ansvar for ikke at gemme persondata
         i platformen.
       </div>

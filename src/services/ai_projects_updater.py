@@ -44,7 +44,7 @@ PROJECT_URL_PREFIX = "https://offentlig-ai.dk/projekter/"
 # How many parallel scrape requests — be polite to the source
 _MAX_CONCURRENT = 6
 _REQUEST_TIMEOUT = 15.0
-_USER_AGENT = "Tyr/v3 ai-projects-sync (Kalundborg Kommune)"
+_USER_AGENT = "Bifrost/v3 ai-projects-sync (Kalundborg Kommune)"
 
 # Sitemap XML namespaces
 _SITEMAP_NS = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}

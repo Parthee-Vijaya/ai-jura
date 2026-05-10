@@ -43,7 +43,7 @@ def _backup_dir() -> Path:
     override = os.getenv("TYR_BACKUP_DIR")
     if override:
         return Path(override).expanduser()
-    return Path.home() / "Backups" / "Tyr"
+    return Path.home() / "Backups" / "Bifrost"
 
 
 def _pg_dump_binary() -> str:

@@ -410,7 +410,7 @@ const AIProjectsPage = () => {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="Tyr · ai-løsninger"
+        eyebrow="Bifrost · ai-løsninger"
         title="AI-løsninger i det offentlige"
         lede="Udforsk danske offentlige AI-projekter — find inspiration, lær af andres erfaringer, og se hvilke løsninger der allerede er i drift på tværs af kommuner og styrelser."
       />

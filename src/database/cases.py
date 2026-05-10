@@ -16,7 +16,9 @@ import uuid
 from datetime import datetime, UTC
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, String, Text, ForeignKey, Index
+import json
+
+from sqlalchemy import Column, DateTime, String, Text, ForeignKey, Index, desc
 from sqlalchemy.orm import Session, relationship
 
 from src.database.connection import Base
@@ -79,6 +81,18 @@ class Case(Base):
     # latest one. Use list_assessments_for_case() for the full history.
     last_assessment_log_id = Column(String(36), nullable=True)
 
+    # Indkøbsproces-wizardens state — gemmes som JSON så vi kan udvide
+    # uden at lave nye migrations hver gang. Indeholder bl.a.:
+    #   { "current_step": 1-4,
+    #     "behov": str,
+    #     "dobbeltsystem_tjekket": bool,
+    #     "serviceportal_dato": "YYYY-MM-DD",
+    #     "indkoeb_eller_udvikling": "indkoeb"|"udvikling"|null,
+    #     "system_description": str,
+    #     "ec_flags": dict|null,         # hvis EC-checker kørt
+    #     "last_step_completed_at": iso }
+    intake_state = Column(Text, nullable=True)
+
     transitions = relationship(
         "CaseTransition",
         back_populates="case",
@@ -89,6 +103,14 @@ class Case(Base):
     __table_args__ = (
         Index("ix_cases_status_review", "status", "next_review_at"),
     )
+
+    def get_intake_state(self) -> dict:
+        if not self.intake_state:
+            return {}
+        try:
+            return json.loads(self.intake_state)
+        except (TypeError, ValueError):
+            return {}
 
     def to_dict(self) -> dict:
         return {
@@ -103,6 +125,7 @@ class Case(Base):
             "notes": self.notes,
             "last_reminder_sent_at": self.last_reminder_sent_at.isoformat() if self.last_reminder_sent_at else None,
             "last_assessment_log_id": self.last_assessment_log_id,
+            "intake_state": self.get_intake_state(),
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -257,3 +280,86 @@ def attach_assessment(
         )
     session.flush()
     return case
+
+
+# ---- Intake-state helpers (indkøbsproces-wizard) --------------------------
+
+
+def find_case_by_external_id(session: Session, case_id: str) -> Optional[Case]:
+    """Finder seneste case-row med eksternt sagsnummer. Bruges af
+    /indkoebsproces-wizardens load-from-URL flow."""
+    return (
+        session.query(Case)
+        .filter(Case.case_id == case_id)
+        .order_by(desc(Case.updated_at))
+        .first()
+    )
+
+
+def upsert_intake_state(
+    session: Session,
+    *,
+    case_id: str,
+    intake_state: dict,
+    title: Optional[str] = None,
+    user: Optional[str] = None,
+) -> Case:
+    """Opret case-row hvis den ikke findes + gem/opdatér intake-state JSON.
+
+    Bruges af `PUT /api/v3/cases/by-case-id/{case_id}/intake` til at persistere
+    indkøbsproces-wizardens state. Status sættes til 'kladde' indtil en
+    rigtig vurdering har kørt (transition håndteres af `attach_assessment`).
+    """
+    case = find_case_by_external_id(session, case_id)
+    now = datetime.now(UTC)
+    payload = json.dumps(intake_state, ensure_ascii=False)
+
+    if case is None:
+        # Auto-derive title from intake_state.behov hvis ikke givet
+        derived_title = title or _derive_title_from_intake(intake_state) or case_id
+        case = create_case(
+            session,
+            case_id=case_id,
+            title=derived_title,
+            assigned_to=user,
+            status="kladde",
+        )
+        case.intake_state = payload
+    else:
+        case.intake_state = payload
+        if title:
+            case.title = title
+        elif not case.title or case.title == case.case_id:
+            # Re-derive title hvis det er placeholder
+            t = _derive_title_from_intake(intake_state)
+            if t:
+                case.title = t
+        if user and not case.assigned_to:
+            case.assigned_to = user
+        case.updated_at = now
+    session.flush()
+    return case
+
+
+def _derive_title_from_intake(intake_state: dict) -> Optional[str]:
+    """Udlede en vist titel fra behov eller system_description."""
+    for key in ("behov", "system_description"):
+        v = (intake_state or {}).get(key)
+        if isinstance(v, str) and v.strip():
+            first = v.strip().split("\n")[0].split(".")[0].strip()
+            if 5 <= len(first) <= 120:
+                return first[:1].upper() + first[1:]
+    return None
+
+
+def list_drafts_with_intake(session: Session, *, limit: int = 50) -> list[Case]:
+    """List sager med ikke-tom intake_state, sorteret efter sidst opdateret.
+    Bruges af 'Mine sager'-stripen i indkøbsproces-wizarden."""
+    return (
+        session.query(Case)
+        .filter(Case.intake_state.isnot(None))
+        .filter(Case.intake_state != "{}")
+        .order_by(desc(Case.updated_at))
+        .limit(limit)
+        .all()
+    )

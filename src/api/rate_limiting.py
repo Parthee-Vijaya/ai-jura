@@ -10,7 +10,7 @@ Differentierede limits baseret på endpoint-omkostning:
 | READ        | 120/minute      | alle GET-endpoints, /health, /drift            |
 | GLOBAL      | 1000/minute     | overall safety net (catches anything)          |
 
-Internal-token whitelist: requests med header `X-Tyr-Internal: <secret>`
+Internal-token whitelist: requests med header `X-Bifrost-Internal: <secret>`
 matchende env TYR_INTERNAL_TOKEN bypass'er rate limit. Bruges af /drift's
 egen polling så drift-siden ikke trigger 429 på sig selv.
 
@@ -36,7 +36,7 @@ def _key_func(request: Request) -> str:
     interne kald så de ikke deler bucket med eksterne klienter."""
     token = os.getenv("TYR_INTERNAL_TOKEN", "").strip()
     if token:
-        provided = request.headers.get("X-Tyr-Internal", "")
+        provided = request.headers.get("X-Bifrost-Internal", "")
         if provided and provided == token:
             return "_tyr_internal_"  # delt bucket m. meget høj limit
     return get_remote_address(request)

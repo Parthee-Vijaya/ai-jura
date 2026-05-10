@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 
 /**
- * Tyr — DataOverview
+ * Bifrost — DataOverview
  *
  * Signatur-mønster fra DESIGN.md: hver hovedside får et clean
  * drift-overblik ved bunden af canvas. Tre sektioner:

@@ -1,4 +1,4 @@
-"""Pydantic models for the Tyr rule structure.
+"""Pydantic models for the Bifrost rule structure.
 
 Mirrors the JSON Schema in /rules/_schema.json. Pydantic validates types
 and pattern constraints; jsonschema in `loader.py` validates the YAML

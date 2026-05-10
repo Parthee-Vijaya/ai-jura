@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 /**
- * Tyr — shared page chrome (Northern Modern, Design system v2)
+ * Bifrost — shared page chrome (Northern Modern, Design system v2)
  *
  * Stil-anker for alle interne sider: off-white max-width container,
  * IBM Plex Sans display-titler + eyebrow, Plex Sans body lede.
@@ -145,7 +145,7 @@ export const EditorialCard = styled.div`
   }
 `;
 
-/** Primary action — Tyr rød fyldt */
+/** Primary action — Bifrost rød fyldt */
 export const PrimaryButton = styled.button`
   font-family: ${(p) => p.theme.fonts.sans};
   font-size: 0.92rem;

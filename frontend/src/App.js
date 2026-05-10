@@ -31,6 +31,7 @@ const HomePage = React.lazy(() => import('./pages/HomePage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const DriftPage = React.lazy(() => import('./pages/DriftPage'));
 const EuAiActCheckerPage = React.lazy(() => import('./pages/EuAiActCheckerPage'));
+const IndkoebsprocesPage = React.lazy(() => import('./pages/IndkoebsprocesPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
@@ -57,7 +58,7 @@ const queryClient = new QueryClient({
 
 const GlobalStyle = createGlobalStyle`
   :root {
-    /* Tyr — Northern Modern */
+    /* Bifrost — Northern Modern */
     --primary: #0d2e54;          /* kongelig blå */
     --primary-dark: #082040;
     --primary-light: #1c4a7d;
@@ -288,6 +289,7 @@ const AppInner = () => {
 
                   {/* EU AI Act Compliance Checker — wizard fra europa.eu */}
                   <Route path="/eu-checker" element={<EuAiActCheckerPage />} />
+                  <Route path="/indkoebsproces" element={<IndkoebsprocesPage />} />
 
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />

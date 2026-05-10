@@ -149,7 +149,7 @@ def verify_rule(rule: Rule, *, timeout: float = 15.0) -> VerificationResult:
 
     try:
         with httpx.Client(follow_redirects=True, timeout=timeout) as client:
-            r = client.get(url, headers={"User-Agent": "Tyr/v3 citation-verifier"})
+            r = client.get(url, headers={"User-Agent": "Bifrost/v3 citation-verifier"})
         status = r.status_code
         if status >= 400:
             return VerificationResult(
@@ -317,7 +317,7 @@ def verify_rule_with_playwright(
             browser = p.chromium.launch(headless=True)
             try:
                 context = browser.new_context(
-                    user_agent="Tyr/v3 citation-verifier (Playwright)",
+                    user_agent="Bifrost/v3 citation-verifier (Playwright)",
                 )
                 page = context.new_page()
                 response = page.goto(url, wait_until="networkidle", timeout=timeout_ms)
