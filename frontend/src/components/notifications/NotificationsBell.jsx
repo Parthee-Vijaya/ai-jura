@@ -64,7 +64,9 @@ const BellButton = styled.button`
 const Panel = styled.div`
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
+  /* Bell sidder i venstre sidebar — panel skal poppe ud TIL HØJRE
+     ind i main-content-area, ikke til venstre off-screen. */
+  left: 0;
   width: 360px;
   max-height: 480px;
   background: ${(p) => p.theme.colors.surface || '#fff'};
@@ -77,8 +79,14 @@ const Panel = styled.div`
   overflow: hidden;
 
   @media (max-width: 720px) {
-    width: calc(100vw - 24px);
-    right: -10px;
+    /* På mobile er bell'en evt. flyttet — fallback: fixed centreret
+       så panelet altid passer i viewport. */
+    position: fixed;
+    top: 56px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: calc(100vh - 80px);
   }
 `;
 
