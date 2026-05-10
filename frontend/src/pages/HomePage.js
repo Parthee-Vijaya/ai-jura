@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import NewsSection from '../components/NewsSection';
 import DataOverview from '../components/data-overview/DataOverview';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
+import { Term } from '../components/ui';
 
 /**
  * Bifrost — HomePage (Northern Modern, Design system v2)
@@ -454,8 +455,8 @@ const HomePage = () => {
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
           <HeroLede>
             Bifrost er Kalundborg Kommunes interne AI-compliance-platform. Beskriv et AI-system,
-            upload kontrakt eller DPIA — og få en hjemlet GO / BETINGET-GO / NO-GO med
-            ordret citat fra EU AI Act, GDPR, forvaltningslov og offentlighedslov.
+            upload kontrakt eller <Term>DPIA</Term> — og få en hjemlet <Term>GO</Term> / <Term>BETINGET-GO</Term> / <Term>NO-GO</Term> med
+            ordret citat fra EU <Term term="ai_act">AI Act</Term>, <Term>GDPR</Term>, <Term term="fvl">forvaltningslov</Term> og offentlighedslov.
           </HeroLede>
           <CTARow>
             <PrimaryCTA to="/vurdering">Start vurdering <span className="arrow">→</span></PrimaryCTA>

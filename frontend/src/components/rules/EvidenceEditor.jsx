@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-import { FaTimes, FaCheck, FaExternalLinkAlt, FaSpinner } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaExternalLinkAlt, FaSpinner, FaPrint } from 'react-icons/fa';
+
+import { useToast } from '../ui';
+import SkabelonPicker from '../SkabelonPicker';
+import EvidenceComments from '../EvidenceComments';
 
 /**
  * EvidenceEditor — modal til at udfylde et enkelt evidens-artefakt direkte
@@ -383,6 +387,7 @@ const EvidenceEditor = ({
   const [content, setContent] = useState({});
   const [saving, setSaving] = useState(false);
   const [savedStatus, setSavedStatus] = useState(null);
+  const toast = useToast();
 
   // Load template + existing content when modal opens
   useEffect(() => {
@@ -453,6 +458,7 @@ const EvidenceEditor = ({
     if (!template || !caseId) return;
     setSaving(true);
     setError(null);
+    // Optimistic UI: vis straks at vi gemmer (toast udløses ved svar)
     try {
       const res = await axios.put(
         `/api/v3/cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(artifactId)}`,
@@ -461,12 +467,27 @@ const EvidenceEditor = ({
       setSavedStatus(res.data.status);
       // Notify parent so checklist can re-fetch
       if (onSaved) onSaved(artifactId, res.data.status);
+
+      // Toast med kontekst-besked baseret på resulterende status
+      const title = template?.title || artifactId;
+      if (res.data.status === 'faerdig') {
+        toast.success(`${title} markeret som færdig`, { link: `/sag/${encodeURIComponent(caseId)}?tab=evidens`, linkLabel: 'Se sag →' });
+      } else if (res.data.status === 'godkendt') {
+        toast.success(`${title} godkendt`, { link: `/sag/${encodeURIComponent(caseId)}?tab=evidens`, linkLabel: 'Se sag →' });
+      } else if (res.data.status === 'i_gang') {
+        toast.info(`${title} gemt — fortsæt udfyldelse`);
+      } else {
+        toast.info(`${title} gemt`);
+      }
+
       // Close automatically on completion; stay open if still in_gang
       if (res.data.status === 'faerdig' || res.data.status === 'godkendt') {
         setTimeout(onClose, 600);
       }
     } catch (err) {
-      setError(err?.response?.data?.detail || err?.message || 'Kunne ikke gemme');
+      const msg = err?.response?.data?.detail || err?.message || 'Kunne ikke gemme';
+      setError(msg);
+      toast.error(`Gem fejlede: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -505,6 +526,16 @@ const EvidenceEditor = ({
               <strong>Status:</strong> {STATUS_LABEL[savedStatus] || savedStatus}
               {savedStatus === 'faerdig' && ' ✓ — alle påkrævede felter udfyldt'}
             </StatusBanner>
+          )}
+
+          {template && caseId && (
+            <SkabelonPicker
+              artifactId={artifactId}
+              caseId={caseId}
+              currentContent={content}
+              user={user}
+              onApplied={(merged) => setContent(merged)}
+            />
           )}
 
           {template?.legal_basis?.length > 0 && (
@@ -619,6 +650,14 @@ const EvidenceEditor = ({
                     onChange={(e) => setContent((p) => ({ ...p, [s.key]: e.target.value }))}
                   />
                 )}
+                {caseId && (
+                  <EvidenceComments
+                    caseId={caseId}
+                    artifactId={artifactId}
+                    sectionKey={s.key}
+                    user={user}
+                  />
+                )}
               </SectionField>
             );
           })}
@@ -634,6 +673,18 @@ const EvidenceEditor = ({
             )}
           </div>
           <div className="actions">
+            <SecondaryButton
+              onClick={() => {
+                if (!caseId || !artifactId) return;
+                const url = `/sag/${encodeURIComponent(caseId)}/evidens/${encodeURIComponent(artifactId)}/print`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+              disabled={!template || !caseId}
+              title="Åbn print-venlig version i ny tab — brug derefter Cmd+P / Ctrl+P"
+              type="button"
+            >
+              <FaPrint /> Print
+            </SecondaryButton>
             <SecondaryButton onClick={onClose} disabled={saving}>
               Annullér
             </SecondaryButton>

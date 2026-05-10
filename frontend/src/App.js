@@ -48,6 +48,8 @@ const VurderingHistorikPage = React.lazy(() => import('./pages/VurderingHistorik
 const SammenlignPage = React.lazy(() => import('./pages/SammenlignPage'));
 const SagerPage = React.lazy(() => import('./pages/SagerPage'));
 const LovOvervaagningPage = React.lazy(() => import('./pages/LovOvervaagningPage'));
+const EvidensPrintPage = React.lazy(() => import('./pages/EvidensPrintPage'));
+const PortfolioDashboardPage = React.lazy(() => import('./pages/PortfolioDashboardPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -355,7 +357,9 @@ const AppInner = () => {
                   {/* Sager — kanban over /api/v3/cases (Step 2 workflow) */}
                   <Route path="/sager" element={<SagerPage />} />
                   <Route path="/sag/:case_id" element={<SagDetaljePage />} />
+                  <Route path="/sag/:caseId/evidens/:artifactId/print" element={<EvidensPrintPage />} />
                   <Route path="/proces" element={<ProcessPage />} />
+                  <Route path="/portefolje" element={<PortfolioDashboardPage />} />
 
                   {/* Lov-overvågning — daglig citation-verifier (Step 3) */}
                   <Route path="/lov-overvaagning" element={<LovOvervaagningPage />} />

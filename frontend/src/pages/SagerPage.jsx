@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DataOverview from '../components/data-overview/DataOverview';
+import GettingStarted from '../components/GettingStarted';
 
 /**
  * SagerPage — Step 2 ("workflow state-machine") kanban over /api/v3/cases.
@@ -564,12 +565,16 @@ const SagerPage = () => {
         </ErrorBox>
       )}
 
-      <HelpHint>
-        <strong>Klik et kort</strong> for at åbne sagen — kladder fortsætter
-        i indkøbsprocessen, vurderede åbner historikken, remediation åbner
-        vurderingsmotoren. <strong>Træk i prikkerne</strong> <kbd>⋮⋮</kbd> i
-        øverste højre hjørne for at flytte sagen til en anden kolonne.
-      </HelpHint>
+      {!isLoading && cases.length === 0 ? (
+        <GettingStarted />
+      ) : (
+        <HelpHint>
+          <strong>Klik et kort</strong> for at åbne sagen — kladder fortsætter
+          i indkøbsprocessen, vurderede åbner historikken, remediation åbner
+          vurderingsmotoren. <strong>Træk i prikkerne</strong> <kbd>⋮⋮</kbd> i
+          øverste højre hjørne for at flytte sagen til en anden kolonne.
+        </HelpHint>
+      )}
 
       <KanbanGrid>
         {STATUSES.map((s) => {

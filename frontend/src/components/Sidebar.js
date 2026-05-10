@@ -18,6 +18,7 @@ import {
   FaGavel,
   FaShoppingCart,
   FaSearch,
+  FaChartBar,
 } from 'react-icons/fa';
 import NotificationsBell from './notifications/NotificationsBell';
 
@@ -481,6 +482,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       sectionKey: 'sager',
       items: [
         { path: '/sager', icon: FaBalanceScale, text: 'Sager (kanban)' },
+        { path: '/portefolje', icon: FaChartBar, text: 'Portefølje-overblik' },
         { path: '/historik', icon: FaHistory, text: 'Historik (audit log)' },
       ],
     },

@@ -34,6 +34,12 @@ if config.config_file_name is not None:
 
 # Import your models for autogenerate support
 from src.database.models import Base
+# Side-effect imports — sikrer at modeller registreres på Base.metadata
+import src.database.cases  # noqa: F401
+import src.database.evidence  # noqa: F401
+import src.database.notifications  # noqa: F401
+import src.database.skabelon_bibliotek  # noqa: F401
+import src.database.evidence_comments  # noqa: F401
 
 # Set target metadata for autogenerate
 target_metadata = Base.metadata

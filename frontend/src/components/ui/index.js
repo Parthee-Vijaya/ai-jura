@@ -23,6 +23,7 @@ export { default as Modal } from './Modal';
 export { default as Tabs } from './Tabs';
 export { default as Breadcrumb } from './Breadcrumb';
 export { ToastProvider, useToast } from './Toast';
+export { default as Term } from './Term';
 
 // Re-export from existing PageChrome.js so consumers can use a single import path
 export {

@@ -30,8 +30,11 @@ import {
   LoadingState,
   ErrorState,
   useToast,
+  Term,
 } from '../components/ui';
 import { EvidenceChecklist, EvidenceEditor } from '../components/rules';
+import NextStepCue from '../components/NextStepCue';
+import EvidenceProgressRadial from '../components/EvidenceProgressRadial';
 
 /**
  * SagDetaljePage — samlet visning af én sag på tværs af workflow-trin.
@@ -171,6 +174,7 @@ const TimelineItem = styled.li`
     border: 2px solid ${(p) => {
       if (p.$kind === 'vurdering') return p.theme.colors.primary;
       if (p.$kind === 'evidens_completed') return '#2d6a31';
+      if (p.$kind === 'evidens_comment') return '#0d2e54';
       if (p.$kind === 'transition') return p.theme.colors.bronze;
       return p.theme.colors.textFaded;
     }};
@@ -526,6 +530,17 @@ const SagDetaljePage = () => {
         </Stat>
       </StatStrip>
 
+      <NextStepCue
+        intake={intake}
+        verdict={lastVerdict}
+        vurderingerCount={vurderinger.length}
+        evidenceProgress={evidenceProgress}
+        evidenceItems={evidenceItems}
+        caseId={case_id}
+        onOpenTab={setTab}
+        onOpenEvidens={openEvidens}
+      />
+
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setTab} />
 
       <TabContent>
@@ -539,7 +554,7 @@ const SagDetaljePage = () => {
             <QuickLinkGrid>
               <QuickLink onClick={() => setTab('evidens')}>
                 <span className="h"><FaCheckCircle className="icon" /> {evidenceProgress.total - evidenceProgress.done} evidens-artefakter mangler <FaArrowRight /></span>
-                <span className="desc">Udfyld DPIA, databehandleraftale, risikostyringsplan og resten af de påkrævede skabeloner.</span>
+                <span className="desc">Udfyld <Term>DPIA</Term>, <Term term="dbs">databehandleraftale</Term>, risikostyringsplan og resten af de påkrævede skabeloner.</span>
               </QuickLink>
               <QuickLink onClick={() => setTab('vurderinger')}>
                 <span className="h"><FaClipboardCheck className="icon" /> {vurderinger.length === 0 ? 'Ingen vurderinger endnu' : `Se ${vurderinger.length} tidligere vurdering${vurderinger.length === 1 ? '' : 'er'}`} <FaArrowRight /></span>
@@ -655,9 +670,9 @@ const SagDetaljePage = () => {
               />
             ) : (
               <>
-                <Banner $tone={evidenceProgress.pct === 100 ? 'success' : 'warn'} style={{ marginBottom: 16 }}>
-                  <strong>{evidenceProgress.done} af {evidenceProgress.total} ({evidenceProgress.pct}%)</strong> artefakter er færdige. Klik på et artefakt for at udfylde eller redigere det.
-                </Banner>
+                <div style={{ marginBottom: 16 }}>
+                  <EvidenceProgressRadial evidenceItems={evidenceItems} />
+                </div>
                 <EvidenceChecklist
                   items={evidenceItems}
                   onToggle={(id) => openEvidens(id)}

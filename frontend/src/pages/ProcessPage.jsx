@@ -27,6 +27,7 @@ import {
   EmptyState,
   LoadingState,
   ErrorState,
+  Term,
 } from '../components/ui';
 
 /**
@@ -686,7 +687,7 @@ const ProcessPage = () => {
             {vurderinger.length === 0 ? (
               <Banner $tone="info">
                 <strong>Ingen vurdering kørt endnu.</strong>
-                {' '}Bifrost samler dine indtastninger fra Trin 1 + EU AI Act-flag fra Trin 2 og kører dem mod alle 21 deklarative regler. Resultatet er et samlet GO / BETINGET-GO / NO-GO med konkrete krav og lovcitater.
+                {' '}Bifrost samler dine indtastninger fra Trin 1 + EU <Term term="ai_act">AI Act</Term>-flag fra Trin 2 og kører dem mod alle 21 deklarative regler. Resultatet er et samlet <Term>GO</Term> / <Term>BETINGET-GO</Term> / <Term>NO-GO</Term> med konkrete krav og lovcitater.
               </Banner>
             ) : (
               <>

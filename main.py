@@ -3991,6 +3991,28 @@ async def v3_case_timeline(case_id: str, limit: int = 50):
                 "actor": case.assigned_to,
             })
 
+        # 5) Evidens-kommentarer (per-felt diskussion)
+        try:
+            from src.database.evidence_comments import list_comments
+
+            comment_rows = list_comments(db, case_id=case_id, include_resolved=True)
+            for c in comment_rows:
+                section_label = c.section_key or "hele dokumentet"
+                preview = (c.body[:120] + "…") if len(c.body) > 120 else c.body
+                events.append({
+                    "kind": "evidens_comment",
+                    "timestamp": c.created_at.isoformat() if c.created_at else None,
+                    "label": (
+                        f"Kommentar på {c.artifact_id.replace('_', ' ')} "
+                        f"({section_label})"
+                    ),
+                    "detail": preview,
+                    "link": f"/sag/{case.case_id}?tab=evidens",
+                    "actor": c.author,
+                })
+        except Exception as exc:
+            logger.warning(f"timeline comments fetch failed: {exc}")
+
         # Sort newest first
         events.sort(key=lambda e: e["timestamp"] or "", reverse=True)
 
@@ -4609,6 +4631,448 @@ async def v3_evidence_upsert(
             **row.to_dict(),
             "computed_status": computed,
             "required_section_keys": sorted(template.required_section_keys()),
+        }
+    finally:
+        db.close()
+
+
+# =========================================================================
+# Skabelon-bibliotek — genbrugbare evidens-skabeloner på tværs af sager
+# =========================================================================
+
+
+class SkabelonCreatePayload(BaseModel):
+    artifact_id: str = Field(..., description="Hvilken type evidens skabelonen gælder for")
+    name: str = Field(..., min_length=1, max_length=160)
+    description: Optional[str] = Field(default=None, max_length=2000)
+    content: Dict[str, Any] = Field(..., description="Felt-værdier der bruges som default")
+    source_case_id: Optional[str] = Field(default=None, max_length=64)
+    user: Optional[str] = Field(default=None, max_length=64)
+
+
+class SkabelonApplyPayload(BaseModel):
+    user: Optional[str] = Field(default=None, max_length=64)
+
+
+@app.get("/api/v3/skabelon-bibliotek")
+async def v3_skabelon_list(artifact_id: Optional[str] = None):
+    """List skabeloner — optionelt filtreret på artifact_id."""
+    from src.database.connection import SessionLocal
+    from src.database.skabelon_bibliotek import list_skabeloner
+
+    db = SessionLocal()
+    try:
+        rows = list_skabeloner(db, artifact_id=artifact_id)
+        return {
+            "count": len(rows),
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/skabelon-bibliotek")
+@limiter.limit(ADMIN_WRITE)
+async def v3_skabelon_create(
+    request: Request,
+    response: Response,
+    body: SkabelonCreatePayload,
+):
+    """Opret en ny skabelon — typisk fra en eksisterende udfyldt evidens."""
+    from src.database.connection import SessionLocal
+    from src.database.skabelon_bibliotek import create_skabelon
+
+    db = SessionLocal()
+    try:
+        try:
+            entry = create_skabelon(
+                db,
+                artifact_id=body.artifact_id,
+                name=body.name,
+                description=body.description,
+                content=body.content,
+                source_case_id=body.source_case_id,
+                user=body.user,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        db.commit()
+        return entry.to_dict()
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/skabelon-bibliotek/{skabelon_id}/apply")
+@limiter.limit(ADMIN_WRITE)
+async def v3_skabelon_apply(
+    request: Request,
+    response: Response,
+    skabelon_id: int,
+    case_id: str,
+    body: SkabelonApplyPayload,
+):
+    """Indlæs en skabelon på en given sag.
+
+    Mergerer med eksisterende svar — bruger-svar vinder altid over
+    skabelon-defaults. Tomme felter får skabelon-værdi.
+
+    Returnerer den opdaterede evidens-row.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.skabelon_bibliotek import (
+        get_skabelon,
+        increment_usage,
+        merge_with_existing,
+    )
+    from src.database.evidence import get_evidence, upsert_evidence
+    from src.services.evidence_artifacts import compute_status, get_template
+
+    db = SessionLocal()
+    try:
+        skabelon = get_skabelon(db, skabelon_id)
+        if skabelon is None:
+            raise HTTPException(status_code=404, detail="Skabelon ikke fundet")
+
+        existing = get_evidence(db, case_id, skabelon.artifact_id)
+        existing_content = existing.get_content() if existing else {}
+        merged = merge_with_existing(skabelon.get_content(), existing_content)
+
+        template = get_template(skabelon.artifact_id)
+        computed = compute_status(template, merged)
+
+        row = upsert_evidence(
+            db,
+            case_id=case_id,
+            artifact_id=skabelon.artifact_id,
+            content=merged,
+            computed_status=computed,
+            user=body.user,
+            notes=f"Anvendte skabelon: {skabelon.name}",
+        )
+        increment_usage(db, skabelon_id)
+        db.commit()
+        return {
+            **row.to_dict(),
+            "computed_status": computed,
+            "applied_skabelon_id": skabelon_id,
+            "applied_skabelon_name": skabelon.name,
+        }
+    finally:
+        db.close()
+
+
+@app.delete("/api/v3/skabelon-bibliotek/{skabelon_id}")
+@limiter.limit(ADMIN_WRITE)
+async def v3_skabelon_delete(
+    request: Request,
+    response: Response,
+    skabelon_id: int,
+):
+    from src.database.connection import SessionLocal
+    from src.database.skabelon_bibliotek import delete_skabelon
+
+    db = SessionLocal()
+    try:
+        ok = delete_skabelon(db, skabelon_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Skabelon ikke fundet")
+        db.commit()
+        return {"deleted": True, "id": skabelon_id}
+    finally:
+        db.close()
+
+
+# =========================================================================
+# Per-evidens-felt kommentarer + tråde
+# =========================================================================
+
+
+class CommentCreatePayload(BaseModel):
+    body: str = Field(..., min_length=1, max_length=4000)
+    section_key: Optional[str] = Field(default=None, max_length=96)
+    author: Optional[str] = Field(default=None, max_length=64)
+
+
+@app.get("/api/v3/cases/{case_id}/comments")
+async def v3_comments_list_for_case(
+    case_id: str,
+    artifact_id: Optional[str] = None,
+    section_key: Optional[str] = None,
+    include_resolved: bool = True,
+):
+    """List kommentarer for en sag — optionelt filtreret på artifact + sektion."""
+    from src.database.connection import SessionLocal
+    from src.database.evidence_comments import list_comments
+
+    db = SessionLocal()
+    try:
+        rows = list_comments(
+            db,
+            case_id=case_id,
+            artifact_id=artifact_id,
+            section_key=section_key,
+            include_resolved=include_resolved,
+        )
+        return {
+            "case_id": case_id,
+            "count": len(rows),
+            "items": [r.to_dict() for r in rows],
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases/{case_id}/comments/counts")
+async def v3_comments_counts_for_case(case_id: str):
+    """Aggregat over kommentar-antal per artefakt og sektion.
+
+    Bruges til at vise badges på evidens-checklisten uden at hente alle bodies.
+    Format: {artifact_id: {section_key|"_doc": {open: N, resolved: N}}}
+    """
+    from src.database.connection import SessionLocal
+    from src.database.evidence_comments import comment_counts_for_case
+
+    db = SessionLocal()
+    try:
+        counts = comment_counts_for_case(db, case_id)
+        return {"case_id": case_id, "counts": counts}
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/cases/{case_id}/evidence/{artifact_id}/comments")
+@limiter.limit(ADMIN_WRITE)
+async def v3_comments_create(
+    request: Request,
+    response: Response,
+    case_id: str,
+    artifact_id: str,
+    body: CommentCreatePayload,
+):
+    """Opret en kommentar på et evidens-felt (eller hele dokumentet hvis section_key=null).
+
+    Emitterer også en notifikation så andre brugere ser tråden i deres bell.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.evidence_comments import create_comment
+    from src.database import notifications as notif_svc
+
+    db = SessionLocal()
+    try:
+        try:
+            comment = create_comment(
+                db,
+                case_id=case_id,
+                artifact_id=artifact_id,
+                section_key=body.section_key,
+                body=body.body,
+                author=body.author,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+        # Emit notifikation
+        try:
+            preview = (body.body[:80] + "…") if len(body.body) > 80 else body.body
+            section_label = body.section_key or "hele dokumentet"
+            notif_svc.emit(
+                db,
+                kind="evidens_comment",
+                title=f"Ny kommentar på {artifact_id.replace('_', ' ')}",
+                message=f"{body.author or 'Bruger'} skrev på {section_label}: '{preview}'",
+                case_id=case_id,
+                link_url=f"/sag/{case_id}?tab=evidens",
+                severity="info",
+                actor=body.author,
+            )
+        except Exception as exc:
+            logger.warning(f"comment notification emit failed: {exc}")
+
+        db.commit()
+        return comment.to_dict()
+    finally:
+        db.close()
+
+
+@app.post("/api/v3/comments/{comment_id}/resolve")
+@limiter.limit(ADMIN_WRITE)
+async def v3_comments_resolve(
+    request: Request,
+    response: Response,
+    comment_id: int,
+    user: Optional[str] = None,
+):
+    from src.database.connection import SessionLocal
+    from src.database.evidence_comments import resolve_comment
+
+    db = SessionLocal()
+    try:
+        comment = resolve_comment(db, comment_id, user=user)
+        if comment is None:
+            raise HTTPException(status_code=404, detail="Kommentar ikke fundet")
+        db.commit()
+        return comment.to_dict()
+    finally:
+        db.close()
+
+
+@app.delete("/api/v3/comments/{comment_id}")
+@limiter.limit(ADMIN_WRITE)
+async def v3_comments_delete(
+    request: Request,
+    response: Response,
+    comment_id: int,
+):
+    from src.database.connection import SessionLocal
+    from src.database.evidence_comments import delete_comment
+
+    db = SessionLocal()
+    try:
+        ok = delete_comment(db, comment_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Kommentar ikke fundet")
+        db.commit()
+        return {"deleted": True, "id": comment_id}
+    finally:
+        db.close()
+
+
+# =========================================================================
+# Portfolio dashboard — kommune-aggregat over sager + evidens-blockers
+# =========================================================================
+
+
+@app.get("/api/v3/dashboard/portfolio")
+async def v3_dashboard_portfolio():
+    """Aggregeret overblik over kommunens AI-portefølje.
+
+    Returnerer:
+      - stats: totale tællere (sager, åbne, godkendte, afviste, evidens, kommentarer)
+      - heatmap: matrix [risikoklassifikation × evidens-status]
+      - top_blockers: 5 evidens-IDs der mangler på flest sager
+      - by_status: sager grupperet pr. workflow-status
+      - recent_activity: 10 seneste events på tværs af sager
+      - sla: sager med next_review forfalden / nær deadline
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import Case
+    from src.database.evidence import EvidenceArtifact
+    from src.database.evidence_comments import EvidenceComment
+
+    db = SessionLocal()
+    try:
+        all_cases = db.query(Case).all()
+        all_evidence = db.query(EvidenceArtifact).all()
+        comment_count = db.query(EvidenceComment).count()
+        open_comment_count = (
+            db.query(EvidenceComment)
+            .filter(EvidenceComment.resolved_at.is_(None))
+            .count()
+        )
+
+        # ---- Stats -------------------------------------------------------
+        total_cases = len(all_cases)
+        by_status: dict[str, int] = {}
+        verdict_counts: dict[str, int] = {}
+        for c in all_cases:
+            by_status[c.status] = by_status.get(c.status, 0) + 1
+            if c.last_aggregate_status:
+                verdict_counts[c.last_aggregate_status] = (
+                    verdict_counts.get(c.last_aggregate_status, 0) + 1
+                )
+
+        evidens_total = len(all_evidence)
+        evidens_done = sum(
+            1 for e in all_evidence if e.status in ("faerdig", "godkendt")
+        )
+
+        # ---- Heatmap: verdict × evidens-status ---------------------------
+        # Matrix: rows=verdicts (NO-GO, BETINGET-GO, GO, ukendt),
+        #         cols=evidens-status (mangler, i_gang, faerdig)
+        heatmap: dict[str, dict[str, int]] = {}
+        verdict_for_case: dict[str, str] = {}
+        for c in all_cases:
+            verdict_for_case[c.case_id] = c.last_aggregate_status or "ukendt"
+
+        for e in all_evidence:
+            verdict = verdict_for_case.get(e.case_id, "ukendt")
+            row = heatmap.setdefault(verdict, {"mangler": 0, "i_gang": 0, "faerdig": 0})
+            if e.status == "godkendt":
+                row["faerdig"] += 1
+            elif e.status in ("mangler", "i_gang", "faerdig"):
+                row[e.status] += 1
+
+        # Tilføj tomme rækker for verdicts uden evidens (men med sager)
+        for v in set(verdict_for_case.values()):
+            heatmap.setdefault(v, {"mangler": 0, "i_gang": 0, "faerdig": 0})
+
+        # ---- Top 5 blockers ----------------------------------------------
+        # Hvilke artifact_ids har flest "mangler"-eller-"i_gang"-status?
+        blocker_counts: dict[str, int] = {}
+        for e in all_evidence:
+            if e.status in ("mangler", "i_gang"):
+                blocker_counts[e.artifact_id] = blocker_counts.get(e.artifact_id, 0) + 1
+
+        top_blockers = sorted(
+            blocker_counts.items(), key=lambda x: x[1], reverse=True
+        )[:5]
+        top_blockers_data = [
+            {
+                "artifact_id": aid,
+                "label": aid.replace("_", " "),
+                "blocked_cases": count,
+            }
+            for aid, count in top_blockers
+        ]
+
+        # ---- SLA — forfaldne / nær deadline (7 dage) ---------------------
+        from datetime import timedelta
+        now = datetime.now(UTC)
+        in_7_days = now + timedelta(days=7)
+        overdue: list[dict] = []
+        upcoming: list[dict] = []
+        for c in all_cases:
+            if not c.next_review_at:
+                continue
+            if c.next_review_at < now:
+                overdue.append(
+                    {
+                        "case_id": c.case_id,
+                        "title": c.title,
+                        "next_review_at": c.next_review_at.isoformat(),
+                        "days_overdue": (now - c.next_review_at).days,
+                    }
+                )
+            elif c.next_review_at < in_7_days:
+                upcoming.append(
+                    {
+                        "case_id": c.case_id,
+                        "title": c.title,
+                        "next_review_at": c.next_review_at.isoformat(),
+                        "days_until": (c.next_review_at - now).days,
+                    }
+                )
+
+        return {
+            "generated_at": now.isoformat(),
+            "stats": {
+                "total_cases": total_cases,
+                "evidens_total": evidens_total,
+                "evidens_done": evidens_done,
+                "evidens_pct": (
+                    round(100 * evidens_done / evidens_total) if evidens_total else 0
+                ),
+                "comment_count_total": comment_count,
+                "open_comment_count": open_comment_count,
+                "by_status": by_status,
+                "verdict_counts": verdict_counts,
+            },
+            "heatmap": heatmap,
+            "top_blockers": top_blockers_data,
+            "sla": {
+                "overdue": overdue[:10],
+                "upcoming_within_7_days": upcoming[:10],
+            },
         }
     finally:
         db.close()
