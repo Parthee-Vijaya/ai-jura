@@ -389,8 +389,11 @@ const EuAiActCheckerPage = () => {
     }
   };
 
-  // Send EC's rejste flag til /vurdering med ?from=ec-checker
-  const continueToVurdering = (raisedFlagMap) => {
+  // Send EC's rejste flag til /vurdering med ?from=ec-checker.
+  // Hvis ?fromIndkoeb=K-... var sat, persisteres flag også i sagens
+  // intake_state.ec_flags så det overlever sessions og vises i
+  // sag-komplet-overblikket på /vurdering + /sag/{id}.
+  const continueToVurdering = async (raisedFlagMap) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(
         'tyrEcCheckerFlags',
@@ -401,7 +404,27 @@ const EuAiActCheckerPage = () => {
         }),
       );
     }
-    navigate('/vurdering?from=ec-checker');
+
+    // Hvis vi er i indkøbs-funnel (fromIndkoeb=case_id), persistér flag
+    // i intake_state så de bliver en del af sagens permanente state.
+    if (fromIndkoeb) {
+      try {
+        // Hent eksisterende intake_state først så vi merger korrekt
+        const cur = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}`)
+          .then((r) => r.data?.intake_state || {})
+          .catch(() => ({}));
+        const merged = { ...cur, ec_flags: raisedFlagMap, ec_captured_at: new Date().toISOString() };
+        await axios.put(
+          `/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}/intake`,
+          { intake_state: merged },
+        );
+      } catch (err) {
+        console.warn('Failed to persist EC flags to intake_state', err);
+      }
+      navigate(`/vurdering?from=ec-checker&case_id=${encodeURIComponent(fromIndkoeb)}`);
+    } else {
+      navigate('/vurdering?from=ec-checker');
+    }
   };
 
   const questionsLogic = payload?.logic?.questions_logic || {};

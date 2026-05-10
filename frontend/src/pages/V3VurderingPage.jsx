@@ -13,6 +13,7 @@ import {
   toSuperscript,
 } from '../components/rules';
 import { Breadcrumb as BifrostBreadcrumb } from '../components/ui';
+import IndkoebsOverviewPanel from '../components/IndkoebsOverviewPanel';
 
 /**
  * V3VurderingPage — Design C "Editorial workspace" rendering of the v3
@@ -1936,6 +1937,10 @@ const V3VurderingPage = () => {
           står i marginen til højre.
         </Lede>
 
+        {/* Sag-komplet-overblik vises hvis caseId er sat — viser indkøbsproces-felter
+            med lov-krav-mapping, EC-flag, evidens-status, vurderingshistorik */}
+        {caseId && <IndkoebsOverviewPanel caseId={caseId} defaultOpen={true} />}
+
         {ecError && (
           <ErrorBox>
             EC-prefill fejlede: {String(ecError)}. Du kan stadig udfylde formen
@@ -2380,6 +2385,16 @@ const V3VurderingPage = () => {
               </FlaggedBanner>
             );
           })()}
+
+          {/* Sag-komplet-overblik også i result-mode — så sagsbehandleren kan se
+              hvad der lå til grund + hvad der mangler at blive udfyldt. Default
+              collapsed her så fokus er på verdict + krav. */}
+          {(caseId || displayCaseId) && (
+            <IndkoebsOverviewPanel
+              caseId={caseId || displayCaseId}
+              defaultOpen={false}
+            />
+          )}
 
           <VerdictBanner $status={result.aggregate_status}>
             <VerdictPill $status={result.aggregate_status}>{statusLabel(result.aggregate_status)}</VerdictPill>
