@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
+import { ToastProvider } from './components/ui';
 
 // Theme
 import { lightTheme, darkTheme } from './theme';
@@ -253,6 +254,7 @@ const AppInner = () => {
   return (
     <ThemeProvider theme={themeMode}>
       <GlobalStyle />
+      <ToastProvider>
       {/* Build-mode diagnostic — vises på hver page refresh så vi som
           udviklere har øjeblikkeligt overblik over backend-status. Klik
           OK for at lukke. Fjernes inden pilot. */}
@@ -327,6 +329,7 @@ const AppInner = () => {
           <PrivacyNotice />
         </AppContainer>
       </Router>
+      </ToastProvider>
     </ThemeProvider>
   );
 };

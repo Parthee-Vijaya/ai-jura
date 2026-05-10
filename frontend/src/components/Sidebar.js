@@ -355,9 +355,15 @@ const FooterNote = styled.div`
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
+  // Default open: Arbejde + Sager (daglige aktiviteter), Reference og Drift collapsed
   const [expandedSections, setExpandedSections] = useState({
-    'viden': true,
-    'indstillinger': false
+    'arbejde': true,
+    'sager': true,
+    'reference': false,
+    'drift': false,
+    // Backwards-compat aliases
+    'viden': false,
+    'indstillinger': false,
   });
   const sidebarRef = useRef(null);
   const [isMobileView, setIsMobileView] = useState(() => {
@@ -453,39 +459,48 @@ const Sidebar = ({ collapsed, onToggle }) => {
     };
   }, [collapsed, isMobileView, onToggle]);
 
+  // Ny gruppering (May 2026): "Arbejde" (aktiviteter), "Sager & Historik"
+  // (visning), "Reference" (slå op, læs), "Drift" (admin). Forrige version
+  // blandede aktivitet og arkiv i samme top-gruppe.
   const menuItems = [
     {
-      section: null,
-      sectionKey: null,
+      section: 'Arbejde',
+      sectionKey: 'arbejde',
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
         { path: '/indkoebsproces', icon: FaShoppingCart, text: 'Indkøbsproces' },
+        { path: '/eu-checker', icon: FaBalanceScale, text: 'EU AI Act Checker' },
         { path: '/vurdering', icon: FaClipboardList, text: 'Vurdering' },
-        { path: '/sager', icon: FaBalanceScale, text: 'Sager' },
-        { path: '/historik', icon: FaHistory, text: 'Historik' }
-      ]
+      ],
     },
     {
-      section: 'Viden & Research',
-      sectionKey: 'viden',
+      section: 'Sager & Historik',
+      sectionKey: 'sager',
+      items: [
+        { path: '/sager', icon: FaBalanceScale, text: 'Sager (kanban)' },
+        { path: '/historik', icon: FaHistory, text: 'Historik (audit log)' },
+      ],
+    },
+    {
+      section: 'Reference',
+      sectionKey: 'reference',
       items: [
         { path: '/videnbase', icon: FaBook, text: 'Videnbase' },
+        { path: '/lov-assistent', icon: FaGavel, text: 'Lov Assistent' },
         { path: '/ai-losninger', icon: FaRobot, text: 'AI Løsninger' },
         { path: '/research', icon: FaGlobeEurope, text: 'Juridisk Research' },
-        { path: '/lov-assistent', icon: FaGavel, text: 'Lov Assistent' },
-        { path: '/eu-checker', icon: FaBalanceScale, text: 'EU AI Act Checker' },
-        { path: '/ressourcer', icon: FaExternalLinkAlt, text: 'Relevante Links' }
-      ]
+        { path: '/ressourcer', icon: FaExternalLinkAlt, text: 'Relevante Links' },
+      ],
     },
     {
-      section: 'Indstillinger',
-      sectionKey: 'indstillinger',
+      section: 'Drift',
+      sectionKey: 'drift',
       items: [
-        { path: '/drift', icon: FaCog, text: 'Drift' },
+        { path: '/drift', icon: FaCog, text: 'Drift-overblik' },
         { path: '/lov-overvaagning', icon: FaGavel, text: 'Lov-overvågning' },
-        { path: '/indstillinger', icon: FaCog, text: 'Indstillinger' }
-      ]
-    }
+        { path: '/indstillinger', icon: FaCog, text: 'Indstillinger' },
+      ],
+    },
   ];
 
   const toggleLabel = collapsed ? 'Åbn navigation' : 'Luk navigation';
