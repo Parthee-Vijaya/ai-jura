@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
 import { ToastProvider } from './components/ui';
 import GlobalSearch from './components/search/GlobalSearch';
+import BottomNav from './components/responsive/BottomNav';
 
 // Theme
 import { lightTheme, darkTheme } from './theme';
@@ -201,6 +202,41 @@ const GlobalStyle = createGlobalStyle`
     background-color: ${props => props.theme.colors.surfaceAlt};
   }
 
+  /* A11y: skip-to-main-content */
+  .skip-to-main {
+    position: absolute;
+    left: -10000px;
+    top: 8px;
+    z-index: 9999;
+    background: ${props => props.theme.colors.primary};
+    color: white;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: ${props => props.theme.fonts.sans};
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:focus {
+      left: 8px;
+    }
+  }
+
+  /* A11y: respektér prefers-reduced-motion globalt */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* A11y: visible focus på alle interaktive elementer (overrides outline:none) */
+  :focus-visible {
+    outline-color: ${props => props.theme.colors.primary} !important;
+  }
+
   @keyframes spin {
     from {
       transform: rotate(0deg);
@@ -228,6 +264,11 @@ const MainContent = styled.main`
   @media (max-width: 768px) {
     margin-left: 0;
     padding: 10px;
+  }
+
+  /* Reservé plads til BottomNav på mobile (60px + safe-area) */
+  @media (max-width: 720px) {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
   }
 `;
 
@@ -262,6 +303,10 @@ const AppInner = () => {
           OK for at lukke. Fjernes inden pilot. */}
       <BuildTimeConfigCheck />
       <Router>
+        {/* A11y: skip-link — synlig kun ved keyboard-fokus */}
+        <a href="#main-content" className="skip-to-main">
+          Spring til hovedindhold
+        </a>
         <RouterShortcuts paletteOpen={paletteOpen} />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
         <GlobalSearch />
@@ -269,7 +314,7 @@ const AppInner = () => {
           <PageErrorBoundary title="Navigation fejl" message="Der opstod en fejl i sidebar. Siden kan stadig fungere.">
             <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
           </PageErrorBoundary>
-          <MainContent sidebarCollapsed={sidebarCollapsed}>
+          <MainContent sidebarCollapsed={sidebarCollapsed} id="main-content">
             <Toaster
               position="top-right"
               toastOptions={{
@@ -332,6 +377,7 @@ const AppInner = () => {
           </MainContent>
           <PrivacyNotice />
         </AppContainer>
+        <BottomNav />
       </Router>
       </ToastProvider>
     </ThemeProvider>
