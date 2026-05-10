@@ -28,10 +28,10 @@ const Wrap = styled.section`
   border-top: 1px solid ${(p) => p.theme.colors.borderSoft};
 `;
 
-// Inline header: eyebrow + status-label på samme linje, ingen H2
+// Inline header: eyebrow + view-toggle + meta-counter på samme linje
 const SectionHead = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
@@ -46,11 +46,47 @@ const SectionHead = styled.div`
     font-weight: 600;
   }
 
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
   .meta {
     font-family: ${(p) => p.theme.fonts.mono};
     font-size: 0.68rem;
     color: ${(p) => p.theme.colors.textMuted};
     letter-spacing: 0.04em;
+  }
+`;
+
+const ViewToggle = styled.div`
+  display: inline-flex;
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-radius: 4px;
+  overflow: hidden;
+  background: ${(p) => p.theme.colors.surface};
+
+  button {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border: none;
+    background: transparent;
+    color: ${(p) => p.theme.colors.textMuted};
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &.active {
+      background: ${(p) => p.theme.colors.primary};
+      color: white;
+    }
+    &:hover:not(.active) {
+      color: ${(p) => p.theme.colors.text};
+      background: ${(p) => p.theme.colors.background};
+    }
   }
 `;
 
@@ -156,14 +192,19 @@ const PanelHead = styled.div`
   }
 `;
 
-// Ledger table — meget kompakt række
+// Ledger table — kolonne-bredder + truncation styres af $detailed-prop.
+// Detaljeret: bredere cid + cname wrapper på 2 linjer, større fonts.
+// Kompakt: smal cid + cname truncates med ellipsis (1 linje).
 const LedgerRow = styled.div`
   display: grid;
-  grid-template-columns: 110px 1fr 85px 70px 44px;
-  align-items: center;
-  padding: 5px 14px;
+  grid-template-columns: ${(p) => (p.$detailed
+    ? 'minmax(150px, 200px) 1fr 100px 90px 50px'
+    : 'minmax(110px, 140px) 1fr 85px 70px 44px')};
+  align-items: ${(p) => (p.$detailed ? 'flex-start' : 'center')};
+  gap: 10px;
+  padding: ${(p) => (p.$detailed ? '8px 14px' : '5px 14px')};
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
-  font-size: 0.82rem;
+  font-size: ${(p) => (p.$detailed ? '0.88rem' : '0.82rem')};
 
   &:last-child { border-bottom: none; }
 
@@ -175,30 +216,32 @@ const LedgerRow = styled.div`
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: 4px 14px;
+    align-items: center;
   }
 
   .cid {
     font-family: ${(p) => p.theme.fonts.mono};
     color: ${(p) => p.theme.colors.primary};
-    font-size: 0.74rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: ${(p) => (p.$detailed ? '0.8rem' : '0.74rem')};
+    ${(p) => (p.$detailed
+      ? 'word-break: break-all; line-height: 1.3;'
+      : 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;')}
   }
   .cname {
     color: ${(p) => p.theme.colors.text};
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     padding-right: 8px;
+    ${(p) => (p.$detailed
+      ? 'white-space: normal; word-break: break-word; line-height: 1.4;'
+      : 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;')}
   }
   .ts {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.72rem;
+    font-size: ${(p) => (p.$detailed ? '0.78rem' : '0.72rem')};
     color: ${(p) => p.theme.colors.textMuted};
+    white-space: nowrap;
   }
   .who {
-    font-size: 0.74rem;
+    font-size: ${(p) => (p.$detailed ? '0.8rem' : '0.74rem')};
     color: ${(p) => p.theme.colors.textMuted};
   }
 
@@ -226,12 +269,11 @@ const Pill = styled.span`
   }}
 `;
 
-// Citation panel — to-kolonne grid INDEN for panelet så 6 citater fylder
-// 3 rækker × 2 kolonner. Panelet selv har nu fuld side-bredde (efter
-// vertikal stak), så vi kan udnytte plads horisontalt.
+// Citation grid — 2 kolonner i kompakt mode, 1 kolonne i detaljeret
+// (så fulde rule_ids kan vises uden ellipsis).
 const CitationGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: ${(p) => (p.$detailed ? '1fr' : '1fr 1fr')};
   gap: 0;
 
   @media (max-width: 720px) {
@@ -243,17 +285,17 @@ const CitationRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 14px;
+  padding: ${(p) => (p.$detailed ? '7px 14px' : '4px 14px')};
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
-  border-right: 1px solid ${(p) => p.theme.colors.borderSoft};
+  ${(p) => (p.$detailed ? '' : `border-right: 1px solid ${p.theme.colors.borderSoft};`)}
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.72rem;
+  font-size: ${(p) => (p.$detailed ? '0.78rem' : '0.72rem')};
   gap: 8px;
 
-  &:nth-child(2n) { border-right: none; }
-
-  /* Sidste 2 rækker (sidste 2 items) får ikke bottom-border når vi har 6 items */
-  &:nth-last-child(-n+2) { border-bottom: none; }
+  ${(p) => (p.$detailed ? '' : `
+    &:nth-child(2n) { border-right: none; }
+    &:nth-last-child(-n+2) { border-bottom: none; }
+  `)}
 
   .left { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; }
   .marker {
@@ -268,14 +310,14 @@ const CitationRow = styled.div`
   }
   .name {
     color: ${(p) => p.theme.colors.text};
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     flex: 1;
+    ${(p) => (p.$detailed
+      ? 'word-break: break-all;'
+      : 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;')}
   }
   .when {
     color: ${(p) => p.theme.colors.textMuted};
-    font-size: 0.7rem;
+    font-size: ${(p) => (p.$detailed ? '0.74rem' : '0.7rem')};
     flex-shrink: 0;
   }
 
@@ -360,6 +402,22 @@ const truncateName = (s, n = 38) => {
 // ---- Component ---------------------------------------------------------
 
 const DataOverview = ({ scope = 'global' }) => {
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window === 'undefined') return 'compact';
+    return localStorage.getItem('bifrostDataOverviewView') || 'compact';
+  });
+  const setView = (v) => {
+    setViewMode(v);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bifrostDataOverviewView', v);
+    }
+  };
+  const detailed = viewMode === 'detailed';
+  // Vis flere items i detaljeret mode (mere plads pr. række = vi kan
+  // også vise flere rækker uden at gøre siden uoverskuelig)
+  const ledgerLimit = detailed ? 10 : 4;
+  const citationLimit = detailed ? 14 : 6;
+
   const [audit, setAudit] = useState({ items: [], total: 0 });
   const [cases, setCases] = useState({ items: [] });
   const [freshness, setFreshness] = useState({ items: [], counts: { verified: 0, flagged: 0, total: 0 } });
@@ -421,7 +479,27 @@ const DataOverview = ({ scope = 'global' }) => {
     <Wrap>
       <SectionHead>
         <span className="eyebrow">Drift-overblik</span>
-        <span className="meta">{loading ? 'henter…' : `${cases.items?.length || 0} sager · ${freshness.counts.total} regler`}</span>
+        <div className="right">
+          <ViewToggle role="group" aria-label="Visningstilstand">
+            <button
+              type="button"
+              className={!detailed ? 'active' : ''}
+              onClick={() => setView('compact')}
+              title="Kompakt visning — kortere rækker, færre items"
+            >
+              Kompakt
+            </button>
+            <button
+              type="button"
+              className={detailed ? 'active' : ''}
+              onClick={() => setView('detailed')}
+              title="Detaljeret visning — fulde sagsnavne + flere items"
+            >
+              Detaljeret
+            </button>
+          </ViewToggle>
+          <span className="meta">{loading ? 'henter…' : `${cases.items?.length || 0} sager · ${freshness.counts.total} regler`}</span>
+        </div>
       </SectionHead>
 
       {/* 4-stat grid */}
@@ -455,17 +533,21 @@ const DataOverview = ({ scope = 'global' }) => {
             <span className="title">Seneste vurderinger</span>
             <a href="/historik">Se hele historikken →</a>
           </PanelHead>
-          <LedgerRow className="hdr">
+          <LedgerRow className="hdr" $detailed={detailed}>
             <div>sags-id</div>
             <div>sag</div>
             <div>verdict</div>
             <div>vurderet</div>
             <div>af</div>
           </LedgerRow>
-          {(audit.items || []).slice(0, 4).map((entry) => (
-            <LedgerRow key={entry.id}>
-              <div className="cid">{entry.case_id || '—'}</div>
-              <div className="cname">{truncateName(entry.note || entry.case_id || 'Ukendt sag')}</div>
+          {(audit.items || []).slice(0, ledgerLimit).map((entry) => (
+            <LedgerRow key={entry.id} $detailed={detailed}>
+              <div className="cid" title={entry.case_id}>{entry.case_id || '—'}</div>
+              <div className="cname" title={entry.note || entry.case_id || ''}>
+                {detailed
+                  ? (entry.note || entry.case_id || 'Ukendt sag')
+                  : truncateName(entry.note || entry.case_id || 'Ukendt sag')}
+              </div>
               <div><Pill $verdict={entry.aggregate_status}>{entry.aggregate_status || '—'}</Pill></div>
               <div className="ts">{formatHHmm(entry.created_at)}</div>
               <div className="who">{initialsOf(entry.user_id)}</div>
@@ -485,10 +567,14 @@ const DataOverview = ({ scope = 'global' }) => {
             <span className="title">Citat-friskhed</span>
             <span className="meta">04:00 / dag</span>
           </PanelHead>
-          {/* 6 citater i 3×2 grid — panelet er fuld bredde (vertikal stak) */}
-          <CitationGrid>
-            {(freshness.items || []).slice(0, 6).map((item) => (
-              <CitationRow key={item.rule_id} $status={item.flagged_for_review ? 'flagged' : item.citation_found ? 'verified' : 'unknown'}>
+          {/* Kompakt: 6 citater i 3×2 grid. Detaljeret: 14 citater i 1 kolonne med fulde rule_ids */}
+          <CitationGrid $detailed={detailed}>
+            {(freshness.items || []).slice(0, citationLimit).map((item) => (
+              <CitationRow
+                key={item.rule_id}
+                $detailed={detailed}
+                $status={item.flagged_for_review ? 'flagged' : item.citation_found ? 'verified' : 'unknown'}
+              >
                 <div className="left">
                   <span className="marker" />
                   <span className="name" title={item.rule_id}>{item.rule_id}</span>
@@ -497,7 +583,7 @@ const DataOverview = ({ scope = 'global' }) => {
               </CitationRow>
             ))}
             {(freshness.items || []).length === 0 && !loading && (
-              <CitationRow style={{ gridColumn: '1 / -1', borderRight: 'none' }}>
+              <CitationRow $detailed={detailed} style={{ gridColumn: '1 / -1', borderRight: 'none' }}>
                 <div className="left"><span className="name" style={{ opacity: 0.6 }}>Ingen friskheds-data endnu</span></div>
               </CitationRow>
             )}
