@@ -354,6 +354,7 @@ const EuAiActCheckerPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromIndkoeb = searchParams.get('fromIndkoeb');
+  const fromProces = searchParams.get('fromProces');
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
   // Sprog-vælger: default DA hvis tilgængelig, ellers EN. Persistes i localStorage.
@@ -421,7 +422,12 @@ const EuAiActCheckerPage = () => {
       } catch (err) {
         console.warn('Failed to persist EC flags to intake_state', err);
       }
-      navigate(`/vurdering?from=ec-checker&case_id=${encodeURIComponent(fromIndkoeb)}`);
+      // Hvis brugeren kom fra /proces, send tilbage dertil i stedet for vurdering
+      if (fromProces) {
+        navigate(`/proces?case_id=${encodeURIComponent(fromIndkoeb)}&step=vurdering`);
+      } else {
+        navigate(`/vurdering?from=ec-checker&case_id=${encodeURIComponent(fromIndkoeb)}`);
+      }
     } else {
       navigate('/vurdering?from=ec-checker');
     }

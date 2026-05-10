@@ -36,6 +36,7 @@ const DriftPage = React.lazy(() => import('./pages/DriftPage'));
 const EuAiActCheckerPage = React.lazy(() => import('./pages/EuAiActCheckerPage'));
 const IndkoebsprocesPage = React.lazy(() => import('./pages/IndkoebsprocesPage'));
 const SagDetaljePage = React.lazy(() => import('./pages/SagDetaljePage'));
+const ProcessPage = React.lazy(() => import('./pages/ProcessPage'));
 const KnowledgeBasePage = React.lazy(() => import('./pages/KnowledgeBasePage'));
 const ResearchPage = React.lazy(() => import('./pages/ResearchPage'));
 const LawAssistantPage = React.lazy(() => import('./pages/LawAssistantPage'));
@@ -354,6 +355,7 @@ const AppInner = () => {
                   {/* Sager — kanban over /api/v3/cases (Step 2 workflow) */}
                   <Route path="/sager" element={<SagerPage />} />
                   <Route path="/sag/:case_id" element={<SagDetaljePage />} />
+                  <Route path="/proces" element={<ProcessPage />} />
 
                   {/* Lov-overvågning — daglig citation-verifier (Step 3) */}
                   <Route path="/lov-overvaagning" element={<LovOvervaagningPage />} />
