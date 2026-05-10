@@ -15,40 +15,45 @@ import axios from 'axios';
  * dropbares på alle sider uden props-drilling.
  */
 
-// ---- Styled (Northern Modern) ------------------------------------------
+// ---- Styled (Northern Modern, kompakt mode) ----------------------------
+//
+// Kompakt-mode: hele DataOverview holder sig <600px høj så den passer
+// "below the fold" på en standard 1080p-skærm uden at slå sig sammen
+// med side-content ovenfor. Seneste vurderinger + citat-friskhed
+// stables vertikalt så hver får fuld bredde (ingen klemte rule_ids).
 
 const Wrap = styled.section`
-  margin-top: 40px;
-  padding-top: 32px;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid ${(p) => p.theme.colors.borderSoft};
 `;
 
 const Eyebrow = styled.div`
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: ${(p) => p.theme.colors.bronze};
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 `;
 
 const Heading = styled.h2`
   font-family: ${(p) => p.theme.fonts.display};
   font-weight: 600;
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   letter-spacing: -0.01em;
   color: ${(p) => p.theme.colors.text};
-  margin: 0 0 24px;
+  margin: 0 0 14px;
 `;
 
-// 4-stat grid
+// 4-stat grid (kompakt — mindre padding + font)
 const Stats = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   background: ${(p) => p.theme.colors.surface};
   border: 1px solid ${(p) => p.theme.colors.border};
   border-radius: ${(p) => p.theme.borderRadius};
-  margin-bottom: 28px;
+  margin-bottom: 14px;
 
   @media (max-width: 720px) {
     grid-template-columns: repeat(2, 1fr);
@@ -56,7 +61,7 @@ const Stats = styled.div`
 `;
 
 const Stat = styled.div`
-  padding: 22px 24px;
+  padding: 12px 16px;
   border-right: 1px solid ${(p) => p.theme.colors.border};
 
   &:last-child { border-right: none; }
@@ -68,16 +73,16 @@ const Stat = styled.div`
 
   .label {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: ${(p) => p.theme.colors.textFaded};
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   .value {
     font-family: ${(p) => p.theme.fonts.display};
     font-weight: 700;
-    font-size: 2rem;
+    font-size: 1.45rem;
     letter-spacing: -0.02em;
     color: ${({ $tone, theme }) => {
       if ($tone === 'bronze') return theme.colors.bronze;
@@ -86,25 +91,22 @@ const Stat = styled.div`
       return theme.colors.text;
     }};
     line-height: 1;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
   }
   .delta {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     color: ${(p) => p.theme.colors.textMuted};
   }
 `;
 
-// 2-kol data row
+// Vertikal stak — Seneste vurderinger + Citat-friskhed under hinanden,
+// hver med fuld bredde så lange rule_ids og sagsnavne ikke klemmes.
 const DataRow = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  margin-bottom: 24px;
-
-  @media (max-width: 920px) {
-    grid-template-columns: 1fr;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
 `;
 
 const Panel = styled.div`
@@ -118,25 +120,25 @@ const PanelHead = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 22px;
+  padding: 9px 16px;
   border-bottom: 1px solid ${(p) => p.theme.colors.border};
   background: ${(p) => p.theme.colors.background};
 
   .title {
     font-family: ${(p) => p.theme.fonts.display};
     font-weight: 600;
-    font-size: 0.96rem;
+    font-size: 0.85rem;
     color: ${(p) => p.theme.colors.text};
   }
   .meta {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.7rem;
+    font-size: 0.66rem;
     letter-spacing: 0.06em;
     color: ${(p) => p.theme.colors.textMuted};
   }
   a {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.7rem;
+    font-size: 0.66rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: ${(p) => p.theme.colors.primary};
@@ -145,14 +147,14 @@ const PanelHead = styled.div`
   }
 `;
 
-// Ledger table
+// Ledger table — kompakt række med mindre padding + font
 const LedgerRow = styled.div`
   display: grid;
-  grid-template-columns: 130px 1fr 90px 110px 80px;
+  grid-template-columns: 120px 1fr 90px 80px 50px;
   align-items: center;
-  padding: 12px 22px;
+  padding: 7px 16px;
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
-  font-size: 0.92rem;
+  font-size: 0.84rem;
 
   &:last-child { border-bottom: none; }
 
@@ -160,16 +162,19 @@ const LedgerRow = styled.div`
     background: ${(p) => p.theme.colors.background};
     color: ${(p) => p.theme.colors.textFaded};
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.66rem;
+    font-size: 0.62rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    padding: 9px 22px;
+    padding: 6px 16px;
   }
 
   .cid {
     font-family: ${(p) => p.theme.fonts.mono};
     color: ${(p) => p.theme.colors.primary};
-    font-size: 0.82rem;
+    font-size: 0.74rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .cname {
     color: ${(p) => p.theme.colors.text};
@@ -180,16 +185,16 @@ const LedgerRow = styled.div`
   }
   .ts {
     font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: ${(p) => p.theme.colors.textMuted};
   }
   .who {
-    font-size: 0.82rem;
+    font-size: 0.74rem;
     color: ${(p) => p.theme.colors.textMuted};
   }
 
   @media (max-width: 720px) {
-    grid-template-columns: 1fr 90px;
+    grid-template-columns: 1fr 80px;
     .cid, .ts, .who { display: none; }
   }
 `;
@@ -212,30 +217,63 @@ const Pill = styled.span`
   }}
 `;
 
-// Citation panel
+// Citation panel — to-kolonne grid INDEN for panelet så 6 citater fylder
+// 3 rækker × 2 kolonner. Panelet selv har nu fuld side-bredde (efter
+// vertikal stak), så vi kan udnytte plads horisontalt.
+const CitationGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
 const CitationRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 22px;
+  padding: 6px 16px;
   border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft};
+  border-right: 1px solid ${(p) => p.theme.colors.borderSoft};
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.78rem;
+  font-size: 0.74rem;
+  gap: 8px;
 
-  &:last-child { border-bottom: none; }
+  &:nth-child(2n) { border-right: none; }
 
-  .left { display: flex; align-items: center; gap: 8px; }
+  /* Sidste 2 rækker (sidste 2 items) får ikke bottom-border når vi har 6 items */
+  &:nth-last-child(-n+2) { border-bottom: none; }
+
+  .left { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1; }
   .marker {
-    width: 8px; height: 8px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: ${({ $status, theme }) =>
       $status === 'flagged' ? theme.colors.danger :
       $status === 'verified' ? theme.colors.success :
       theme.colors.textFaded};
     display: inline-block;
+    flex-shrink: 0;
   }
-  .name { color: ${(p) => p.theme.colors.text}; }
-  .when { color: ${(p) => p.theme.colors.textMuted}; font-size: 0.72rem; }
+  .name {
+    color: ${(p) => p.theme.colors.text};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .when {
+    color: ${(p) => p.theme.colors.textMuted};
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 720px) {
+    border-right: none;
+    &:not(:last-child) { border-bottom: 1px solid ${(p) => p.theme.colors.borderSoft}; }
+  }
 `;
 
 // Status-bar (5-cell footer)
@@ -253,19 +291,19 @@ const StatusBar = styled.div`
 `;
 
 const StatusCell = styled.div`
-  padding: 14px 18px;
+  padding: 8px 14px;
   border-right: 1px solid ${(p) => p.theme.colors.border};
   font-family: ${(p) => p.theme.fonts.mono};
-  font-size: 0.74rem;
+  font-size: 0.7rem;
 
   &:last-child { border-right: none; }
 
   .label {
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: ${(p) => p.theme.colors.textFaded};
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
   .value {
     color: ${({ $tone, theme }) =>
@@ -274,6 +312,7 @@ const StatusCell = styled.div`
       $tone === 'danger' ? theme.colors.danger :
       theme.colors.text};
     font-weight: 500;
+    font-size: 0.74rem;
   }
 
   @media (max-width: 720px) {
@@ -410,7 +449,7 @@ const DataOverview = ({ scope = 'global' }) => {
             <div>vurderet</div>
             <div>af</div>
           </LedgerRow>
-          {(audit.items || []).slice(0, 5).map((entry) => (
+          {(audit.items || []).slice(0, 4).map((entry) => (
             <LedgerRow key={entry.id}>
               <div className="cid">{entry.case_id || '—'}</div>
               <div className="cname">{truncateName(entry.note || entry.case_id || 'Ukendt sag')}</div>
@@ -433,20 +472,23 @@ const DataOverview = ({ scope = 'global' }) => {
             <span className="title">Citat-friskhed</span>
             <span className="meta">04:00 / dag</span>
           </PanelHead>
-          {(freshness.items || []).slice(0, 8).map((item) => (
-            <CitationRow key={item.rule_id} $status={item.flagged_for_review ? 'flagged' : item.citation_found ? 'verified' : 'unknown'}>
-              <div className="left">
-                <span className="marker" />
-                <span className="name">{item.rule_id}</span>
-              </div>
-              <span className="when">{item.flagged_for_review ? 'flagget' : formatHHmm(item.last_checked_at)}</span>
-            </CitationRow>
-          ))}
-          {(freshness.items || []).length === 0 && !loading && (
-            <CitationRow>
-              <div className="left"><span className="name" style={{ opacity: 0.6 }}>Ingen friskheds-data endnu</span></div>
-            </CitationRow>
-          )}
+          {/* 6 citater i 3×2 grid — panelet er fuld bredde (vertikal stak) */}
+          <CitationGrid>
+            {(freshness.items || []).slice(0, 6).map((item) => (
+              <CitationRow key={item.rule_id} $status={item.flagged_for_review ? 'flagged' : item.citation_found ? 'verified' : 'unknown'}>
+                <div className="left">
+                  <span className="marker" />
+                  <span className="name" title={item.rule_id}>{item.rule_id}</span>
+                </div>
+                <span className="when">{item.flagged_for_review ? 'flagget' : formatHHmm(item.last_checked_at)}</span>
+              </CitationRow>
+            ))}
+            {(freshness.items || []).length === 0 && !loading && (
+              <CitationRow style={{ gridColumn: '1 / -1', borderRight: 'none' }}>
+                <div className="left"><span className="name" style={{ opacity: 0.6 }}>Ingen friskheds-data endnu</span></div>
+              </CitationRow>
+            )}
+          </CitationGrid>
         </Panel>
       </DataRow>
 
