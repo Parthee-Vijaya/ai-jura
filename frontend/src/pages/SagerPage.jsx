@@ -25,12 +25,12 @@ const STATUSES = [
 
 // Northern Modern verdict-mapping fra DESIGN.md
 const STATUS_ACCENT = {
-  kladde: '#8a8f96',        // textFaded
+  kladde: '#5b6573',        // textFaded
   vurderet: '#555a64',      // textMuted
-  remediation: '#b08a4a',   // bronze (betinget — kræver handling, ikke fejl)
+  remediation: '#6e5527',   // bronze (betinget — kræver handling, ikke fejl)
   godkendt: '#2f6b2f',      // success
   idriftsat: '#0d2e54',     // primary (kongelig blå — i drift)
-  arkiveret: '#8a8f96',     // faded
+  arkiveret: '#5b6573',     // faded
 };
 
 // ---- API ----------------------------------------------------------------

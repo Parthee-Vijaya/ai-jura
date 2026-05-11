@@ -143,7 +143,7 @@ const StepCard = styled.button`
     justify-content: center;
     background: ${(p) => (
       p.$status === 'done' ? '#2d6a31' :
-      p.$status === 'partial' ? '#b08a4a' :
+      p.$status === 'partial' ? '#6e5527' :
       p.$active ? p.theme.colors.primary :
       p.theme.colors.line
     )};
@@ -238,7 +238,7 @@ const FieldRow = styled.div`
 
   .marker {
     margin-top: 4px;
-    color: ${(p) => (p.$ok ? '#2d6a31' : p.$warn ? '#b08a4a' : '#a02020')};
+    color: ${(p) => (p.$ok ? '#2d6a31' : p.$warn ? '#6e5527' : '#a02020')};
     font-size: 1rem;
   }
 
@@ -425,7 +425,7 @@ const ProcessPage = () => {
 
         {drafts.length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
-            <h2 style={{ fontFamily: 'IBM Plex Sans', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.14em', color: '#888', fontWeight: 600, marginBottom: 12 }}>
+            <h2 style={{ fontFamily: 'IBM Plex Sans', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.14em', color: '#5b6573', fontWeight: 600, marginBottom: 12 }}>
               <FaFolderOpen style={{ marginRight: 6, verticalAlign: 'middle' }} />
               Mine åbne sager — {drafts.length}
             </h2>

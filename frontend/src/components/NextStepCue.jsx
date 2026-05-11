@@ -52,7 +52,7 @@ const Wrap = styled.div`
         : p.$tone === 'danger'
         ? '#a02020'
         : p.$tone === 'warn'
-        ? '#b08a4a'
+        ? '#6e5527'
         : p.theme.colors.primary || '#0d2e54'};
   border-radius: 6px;
 
@@ -64,7 +64,7 @@ const Wrap = styled.div`
         : p.$tone === 'danger'
         ? '#a02020'
         : p.$tone === 'warn'
-        ? '#b08a4a'
+        ? '#6e5527'
         : p.theme.colors.primary || '#0d2e54'};
     flex-shrink: 0;
   }
@@ -111,7 +111,7 @@ const Wrap = styled.div`
         : p.$tone === 'danger'
         ? '#a02020'
         : p.$tone === 'warn'
-        ? '#b08a4a'
+        ? '#6e5527'
         : p.theme.colors.primary || '#0d2e54'};
     border: none;
     border-radius: 4px;

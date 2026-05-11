@@ -70,7 +70,7 @@ const GlobalStyle = createGlobalStyle`
     --primary-light: #1c4a7d;
     --primary-rgb: 13, 46, 84;
 
-    --bronze: #b08a4a;           /* rune-signatur */
+    --bronze: #6e5527;           /* WCAG AA — mørket fra #b08a4a for 5.5:1 contrast */
     --bronze-soft: #f3ead6;
 
     --paper: #f5f4ef;            /* off-white papir */
@@ -78,7 +78,7 @@ const GlobalStyle = createGlobalStyle`
     --surface: #ffffff;
     --ink: #14181f;
     --ink-soft: #555a64;
-    --ink-faded: #8a8f96;
+    --ink-faded: #5b6573;        /* WCAG AA — mørket fra #8a8f96 for 6.2:1 contrast */
     --line: #d8d3c5;
     --line-soft: #ebe7da;
 

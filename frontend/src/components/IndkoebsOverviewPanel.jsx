@@ -238,7 +238,7 @@ const FieldRow = styled.div`
     margin-top: 3px;
     color: ${(p) => (
       p.$status === 'ok' ? '#2d6a31' :
-      p.$status === 'warn' ? '#b08a4a' :
+      p.$status === 'warn' ? '#6e5527' :
       p.$status === 'missing' ? '#a02020' :
       p.theme.colors.textFaded
     )};
@@ -326,7 +326,7 @@ const FlagRow = styled.div`
     border-radius: 50%;
     background: ${(p) => (
       p.$tone === 'danger' ? '#a02020' :
-      p.$tone === 'warn' ? '#b08a4a' :
+      p.$tone === 'warn' ? '#6e5527' :
       p.$tone === 'success' ? '#2d6a31' :
       '#0d2e54'
     )};
@@ -484,7 +484,7 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
           {vurderinger.length > 0 && (
             <span>{vurderinger.length} vurdering{vurderinger.length === 1 ? '' : 'er'}</span>
           )}
-          <span style={{ fontWeight: 600, color: overallPct === 100 ? '#2d6a31' : overallPct >= 50 ? '#b08a4a' : '#a02020' }}>
+          <span style={{ fontWeight: 600, color: overallPct === 100 ? '#2d6a31' : overallPct >= 50 ? '#6e5527' : '#a02020' }}>
             {overallPct}% komplet
           </span>
         </div>

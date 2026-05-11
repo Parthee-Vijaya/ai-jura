@@ -188,7 +188,7 @@ const EvidenceProgressRadial = ({ evidenceItems = [], compact = false }) => {
 
   const size = compact ? 72 : 96;
   const ringColor =
-    stats.pct >= 100 ? '#2d6a31' : stats.pct >= 50 ? '#0d2e54' : '#b08a4a';
+    stats.pct >= 100 ? '#2d6a31' : stats.pct >= 50 ? '#0d2e54' : '#6e5527';
 
   if (stats.total === 0) {
     return (

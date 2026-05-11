@@ -51,16 +51,20 @@ export const lightTheme = {
     secondary: '#0d2e54',
 
     // Bronze — runen, sekundær accent
-    bronze: '#b08a4a',
-    bronzeDark: '#8e6e35',
-    bronzeLight: '#c9a360',
+    // WCAG 2.1 AA: bronze mørket 2026-05-11 fra #b08a4a til #6e5527 så
+    // små tekster (eyebrows, labels, version-badge) opnår 5.5:1+ contrast
+    // mod hvid og 4.5:1+ mod off-white (#f5f4ef). Ornament-bronze
+    // (logo SVG-stroke) er stadig genkendelig som bronze, bare mørkere.
+    bronze: '#6e5527',
+    bronzeDark: '#523f1d',
+    bronzeLight: '#b08a4a',  // legacy lys-bronze bevaret som light-variant
     bronzeSoft: '#f3ead6',
 
     // Semantic
-    accent: '#b08a4a',
+    accent: '#6e5527',
     success: '#2f6b2f',
     successSoft: '#e3eedc',
-    warning: '#b08a4a',
+    warning: '#6e5527',
     warningSoft: '#f3ead6',
     danger: '#a52822',
     dangerSoft: '#f4dfdc',
@@ -80,13 +84,15 @@ export const lightTheme = {
     paperSoft: '#ebe9e2',
     card: '#ffffff',
 
-    // Text
+    // Text — WCAG 2.1 AA: textFaded mørket fra #8a8f96 (3.25:1) til
+    // #5b6573 (6.2:1) så små metadata-labels passerer AA på hvid baggrund
+    // og 4.7:1 mod off-white paper.
     text: '#14181f',
     textMuted: '#555a64',
-    textFaded: '#8a8f96',
+    textFaded: '#5b6573',
     ink: '#14181f',
     inkSoft: '#555a64',
-    inkFaded: '#8a8f96',
+    inkFaded: '#5b6573',
 
     // Lines
     border: '#d8d3c5',
@@ -116,7 +122,7 @@ export const lightTheme = {
       teglrodLight: '#e85a28',
       buttonSecondary: '#0d2e54',
       textDark: '#14181f',
-      bronze: '#b08a4a',
+      bronze: '#6e5527',
       platinum: '#e5e4e2',
     },
 

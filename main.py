@@ -291,6 +291,11 @@ from slowapi import _rate_limit_exceeded_handler
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Modul 7 — Standardiseret error envelope. Skal registreres EFTER limiter
+# så rate-limit-errors stadig bruger slowapi's dedicated handler.
+from src.api.error_envelope import register_error_handlers, AppError  # noqa: E402
+register_error_handlers(app)
+
 # Observability — request-ID + structured logging + Prometheus metrics.
 # Configured here so it wraps every route incl. legacy ones.
 from src.utils.observability import (
@@ -910,6 +915,39 @@ async def v3_admin_errors(limit: int = 50):
         limit = 500
     items = recent_errors(limit=limit)
     return {"count": len(items), "errors": items}
+
+
+@app.get("/api/v3/admin/llm-health")
+async def v3_admin_llm_health():
+    """LLM-provider circuit-breaker status — backs /drift's "LLM"-card.
+
+    Viser pr. provider (lm_studio, azure_openai, openai):
+      - state: closed | half_open | open
+      - failure_count, success_count, total_opens
+      - last_failure_at, last_success_at (monotonic seconds)
+      - opened_at
+
+    En åben breaker betyder at LLM-kald afvises lige nu — frontend bør
+    vise "midlertidigt nede" i stedet for at vente.
+    """
+    from src.utils.llm_resilience import all_breaker_stats
+    return {
+        "generated_at": datetime.now(UTC).isoformat(),
+        "providers": all_breaker_stats(),
+    }
+
+
+@app.post("/api/v3/admin/llm-health/{provider}/reset")
+async def v3_admin_llm_reset_breaker(provider: str):
+    """Manuelt reset en breaker til closed. Bruges når man har fixet en
+    LLM-problem og vil ikke vente på timeout."""
+    from src.utils.llm_resilience import get_breaker
+    try:
+        breaker = get_breaker(provider)
+    except ValueError as exc:
+        raise AppError("unknown_provider", str(exc), status=404)
+    breaker.reset()
+    return {"provider": provider, "state": "closed", "reset_at": datetime.now(UTC).isoformat()}
 
 
 @app.get("/api/v3/admin/ops-summary")

@@ -47,7 +47,7 @@ const Region = styled.div.attrs({
 const toneColors = {
   success: { bg: '#2d6a31', accent: '#1f4d22' },
   error: { bg: '#a02020', accent: '#7a1818' },
-  warn: { bg: '#b08a4a', accent: '#8a6c38' },
+  warn: { bg: '#6e5527', accent: '#8a6c38' },
   info: { bg: '#0d2e54', accent: '#0a2440' },
 };
 

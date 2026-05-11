@@ -42,7 +42,7 @@ const Eyebrow = styled.div`
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: ${(p) => p.theme.colors.bronze || '#b08a4a'};
+  color: ${(p) => p.theme.colors.bronze || '#6e5527'};
   font-weight: 700;
   margin-bottom: 0.35rem;
 `;
@@ -113,7 +113,7 @@ const ItemRow = styled.div`
     color: ${(p) => {
       switch (p.$status) {
         case 'ok': return '#2d6a31';
-        case 'warn': return '#b08a4a';
+        case 'warn': return '#6e5527';
         case 'fail': return '#a02020';
         default: return p.theme.colors.textMuted;
       }
