@@ -54,3 +54,4 @@ data/documents/
 # data/news_fallback.json — bevares fordi det er bundlet baseline
 # data/ticker_fallback.json — bevares fordi det er bundlet baseline
 
+.gstack/
