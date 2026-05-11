@@ -84,7 +84,7 @@ const Page = styled.article`
 const PRIVACY_POLICY_MD = `# Persondatapolitik — Bifrost (intern beta)
 
 **Senest opdateret:** 2026-05-08
-**Version:** intern-beta-1
+**Version:** intern-beta-2
 **Dataansvarlig:** Kalundborg Kommune, Digitalisering & IT
 **Kontakt:** ServicePortalen@kalundborg.dk
 
