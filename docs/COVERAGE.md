@@ -1,68 +1,78 @@
 # Test coverage status
 
-Sidst målt: 2026-05-11.
+Sidst målt: 2026-05-11 (efter Phase A).
 
 ## Sammenfatning
 
-| Kategori | Coverage |
-|---|---|
-| **Total** | **23%** (7099 missed / 9180 stmts) |
-| Nye moduler (denne uge) | 90-100% |
-| Compliance-engine + agents | 0% |
-| Services-laget (KB updater, RAG, retention, document storage) | 0% |
-| Database-laget | 0-30% |
+| | Før Phase A | Efter Phase A | Delta |
+|---|---|---|---|
+| **Total** | 23% (7099 missed / 9180 stmts) | **28%** (6998 missed / 9685 stmts) | **+5pp / +91 nye tests** |
+| Tests | 258 | **349** | +91 |
+| Failing | 1 (pre-existing) | 1 (samme) | uændret |
 
-## Hvad er godt dækket
+## Phase A — kerne-regelmotor (leveret)
 
-| Modul | Coverage | Tests |
+| Modul | Stmts | Før | Efter | Delta |
+|---|---|---|---|---|
+| `src/compliance_engine.py` | 273 | 0% | **78%** | **+78pp** |
+| `src/compliance/compliance_control_engine.py` | 354 | 0% | **90%** | **+90pp** |
+| `src/compliance/recommendation_engine.py` | 84 | 0% | **87%** | **+87pp** |
+
+**Test-filer tilføjet:**
+- `tests/test_compliance_engine.py` — 35 tests (ComplianceRule, RuleEngine, Controller)
+- `tests/test_compliance_control_engine.py` — 37 tests (7-punkts vurdering, scoring, beslutning)
+- `tests/test_recommendation_engine.py` — 17 tests (DPIA-trigger, anbefalinger, public API)
+
+## Hvad er nu godt dækket
+
+| Modul | Coverage | Hvorfor det er vigtigt |
 |---|---|---|
-| `src/utils/pii_redaction` | 100% | CPR-, email-, telefon-redaction (regex) |
-| `src/utils/llm_resilience` | 98% | Retry + circuit-breaker states |
-| `src/api/error_envelope` | 98% | Alle 4 exception-paths |
-| `src/api/csv_exports` | 96% | 3 eksport-funktioner + edge-cases |
-| `src/services/evidence_artifacts` | 88% | 28 templates, status-beregning |
+| `src/utils/pii_redaction` | 100% | CPR/email-redaction — direkte GDPR-impact |
+| `src/utils/llm_resilience` | 98% | Retry + circuit-breaker — driftsstabilitet |
+| `src/api/error_envelope` | 98% | Konsistent error-shape — frontend-DX |
+| `src/api/csv_exports` | 96% | Revisor-eksport |
+| `src/compliance/compliance_control_engine` | 90% | 7-punkts vurdering — kerne-produkt |
+| `src/services/evidence_artifacts` | 88% | 28 templates |
+| `src/compliance/recommendation_engine` | 87% | Anbefalings-motor |
+| `src/compliance_engine.py` | 78% | Hovedregelmotor |
+| `src/rule_engine/loader` | 87% | YAML-regel-loader |
+| `src/rule_engine/executor` | 83% | Regel-evaluator |
 
-## Hvad mangler tests (kritisk for langtidsstabilitet)
+## Hvad mangler stadig (Phase B-D)
 
-| Modul | Risiko |
-|---|---|
-| `src/compliance_engine.py` (273 stmts) | 0% — kerne-regelmotor uden tests |
-| `src/compliance/compliance_control_engine.py` (354 stmts) | 0% — 7-punkts vurdering |
-| `src/agents/compliance_orchestrator.py` | 0% — LangGraph-orchestrator |
-| `src/services/case_report_generator.py` (423 stmts) | 0% — DOCX/PDF eksport |
-| `src/services/knowledge_base_updater.py` (249 stmts) | 0% — daglig KB-update-job |
-| `src/services/citation_verifier.py` | 42% — kerne af "hjemlet vurdering"-løftet |
-| `src/services/retention_service.py` (138 stmts) | 0% — GDPR-sletning |
-| `src/utils/observability.py` (140 stmts) | 0% — logging, metrics |
+| Modul | Stmts | Coverage | Estimat |
+|---|---|---|---|
+| `src/services/case_report_generator.py` | 423 | 0% | DOCX/PDF — pilot-kritisk |
+| `src/services/knowledge_base_updater.py` | 249 | 0% | Daglig KB-update-job |
+| `src/services/citation_verifier.py` | 192 | 42% | Lov-citat-verifikation |
+| `src/services/retention_service.py` | 138 | 0% | GDPR-sletning |
+| `src/agents/compliance_orchestrator.py` | ~150 | 0% | LangGraph-orkestrator |
+| `src/rule_engine/signal_extractor.py` | 144 | 58% | LLM-baseret signal-extraction (mocking kompleks) |
+| `src/utils/observability.py` | 140 | 0% | Logging + metrics |
 
-## Hvordan vi kommer fra 23% → 70%+ (estimat)
+### Estimat for at komme videre
 
-- **Phase A**: kerne-regelmotor (`compliance_engine.py` + `rule_engine/executor.py`)
-  → fixture-baserede tests med kendte input/output. ~2 dage, +12% coverage.
-- **Phase B**: services-laget (KB updater, retention, citation verifier)
-  → mock'ede dependencies + unit-tests. ~3 dage, +20% coverage.
-- **Phase C**: compliance-orchestrator + agents
-  → integration-tests mod test-LM Studio. ~2 dage, +10% coverage.
-- **Phase D**: observability, validation, agents/registry
-  → unit-tests. ~1 dag, +8% coverage.
+- **Phase B** (services-laget): retention, KB updater, document storage → ~2 dage, +15% coverage
+- **Phase C** (agents + signal_extractor): LangGraph + LLM-mocking → ~2 dage, +10% coverage
+- **Phase D** (case_report_generator + observability): DOCX/PDF + logging → ~1 dag, +8% coverage
 
-**Total**: ~8 dage for at komme til ~73% coverage på de mest kritiske moduler.
+**Total potential: 28% → ~60%+** med 5 dages arbejde.
 
-Realistisk: vi har 258 tests der passer i dag og rammer den kritiske path
-for ny funktionalitet siden 2026-05-08. Lavprio-moduler kan vente til
-efter pilot-feedback viser hvor brugen faktisk koncentrerer sig.
-
-## Hvordan man kører coverage selv
+## Sådan kører man coverage
 
 ```bash
 cd /path/to/bifrost
 source venv/bin/activate
+
+# Full report
 pytest --cov=src --cov-report=term-missing -q \
   --ignore=tests/test_news_service.py
-```
 
-For HTML-rapport:
-```bash
+# Kun Phase A-modulerne
+pytest --cov=src/compliance --cov=src/compliance_engine -q \
+  --ignore=tests/test_news_service.py
+
+# HTML-rapport
 pytest --cov=src --cov-report=html
 open htmlcov/index.html
 ```
