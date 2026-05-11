@@ -159,6 +159,67 @@ en juridisk afgørelse træffes. Eksempler:
 
 ---
 
+## Interaktive detaljer — sådan føles det at bruge Bifrost
+
+Disse screenshots viser de øjeblikke hvor en sagsbehandler faktisk arbejder
+med systemet, ikke bare sidernes layout.
+
+### Sag-detalje med "næste skridt"-cue
+
+![Sag-detalje](docs/screenshots/12-sag-detalje.png)
+
+Én sag samler alt: stats-strip med status + verdict + 6/6 evidens-fremdrift,
+en stærk CTA der peger på det mest oplagte næste skridt ("Klassificér systemet
+i EU AI Act-checker"), fanerne Oversigt / Indkøb / Vurderinger / Evidens /
+Audit-trail, og en hurtig-aktioner-grid. Knapperne foroven leverer DOCX, PDF
+og ny vurdering med ét klik.
+
+### Evidens-editor med skabelon-bibliotek + kommentarer
+
+![Evidens-editor modal](docs/screenshots/13-evidens-editor.png)
+
+Klik et evidens-artefakt og en modal åbner med: status-badge (Færdig ✓),
+skabelon-vælger (genbrug eller gem som skabelon), ordret GDPR Art. 35-citat,
+links til KL's DPIA-skabelon + Datatilsynet + EDPB, og udfyldelige sektioner.
+Footer'en har Print + Annullér + Gem.
+
+### Glossary-tooltips på fagudtryk
+
+![Glossary tooltip åben](docs/screenshots/14-glossary-tooltip.png)
+
+Hover (eller klik) på fagudtryk som "DPIA", "FRIA", "BETINGET-GO", "Bilag III"
+hvor som helst i appen — lille popover med definition + lov-kilde + "Læs mere"-link.
+30+ termer dækket. Designet til at gøre platformen brugbar for personer uden
+juridisk baggrund.
+
+### Portefølje-dashboard med live data
+
+![Portefølje med real data](docs/screenshots/15-portfolio-detail.png)
+
+Når du har data: stats-strip viser 4 sager · 100% evidens · 0 åbne kommentarer.
+Heatmap'en farver "Færdig"-kolonnen grøn når der ikke er røde flag.
+Top blockers, SLA-lister og hurtige genveje er altid synlige.
+
+### Notifikationer i bell-panelet
+
+![Notifications panel åben](docs/screenshots/16-notifications-panel.png)
+
+Bell i sidebar-header viser unread-badge (her 6 ulæste). Klik åbner panelet
+via React Portal med viewport-aware positioning. Hver notifikation har
+titel, beskrivelse, tidsstempel og direkte link til den relevante sag/evidens.
+"Markér alle"-knap rydder badget.
+
+### Print-version af en evidens
+
+![Print-page for evidens](docs/screenshots/17-evidens-print.png)
+
+Klik Print i evidens-editoren → ny tab med print-venligt layout. Strukturen
+spejler myndighedstilsyns-format: titel, status, sag-meta, opsummering,
+lovhjemmel, eksterne ressourcer og hvert udfyldt felt. Cmd+P / Ctrl+P
+giver perfekt PDF til kontrakter eller tilsynsmøder.
+
+---
+
 ## Centrale features under motorhjelmen
 
 ### 28 curerede evidens-skabeloner
