@@ -21,6 +21,7 @@ import {
   FaChartBar,
 } from 'react-icons/fa';
 import NotificationsBell from './notifications/NotificationsBell';
+import BifrostLogo from './BifrostLogo';
 
 const NAVIGATION_ID = 'sidebar-navigation';
 
@@ -112,8 +113,10 @@ const BrandPrimary = styled.span`
     font-size: 1.05em;
     margin: 0 6px 0 8px;
     line-height: 1;
-    /* Subtle glow so the rune feels intentional */
-    text-shadow: 0 0 12px rgba(176, 138, 74, 0.18);
+    /* Subtle glow so the mark feels intentional */
+    filter: drop-shadow(0 0 8px rgba(176, 138, 74, 0.18));
+    display: inline-flex;
+    align-items: center;
   }
 
   .brand-version {
@@ -531,9 +534,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <BrandContainer $collapsed={collapsed}>
           <BrandPrimary $collapsed={collapsed}>
             {collapsed ? (
-              <>B<span className="brand-rune" aria-hidden="true">ᛒ</span></>
+              <BifrostLogo size={26} stroke={1.8} aria-label="Bifrost" />
             ) : (
-              <>Bifrost<span className="brand-rune" aria-hidden="true">ᛒ</span><span className="brand-version">beta 1</span></>
+              <>
+                Bifrost
+                <span className="brand-rune" aria-hidden="true">
+                  <BifrostLogo size={22} stroke={1.8} title="" />
+                </span>
+                <span className="brand-version">beta 1</span>
+              </>
             )}
           </BrandPrimary>
           {!collapsed && <BrandSecondary>AI-kompliance · Kalundborg</BrandSecondary>}
@@ -631,7 +640,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
       {!collapsed && (
         <SidebarFooter>
           <FooterRune>
-            <span className="footer-rune-mark" aria-hidden="true">ᛒ</span>
+            <span className="footer-rune-mark" aria-hidden="true">
+              <BifrostLogo size={14} stroke={1.5} title="" />
+            </span>
             Bifrost · beta 1
           </FooterRune>
           <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>

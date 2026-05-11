@@ -6,6 +6,7 @@ import NewsSection from '../components/NewsSection';
 import DataOverview from '../components/data-overview/DataOverview';
 import aiActDidYouKnowFacts from '../data/aiActDidYouKnow';
 import { Term } from '../components/ui';
+import BifrostLogo from '../components/BifrostLogo';
 
 /**
  * Bifrost — HomePage (Northern Modern, Design system v2)
@@ -71,6 +72,9 @@ const Wordmark = styled.div`
     color: ${(p) => p.theme.colors.bronze};
     font-size: 1.4rem;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    margin: 0 4px;
   }
 
   .ver {
@@ -449,7 +453,9 @@ const HomePage = () => {
         <HeroPrimary>
           <Wordmark>
             <span>Bifrost</span>
-            <span className="rune" aria-hidden="true">ᛒ</span>
+            <span className="rune" aria-hidden="true">
+              <BifrostLogo size={28} stroke={1.8} title="" />
+            </span>
             <span className="ver">beta 1 · Kalundborg</span>
           </Wordmark>
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
