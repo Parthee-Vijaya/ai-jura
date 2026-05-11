@@ -14,8 +14,6 @@ Disse var spredt i main.py — samlet her for nemmere drift-overblik og
 isoleret test.
 """
 
-from __future__ import annotations
-
 import asyncio
 import time
 from datetime import datetime, UTC

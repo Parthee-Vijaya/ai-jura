@@ -8,8 +8,6 @@ Bygger på top af de eksisterende database-laget (cases, evidence,
 evidence_comments) — ingen state i routeren selv.
 """
 
-from __future__ import annotations
-
 from datetime import datetime, UTC, timedelta
 
 from fastapi import APIRouter

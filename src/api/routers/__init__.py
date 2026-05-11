@@ -35,7 +35,9 @@ def register_routers(app: FastAPI) -> None:
     Rækkefølge er signifikant for præcedens — mere specifikke prefixes først.
     """
     # Importér her (ikke top-level) så vi undgår circular imports
-    from src.api.routers import admin, dashboard
+    from src.api.routers import admin, dashboard, skabeloner, comments
 
     app.include_router(admin.router)
     app.include_router(dashboard.router)
+    app.include_router(skabeloner.router)
+    app.include_router(comments.router)
