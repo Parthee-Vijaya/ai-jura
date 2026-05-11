@@ -241,8 +241,20 @@ Det er macOS sandbox. Giv `/bin/bash` Full Disk Access manuelt:
 - LaunchAgent (kopiér manuelt fra `scripts/com.bifrost.backup.plist`)
 - macOS Full Disk Access til bash
 
-## Alternative deploys
+## Demo til eksterne stakeholders
 
-Hvis du ikke vil køre på Mac, se [`docs/RENDER_DEPLOY.md`](RENDER_DEPLOY.md) for
-staging/demo-deploy til Render. **Bemærk**: Render egner sig IKKE til produktion
-med rigtig kommunal persondata pga. data-residency + LLM-afhængighed.
+Hvis du vil vise Bifrost til nogen uden for kommunens netværk (KL, jurist,
+anden kommune): brug Tailscale i stedet for at deploye til cloud.
+
+```bash
+# Inviter en specifik person til din Tailscale-tailnet
+tailscale invite <email>
+# De installerer Tailscale på deres enhed og får adgang til:
+# http://<din-tailscale-ip>:8090
+```
+
+Fordele frem for cloud-deploy:
+- Data forbliver i kommunens kontrol (ingen ny DPIA krævet)
+- Samme produktion-instans, ingen drift mellem staging/prod
+- $0/måned
+- Du kan tilbagetrække invite når demo er slut
