@@ -120,8 +120,6 @@ Auto-opdateres hvert minut.
 
 ### Videnbase — 102 termer, auto-opdateret
 
-![Videnbase](docs/screenshots/08-videnbase.png)
-
 Levende ordbog over AI-jura og kommunal compliance, fra grundbegreber som
 "DPIA" og "Bilag III" til specifikke termer som "FRIA" og "GPAI".
 Hvert term er kategoriseret og linket til myndighedskilden. Et ugentligt
