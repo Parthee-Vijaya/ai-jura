@@ -140,19 +140,40 @@ cd frontend && npm install
 
 ### Automatisk daglig backup (anbefalet)
 
-Bifrost shipper med en backup-pipeline der kører dagligt kl. 02:30 via LaunchAgent:
+Bifrost shipper med en backup-pipeline der kører dagligt kl. 02:30 via LaunchAgent.
+
+**Vigtig macOS-permission**: backup-scriptet skal læse Bifrosts data-mappe på
+`~/Desktop`. macOS' default sandbox blokerer LaunchAgents fra at tilgå
+Desktop, så du skal manuelt give Full Disk Access til:
+
+1. Åbn **System Settings → Privacy & Security → Full Disk Access**
+2. Klik **+** og tilføj:
+   - `/bin/bash` (eller `/opt/homebrew/bin/bash` hvis du bruger homebrew bash)
+3. Toggle ON ved siden af bash
+
+Uden dette vil `tar` fejle med `Operation not permitted` når LaunchAgent kører
+(manual run fra terminal virker fint).
+
+
 
 ```bash
-# 1. Tilpas paths i scripts/com.bifrost.backup.plist hvis nødvendigt
+# 1. Kopier scripts til en sti UDEN FOR Desktop (sandbox-issue)
+mkdir -p ~/.bifrost/scripts
+cp scripts/backup.sh scripts/backup-restore-test.sh ~/.bifrost/scripts/
+chmod +x ~/.bifrost/scripts/*.sh
+
 # 2. Installer LaunchAgent
 cp scripts/com.bifrost.backup.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.bifrost.backup.plist
 
-# 3. Test kør manuelt
+# 3. (Manuel macOS-step) Giv bash Full Disk Access — se ovenfor
+
+# 4. Test kør manuelt
 launchctl kickstart -k gui/$(id -u)/com.bifrost.backup
 
-# 4. Følg loggen
+# 5. Følg loggen
 tail -f ~/Backups/Bifrost/backup.log
+tail -f ~/Backups/Bifrost/launchd.stderr.log
 ```
 
 Hvert døgn produceres en versioneret mappe `~/Backups/Bifrost/bifrost-YYYY-MM-DD/`:

@@ -6,14 +6,20 @@
   Installation:
     1. Tilpas paths i denne fil hvis Bifrost ikke ligger i den default-sti.
     2. Hvis du har en ekstern disk/NAS, sæt EnvironmentVariables/BACKUP_EXTERNAL_PATH.
-    3. Kopiér til ~/Library/LaunchAgents/:
+    3. Kopiér scripts til ~/.bifrost/scripts/ (macOS sandbox blokerer LaunchAgents
+       fra at køre scripts på ~/Desktop):
+         mkdir -p ~/.bifrost/scripts
+         cp scripts/backup.sh scripts/backup-restore-test.sh ~/.bifrost/scripts/
+         chmod +x ~/.bifrost/scripts/*.sh
+    4. Kopiér plist til LaunchAgents:
          cp scripts/com.bifrost.backup.plist ~/Library/LaunchAgents/
-    4. Indlæs:
+    5. Indlæs:
          launchctl load ~/Library/LaunchAgents/com.bifrost.backup.plist
-    5. Test manuelt:
+    6. Test manuelt:
          launchctl kickstart -k gui/$(id -u)/com.bifrost.backup
-    6. Log på fejl:
+    7. Log på fejl:
          tail -f ~/Backups/Bifrost/backup.log
+         tail -f ~/Backups/Bifrost/launchd.stderr.log
 
   Kører dagligt kl. 02:30 (efter 02:00 retention-sweep men før 03:00 KB-update).
 -->
@@ -24,7 +30,7 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/parthee/Desktop/Claude/projekter/aktive/judge-dredd/scripts/backup.sh</string>
+        <string>/Users/parthee/.bifrost/scripts/backup.sh</string>
     </array>
 
     <key>StartCalendarInterval</key>

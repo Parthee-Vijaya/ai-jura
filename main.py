@@ -191,6 +191,26 @@ async def lifespan(app: FastAPI):
         name='Weekly EU AI Act checker sync',
         replace_existing=True,
     )
+
+    # Notification digest — dagligt kl. 08:00 til konfigurerede modtagere.
+    # Opt-in via NOTIFICATION_DIGEST_ENABLED=true + RECIPIENT i .env.
+    def scheduled_notification_digest():
+        from src.database.connection import SessionLocal
+        from src.services.notification_digest import send_digest_if_enabled
+        db = SessionLocal()
+        try:
+            send_digest_if_enabled(db)
+        finally:
+            db.close()
+
+    kb_scheduler.add_job(
+        scheduled_notification_digest,
+        CronTrigger(hour=8, minute=0),
+        id='notification_digest',
+        name='Daily notification digest email',
+        replace_existing=True,
+    )
+
     kb_scheduler.start()
     logger.info("Knowledge base scheduler started - weekly updates Monday at 03:00")
     logger.info("AI projects sync scheduled - weekly Monday at 03:30")
@@ -915,6 +935,84 @@ async def v3_admin_errors(limit: int = 50):
         limit = 500
     items = recent_errors(limit=limit)
     return {"count": len(items), "errors": items}
+
+
+@app.post("/api/v3/admin/rag/rebuild-index")
+@limiter.limit(ADMIN_WRITE)
+async def v3_admin_rag_rebuild(
+    request: Request,
+    response: Response,
+):
+    """Genopbyg lov-RAG-embeddings-indekset.
+
+    Kører `LawRAG.build()` der embedder hver lov-paragraf og persisterer
+    til `data/law_embeddings.json`. Køres når:
+      - Nye love er tilføjet under `data/laws/`
+      - Embedding-model er ændret (EMBEDDING_MODEL env)
+      - Index er korrupt eller for gammel
+
+    Vigtigt: en build mod LM Studio eller OpenAI tager 1-5 min for de
+    ~7000 chunks vi pt. har. Endpoint kører blokerende — overvej at køre
+    via terminal hvis du har mange chunks.
+
+    Returnerer summary: chunks, provider, model, build_seconds.
+    """
+    from src.services.law_rag import LawRAG
+    import time
+
+    t0 = time.monotonic()
+    try:
+        rag = LawRAG()
+        result = rag.build()
+        elapsed = round(time.monotonic() - t0, 1)
+        return {
+            "status": "ok",
+            "build_seconds": elapsed,
+            **result,
+        }
+    except Exception as exc:
+        raise AppError(
+            "rag_rebuild_failed",
+            f"Embedding-rebuild fejlede: {exc}",
+            status=500,
+            hint="Tjek at OPENAI_API_KEY / LM_STUDIO_BASE_URL er sat og at modellen er loadet",
+        )
+
+
+@app.post("/api/v3/admin/cache/invalidate")
+@limiter.limit(ADMIN_WRITE)
+async def v3_admin_cache_invalidate(
+    request: Request,
+    response: Response,
+    scope: str = "all",
+):
+    """Manuel cache-invalidering.
+
+    scope:
+      - "memory" — kun in-memory LRU (evidens-templates, KB-stats)
+      - "disk" — disk-baseret cache (news, web research)
+      - "all" — begge
+
+    Bruges når:
+      - En evidens-template er ændret manuelt i kode + man vil tvinge reload
+      - Stale news-feed skal rejektes
+      - Generel troubleshooting
+    """
+    from src.cache.memory_cache import clear_memory_cache
+    from src.cache.disk_cache import clear_all_disk_cache
+
+    cleared = {"memory": 0, "disk": 0}
+    if scope in ("memory", "all"):
+        clear_memory_cache()
+        cleared["memory"] = 1
+    if scope in ("disk", "all"):
+        cleared["disk"] = clear_all_disk_cache()
+
+    return {
+        "scope": scope,
+        "cleared": cleared,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
 
 
 @app.get("/api/v3/admin/llm-health")

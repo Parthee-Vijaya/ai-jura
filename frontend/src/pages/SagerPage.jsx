@@ -482,6 +482,76 @@ const SagerPage = () => {
   const [dragOverColumn, setDragOverColumn] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
 
+  // Filtre — alle gemmes i query-string så filtrering er delbar via link
+  // Bulk-selection — Set af case.id (db-id, ikke case_id) der er valgt
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkTargetStatus, setBulkTargetStatus] = useState('');
+
+  const toggleSelected = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const bulkTransition = async () => {
+    if (!bulkTargetStatus || selectedIds.size === 0) return;
+    const targets = Array.from(selectedIds);
+    const note = `Bulk-flyt til ${bulkTargetStatus} (${targets.length} sager)`;
+    // Kør sekventielt for at undgå at hammere backend rate-limit
+    let ok = 0;
+    let fail = 0;
+    for (const id of targets) {
+      try {
+        await transitionCase({ id, new_status: bulkTargetStatus, note });
+        ok += 1;
+      } catch (err) {
+        fail += 1;
+        console.warn('bulk transition failed', id, err);
+      }
+    }
+    setSelectedIds(new Set());
+    setBulkTargetStatus('');
+    queryClient.invalidateQueries('v3-cases');
+    if (fail > 0) {
+      alert(`Flyttede ${ok} sager. ${fail} fejlede — se konsol.`);
+    }
+  };
+
+  const [searchText, setSearchText] = useState('');
+  const [filterVerdict, setFilterVerdict] = useState('');     // GO|BETINGET-GO|NO-GO|''
+  const [filterIndkoeb, setFilterIndkoeb] = useState('');     // indkoeb|udvikling|hybrid|''
+  const [filterAssignee, setFilterAssignee] = useState('');   // text-prefix-match
+
+  // Hent unikke assignees fra cases for autocomplete-listen
+  const assigneeOptions = useMemo(() => {
+    const set = new Set();
+    cases.forEach((c) => { if (c.assigned_to) set.add(c.assigned_to); });
+    return Array.from(set).sort();
+  }, [cases]);
+
+  // Aplikér filtre BEFORE grouping så kanban-tællere matcher
+  const filteredCases = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    return cases.filter((c) => {
+      if (q) {
+        const haystack = [
+          c.case_id, c.title, c.notes,
+          c.intake_state?.behov, c.intake_state?.sagsnummer,
+        ].filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      if (filterVerdict && c.last_aggregate_status !== filterVerdict) return false;
+      if (filterIndkoeb && c.intake_state?.indkoeb_eller_udvikling !== filterIndkoeb) return false;
+      if (filterAssignee && (c.assigned_to || '').toLowerCase().indexOf(filterAssignee.toLowerCase()) === -1) return false;
+      return true;
+    });
+  }, [cases, searchText, filterVerdict, filterIndkoeb, filterAssignee]);
+
+  const hasActiveFilter = !!(searchText || filterVerdict || filterIndkoeb || filterAssignee);
+
   const createMutation = useMutation(createCase, {
     onSuccess: () => {
       queryClient.invalidateQueries('v3-cases');
@@ -499,11 +569,11 @@ const SagerPage = () => {
   const grouped = useMemo(() => {
     const out = {};
     STATUSES.forEach((s) => { out[s.id] = []; });
-    cases.forEach((c) => {
+    filteredCases.forEach((c) => {
       if (out[c.status]) out[c.status].push(c);
     });
     return out;
-  }, [cases]);
+  }, [filteredCases]);
 
   const handleDragStart = (e, caseId) => {
     setDraggingId(caseId);
@@ -597,12 +667,223 @@ const SagerPage = () => {
       {!isLoading && cases.length === 0 ? (
         <GettingStarted />
       ) : (
-        <HelpHint>
-          <strong>Klik et kort</strong> for at åbne sagen — kladder fortsætter
-          i indkøbsprocessen, vurderede åbner historikken, remediation åbner
-          vurderingsmotoren. <strong>Træk i prikkerne</strong> <kbd>⋮⋮</kbd> i
-          øverste højre hjørne for at flytte sagen til en anden kolonne.
-        </HelpHint>
+        <>
+          <div style={{
+            display: 'flex',
+            gap: 8,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            padding: '0.65rem 0.9rem',
+            background: '#f5f4ef',
+            border: '1px solid #d8d3c5',
+            borderRadius: 6,
+            marginBottom: '1rem',
+          }}>
+            <input
+              type="search"
+              placeholder="Søg sager (id, titel, behov, sagsnummer…)"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{
+                flex: '1 1 240px',
+                minWidth: 200,
+                padding: '0.4rem 0.65rem',
+                border: '1px solid #d8d3c5',
+                borderRadius: 4,
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+              }}
+              aria-label="Søg sager"
+            />
+            <select
+              value={filterVerdict}
+              onChange={(e) => setFilterVerdict(e.target.value)}
+              aria-label="Filter på verdict"
+              style={{
+                padding: '0.4rem 0.55rem',
+                border: '1px solid #d8d3c5',
+                borderRadius: 4,
+                background: 'white',
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+              }}
+            >
+              <option value="">Alle verdicts</option>
+              <option value="GO">GO</option>
+              <option value="BETINGET-GO">BETINGET-GO</option>
+              <option value="NO-GO">NO-GO</option>
+            </select>
+            <select
+              value={filterIndkoeb}
+              onChange={(e) => setFilterIndkoeb(e.target.value)}
+              aria-label="Filter på indkøb/udvikling"
+              style={{
+                padding: '0.4rem 0.55rem',
+                border: '1px solid #d8d3c5',
+                borderRadius: 4,
+                background: 'white',
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+              }}
+            >
+              <option value="">Indkøb og udvikling</option>
+              <option value="indkoeb_faerdig_loesning">Indkøb (færdig)</option>
+              <option value="skraeddersyet_udvikling">Skræddersyet udvikling</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+            <input
+              type="text"
+              list="assignee-options"
+              placeholder="Ansvarlig…"
+              value={filterAssignee}
+              onChange={(e) => setFilterAssignee(e.target.value)}
+              style={{
+                flex: '0 1 160px',
+                padding: '0.4rem 0.55rem',
+                border: '1px solid #d8d3c5',
+                borderRadius: 4,
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+              }}
+              aria-label="Filter på ansvarlig"
+            />
+            <datalist id="assignee-options">
+              {assigneeOptions.map((a) => <option key={a} value={a} />)}
+            </datalist>
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchText('');
+                  setFilterVerdict('');
+                  setFilterIndkoeb('');
+                  setFilterAssignee('');
+                }}
+                title="Ryd alle filtre"
+                style={{
+                  background: 'transparent',
+                  color: '#a02020',
+                  border: '1px solid #d8d3c5',
+                  borderRadius: 4,
+                  padding: '0.4rem 0.7rem',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕ Ryd
+              </button>
+            )}
+            <span style={{
+              marginLeft: 'auto',
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              color: '#5b6573',
+            }}>
+              {hasActiveFilter
+                ? `${filteredCases.length}/${cases.length} sager`
+                : `${cases.length} sager i alt`}
+            </span>
+          </div>
+
+          {selectedIds.size > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: 8,
+              alignItems: 'center',
+              padding: '0.65rem 0.9rem',
+              background: '#0d2e54',
+              color: 'white',
+              borderRadius: 6,
+              marginBottom: '1rem',
+              flexWrap: 'wrap',
+            }}>
+              <strong style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                {selectedIds.size} sag{selectedIds.size === 1 ? '' : 'er'} valgt
+              </strong>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span style={{ fontSize: '0.82rem' }}>Flyt til status:</span>
+              <select
+                value={bulkTargetStatus}
+                onChange={(e) => setBulkTargetStatus(e.target.value)}
+                style={{
+                  padding: '0.35rem 0.5rem',
+                  border: '1px solid white',
+                  borderRadius: 4,
+                  fontFamily: 'inherit',
+                  fontSize: '0.82rem',
+                  background: 'white',
+                  color: '#0d2e54',
+                }}
+                aria-label="Vælg ny status"
+              >
+                <option value="">— vælg —</option>
+                {STATUSES.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={bulkTransition}
+                disabled={!bulkTargetStatus}
+                style={{
+                  background: '#6e5527',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '0.4rem 0.85rem',
+                  cursor: bulkTargetStatus ? 'pointer' : 'not-allowed',
+                  opacity: bulkTargetStatus ? 1 : 0.5,
+                  fontFamily: 'inherit',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                }}
+              >
+                Anvend
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set(filteredCases.map((c) => c.id)))}
+                style={{
+                  background: 'transparent',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: 4,
+                  padding: '0.4rem 0.65rem',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                }}
+              >
+                Vælg alle synlige
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedIds(new Set())}
+                style={{
+                  background: 'transparent',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: 4,
+                  padding: '0.4rem 0.65rem',
+                  cursor: 'pointer',
+                  fontSize: '0.78rem',
+                  marginLeft: 'auto',
+                }}
+              >
+                ✕ Ryd valg
+              </button>
+            </div>
+          )}
+
+          <HelpHint>
+            <strong>Klik et kort</strong> for at åbne sagen — kladder fortsætter
+            i indkøbsprocessen, vurderede åbner historikken, remediation åbner
+            vurderingsmotoren. <strong>Træk i prikkerne</strong> <kbd>⋮⋮</kbd> i
+            øverste højre hjørne for at flytte sagen til en anden kolonne.
+            <br />
+            <strong>Vælg flere</strong> via checkbox øverst på hvert kort for at
+            flytte/arkivere bulk.
+          </HelpHint>
+        </>
       )}
 
       <KanbanGrid>
@@ -647,7 +928,11 @@ const SagerPage = () => {
                     role="link"
                     tabIndex={0}
                     onDragStart={(e) => handleDragStart(e, c.id)}
-                    onClick={() => navigate(targetPath)}
+                    onClick={(e) => {
+                      // Ignorer click hvis checkbox blev klikket
+                      if (e.target.closest('.bulk-checkbox')) return;
+                      navigate(targetPath);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -655,8 +940,30 @@ const SagerPage = () => {
                       }
                     }}
                     title={`${cardCtaLabel(c)} — ${c.case_id}`}
+                    style={selectedIds.has(c.id) ? { boxShadow: '0 0 0 2px #0d2e54' } : undefined}
                   >
-                    <CardCaseId>
+                    <label
+                      className="bulk-checkbox"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: 2,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(c.id)}
+                        onChange={() => toggleSelected(c.id)}
+                        aria-label={`Vælg sag ${c.case_id}`}
+                        style={{ cursor: 'pointer', width: 14, height: 14 }}
+                      />
+                    </label>
+                    <CardCaseId style={{ paddingLeft: 22 }}>
                       {c.case_id}
                       {progress && ` · trin ${progress.step}/4`}
                     </CardCaseId>
