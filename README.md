@@ -344,15 +344,69 @@ cd frontend && npm test -- --watch=false
 
 ## Roadmap (beta 2 → 1.0)
 
-- [x] 28 curerede evidens-skabeloner (P1+P2 leveret 2026-05-10)
+### Leveret i beta 2 (2026-05-10 → 11)
+
+**Produkt + UX**
+- [x] 28 curerede evidens-skabeloner (P1+P2)
 - [x] 3-trins proces med auto-save + sag-detalje
-- [x] Portefølje-dashboard med heatmap + blockers + SLA
-- [x] Skabelon-bibliotek + per-felt kommentarer
-- [x] Glossary-tooltips (30+ termer)
-- [ ] WCAG 2.1 AA accessibility-audit
-- [ ] Cmd+K faceted search med saved searches
-- [ ] Multi-bruger med RBAC (rolle-baseret adgang)
+- [x] Portefølje-dashboard med heatmap + top blockers + SLA-lister
+- [x] Skabelon-bibliotek (genbrug godkendte evidens på tværs af sager)
+- [x] Per-felt kommentarer + timeline-integration
+- [x] Glossary-tooltips (30+ fagudtryk: DPIA, FRIA, Bilag III, m.fl.)
+- [x] "Næste skridt"-cue på sag-detalje (8 smart-states)
+- [x] Onboarding/getting-started på tom sagsliste
+- [x] Per-evidens print-view (Cmd+P → PDF)
+- [x] Radial progress + tid-estimat
+- [x] Toast-notifikationer med kontekst (success/info/error)
+- [x] Lady Justice-vægt-logo (erstatter Bluetooth-lignende rune)
+- [x] Bulk-handlinger på sager (markeret + flyt status)
+- [x] Faceted filter på Sager-kanban (verdict, indkøb, ansvarlig)
+- [x] CSV-eksport (sager, audit-log, portefølje)
+
+**Drift + sikkerhed**
+- [x] WCAG 2.1 AA accessibility-fix (6/6 hovedsider passerer axe-core)
+- [x] Modul 5 — Backup-automation (LaunchAgent + rsync + restore-test)
+- [x] Modul 6 — LLM retry (tenacity) + circuit-breaker (closed/half-open/open)
+- [x] Modul 7 — Standardiseret error envelope (`{error: {code, message, details, hint, trace_id, timestamp}}`)
+- [x] Modul 8 — Rate limiting (slowapi) + fail-fast config-validation
+- [x] Email-digest til notifikationer (opt-in, daglig 08:00)
+- [x] Admin endpoints: cache-invalidation + RAG rebuild-index + LLM breaker-reset
+- [x] CI=true build green (frontend)
+
+**Engineering**
+- [x] Modul 9 (delvist) — 6 routers (admin, dashboard, skabeloner, comments, evidens, notifications)
+- [x] Test coverage Phase A: 23% → 28% (kerne-regelmotor 0% → 78-90%)
+- [x] 349 tests passerer (+91 nye)
+
+### Næste mod 1.0
+
+**Kritisk vej til pilot**
+- [ ] DPIA-validering hos jurist/DPO (eksternt afhængigt)
 - [ ] Pilot med 3 forvaltninger (børn, beskæftigelse, sundhed)
+- [ ] Multi-bruger med RBAC (rolle-baseret adgang) — spærrer reel kommunal drift
+- [ ] Backup-LaunchAgent: macOS Full Disk Access til bash (manuel step)
+
+**Test + robusthed**
+- [ ] Test coverage Phase B: services-laget → ~43% (~2 dage)
+- [ ] Test coverage Phase C: agents + signal_extractor → ~53% (~2 dage)
+- [ ] Test coverage Phase D: case_report_generator + observability → ~60%+ (~1 dag)
+- [ ] Loadtest (10+ samtidige sagsbehandlere)
+- [ ] SMTP-flow verificering
+
+**Engineering-gæld**
+- [ ] Modul 9 resterende routers (cases, assessments, compliance, search, law, news, research, system, eu_checker, dsar, misc) — ~80 endpoints, 2-3 dage
+- [ ] Frontend exhaustive-deps cleanup
+- [ ] Mobile UX-test (375×812)
+
+**Nice-to-have**
+- [ ] Cmd+K faceted search med saved searches
+- [ ] Bias-monitoring dashboard
+- [ ] Slack-integration til notifikationer
+- [ ] Embedding-rebuild auto-trigger ved nye love
 
 Status: **beta 2** — kører internt på Mac Studio bag Tailscale.
 Klar til intern pilot, ikke til ekstern publicering.
+
+Se også:
+- [`docs/COVERAGE.md`](docs/COVERAGE.md) — test-coverage detaljer + Phase B-D plan
+- [`docs/MODUL_9_REFAKTOR.md`](docs/MODUL_9_REFAKTOR.md) — refaktor-status + roadmap
