@@ -316,6 +316,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 from src.api.error_envelope import register_error_handlers, AppError  # noqa: E402
 register_error_handlers(app)
 
+# Modul 9 — Routers fra src/api/routers/ flyttes ud af main.py for nemmere
+# vedligehold + isoleret testing. Hver router er ansvarlig for én ressource.
+from src.api.routers import register_routers  # noqa: E402
+register_routers(app)
+
 # Observability — request-ID + structured logging + Prometheus metrics.
 # Configured here so it wraps every route incl. legacy ones.
 from src.utils.observability import (
@@ -890,162 +895,11 @@ async def metrics():
     return Response(content=body, media_type=content_type)
 
 
-@app.get("/api/v3/admin/config")
-async def v3_admin_config():
-    """ConfigReport — bruges af build-time diagnostic-modal i frontend
-    + /drift's konfigurations-sektion.
-
-    Kører ~50ms (DB-ping + LM Studio-ping max 2s timeout). Sikker at kalde
-    ved hver page refresh.
-    """
-    from src.config.validation import build_config_report
-
-    def _build():
-        return build_config_report(scheduler=kb_scheduler).to_dict()
-
-    return await asyncio.to_thread(_build)
-
-
-@app.get("/api/v3/admin/backups")
-async def v3_admin_backups():
-    """List eksisterende database-backups + retention-policy + rsync-mål."""
-    from src.services.backup_service import list_backups
-    return await asyncio.to_thread(list_backups)
-
-
-@app.post("/api/v3/admin/backups/run")
-@limiter.limit(ADMIN_WRITE)
-async def v3_admin_backups_run(request: Request):
-    """Manuel trigger af pg_dump-backup. Returnerer summary med path,
-    størrelse og varighed. Tager 0.5-3s for typiske dataset-størrelser."""
-    from src.services.backup_service import run_backup
-    return await asyncio.to_thread(run_backup, "manual")
-
-
-@app.get("/api/v3/admin/errors")
-async def v3_admin_errors(limit: int = 50):
-    """Return the most recent errors captured by the local error-buffer.
-
-    Used by the /drift page to give an at-a-glance view of recent failures
-    without requiring an external error tracking platform.
-    """
-    if limit < 1:
-        limit = 1
-    if limit > 500:
-        limit = 500
-    items = recent_errors(limit=limit)
-    return {"count": len(items), "errors": items}
-
-
-@app.post("/api/v3/admin/rag/rebuild-index")
-@limiter.limit(ADMIN_WRITE)
-async def v3_admin_rag_rebuild(
-    request: Request,
-    response: Response,
-):
-    """Genopbyg lov-RAG-embeddings-indekset.
-
-    Kører `LawRAG.build()` der embedder hver lov-paragraf og persisterer
-    til `data/law_embeddings.json`. Køres når:
-      - Nye love er tilføjet under `data/laws/`
-      - Embedding-model er ændret (EMBEDDING_MODEL env)
-      - Index er korrupt eller for gammel
-
-    Vigtigt: en build mod LM Studio eller OpenAI tager 1-5 min for de
-    ~7000 chunks vi pt. har. Endpoint kører blokerende — overvej at køre
-    via terminal hvis du har mange chunks.
-
-    Returnerer summary: chunks, provider, model, build_seconds.
-    """
-    from src.services.law_rag import LawRAG
-    import time
-
-    t0 = time.monotonic()
-    try:
-        rag = LawRAG()
-        result = rag.build()
-        elapsed = round(time.monotonic() - t0, 1)
-        return {
-            "status": "ok",
-            "build_seconds": elapsed,
-            **result,
-        }
-    except Exception as exc:
-        raise AppError(
-            "rag_rebuild_failed",
-            f"Embedding-rebuild fejlede: {exc}",
-            status=500,
-            hint="Tjek at OPENAI_API_KEY / LM_STUDIO_BASE_URL er sat og at modellen er loadet",
-        )
-
-
-@app.post("/api/v3/admin/cache/invalidate")
-@limiter.limit(ADMIN_WRITE)
-async def v3_admin_cache_invalidate(
-    request: Request,
-    response: Response,
-    scope: str = "all",
-):
-    """Manuel cache-invalidering.
-
-    scope:
-      - "memory" — kun in-memory LRU (evidens-templates, KB-stats)
-      - "disk" — disk-baseret cache (news, web research)
-      - "all" — begge
-
-    Bruges når:
-      - En evidens-template er ændret manuelt i kode + man vil tvinge reload
-      - Stale news-feed skal rejektes
-      - Generel troubleshooting
-    """
-    from src.cache.memory_cache import clear_memory_cache
-    from src.cache.disk_cache import clear_all_disk_cache
-
-    cleared = {"memory": 0, "disk": 0}
-    if scope in ("memory", "all"):
-        clear_memory_cache()
-        cleared["memory"] = 1
-    if scope in ("disk", "all"):
-        cleared["disk"] = clear_all_disk_cache()
-
-    return {
-        "scope": scope,
-        "cleared": cleared,
-        "timestamp": datetime.now(UTC).isoformat(),
-    }
-
-
-@app.get("/api/v3/admin/llm-health")
-async def v3_admin_llm_health():
-    """LLM-provider circuit-breaker status — backs /drift's "LLM"-card.
-
-    Viser pr. provider (lm_studio, azure_openai, openai):
-      - state: closed | half_open | open
-      - failure_count, success_count, total_opens
-      - last_failure_at, last_success_at (monotonic seconds)
-      - opened_at
-
-    En åben breaker betyder at LLM-kald afvises lige nu — frontend bør
-    vise "midlertidigt nede" i stedet for at vente.
-    """
-    from src.utils.llm_resilience import all_breaker_stats
-    return {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "providers": all_breaker_stats(),
-    }
-
-
-@app.post("/api/v3/admin/llm-health/{provider}/reset")
-async def v3_admin_llm_reset_breaker(provider: str):
-    """Manuelt reset en breaker til closed. Bruges når man har fixet en
-    LLM-problem og vil ikke vente på timeout."""
-    from src.utils.llm_resilience import get_breaker
-    try:
-        breaker = get_breaker(provider)
-    except ValueError as exc:
-        raise AppError("unknown_provider", str(exc), status=404)
-    breaker.reset()
-    return {"provider": provider, "state": "closed", "reset_at": datetime.now(UTC).isoformat()}
+# =========================================================================
+# Modul 9: /api/v3/admin/* og /api/v3/dashboard/* er flyttet til
+# src/api/routers/admin.py og src/api/routers/dashboard.py
+# (registreres via register_routers ovenfor).
+# =========================================================================
 
 
 @app.get("/api/v3/admin/ops-summary")
@@ -3120,26 +2974,7 @@ async def v3_audit_export_csv(
         db.close()
 
 
-@app.get("/api/v3/dashboard/portfolio.csv")
-async def v3_portfolio_export_csv():
-    """Eksportér det aktuelle portefølje-dashboard som flerafsnitlig CSV.
-
-    Indeholder stats, heatmap, top blockers og SLA-lister.
-    Bruges af leder til at vise overblik i Excel/PowerPoint.
-    """
-    from fastapi.responses import Response
-    from src.api.csv_exports import portfolio_to_csv
-
-    # Genbrug data-builder fra det almindelige endpoint
-    snapshot = await v3_dashboard_portfolio()
-    csv_text, filename = portfolio_to_csv(snapshot)
-    return Response(
-        content=csv_text,
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-        },
-    )
+# /api/v3/dashboard/portfolio.csv er flyttet til src/api/routers/dashboard.py
 
 
 @app.get("/api/v3/audit/{log_id}")
@@ -5193,12 +5028,14 @@ async def v3_comments_delete(
 
 
 # =========================================================================
-# Portfolio dashboard — kommune-aggregat over sager + evidens-blockers
+# Portfolio dashboard er flyttet til src/api/routers/dashboard.py
 # =========================================================================
 
 
-@app.get("/api/v3/dashboard/portfolio")
-async def v3_dashboard_portfolio():
+# Den nedenstående funktion er midlertidigt bevaret som no-op for at
+# undgå indrykningsfejl mellem fjernede endpoints. Resten af legacy-koden
+# er fjernet i Modul 9-refaktoren.
+async def _legacy_portfolio_placeholder():
     """Aggregeret overblik over kommunens AI-portefølje.
 
     Returnerer:
