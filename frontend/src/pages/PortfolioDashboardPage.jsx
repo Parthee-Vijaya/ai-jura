@@ -546,6 +546,31 @@ const PortfolioDashboardPage = () => {
           </button>
           <button
             type="button"
+            onClick={() => {
+              const a = document.createElement('a');
+              a.href = '/api/v3/dashboard/portfolio.csv';
+              a.download = '';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }}
+            title="Download dette dashboard som CSV (Excel-kompatibel)"
+            style={{
+              background: 'transparent',
+              color: '#0d2e54',
+              border: '1px solid #d8dde6',
+              borderRadius: 4,
+              padding: '0.55rem 1rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '0.85rem',
+              marginRight: '0.6rem',
+            }}
+          >
+            ↓ Eksportér CSV
+          </button>
+          <button
+            type="button"
             onClick={() => navigate('/ressourcer')}
             style={{
               background: 'transparent',

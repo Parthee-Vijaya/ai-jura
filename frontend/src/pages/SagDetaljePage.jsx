@@ -682,9 +682,36 @@ const SagDetaljePage = () => {
 
         {activeTab === 'audit' && (
           <>
-            <p style={{ fontSize: '0.92rem', color: '#777', marginTop: 0, marginBottom: '1rem' }}>
-              Komplet audit-trail af status-skift, intake-opdateringer og evidens-events. Append-only — kan ikke redigeres.
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
+              <p style={{ fontSize: '0.92rem', color: '#5b6573', margin: 0 }}>
+                Komplet audit-trail af status-skift, intake-opdateringer og evidens-events. Append-only — kan ikke redigeres.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = `/api/v3/audit/export.csv?case_id=${encodeURIComponent(case_id)}`;
+                  a.download = '';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                }}
+                title="Download vurderings-audit for denne sag som CSV"
+                style={{
+                  background: 'transparent',
+                  color: '#0d2e54',
+                  border: '1px solid #d8d3c5',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '0.82rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ↓ Audit-CSV
+              </button>
+            </div>
             {events.length === 0 ? (
               <EmptyState compact title="Ingen audit-events" description="Sagen har ingen registrerede events endnu." />
             ) : (

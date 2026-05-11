@@ -554,9 +554,38 @@ const SagerPage = () => {
             statusovergang — hvert skift gemmes i sagens audit-trail.
           </Lede>
         </div>
-        <PrimaryButton type="button" onClick={() => setShowCreate(true)}>
-          + Ny sag
-        </PrimaryButton>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={() => {
+              const a = document.createElement('a');
+              a.href = '/api/v3/cases/export.csv';
+              a.download = '';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }}
+            title="Download alle sager som CSV (Excel-kompatibel)"
+            style={{
+              background: 'transparent',
+              color: '#0d2e54',
+              border: '1px solid #d8d3c5',
+              padding: '0.55rem 0.9rem',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '0.85rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+          >
+            ↓ CSV
+          </button>
+          <PrimaryButton type="button" onClick={() => setShowCreate(true)}>
+            + Ny sag
+          </PrimaryButton>
+        </div>
       </Header>
 
       {isError && (

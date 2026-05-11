@@ -2946,6 +2946,104 @@ async def v3_audit_list(
         db.close()
 
 
+# =========================================================================
+# CSV-eksport — revisor-, myndigheds- og leder-overblik
+# =========================================================================
+
+
+@app.get("/api/v3/cases/export.csv")
+async def v3_cases_export_csv(limit: int = 500):
+    """Eksportér alle sager som CSV (UTF-8 BOM, semikolon-separator).
+
+    Inkluderer evidens-progress beregnet pr. sag. Excel-kompatibel —
+    åbn direkte uden ekstra import-steps.
+    """
+    from fastapi.responses import Response
+    from src.api.csv_exports import cases_to_csv
+    from src.database.connection import SessionLocal
+    from src.database import cases as case_module
+    from src.database.evidence import list_evidence_for_case
+
+    db = SessionLocal()
+    try:
+        cases = case_module.list_cases(db, limit=limit)
+        case_dicts = [c.to_dict() for c in cases]
+        # Byg evidence_map for at beregne progress
+        evidence_map = {}
+        for c in cases:
+            evidence_map[c.case_id] = [
+                ev.to_dict() for ev in list_evidence_for_case(db, c.case_id)
+            ]
+        csv_text, filename = cases_to_csv(case_dicts, evidence_map=evidence_map)
+        return Response(
+            content=csv_text,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/audit/export.csv")
+async def v3_audit_export_csv(
+    limit: int = 1000,
+    case_id: Optional[str] = None,
+    aggregate_status_filter: Optional[str] = Query(default=None, alias="status"),
+):
+    """Eksportér v3 audit-log som CSV — primært til kvartalsmøder med revisor.
+
+    Filtre matcher /api/v3/audit (case_id, status). Max 1000 rækker pr.
+    eksport — kald flere gange med offset hvis nødvendigt.
+    """
+    from fastapi.responses import Response
+    from src.api.csv_exports import audit_to_csv
+    from src.database.connection import SessionLocal
+
+    db = SessionLocal()
+    try:
+        entries = v3_audit.list_recent(
+            db,
+            limit=limit,
+            case_id=case_id,
+            aggregate_status=aggregate_status_filter,
+        )
+        entry_dicts = [e.to_dict() for e in entries]
+        csv_text, filename = audit_to_csv(entry_dicts)
+        return Response(
+            content=csv_text,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/dashboard/portfolio.csv")
+async def v3_portfolio_export_csv():
+    """Eksportér det aktuelle portefølje-dashboard som flerafsnitlig CSV.
+
+    Indeholder stats, heatmap, top blockers og SLA-lister.
+    Bruges af leder til at vise overblik i Excel/PowerPoint.
+    """
+    from fastapi.responses import Response
+    from src.api.csv_exports import portfolio_to_csv
+
+    # Genbrug data-builder fra det almindelige endpoint
+    snapshot = await v3_dashboard_portfolio()
+    csv_text, filename = portfolio_to_csv(snapshot)
+    return Response(
+        content=csv_text,
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
+
+
 @app.get("/api/v3/audit/{log_id}")
 async def v3_audit_detail(log_id: str, request: Request):
     """Return the full request + response for one audit entry.
