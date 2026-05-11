@@ -8,7 +8,6 @@ import {
   FaSpinner,
   FaExternalLinkAlt,
   FaQuoteLeft,
-  FaCalendarAlt,
   FaGlobeEurope,
   FaFileAlt,
   FaUniversity,

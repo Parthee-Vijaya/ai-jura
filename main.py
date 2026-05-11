@@ -200,6 +200,11 @@ async def lifespan(app: FastAPI):
 
     # Run config validator + log startup banner. Vises efter scheduler-start
     # så cron-jobs er talt med.
+    #
+    # Fail-fast mode (default): hvis STRICT_CONFIG_VALIDATION != "false" og
+    # der er kritiske fejl, dør backenden med klar besked i stedet for at
+    # serve en defekt app. Sat til "false" lokalt i dev for at undgå at
+    # blokere på fx manglende SMTP under feature-arbejde.
     try:
         from src.config.validation import build_config_report, render_startup_banner
         report = build_config_report(scheduler=kb_scheduler)
@@ -207,10 +212,26 @@ async def lifespan(app: FastAPI):
         # backend.console.log (loguru ville folde det sammen).
         print("\n" + render_startup_banner(report) + "\n", flush=True)
         if report.critical_failures:
-            logger.error(
-                "Startup config validation found critical failures: %s",
-                ", ".join(report.critical_failures),
+            strict = os.getenv("STRICT_CONFIG_VALIDATION", "true").lower() != "false"
+            msg = (
+                f"Startup config validation found critical failures: "
+                f"{', '.join(report.critical_failures)}"
             )
+            if strict:
+                logger.error(msg + " — refusing to start (set STRICT_CONFIG_VALIDATION=false to override)")
+                print("\n" + "=" * 70, flush=True)
+                print(" KRITISK KONFIGURATION MANGLER — BIFROST STOPPES", flush=True)
+                print("=" * 70, flush=True)
+                for failure in report.critical_failures:
+                    print(f"  ✗ {failure}", flush=True)
+                print("\n Sæt STRICT_CONFIG_VALIDATION=false i .env for at tillade dev-start.", flush=True)
+                print(" Eller åbn /api/v3/admin/config for full diagnostic.", flush=True)
+                print("=" * 70 + "\n", flush=True)
+                raise SystemExit(1)
+            else:
+                logger.warning(msg + " — continuing because STRICT_CONFIG_VALIDATION=false")
+    except SystemExit:
+        raise
     except Exception:
         logger.exception("Startup config validation crashed (non-fatal)")
 

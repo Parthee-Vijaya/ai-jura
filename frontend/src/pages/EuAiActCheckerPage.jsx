@@ -7,7 +7,6 @@ import {
   PageShell,
   PageHeader,
   PrimaryButton,
-  OutlinePill,
 } from '../components/page-chrome/PageChrome';
 import { Breadcrumb, Banner } from '../components/ui';
 

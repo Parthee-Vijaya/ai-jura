@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent for Bifrost daily backup.
+
+  Installation:
+    1. Tilpas paths i denne fil hvis Bifrost ikke ligger i den default-sti.
+    2. Hvis du har en ekstern disk/NAS, sæt EnvironmentVariables/BACKUP_EXTERNAL_PATH.
+    3. Kopiér til ~/Library/LaunchAgents/:
+         cp scripts/com.bifrost.backup.plist ~/Library/LaunchAgents/
+    4. Indlæs:
+         launchctl load ~/Library/LaunchAgents/com.bifrost.backup.plist
+    5. Test manuelt:
+         launchctl kickstart -k gui/$(id -u)/com.bifrost.backup
+    6. Log på fejl:
+         tail -f ~/Backups/Bifrost/backup.log
+
+  Kører dagligt kl. 02:30 (efter 02:00 retention-sweep men før 03:00 KB-update).
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.bifrost.backup</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/parthee/Desktop/Claude/projekter/aktive/judge-dredd/scripts/backup.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>2</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+
+    <!-- Hvis Mac'en sover på backup-tidspunktet, kør så snart den vågner -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>BIFROST_ROOT</key>
+        <string>/Users/parthee/Desktop/Claude/projekter/aktive/judge-dredd</string>
+        <key>BACKUP_ROOT</key>
+        <string>/Users/parthee/Backups/Bifrost</string>
+        <key>RETENTION_DAYS</key>
+        <string>30</string>
+        <key>DATABASE_URL</key>
+        <string>postgresql://tyr@localhost:5432/tyr</string>
+        <!-- Sæt denne hvis du har en ekstern disk/NAS du vil rsynce til. -->
+        <!-- Format: lokal sti eller user@host:/path -->
+        <!--
+        <key>BACKUP_EXTERNAL_PATH</key>
+        <string>/Volumes/BifrostBackup</string>
+        -->
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/parthee/Backups/Bifrost/launchd.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/parthee/Backups/Bifrost/launchd.stderr.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

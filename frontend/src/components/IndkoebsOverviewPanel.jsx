@@ -8,12 +8,11 @@ import {
   FaExclamationTriangle,
   FaChevronDown,
   FaChevronRight,
-  FaExternalLinkAlt,
   FaArrowRight,
   FaCircle,
 } from 'react-icons/fa';
 
-import { Pill, Banner } from './ui';
+import { Pill } from './ui';
 
 /**
  * IndkoebsOverviewPanel — samlet "Sag-komplet-overblik" der vises på

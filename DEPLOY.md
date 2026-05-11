@@ -136,22 +136,80 @@ cd frontend && npm install
 
 **Frontend viser "Application error" ved Tailscale-adgang** — sandsynligvis CORS-problem eller backend ikke nåbar fra Tailscale-IP. Tjek at backend er bundet til `0.0.0.0` (er default i scripts).
 
-## Backup af PostgreSQL
+## Backup af PostgreSQL + data/
 
-Manuel ad-hoc backup:
+### Automatisk daglig backup (anbefalet)
+
+Bifrost shipper med en backup-pipeline der kører dagligt kl. 02:30 via LaunchAgent:
+
 ```bash
-mkdir -p ~/Backups/Tyr
-/opt/homebrew/opt/postgresql@16/bin/pg_dump -U tyr -h localhost -Fc tyr \
-  > ~/Backups/Tyr/tyr-$(date +%Y%m%d-%H%M%S).dump
+# 1. Tilpas paths i scripts/com.bifrost.backup.plist hvis nødvendigt
+# 2. Installer LaunchAgent
+cp scripts/com.bifrost.backup.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.bifrost.backup.plist
+
+# 3. Test kør manuelt
+launchctl kickstart -k gui/$(id -u)/com.bifrost.backup
+
+# 4. Følg loggen
+tail -f ~/Backups/Bifrost/backup.log
 ```
 
-Restore:
-```bash
-/opt/homebrew/opt/postgresql@16/bin/pg_restore -U tyr -h localhost -d tyr -c \
-  ~/Backups/Tyr/tyr-20260509-143200.dump
+Hvert døgn produceres en versioneret mappe `~/Backups/Bifrost/bifrost-YYYY-MM-DD/`:
+- `db.dump` — `pg_dump -Fc -Z9` af PostgreSQL
+- `data.tar.gz` — snapshot af `data/` (regler, embeddings, fallbacks)
+- `manifest.json` — sha256-checksums, git-commit, retention-info
+
+Backups ældre end **30 dage** ryddes automatisk væk (overstyr via `RETENTION_DAYS`).
+
+### Ekstern kopi (anbefalet for produktion)
+
+Sæt `BACKUP_EXTERNAL_PATH` i plist'en til en ekstern disk eller NAS-sti:
+
+```xml
+<key>BACKUP_EXTERNAL_PATH</key>
+<string>/Volumes/BifrostBackup</string>
+<!-- Eller en SSH-destination: user@nas.local:/mnt/backups -->
 ```
 
-Modul 5 (planned): cron-job der kører ovenstående dagligt + rsyncer til ekstern disk eller Tailscale-tilgængelig NAS.
+Efter local-write rsyncer scriptet til denne destination.
+
+### Verifikation — månedligt
+
+Test at backups faktisk kan restores:
+
+```bash
+./scripts/backup-restore-test.sh
+```
+
+Scriptet:
+1. Validerer sha256-checksums mod manifest
+2. Lister tabeller i pg_dump
+3. Restorer til midlertidig DB `tyr_restore_test` og drop'er den igen
+4. Untar `data.tar.gz` til `/tmp` og tjekker at kritiske filer findes
+
+Returnerer `PASS` eller `FAIL` med detaljer. DPIA-krav: dokumenteret kvartalsvis test.
+
+### Manuel restore (production-ramt)
+
+```bash
+# 1. Stop backend
+./scripts/stop_tyr.sh
+
+# 2. Restore DB (CLEAN flag dropper eksisterende objekter først)
+/opt/homebrew/opt/postgresql@16/bin/pg_restore \
+  --dbname=postgresql://tyr@localhost:5432/tyr \
+  --no-owner --no-acl \
+  --clean --if-exists \
+  ~/Backups/Bifrost/bifrost-2026-05-11/db.dump
+
+# 3. Restore data/ (overwrite eksisterende)
+tar -xzf ~/Backups/Bifrost/bifrost-2026-05-11/data.tar.gz \
+  -C /Users/parthee/Desktop/Claude/projekter/aktive/judge-dredd/
+
+# 4. Start backend
+./scripts/start_tyr.sh
+```
 
 ## Stop ved Mac-genstart
 

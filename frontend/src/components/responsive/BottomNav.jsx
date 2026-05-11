@@ -9,7 +9,6 @@ import {
   FaEllipsisH,
   FaTimes,
   FaSearch,
-  FaBell,
   FaHistory,
   FaBook,
   FaGavel,

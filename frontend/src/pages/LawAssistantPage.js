@@ -6,7 +6,6 @@ import {
   FaSearch,
   FaSpinner,
   FaExternalLinkAlt,
-  FaGavel,
   FaChevronDown,
   FaChevronUp,
   FaCheckCircle,

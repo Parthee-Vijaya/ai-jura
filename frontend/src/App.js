@@ -11,7 +11,6 @@ import BottomNav from './components/responsive/BottomNav';
 import { lightTheme, darkTheme } from './theme';
 
 // Components
-import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageErrorBoundary from './components/PageErrorBoundary';

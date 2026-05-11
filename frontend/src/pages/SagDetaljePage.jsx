@@ -10,12 +10,10 @@ import {
   FaClipboardCheck,
   FaHistory,
   FaCheckCircle,
-  FaCircle,
   FaArrowRight,
   FaEdit,
   FaFileWord,
   FaFilePdf,
-  FaDownload,
 } from 'react-icons/fa';
 
 import {
