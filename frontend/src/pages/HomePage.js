@@ -456,7 +456,7 @@ const HomePage = () => {
             <span className="rune" aria-hidden="true">
               <BifrostLogo size={28} stroke={1.8} title="" />
             </span>
-            <span className="ver">beta 1 · Kalundborg</span>
+            <span className="ver">beta 2 · Kalundborg</span>
           </Wordmark>
           <HeroTitle>Hver vurdering peger på den ordret-verificerede lovartikel.</HeroTitle>
           <HeroLede>

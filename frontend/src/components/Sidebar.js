@@ -541,7 +541,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 <span className="brand-rune" aria-hidden="true">
                   <BifrostLogo size={22} stroke={1.8} title="" />
                 </span>
-                <span className="brand-version">beta 1</span>
+                <span className="brand-version">beta 2</span>
               </>
             )}
           </BrandPrimary>
@@ -643,7 +643,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             <span className="footer-rune-mark" aria-hidden="true">
               <BifrostLogo size={14} stroke={1.5} title="" />
             </span>
-            Bifrost · beta 1
+            Bifrost · beta 2
           </FooterRune>
           <FooterNote>Kun til internt brug — Digitalisering &amp; IT</FooterNote>
           <Link

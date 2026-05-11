@@ -342,7 +342,7 @@ cd frontend && npm test -- --watch=false
 
 ---
 
-## Roadmap (beta 1 → 1.0)
+## Roadmap (beta 2 → 1.0)
 
 - [x] 28 curerede evidens-skabeloner (P1+P2 leveret 2026-05-10)
 - [x] 3-trins proces med auto-save + sag-detalje
@@ -354,5 +354,5 @@ cd frontend && npm test -- --watch=false
 - [ ] Multi-bruger med RBAC (rolle-baseret adgang)
 - [ ] Pilot med 3 forvaltninger (børn, beskæftigelse, sundhed)
 
-Status: **beta 1** — kører internt på Mac Studio bag Tailscale.
+Status: **beta 2** — kører internt på Mac Studio bag Tailscale.
 Klar til intern pilot, ikke til ekstern publicering.
