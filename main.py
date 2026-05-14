@@ -3926,6 +3926,52 @@ async def v3_case_report(case_id: str, format: str = "docx"):
         db.close()
 
 
+@app.get("/api/v3/cases/{case_id}/eu-database-export")
+async def v3_eu_database_export(case_id: str, format: str = "json"):
+    """Generér EU AI Act Art. 49 database-registrerings-payload.
+
+    Mapper Bifrost intake_state + evidens → 12 EU-database-felter.
+    Returnér JSON (struktur klar til EU-database-API) eller PDF (manuel formular).
+
+    Bruges KUN for høj-risiko-systemer der skal registreres efter Art. 49.
+
+    Format:
+      format=json (default) → application/json med struktureret payload + meta
+      format=pdf            → application/pdf, print-venlig formular m. underskriftsfelt
+    """
+    from src.database.connection import SessionLocal
+    from src.services.eu_database_export import (
+        build_export, render_pdf, EUDatabaseExportError,
+    )
+
+    fmt = format.lower().strip()
+    if fmt not in ("json", "pdf"):
+        raise AppError("invalid_format", "format must be 'json' or 'pdf'", status=400)
+
+    db = SessionLocal()
+    try:
+        try:
+            payload = await asyncio.to_thread(build_export, db, case_id)
+        except EUDatabaseExportError as exc:
+            raise AppError("export_failed", str(exc), status=404)
+
+        if fmt == "json":
+            return payload
+
+        pdf_bytes = await asyncio.to_thread(render_pdf, payload)
+        safe_case = case_id.replace("/", "-").replace(" ", "_")
+        filename = f"bifrost-eu-database-{safe_case}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    finally:
+        db.close()
+
+
 class MeetingReportPayload(BaseModel):
     case_ids: List[str] = Field(..., min_length=1, max_length=50)
     meeting_title: Optional[str] = Field(default=None, max_length=200)

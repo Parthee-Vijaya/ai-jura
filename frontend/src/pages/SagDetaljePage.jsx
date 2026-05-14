@@ -575,6 +575,37 @@ const SagDetaljePage = () => {
             >
               <FaCopy /> Klon
             </Button>
+            {(lastVerdict === 'BETINGET-GO' || lastVerdict === 'NO-GO' || caseRow?.intake_state?.ai_risk_level === 'high') && (
+              <Button
+                $variant="secondary"
+                $size="sm"
+                onClick={async () => {
+                  try {
+                    const r = await fetch(
+                      `/api/v3/cases/${encodeURIComponent(case_id)}/eu-database-export?format=pdf`,
+                    );
+                    if (!r.ok) {
+                      const err = await r.json().catch(() => ({}));
+                      toast.error(`EU-database-export fejlede: ${err?.error?.message || r.statusText}`);
+                      return;
+                    }
+                    const blob = await r.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `bifrost-eu-database-${case_id}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success('EU-database-formular downloadet — skal reviewes af jurist');
+                  } catch (err) {
+                    toast.error(`EU-database-export fejlede: ${err.message}`);
+                  }
+                }}
+                title="Generér EU AI Act Art. 49 database-registreringsformular (PDF). Kun for høj-risiko-systemer."
+              >
+                🇪🇺 EU-database
+              </Button>
+            )}
             <Button
               $variant="primary"
               $size="sm"
