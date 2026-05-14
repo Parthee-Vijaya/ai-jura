@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-import { FaTimes, FaCheck, FaExternalLinkAlt, FaSpinner, FaPrint } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaExternalLinkAlt, FaSpinner, FaPrint, FaSearch, FaExclamationTriangle, FaInfoCircle, FaLightbulb } from 'react-icons/fa';
 
 import { useToast } from '../ui';
 import SkabelonPicker from '../SkabelonPicker';
@@ -364,6 +364,144 @@ const Spinner = styled(FaSpinner)`
   @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 `;
 
+const ReviewPanel = styled.section`
+  background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
+  border: 1px solid ${(p) => p.theme.colors.line};
+  border-left: 4px solid ${(p) => {
+    const s = p.$score || 3;
+    if (s >= 4) return '#2d6a31';
+    if (s >= 3) return '#b08a4a';
+    return '#a03612';
+  }};
+  border-radius: 6px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.6rem;
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: ${(p) => p.theme.colors.bronze};
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .score {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: ${(p) => {
+      const s = p.$score || 3;
+      if (s >= 4) return '#2d6a31';
+      if (s >= 3) return '#6e5527';
+      return '#a03612';
+    }};
+    background: ${(p) => p.theme.colors.paper};
+    border: 1px solid ${(p) => p.theme.colors.line};
+    border-radius: 4px;
+    padding: 0.2rem 0.55rem;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2rem;
+
+    .max {
+      font-size: 0.75rem;
+      color: ${(p) => p.theme.colors.inkFaded};
+      font-weight: 400;
+    }
+  }
+
+  .summary {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.9rem;
+    color: ${(p) => p.theme.colors.ink};
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+  }
+
+  .section-block {
+    margin-top: 0.7rem;
+
+    h4 {
+      font-family: ${(p) => p.theme.fonts.sans};
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: ${(p) => p.theme.colors.inkSoft};
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    li {
+      font-family: ${(p) => p.theme.fonts.body};
+      font-size: 0.86rem;
+      color: ${(p) => p.theme.colors.ink};
+      line-height: 1.5;
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 0.3rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.45rem;
+      background: ${(p) => p.theme.colors.paper};
+
+      &.sev-blocker {
+        border-left: 3px solid #a03612;
+        color: ${(p) => p.theme.colors.ink};
+      }
+      &.sev-warning {
+        border-left: 3px solid #b08a4a;
+      }
+      &.sev-tip {
+        border-left: 3px solid #6c8ab3;
+      }
+
+      .icon {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        font-size: 0.85rem;
+      }
+
+      .sev-blocker .icon { color: #a03612; }
+
+      .section-tag {
+        font-family: ${(p) => p.theme.fonts.mono};
+        font-size: 0.72rem;
+        color: ${(p) => p.theme.colors.inkFaded};
+        margin-right: 0.4rem;
+      }
+    }
+  }
+
+  .dismiss {
+    background: transparent;
+    border: none;
+    color: ${(p) => p.theme.colors.inkFaded};
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.85rem;
+    &:hover { color: ${(p) => p.theme.colors.ink}; }
+  }
+`;
+
 // ---- Component -----------------------------------------------------------
 
 const STATUS_LABEL = {
@@ -387,7 +525,74 @@ const EvidenceEditor = ({
   const [content, setContent] = useState({});
   const [saving, setSaving] = useState(false);
   const [savedStatus, setSavedStatus] = useState(null);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
+  const [aiDraftedKeys, setAiDraftedKeys] = useState(new Set());
+  const [qualityReview, setQualityReview] = useState(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
+  const [autoReviewedFor, setAutoReviewedFor] = useState(null); // status hvor vi sidst auto-review'ede
   const toast = useToast();
+
+  const runQualityReview = async ({ silent = false } = {}) => {
+    if (!caseId || !artifactId) return null;
+    setReviewing(true);
+    setReviewError(null);
+    try {
+      const res = await axios.post(
+        `/api/v3/cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(artifactId)}/quality-review`,
+        { content },
+      );
+      const rev = res.data?.review || null;
+      setQualityReview(rev);
+      if (!silent && rev) {
+        const score = rev.quality_score;
+        if (score >= 4) {
+          toast.success(`Kvalitetstjek: ${score}/5 — solid evidens`);
+        } else if (score >= 3) {
+          toast.info(`Kvalitetstjek: ${score}/5 — se forslag i panelet`);
+        } else {
+          toast.warning?.(`Kvalitetstjek: ${score}/5 — flere blockers fundet`) || toast.error(`Kvalitetstjek: ${score}/5 — flere blockers fundet`);
+        }
+      }
+      return rev;
+    } catch (err) {
+      const msg = err?.response?.data?.error?.message || err?.message || 'Review fejlede';
+      setReviewError(msg);
+      if (!silent) toast.error(`AI-kvalitetstjek fejlede: ${msg}`);
+      return null;
+    } finally {
+      setReviewing(false);
+    }
+  };
+
+  const handleGenerateDraft = async () => {
+    if (!caseId || !artifactId) return;
+    setGeneratingDraft(true);
+    try {
+      const res = await axios.post(
+        `/api/v3/cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(artifactId)}/generate-draft`,
+        { existing_content: content },
+      );
+      const drafts = res.data?.drafts || {};
+      const filledCount = Object.keys(drafts).length;
+      if (filledCount === 0) {
+        toast.info('Ingen tomme sektioner at udfylde — alle required er allerede besvaret');
+      } else {
+        // Merge ind i content (overskriver IKKE — backend filtrerer)
+        setContent((prev) => ({ ...prev, ...drafts }));
+        setAiDraftedKeys((prev) => {
+          const next = new Set(prev);
+          Object.keys(drafts).forEach((k) => next.add(k));
+          return next;
+        });
+        toast.success(`${filledCount} sektion${filledCount === 1 ? '' : 'er'} fyldt med AI-udkast — review før gem`);
+      }
+    } catch (err) {
+      toast.error(`AI-udkast fejlede: ${err?.response?.data?.error?.message || err?.message}`);
+    } finally {
+      setGeneratingDraft(false);
+    }
+  };
 
   // Load template + existing content when modal opens
   useEffect(() => {
@@ -395,6 +600,10 @@ const EvidenceEditor = ({
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setQualityReview(null);
+    setReviewError(null);
+    setAutoReviewedFor(null);
+    setAiDraftedKeys(new Set());
     (async () => {
       try {
         const tmplRes = await axios.get(
@@ -480,8 +689,27 @@ const EvidenceEditor = ({
         toast.info(`${title} gemt`);
       }
 
-      // Close automatically on completion; stay open if still in_gang
-      if (res.data.status === 'faerdig' || res.data.status === 'godkendt') {
+      // Auto-trigger AI quality review når status netop blev "faerdig"
+      // (kun første gang pr. modal-session — bruger kan altid trigge manuelt igen)
+      if (
+        res.data.status === 'faerdig' &&
+        autoReviewedFor !== 'faerdig'
+      ) {
+        setAutoReviewedFor('faerdig');
+        // Fire-and-forget — bruger ser panelet når review er klar
+        runQualityReview({ silent: true }).then((rev) => {
+          if (rev && rev.quality_score < 4) {
+            toast.info(
+              `AI-kvalitetstjek (${rev.quality_score}/5): ${rev.issues?.length || 0} issues — se panelet før godkendelse`,
+            );
+          }
+        });
+        // BLIV i modal så bruger kan se review-feedback
+        return;
+      }
+
+      // Close automatically on completion (godkendt or already-reviewed faerdig)
+      if (res.data.status === 'godkendt') {
         setTimeout(onClose, 600);
       }
     } catch (err) {
@@ -526,6 +754,121 @@ const EvidenceEditor = ({
               <strong>Status:</strong> {STATUS_LABEL[savedStatus] || savedStatus}
               {savedStatus === 'faerdig' && ' ✓ — alle påkrævede felter udfyldt'}
             </StatusBanner>
+          )}
+
+          {reviewing && !qualityReview && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
+              padding: '0.7rem 0.9rem', marginBottom: '1.2rem',
+              background: 'rgba(13,46,84,0.04)', border: '1px solid #e5e7eb',
+              borderRadius: '6px', fontSize: '0.88rem', color: '#374151',
+              fontFamily: 'inherit',
+            }}>
+              <Spinner /> AI gennemgår din evidens for blockers, mangler og forbedringsforslag…
+            </div>
+          )}
+
+          {qualityReview && (
+            <ReviewPanel $score={qualityReview.quality_score}>
+              <div className="header-row">
+                <div className="title">
+                  <FaSearch /> AI-kvalitetstjek
+                  <span style={{ fontWeight: 400, fontSize: '0.75rem', textTransform: 'none', letterSpacing: 'normal', color: '#666' }}>
+                    · vejledende — jurist har det endelige ord
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                  <span className="score">
+                    {qualityReview.quality_score}<span className="max">/5</span>
+                  </span>
+                  <button
+                    className="dismiss"
+                    onClick={() => setQualityReview(null)}
+                    title="Skjul panel"
+                    type="button"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              </div>
+
+              {qualityReview.summary && (
+                <div className="summary">{qualityReview.summary}</div>
+              )}
+
+              {qualityReview.issues?.length > 0 && (
+                <div className="section-block">
+                  <h4>Issues ({qualityReview.issues.length})</h4>
+                  <ul>
+                    {qualityReview.issues.map((iss, i) => {
+                      const sev = iss.severity === 'blocker' ? 'sev-blocker'
+                        : iss.severity === 'warning' ? 'sev-warning'
+                        : 'sev-tip';
+                      const Icon = iss.severity === 'blocker' ? FaExclamationTriangle
+                        : iss.severity === 'warning' ? FaInfoCircle
+                        : FaLightbulb;
+                      return (
+                        <li key={i} className={sev}>
+                          <span className="icon"><Icon /></span>
+                          <span>
+                            {iss.section_key && (
+                              <span className="section-tag">[{iss.section_key}]</span>
+                            )}
+                            {iss.message}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {qualityReview.suggestions?.length > 0 && (
+                <div className="section-block">
+                  <h4>Forbedringsforslag</h4>
+                  <ul>
+                    {qualityReview.suggestions.map((sug, i) => (
+                      <li key={i} className="sev-tip">
+                        <span className="icon"><FaLightbulb /></span>
+                        <span>{sug}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {qualityReview.missing_legal_refs?.length > 0 && (
+                <div className="section-block">
+                  <h4>Manglende lovreferencer</h4>
+                  <ul>
+                    {qualityReview.missing_legal_refs.map((ref, i) => (
+                      <li key={i} className="sev-warning">
+                        <span className="icon"><FaInfoCircle /></span>
+                        <span>{ref}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!qualityReview.issues?.length
+                && !qualityReview.suggestions?.length
+                && !qualityReview.missing_legal_refs?.length && (
+                <div style={{ fontSize: '0.86rem', color: '#2d6a31', fontStyle: 'italic' }}>
+                  ✓ Ingen issues fundet — evidens ser solid ud
+                </div>
+              )}
+            </ReviewPanel>
+          )}
+
+          {reviewError && !reviewing && (
+            <div style={{
+              color: '#a02020', padding: '0.5rem 0.8rem', marginBottom: '1rem',
+              background: 'rgba(160,32,32,0.06)', borderLeft: '3px solid #a02020',
+              borderRadius: '0 4px 4px 0', fontSize: '0.85rem',
+            }}>
+              AI-kvalitetstjek fejlede: {reviewError}
+            </div>
           )}
 
           {template && caseId && (
@@ -684,6 +1027,26 @@ const EvidenceEditor = ({
               type="button"
             >
               <FaPrint /> Print
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={handleGenerateDraft}
+              disabled={generatingDraft || saving || !template || !caseId}
+              title="LLM laver udkast for tomme required-sektioner baseret på sagens intake"
+              type="button"
+              style={{ background: 'rgba(13,46,84,0.04)' }}
+            >
+              {generatingDraft ? <><Spinner /> Genererer…</> : '✨ Generer udkast'}
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={() => runQualityReview()}
+              disabled={reviewing || saving || !template || !caseId || !filledRequired.length}
+              title={filledRequired.length
+                ? 'AI gennemgår dine svar for blockers, mangler og inkonsistens'
+                : 'Udfyld mindst én required-sektion før AI-tjek'}
+              type="button"
+              style={{ background: 'rgba(13,46,84,0.04)' }}
+            >
+              {reviewing ? <><Spinner /> Reviewer…</> : <><FaSearch /> AI-kvalitetstjek</>}
             </SecondaryButton>
             <SecondaryButton onClick={onClose} disabled={saving}>
               Annullér

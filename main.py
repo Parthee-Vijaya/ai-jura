@@ -3926,6 +3926,212 @@ async def v3_case_report(case_id: str, format: str = "docx"):
         db.close()
 
 
+class EvidenceDraftPayload(BaseModel):
+    """Eksisterende svar der ikke skal overskrives."""
+    existing_content: Optional[Dict[str, Any]] = Field(default=None)
+
+
+@app.post("/api/v3/cases/{case_id}/evidence/{artifact_id}/generate-draft")
+@limiter.limit(LLM_HEAVY)
+async def v3_evidence_generate_draft(
+    request: Request,
+    response: Response,
+    case_id: str,
+    artifact_id: str,
+    body: EvidenceDraftPayload,
+):
+    """Generer LLM-udkast for tomme required-sektioner i en evidens-skabelon.
+
+    Bruger sagens intake_state + evidens-skabelonens lovhjemler/sections som
+    kontekst. Returnerer kun draft for IKKE-udfyldte sektioner.
+
+    Frontend mergerer drafts ind i felt-state og marker dem som AI-genererede
+    indtil bruger redigerer dem.
+    """
+    from src.services.evidence_draft_generator import (
+        generate_evidence_draft, EvidenceDraftError,
+    )
+    from src.services.evidence_artifacts import get_template
+    from src.database.connection import SessionLocal
+    from src.database.cases import find_case_by_external_id
+
+    template = get_template(artifact_id)
+    if not template:
+        raise AppError("template_not_found", f"Skabelon {artifact_id} findes ikke", status=404)
+
+    db = SessionLocal()
+    try:
+        case = find_case_by_external_id(db, case_id)
+        if case is None:
+            raise AppError("case_not_found", f"Sag {case_id} findes ikke", status=404)
+        case_intake = case.get_intake_state()
+    finally:
+        db.close()
+
+    if not case_intake:
+        raise AppError(
+            "no_intake",
+            "Sagen har ingen intake-data — udfyld indkøbsprocessen først",
+            status=400,
+            hint="Gå til /indkoebsproces og udfyld beskrivelse + felter",
+        )
+
+    try:
+        drafts = await asyncio.to_thread(
+            generate_evidence_draft,
+            template=template.to_dict(),
+            case_intake=case_intake,
+            existing_content=body.existing_content or {},
+        )
+    except ValueError as exc:
+        raise AppError("invalid_input", str(exc), status=400)
+    except EvidenceDraftError as exc:
+        raise AppError(
+            "draft_failed",
+            str(exc),
+            status=502,
+            hint="Tjek LM Studio eller OPENAI_API_KEY",
+        )
+
+    return {
+        "artifact_id": artifact_id,
+        "case_id": case_id,
+        "drafts": drafts,
+        "filled_count": len(drafts),
+        "disclaimer": (
+            "AI-genereret udkast — sagsbehandler skal review hvert felt. "
+            "Eksisterende svar er bevaret."
+        ),
+    }
+
+
+class EvidenceQualityReviewPayload(BaseModel):
+    """Brugerens udfyldte indhold pr. sektion-key."""
+    content: Dict[str, Any] = Field(..., description="Map af section_key → svar-tekst")
+
+
+@app.post("/api/v3/cases/{case_id}/evidence/{artifact_id}/quality-review")
+@limiter.limit(LLM_HEAVY)
+async def v3_evidence_quality_review(
+    request: Request,
+    response: Response,
+    case_id: str,
+    artifact_id: str,
+    body: EvidenceQualityReviewPayload,
+):
+    """LLM-baseret kvalitetsreview af udfyldt evidens.
+
+    Returnerer struktureret feedback:
+      - quality_score (1-5)
+      - issues: liste af konkrete mangler eller inkonsistens
+      - suggestions: forbedringsforslag
+      - missing_legal_refs: lov-paragraffer der burde være nævnt
+
+    Det er IKKE en blocker — jurist beslutter stadig. Tips vises som
+    sidepanel i EvidenceEditor.
+    """
+    from src.services.evidence_quality_review import (
+        review_evidence, EvidenceReviewError,
+    )
+    from src.services.evidence_artifacts import get_template
+    from src.database.connection import SessionLocal
+    from src.database.cases import find_case_by_external_id
+
+    template = get_template(artifact_id)
+    if not template:
+        raise AppError("template_not_found", f"Skabelon {artifact_id} findes ikke", status=404)
+
+    db = SessionLocal()
+    try:
+        case = find_case_by_external_id(db, case_id)
+        if case is None:
+            raise AppError("case_not_found", f"Sag {case_id} findes ikke", status=404)
+    finally:
+        db.close()
+
+    if not body.content:
+        raise AppError(
+            "no_content",
+            "Tom evidens-content — udfyld mindst én sektion før review",
+            status=400,
+        )
+
+    try:
+        review = await asyncio.to_thread(
+            review_evidence,
+            template=template.to_dict(),
+            content=body.content,
+        )
+    except ValueError as exc:
+        raise AppError("invalid_input", str(exc), status=400)
+    except EvidenceReviewError as exc:
+        raise AppError(
+            "review_failed",
+            str(exc),
+            status=502,
+            hint="Tjek LM Studio eller OPENAI_API_KEY",
+        )
+
+    return {
+        "artifact_id": artifact_id,
+        "case_id": case_id,
+        "review": review,
+        "disclaimer": (
+            "AI-baseret kvalitetstjek — vejledende. Jurist har det endelige ord."
+        ),
+    }
+
+
+class AIIntakeAssistPayload(BaseModel):
+    description: str = Field(..., min_length=20, max_length=4000,
+                              description="Fritekst-beskrivelse af planlagt AI-system")
+
+
+@app.post("/api/v3/intake/ai-assist")
+@limiter.limit(LLM_HEAVY)
+async def v3_intake_ai_assist(
+    request: Request,
+    response: Response,
+    body: AIIntakeAssistPayload,
+):
+    """Brug LLM til at ekstrahere strukturerede intake-felter fra fritekst.
+
+    Modtager 1-3 afsnit beskrivelse, returnerer dict med:
+      - behov, indkoeb_eller_udvikling, system_description
+      - behandler_persondata, persondata_typer, automatiserede_beslutninger
+      - kritiske_formaal, ai_risk_level, fagomraade, ai_act_relevante_omrader
+
+    Frontend bruger dette til at pre-udfylde indkøbswizard. Bruger SKAL
+    altid kunne review + rette før gem.
+    """
+    from src.services.ai_intake_assist import (
+        extract_intake_from_description, AIIntakeError,
+    )
+
+    try:
+        result = await asyncio.to_thread(
+            extract_intake_from_description, body.description,
+        )
+    except ValueError as exc:
+        raise AppError("invalid_description", str(exc), status=400)
+    except AIIntakeError as exc:
+        raise AppError(
+            "ai_intake_failed",
+            str(exc),
+            status=502,
+            hint="Tjek at LM Studio kører med en chat-model loaded, "
+                 "eller at OPENAI_API_KEY er sat i .env",
+        )
+
+    return {
+        "intake": result,
+        "disclaimer": (
+            "AI-genereret udkast — sagsbehandler skal review hvert felt før gem. "
+            "Bifrosts regelmotor verificerer ALDRIG udfyldelse, kun input til regler."
+        ),
+    }
+
+
 @app.post("/api/v3/transcribe")
 @limiter.limit(LLM_LIGHT)
 async def v3_transcribe(

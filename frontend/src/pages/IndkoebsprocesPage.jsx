@@ -567,6 +567,35 @@ const IndkoebsprocesPage = () => {
   const [indkoebEllerUdvikling, setIndkoebEllerUdvikling] = useState(null);
   const [systemDescription, setSystemDescription] = useState('');
 
+  // AI-assist state (E2.1)
+  const [aiAssisting, setAiAssisting] = useState(false);
+  const [aiAssistError, setAiAssistError] = useState(null);
+
+  const runAIAssist = async () => {
+    if (!systemDescription.trim() || systemDescription.trim().length < 20) {
+      setAiAssistError('Beskrivelse skal være mindst 20 tegn');
+      return;
+    }
+    setAiAssisting(true);
+    setAiAssistError(null);
+    try {
+      const r = await axios.post('/api/v3/intake/ai-assist', {
+        description: systemDescription,
+      });
+      const intake = r.data?.intake || {};
+      // Anvend kun til felter der er tomme — bevarer bruger-input
+      if (intake.behov && !behov.trim()) setBehov(intake.behov);
+      if (intake.indkoeb_eller_udvikling && !indkoebEllerUdvikling) {
+        setIndkoebEllerUdvikling(intake.indkoeb_eller_udvikling);
+      }
+      // system_description erstattes ikke, men kan udvides via prompt
+    } catch (err) {
+      setAiAssistError(err?.response?.data?.error?.message || err?.message || 'AI-assist fejlede');
+    } finally {
+      setAiAssisting(false);
+    }
+  };
+
   // Backend persistence state
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
   const [loadingExisting, setLoadingExisting] = useState(!!urlCaseId);
@@ -986,6 +1015,37 @@ const IndkoebsprocesPage = () => {
                   onChange={(e) => setSystemDescription(e.target.value)}
                   placeholder="Fx: Borgerassistent baseret på Microsoft Copilot Studio. Træner ikke på persondata, foretager ikke profilering, bruges til informationssøgning..."
                 />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={runAIAssist}
+                    disabled={aiAssisting || systemDescription.trim().length < 20}
+                    style={{
+                      background: 'transparent',
+                      color: '#0d2e54',
+                      border: '1px solid #0d2e54',
+                      borderRadius: 4,
+                      padding: '0.45rem 0.85rem',
+                      cursor: aiAssisting ? 'wait' : 'pointer',
+                      fontSize: '0.82rem',
+                      fontFamily: 'inherit',
+                      opacity: (aiAssisting || systemDescription.trim().length < 20) ? 0.5 : 1,
+                    }}
+                    title="LLM ekstraherer behov, indkøb-vs-udvikling og andre felter fra beskrivelsen — fylder kun tomme felter"
+                  >
+                    {aiAssisting ? '⏳ Analyserer…' : '✨ Auto-udfyld med AI'}
+                  </button>
+                  {aiAssistError && (
+                    <span style={{ color: '#a02020', fontSize: '0.78rem' }}>
+                      {aiAssistError}
+                    </span>
+                  )}
+                  {!aiAssistError && !aiAssisting && (
+                    <span style={{ color: '#5b6573', fontSize: '0.75rem', fontStyle: 'italic' }}>
+                      AI udfylder kun tomme felter — dine svar bevares
+                    </span>
+                  )}
+                </div>
               </Field>
             </FieldGroup>
           )}
