@@ -125,8 +125,31 @@ async def create_comment_endpoint(
         except Exception as exc:
             logger.warning(f"comment notification emit failed: {exc}")
 
+        # @-mention: parse body, slå brugere op, send notifikation + email
+        mention_result = None
+        try:
+            from src.database.users import extract_mentions
+            from src.services.mention_notifier import notify_mentions
+
+            mentioned = extract_mentions(body.body)
+            if mentioned:
+                mention_result = notify_mentions(
+                    db,
+                    mentioned_emails=mentioned,
+                    comment_body=body.body,
+                    author=body.author,
+                    case_id=case_id,
+                    artifact_id=artifact_id,
+                    section_key=body.section_key,
+                )
+        except Exception as exc:
+            logger.warning(f"mention notification failed: {exc}")
+
         db.commit()
-        return comment.to_dict()
+        result = comment.to_dict()
+        if mention_result is not None:
+            result["mentions"] = mention_result
+        return result
     finally:
         db.close()
 
