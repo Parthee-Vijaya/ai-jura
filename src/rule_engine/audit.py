@@ -44,6 +44,11 @@ class V3AssessmentLog(Base):
     # Free-form for client-supplied context (e.g. case title at time of run).
     note = Column(Text, nullable=True)
 
+    # Tamper-evidens hash-chain (E4.1). prev_hash = forrige entrys entry_hash
+    # (genesis hvis første). entry_hash = sha256(prev_hash || canonical_json).
+    prev_hash = Column(String(64), nullable=True)
+    entry_hash = Column(String(64), nullable=True, index=True)
+
     __table_args__ = (
         Index("ix_v3_audit_created_status", "created_at", "aggregate_status"),
     )
@@ -76,7 +81,14 @@ def save_assessment(
     user_id: str | None = None,
     note: str | None = None,
 ) -> V3AssessmentLog:
-    """Persist one assessment. Caller manages the SQLAlchemy session."""
+    """Persist one assessment. Caller manages the SQLAlchemy session.
+
+    Sætter prev_hash + entry_hash for tamper-evidens (E4.1).
+    """
+    from src.services.audit_hash_chain import (
+        compute_entry_hash, get_chain_head,
+    )
+
     entry = V3AssessmentLog(
         case_id=case_id,
         user_id=user_id,
@@ -87,8 +99,45 @@ def save_assessment(
         response_payload=response_payload,
         note=note,
     )
+    # Sæt hash-chain — gør det best-effort så audit ikke fejler hvis chain er korrupt
+    try:
+        prev_hash = get_chain_head(session, "v3_assessment_log")
+        entry.prev_hash = prev_hash
+        # Beregn hash før commit baseret på de felter der gemmes
+        payload = {
+            "created_at": None,  # ikke kendt før DB-commit; bruges som None i hash
+            "case_id": case_id,
+            "user_id": user_id,
+            "rule_engine_version": entry.rule_engine_version,
+            "aggregate_status": entry.aggregate_status,
+            "rules_loaded": entry.rules_loaded,
+            "note": note,
+            "request_payload": request_payload,
+            "response_payload": response_payload,
+        }
+        entry.entry_hash = compute_entry_hash(prev_hash, payload)
+    except Exception as exc:  # pragma: no cover - defensiv
+        import logging
+        logging.getLogger("bifrost.audit").warning(
+            "Hash-chain blev ikke sat for assessment: %s", exc,
+        )
+
     session.add(entry)
     session.flush()  # populate the auto-generated id without committing
+
+    # Opdatér hash med faktisk created_at som DB satte — så verify-chain
+    # kan recompute. Vi kører flush igen for at persistere.
+    try:
+        from src.services.audit_hash_chain import compute_entry_hash as _ceh
+        payload["created_at"] = entry.created_at.isoformat() if entry.created_at else None
+        entry.entry_hash = _ceh(entry.prev_hash, payload)
+        session.flush()
+    except Exception as exc:  # pragma: no cover
+        import logging
+        logging.getLogger("bifrost.audit").warning(
+            "Hash-chain post-flush opdatering fejlede: %s", exc,
+        )
+
     return entry
 
 

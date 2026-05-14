@@ -52,6 +52,10 @@ class AuditAccessLog(Base):
     action = Column(String(16), nullable=False, default="read")  # read | write | delete | export
     request_id = Column(String(64), nullable=True)
 
+    # Tamper-evidens hash-chain (E4.1)
+    prev_hash = Column(String(64), nullable=True)
+    entry_hash = Column(String(64), nullable=True, index=True)
+
     __table_args__ = (
         Index(
             "ix_audit_access_target_time",
@@ -85,7 +89,14 @@ def record_access(
     user_agent: Optional[str] = None,
     request_id: Optional[str] = None,
 ) -> AuditAccessLog:
-    """Append a row. Caller is responsible for committing the session."""
+    """Append a row. Caller is responsible for committing the session.
+
+    Sætter prev_hash + entry_hash for tamper-evidens (E4.1).
+    """
+    from src.services.audit_hash_chain import (
+        compute_entry_hash, get_chain_head,
+    )
+
     entry = AuditAccessLog(
         target_type=target_type,
         target_id=target_id,
@@ -95,8 +106,34 @@ def record_access(
         user_agent=user_agent[:1000] if user_agent else None,
         request_id=request_id,
     )
+    # Hash chain — flush først for at få created_at, så hash, så flush igen
+    try:
+        prev_hash = get_chain_head(
+            session, "audit_access_log", order_column="accessed_at"
+        )
+        entry.prev_hash = prev_hash
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Hash-chain get_chain_head fejlede: %s", exc)
+
     session.add(entry)
     session.flush()
+
+    # Compute entry_hash baseret på persisterede felter
+    try:
+        payload = {
+            "accessed_at": entry.accessed_at.isoformat() if entry.accessed_at else None,
+            "target_type": entry.target_type,
+            "target_id": entry.target_id,
+            "actor": entry.actor,
+            "actor_ip": entry.actor_ip,
+            "action": entry.action,
+            "request_id": entry.request_id,
+        }
+        entry.entry_hash = compute_entry_hash(entry.prev_hash, payload)
+        session.flush()
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Hash-chain entry_hash computation fejlede: %s", exc)
+
     return entry
 
 

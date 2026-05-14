@@ -186,3 +186,51 @@ async def admin_llm_reset_breaker(provider: str):
         "state": "closed",
         "reset_at": datetime.now(UTC).isoformat(),
     }
+
+
+# ---- Audit hash-chain verification (E4.1) -------------------------------
+
+
+@router.get("/audit/verify-chain")
+async def admin_audit_verify_chain(table: str = "all"):
+    """Verificér sha-256 hash-chain på audit-tabeller.
+
+    Query parameter:
+      table=all              → verificér alle tabeller (default)
+      table=v3_assessment_log → kun denne tabel
+      table=audit_access_log  → kun denne tabel
+
+    Returnerer pr. tabel: valid (bool), entries_checked, broken_at (hvis brud),
+    chain_head (seneste hash).
+
+    Brug: skal køres dagligt af cron + alarmere hvis valid=False.
+    """
+    from src.database.connection import SessionLocal
+    from src.services.audit_hash_chain import verify_chain, _ALLOWED_TABLES
+
+    if table == "all":
+        tables = list(_ALLOWED_TABLES.keys())
+    elif table in _ALLOWED_TABLES:
+        tables = [table]
+    else:
+        raise AppError(
+            "unknown_table",
+            f"Tabel {table!r} ikke i whitelist: {list(_ALLOWED_TABLES.keys())}",
+            status=400,
+        )
+
+    db = SessionLocal()
+    try:
+        results = {}
+        for t in tables:
+            order_col = "accessed_at" if t == "audit_access_log" else "created_at"
+            res = verify_chain(db, t, order_column=order_col)
+            results[t] = res.to_dict()
+        all_valid = all(r["valid"] for r in results.values())
+        return {
+            "generated_at": datetime.now(UTC).isoformat(),
+            "all_valid": all_valid,
+            "tables": results,
+        }
+    finally:
+        db.close()
