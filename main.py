@@ -3926,6 +3926,207 @@ async def v3_case_report(case_id: str, format: str = "docx"):
         db.close()
 
 
+@app.post("/api/v3/transcribe")
+@limiter.limit(LLM_LIGHT)
+async def v3_transcribe(
+    request: Request,
+    response: Response,
+):
+    """Modtag audio (multipart) og returner transkriberet tekst via Whisper.
+
+    Provider-prioritet:
+      1. LM Studio Whisper-model (lokalt, ingen data leak)
+      2. OpenAI Whisper API (fallback)
+
+    Request: multipart/form-data med felter:
+      - audio: fil (audio/webm, audio/mp3, audio/wav, m.fl.)
+      - language: ISO 639-1 sprog-kode (default 'da')
+      - prompt: valgfri context (fx fagudtryk model skal genkende)
+
+    Response:
+      {text: str, duration_ms: int, provider: 'lm_studio'|'openai'}
+    """
+    from src.services.transcribe_service import transcribe_audio, TranscribeError, SUPPORTED_MIME_TYPES, MAX_AUDIO_BYTES
+    import time
+
+    form = await request.form()
+    audio_file = form.get("audio")
+    if audio_file is None or not hasattr(audio_file, "read"):
+        raise AppError("missing_audio", "Field 'audio' (fil) er påkrævet", status=400)
+
+    language = (form.get("language") or "da").strip()
+    prompt = form.get("prompt") or None
+    if prompt:
+        prompt = str(prompt)[:500]  # cap context-prompt
+
+    audio_bytes = await audio_file.read()
+    if len(audio_bytes) > MAX_AUDIO_BYTES:
+        raise AppError(
+            "audio_too_large",
+            f"Audio for stor: {len(audio_bytes)} bytes (max {MAX_AUDIO_BYTES})",
+            status=413,
+        )
+
+    mime = (audio_file.content_type or "audio/webm").split(";")[0].strip()
+    if mime not in SUPPORTED_MIME_TYPES:
+        # Forsøg alligevel — Whisper API er typisk tolerant
+        logger.warning("Ukendt MIME-type for transcribe: %s", mime)
+
+    t0 = time.monotonic()
+    try:
+        text = transcribe_audio(
+            audio_bytes,
+            mime=mime,
+            language=language,
+            prompt=prompt,
+        )
+    except (TranscribeError, ValueError) as exc:
+        raise AppError(
+            "transcribe_failed",
+            str(exc),
+            status=502,
+            hint="Tjek at LM_STUDIO_BASE_URL har en whisper-model loaded, "
+                 "eller at OPENAI_API_KEY er sat",
+        )
+    duration_ms = int((time.monotonic() - t0) * 1000)
+    return {
+        "text": text,
+        "duration_ms": duration_ms,
+        "language": language,
+        "audio_bytes": len(audio_bytes),
+    }
+
+
+class CaseClonePayload(BaseModel):
+    """Payload for at klone en sag som skabelon."""
+    new_case_id: str = Field(..., min_length=1, max_length=64,
+                              description="ID for den nye sag (fx 'K-2026-0192')")
+    new_title: str = Field(..., min_length=1, max_length=255)
+    include_intake_fields: Optional[List[str]] = Field(
+        default=None,
+        description="Hvis sat, kopierer KUN disse keys fra intake_state. Default: alle.",
+    )
+    user: Optional[str] = Field(default=None, max_length=64)
+
+
+@app.post("/api/v3/cases/by-case-id/{case_id}/clone")
+@limiter.limit(ADMIN_WRITE)
+async def v3_case_clone(
+    request: Request,
+    response: Response,
+    case_id: str,
+    body: CaseClonePayload,
+):
+    """Klon en eksisterende sag som skabelon til en ny.
+
+    Kopierer KUN intake_state (med valgfri felt-filter). Ny sag starter
+    som "kladde" uden audit-trail, evidens eller vurderinger.
+
+    Returnerer den nye sag.
+    """
+    from src.database.connection import SessionLocal
+    from src.database.cases import clone_case
+
+    db = SessionLocal()
+    try:
+        try:
+            new_case = clone_case(
+                db,
+                source_case_id=case_id,
+                new_case_id=body.new_case_id,
+                new_title=body.new_title,
+                user=body.user,
+                include_intake_fields=body.include_intake_fields,
+            )
+        except ValueError as exc:
+            raise AppError("clone_failed", str(exc), status=400)
+        db.commit()
+        return {
+            **new_case.to_dict(),
+            "cloned_from": case_id,
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/v3/cases/by-case-id/{case_id}/citation-flags")
+async def v3_case_citation_flags(case_id: str):
+    """Returnér citation-stale-status for alle regler brugt i sagens vurderinger.
+
+    Featureforklaring:
+    - Citation-verifier kører dagligt + opdaterer `rule_freshness.flagged_for_review`
+      når en lov-paragraf ikke længere kan findes på dens kilde-URL
+    - Dette endpoint mapper sagens vurderinger → regler → freshness-status
+    - Frontend viser rød banner hvis nogen brugt regel er flagged
+
+    Returnerer:
+      {
+        case_id: str,
+        total_rules_used: int,
+        flagged_count: int,
+        flagged_rules: [
+          {rule_id, last_checked_at, error_message, source_url, snippet}
+        ],
+        last_assessment_at: str | null
+      }
+    """
+    from src.database.connection import SessionLocal
+    from src.rule_engine import audit as v3_audit
+    from src.services.citation_verifier import RuleFreshness
+
+    db = SessionLocal()
+    try:
+        # Hent alle vurderinger for sagen
+        entries = v3_audit.list_recent(db, limit=50, case_id=case_id)
+        if not entries:
+            return {
+                "case_id": case_id,
+                "total_rules_used": 0,
+                "flagged_count": 0,
+                "flagged_rules": [],
+                "last_assessment_at": None,
+            }
+
+        # Saml unikke rule_ids fra alle vurderinger
+        rule_ids: set[str] = set()
+        for entry in entries:
+            decisions = (entry.response_payload or {}).get("decisions", [])
+            for d in decisions:
+                rid = d.get("rule_id")
+                if rid:
+                    rule_ids.add(rid)
+
+        # Slå freshness op
+        freshness_rows = (
+            db.query(RuleFreshness)
+            .filter(RuleFreshness.rule_id.in_(rule_ids))
+            .all()
+        ) if rule_ids else []
+
+        flagged = [
+            {
+                "rule_id": r.rule_id,
+                "last_checked_at": r.last_checked_at.isoformat() if r.last_checked_at else None,
+                "citation_found": r.citation_found,
+                "error_message": r.error_message,
+                "source_url": r.source_url,
+                "snippet": (r.snippet or "")[:200],
+            }
+            for r in freshness_rows
+            if r.flagged_for_review
+        ]
+
+        return {
+            "case_id": case_id,
+            "total_rules_used": len(rule_ids),
+            "flagged_count": len(flagged),
+            "flagged_rules": flagged,
+            "last_assessment_at": entries[0].created_at.isoformat() if entries[0].created_at else None,
+        }
+    finally:
+        db.close()
+
+
 @app.get("/api/v3/cases/by-case-id/{case_id}/timeline")
 async def v3_case_timeline(case_id: str, limit: int = 50):
     """Returnér samlet kronologisk feed for én sag — bruges af sag-detalje-siden.

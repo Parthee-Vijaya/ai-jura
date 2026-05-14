@@ -199,6 +199,97 @@ def create_case(
     return case
 
 
+def clone_case(
+    session: Session,
+    *,
+    source_case_id: str,
+    new_case_id: str,
+    new_title: str,
+    user: Optional[str] = None,
+    include_intake_fields: Optional[list[str]] = None,
+) -> Case:
+    """Klon en eksisterende sag til en ny — kun intake_state kopieres.
+
+    Inkluderer:
+    - Hele intake_state (eller delmængde via include_intake_fields)
+
+    Inkluderer IKKE:
+    - audit-trail (vurderinger)
+    - evidence_artifacts (sagsbehandler skal udfylde dem på ny)
+    - case_transitions
+    - last_aggregate_status / last_assessment_log_id
+    - next_review_at
+
+    Args:
+        source_case_id: ekstern case_id på sagen at klone (fx 'K-2026-0184')
+        new_case_id: case_id for den nye sag
+        new_title: titel for den nye sag
+        user: bruger-streng til audit-trail
+        include_intake_fields: hvis sat, kopierer KUN disse keys fra intake_state.
+                              Hvis None, kopierer hele intake_state.
+
+    Raises:
+        ValueError: hvis source case ikke findes, eller new_case_id allerede eksisterer
+    """
+    # Find kilde-sag (foretrækker seneste hvis flere med samme case_id)
+    source = (
+        session.query(Case)
+        .filter(Case.case_id == source_case_id)
+        .order_by(Case.created_at.desc())
+        .first()
+    )
+    if source is None:
+        raise ValueError(f"source case not found: {source_case_id}")
+
+    # Tjek at new_case_id ikke kolliderer
+    existing = (
+        session.query(Case)
+        .filter(Case.case_id == new_case_id)
+        .first()
+    )
+    if existing is not None:
+        raise ValueError(f"case_id already exists: {new_case_id}")
+
+    # Hent intake (kan være JSON-string eller dict)
+    source_intake = source.get_intake_state() if source.intake_state else {}
+
+    # Filtrér hvis include_intake_fields er givet
+    if include_intake_fields is not None:
+        cloned_intake = {
+            k: v for k, v in source_intake.items() if k in include_intake_fields
+        }
+    else:
+        cloned_intake = dict(source_intake)
+
+    # Tilføj klonings-metadata
+    cloned_intake["_cloned_from"] = source_case_id
+    cloned_intake["_cloned_at"] = datetime.now(UTC).isoformat()
+    if user:
+        cloned_intake["_cloned_by"] = user
+
+    new_case = Case(
+        case_id=new_case_id,
+        title=new_title,
+        status="kladde",  # starter altid som kladde
+        assigned_to=user,
+        intake_state=json.dumps(cloned_intake, ensure_ascii=False),
+    )
+    session.add(new_case)
+    session.flush()
+
+    # Audit-transition
+    transition = CaseTransition(
+        case_db_id=new_case.id,
+        from_status=None,
+        to_status="kladde",
+        note=f"Klonet fra {source_case_id} af {user or 'ukendt bruger'}",
+        changed_by=user,
+    )
+    session.add(transition)
+    session.flush()
+    return new_case
+
+
 def transition_case(
     session: Session,
     case_db_id: str,
@@ -225,6 +316,16 @@ def transition_case(
     session.add(transition)
     case.status = new_status
     case.updated_at = datetime.now(UTC)
+
+    # Modul 4.2 — Annual review-reminder: når en sag transitioner til
+    # "godkendt", sættes automatisk next_review_at = 12 mdr frem. Det
+    # trigger case_reminder_service's daglige cron, der notificerer
+    # sagsejeren før deadline. AI Act Art. 9 + GDPR Art. 35 kræver
+    # periodisk genvurdering af højrisiko-systemer.
+    if new_status == "godkendt" and not case.next_review_at:
+        from datetime import timedelta
+        case.next_review_at = datetime.now(UTC) + timedelta(days=365)
+
     session.flush()
     return case
 

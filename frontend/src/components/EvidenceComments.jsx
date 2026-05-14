@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import {
@@ -7,6 +7,8 @@ import {
   FaTrash,
   FaPaperPlane,
   FaUserCircle,
+  FaMicrophone,
+  FaStop,
 } from 'react-icons/fa';
 
 import { useToast } from './ui';
@@ -198,6 +200,61 @@ const EvidenceComments = ({
   const [body, setBody] = useState('');
   const [posting, setPosting] = useState(false);
 
+  // Whisper-diktering state
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const startDictation = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error('Mikrofon-adgang ikke understøttet i denne browser');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      audioChunksRef.current = [];
+      mr.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mr.onstop = async () => {
+        // Stop alle tracks så mikrofon-LED slukkes
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          fd.append('audio', blob, 'recording.webm');
+          fd.append('language', 'da');
+          const r = await axios.post('/api/v3/transcribe', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          const transcribed = r.data?.text || '';
+          // Append til eksisterende tekst (eller erstat hvis tomt)
+          setBody((prev) => prev ? `${prev} ${transcribed}` : transcribed);
+          toast.success(`Transkriberet ${transcribed.length} tegn`);
+        } catch (err) {
+          toast.error(`Tale-til-tekst fejlede: ${err?.response?.data?.error?.message || err?.message}`);
+        } finally {
+          setTranscribing(false);
+        }
+      };
+      mr.start();
+      mediaRecorderRef.current = mr;
+      setRecording(true);
+    } catch (err) {
+      toast.error(`Kunne ikke starte mikrofon: ${err.message}`);
+    }
+  };
+
+  const stopDictation = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    setRecording(false);
+  };
+
   const fetchComments = async () => {
     if (!caseId || !artifactId) return;
     setLoading(true);
@@ -359,11 +416,33 @@ const EvidenceComments = ({
                 autoFocus
               />
               <div className="row">
-                <span className="hint">{body.length}/4000 tegn</span>
-                <button type="button" onClick={() => { setComposeOpen(false); setBody(''); }} style={{ background: 'transparent', color: '#0d2e54', border: '1px solid #d8dde6' }}>
+                <span className="hint">
+                  {body.length}/4000 tegn
+                  {transcribing && ' · transkriberer…'}
+                </span>
+                <button
+                  type="button"
+                  onClick={recording ? stopDictation : startDictation}
+                  disabled={transcribing}
+                  title={recording ? 'Stop og transkribér' : 'Diktér med Whisper'}
+                  style={{
+                    background: recording ? '#a02020' : 'transparent',
+                    color: recording ? 'white' : '#0d2e54',
+                    border: `1px solid ${recording ? '#a02020' : '#d8dde6'}`,
+                  }}
+                  aria-label={recording ? 'Stop diktering' : 'Start diktering'}
+                >
+                  {recording ? <FaStop /> : <FaMicrophone />}
+                  {recording ? 'Stop' : ''}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setComposeOpen(false); setBody(''); stopDictation(); }}
+                  style={{ background: 'transparent', color: '#0d2e54', border: '1px solid #d8dde6' }}
+                >
                   Annullér
                 </button>
-                <button type="button" onClick={handlePost} disabled={posting || !body.trim()}>
+                <button type="button" onClick={handlePost} disabled={posting || !body.trim() || recording}>
                   <FaPaperPlane /> {posting ? 'Sender…' : 'Send'}
                 </button>
               </div>

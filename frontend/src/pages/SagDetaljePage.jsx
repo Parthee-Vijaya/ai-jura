@@ -12,6 +12,7 @@ import {
   FaCheckCircle,
   FaArrowRight,
   FaEdit,
+  FaCopy,
   FaFileWord,
   FaFilePdf,
 } from 'react-icons/fa';
@@ -355,6 +356,16 @@ const SagDetaljePage = () => {
     { enabled: !!case_id, staleTime: 10_000 },
   );
 
+  // Fetch citation-flags — viser banner hvis et lov-citat er stale
+  const { data: citationFlags } = useQuery(
+    ['sag-citation-flags', case_id],
+    async () => {
+      const r = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(case_id)}/citation-flags`);
+      return r.data;
+    },
+    { enabled: !!case_id, staleTime: 60_000 },
+  );
+
   const caseRow = timelineData?.case;
   const events = timelineData?.events || [];
   const intake = caseRow?.intake_state || {};
@@ -455,6 +466,56 @@ const SagDetaljePage = () => {
         ]}
       />
 
+      {citationFlags && citationFlags.flagged_count > 0 && (
+        <div style={{
+          background: 'rgba(160, 32, 32, 0.08)',
+          border: '1px solid #a02020',
+          borderLeft: '4px solid #a02020',
+          borderRadius: 6,
+          padding: '0.85rem 1.1rem',
+          marginBottom: '1rem',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '0.75rem',
+        }}>
+          <span style={{ fontSize: '1.4rem', lineHeight: 1, color: '#a02020' }}>⚠</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, color: '#a02020', marginBottom: '0.25rem' }}>
+              {citationFlags.flagged_count} lov-citat{citationFlags.flagged_count === 1 ? '' : 'er'} er ændret siden vurderingen blev kørt
+            </div>
+            <div style={{ fontSize: '0.85rem', color: '#5b6573', lineHeight: 1.45 }}>
+              Det betyder at en eller flere regler bruger lov-tekst der ikke længere findes ordret i kilden.
+              Bifrost flagger automatisk dette via daglig citation-verifier. Overvej at køre en ny vurdering.
+              <details style={{ marginTop: '0.5rem' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 500, color: '#0d2e54' }}>
+                  Se påvirkede regler ({citationFlags.flagged_count} ud af {citationFlags.total_rules_used})
+                </summary>
+                <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem', fontSize: '0.82rem' }}>
+                  {citationFlags.flagged_rules.map((r) => (
+                    <li key={r.rule_id} style={{ marginBottom: '0.35rem' }}>
+                      <code style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{r.rule_id}</code>
+                      {r.error_message && (
+                        <span style={{ color: '#5b6573' }}> — {r.error_message}</span>
+                      )}
+                      {r.source_url && (
+                        <a
+                          href={r.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ marginLeft: '0.5rem', color: '#0d2e54', fontSize: '0.78rem' }}
+                        >
+                          kilde →
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
+
       <HeroSection>
         <HeroBar>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -484,6 +545,35 @@ const SagDetaljePage = () => {
               onClick={() => navigate(`/indkoebsproces?case_id=${encodeURIComponent(case_id)}`)}
             >
               <FaEdit /> Rediger
+            </Button>
+            <Button
+              $variant="secondary"
+              $size="sm"
+              onClick={async () => {
+                const newId = window.prompt(
+                  `Klon ${case_id} som skabelon til ny sag.\n\nIndtast nyt sags-ID (fx K-2026-NN):`,
+                  '',
+                );
+                if (!newId) return;
+                const newTitle = window.prompt(
+                  'Titel for den nye sag:',
+                  `${caseRow?.title || 'Ny sag'} (klon)`,
+                );
+                if (!newTitle) return;
+                try {
+                  const r = await axios.post(
+                    `/api/v3/cases/by-case-id/${encodeURIComponent(case_id)}/clone`,
+                    { new_case_id: newId, new_title: newTitle },
+                  );
+                  toast.success(`Klonede til ${r.data.case_id} — åbner...`);
+                  setTimeout(() => navigate(`/sag/${encodeURIComponent(r.data.case_id)}`), 600);
+                } catch (err) {
+                  toast.error(`Klon fejlede: ${err?.response?.data?.error?.message || err?.message || 'ukendt fejl'}`);
+                }
+              }}
+              title="Brug denne sag som skabelon for en ny — kopierer kun intake (ikke vurderinger/evidens)"
+            >
+              <FaCopy /> Klon
             </Button>
             <Button
               $variant="primary"
