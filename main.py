@@ -3926,6 +3926,55 @@ async def v3_case_report(case_id: str, format: str = "docx"):
         db.close()
 
 
+class MeetingReportPayload(BaseModel):
+    case_ids: List[str] = Field(..., min_length=1, max_length=50)
+    meeting_title: Optional[str] = Field(default=None, max_length=200)
+    meeting_date: Optional[str] = Field(default=None, max_length=40)
+    chair: Optional[str] = Field(default=None, max_length=120)
+
+
+@app.post("/api/v3/cases/meeting-report")
+async def v3_meeting_report(body: MeetingReportPayload):
+    """Generér PDF-mødeoversigt for 2+ sager — bruges til styregruppe-møder.
+
+    Indhold:
+      - Cover-side med dato, sagsantal, verdict-fordeling
+      - 1-sides oversigt pr. sag (verdict, status, top-blockers, anbefaling)
+      - Slut-side med beslutningsrum til styregruppen
+
+    Returnerer PDF. Filnavn: bifrost-modeoversigt-YYYY-MM-DD.pdf
+    """
+    from src.database.connection import SessionLocal
+    from src.services.meeting_report_generator import build_meeting_report_pdf
+
+    db = SessionLocal()
+    try:
+        try:
+            pdf_bytes = await asyncio.to_thread(
+                build_meeting_report_pdf,
+                db,
+                case_ids=body.case_ids,
+                meeting_title=body.meeting_title,
+                meeting_date=body.meeting_date,
+                chair=body.chair,
+            )
+        except ValueError as exc:
+            raise AppError("invalid_meeting", str(exc), status=400)
+
+        from datetime import datetime as _dt
+        date_str = body.meeting_date or _dt.now().strftime("%Y-%m-%d")
+        filename = f"bifrost-modeoversigt-{date_str}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+    finally:
+        db.close()
+
+
 class EvidenceDraftPayload(BaseModel):
     """Eksisterende svar der ikke skal overskrives."""
     existing_content: Optional[Dict[str, Any]] = Field(default=None)

@@ -857,6 +857,56 @@ const SagerPage = () => {
               </button>
               <button
                 type="button"
+                onClick={async () => {
+                  if (selectedIds.size < 1) return;
+                  // Vi mapper selectedIds (DB-ids) til de eksterne case_ids ved at slå op i cases
+                  const idMap = new Map(cases.map((c) => [c.id, c.case_id || c.external_case_id || c.id]));
+                  const caseIds = Array.from(selectedIds).map((id) => idMap.get(id)).filter(Boolean);
+                  try {
+                    const res = await fetch('/api/v3/cases/meeting-report', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        case_ids: caseIds,
+                        meeting_title: 'Styregruppe — AI-compliance',
+                      }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => ({}));
+                      alert(`Kunne ikke generere mødeoversigt: ${err?.error?.message || res.statusText}`);
+                      return;
+                    }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const date = new Date().toISOString().split('T')[0];
+                    a.download = `bifrost-modeoversigt-${date}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    alert(`Kunne ikke generere mødeoversigt: ${err.message}`);
+                  }
+                }}
+                disabled={selectedIds.size < 1}
+                style={{
+                  background: 'transparent',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.55)',
+                  borderRadius: 4,
+                  padding: '0.4rem 0.7rem',
+                  cursor: selectedIds.size >= 1 ? 'pointer' : 'not-allowed',
+                  fontSize: '0.78rem',
+                  opacity: selectedIds.size >= 1 ? 1 : 0.5,
+                }}
+                title={selectedIds.size < 1
+                  ? 'Vælg mindst én sag'
+                  : 'Generér PDF til styregruppe-mødet med valgte sager'}
+              >
+                📄 Mødeoversigt (PDF)
+              </button>
+              <button
+                type="button"
                 onClick={() => setSelectedIds(new Set())}
                 style={{
                   background: 'transparent',
