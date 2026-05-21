@@ -54,7 +54,7 @@ services:
   - name: ai-jura-frontend
     type: web
     runtime: static
-    plan: free
+    # static sites har ingen plan — de er altid gratis (Render afviser et plan-felt her)
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/build
     envVars:
