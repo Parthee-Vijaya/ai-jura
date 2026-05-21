@@ -30,6 +30,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY main.py .
 COPY src/ ./src/
 COPY data/ ./data/
+# Rule engine (src/rule_engine) and agent registry (src/agents) load these
+# directories by relative path at runtime — they must ship in the image.
+COPY rules/ ./rules/
+COPY config/ ./config/
 
 # Create directories for database and logs
 RUN mkdir -p /app/data /app/logs
