@@ -17,7 +17,7 @@ services:
   - name: ai-jura-backend
     type: web
     runtime: docker
-    plan: starter              # 512 MB — bump til "standard" (2 GB) hvis den OOM'er ved boot
+    plan: free                 # gratis: 512 MB, spinner ned ved inaktivitet (~30-60 s koldstart). Bump til starter/standard for altid-på + mere RAM
     region: frankfurt
     dockerfilePath: ./Dockerfile.backend
     dockerContext: .
