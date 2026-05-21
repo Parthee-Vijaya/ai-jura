@@ -27,12 +27,19 @@ services:
         fromDatabase:
           name: ai-jura-db
           property: connectionString
+      # --- Gemini via OpenAI-kompatibelt endpoint (ingen ny dependency) ---
       - key: OPENAI_API_KEY
-        sync: false            # indsættes ved Blueprint-oprettelse (LM Studio findes ikke i skyen)
+        sync: false            # = din GEMINI API-nøgle (aistudio.google.com → "Get API key")
+      - key: OPENAI_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai/
+      - key: OPENAI_API_BASE
+        value: https://generativelanguage.googleapis.com/v1beta/openai/
       - key: OPENAI_MODEL
-        value: gpt-4o-mini
+        value: gemini-2.5-flash
+      - key: DEFAULT_LLM_MODEL
+        value: gemini-2.5-flash
       - key: EMBEDDING_MODEL
-        value: text-embedding-3-small
+        value: gemini-embedding-001
       - key: API_HOST
         value: 0.0.0.0
       - key: API_RELOAD
@@ -54,7 +61,7 @@ services:
   - name: ai-jura-frontend
     type: web
     runtime: static
-    plan: free
+    # static sites har ingen plan — de er altid gratis (Render afviser et plan-felt her)
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/build
     envVars:

@@ -1260,7 +1260,7 @@ async def diagnose_system_issue(request: Dict[str, Any]):
         context = request.get("context", "")
 
         # Create LLM and search tool
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0)
         search = DuckDuckGoSearchRun()
 
         # Create agent with search capability
