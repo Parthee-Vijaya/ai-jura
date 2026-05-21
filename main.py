@@ -4940,7 +4940,9 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host=os.getenv("API_HOST", "0.0.0.0"),
-        port=int(os.getenv("API_PORT", 8000)),
+        # Render (and most PaaS) inject the bind port via $PORT. Honor it first,
+        # then fall back to API_PORT for local dev.
+        port=int(os.getenv("PORT", os.getenv("API_PORT", "8000"))),
         reload=os.getenv("API_RELOAD", "True").lower() == "true",
         reload_dirs=["src", "."],  # Only watch src/ and root files
         reload_excludes=["node_modules", "frontend", ".git", "__pycache__", "*.pyc"]
