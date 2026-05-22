@@ -123,7 +123,7 @@ class LLMNewsSearcher:
                     timeout=15
                 )
             else:
-                return ChatOpenAI(model="gpt-4o-mini", temperature=0.5, timeout=15)
+                return ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0.5, timeout=15)
         except Exception as e:
             logger.warning(f"LLM initialization failed: {e}")
             return None

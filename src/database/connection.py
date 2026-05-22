@@ -24,6 +24,12 @@ DATABASE_URL = os.getenv(
     "postgresql://postgres:password@localhost:5432/compliance_db"
 )
 
+# Render/Heroku managed Postgres hands out URLs with the legacy "postgres://"
+# scheme, which SQLAlchemy 2.x no longer recognizes. Normalize to the explicit
+# psycopg2 driver scheme so create_engine() works unchanged in the cloud.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+
 # SQLAlchemy engine configuration
 engine_kwargs = {
     "echo": os.getenv("SQL_ECHO", "false").lower() == "true",
