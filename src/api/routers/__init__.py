@@ -37,6 +37,7 @@ def register_routers(app: FastAPI) -> None:
     # Importér her (ikke top-level) så vi undgår circular imports
     from src.api.routers import (
         admin, dashboard, skabeloner, comments, evidens, notifications, users,
+        risk_assessment,
     )
 
     app.include_router(admin.router)
@@ -46,3 +47,4 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(evidens.router)
     app.include_router(notifications.router)
     app.include_router(users.router)
+    app.include_router(risk_assessment.router)

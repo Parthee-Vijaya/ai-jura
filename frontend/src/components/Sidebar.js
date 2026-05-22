@@ -19,6 +19,7 @@ import {
   FaShoppingCart,
   FaSearch,
   FaChartBar,
+  FaShieldAlt,
 } from 'react-icons/fa';
 import NotificationsBell from './notifications/NotificationsBell';
 import BifrostLogo from './BifrostLogo';
@@ -478,6 +479,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         { path: '/indkoebsproces', icon: FaShoppingCart, text: '› Indkøbsproces' },
         { path: '/eu-checker', icon: FaBalanceScale, text: '› EU AI Act Checker' },
         { path: '/vurdering', icon: FaClipboardList, text: '› Vurdering' },
+        { path: '/risikovurdering', icon: FaShieldAlt, text: '› Risikovurdering' },
       ],
     },
     {

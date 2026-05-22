@@ -49,6 +49,7 @@ const SagerPage = React.lazy(() => import('./pages/SagerPage'));
 const LovOvervaagningPage = React.lazy(() => import('./pages/LovOvervaagningPage'));
 const EvidensPrintPage = React.lazy(() => import('./pages/EvidensPrintPage'));
 const PortfolioDashboardPage = React.lazy(() => import('./pages/PortfolioDashboardPage'));
+const RisikovurderingPage = React.lazy(() => import('./pages/RisikovurderingPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -345,6 +346,9 @@ const AppInner = () => {
 
                   {/* Primary assessment page (replaces Hurtig Tjek + Compliance Control) */}
                   <Route path="/vurdering" element={<VurderingPage />} />
+
+                  {/* Risikovurderingsmotor — automatiseret databeskyttelsesretlig risikovurdering */}
+                  <Route path="/risikovurdering" element={<RisikovurderingPage />} />
 
                   {/* Vurderingshistorik (audit log over /api/v3/audit) */}
                   <Route path="/historik" element={<VurderingHistorikPage />} />
