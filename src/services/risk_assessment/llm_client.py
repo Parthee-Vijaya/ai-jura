@@ -34,21 +34,39 @@ def chat_json(
     timeout: float = 90.0,
     expect: str = "object",  # "object" | "array"
     max_tokens: int = 4096,
+    max_attempts: int = 3,
 ) -> Any:
     """Send en chat-forespørgsel og returnér parset JSON.
 
     Provider-kæde: LM Studio → Azure → OpenAI. Bruger response_format=json_object
     hvor muligt, med fallback hvis provider ikke understøtter det.
 
+    Lokale modeller (fx gemma) producerer LEJLIGHEDSVIS ugyldig JSON (stray commas,
+    unescaped newlines i lange tekstfelter). Derfor: op til max_attempts forsøg,
+    med faldende temperatur for mere deterministisk output på retry. _parse_json
+    reparerer almindelige fejl; retry fanger resten.
+
     Args:
         expect: "object" → forvent dict; "array" → forvent list (uddrages fra wrapper)
         max_tokens: høj default så lange risiko-/indholds-svar ikke trunkeres
     """
-    raw = _call_provider(
-        system_prompt, user_message,
-        temperature=temperature, timeout=timeout, max_tokens=max_tokens,
-    )
-    return _parse_json(raw, expect=expect)
+    last_err: Exception | None = None
+    for attempt in range(max_attempts):
+        # Sænk temperatur på retry → mere deterministisk, færre JSON-fejl
+        temp = temperature if attempt == 0 else min(temperature, 0.1)
+        raw = _call_provider(
+            system_prompt, user_message,
+            temperature=temp, timeout=timeout, max_tokens=max_tokens,
+        )
+        try:
+            return _parse_json(raw, expect=expect)
+        except RiskLLMError as exc:
+            last_err = exc
+            logger.warning(
+                "JSON-parse fejlede (forsøg %d/%d): %s",
+                attempt + 1, max_attempts, str(exc)[:120],
+            )
+    raise last_err if last_err else RiskLLMError("JSON-parse fejlede uden detaljer")
 
 
 def _call_provider(system_prompt, user_message, *, temperature, timeout, max_tokens) -> str:
@@ -168,15 +186,57 @@ def _post_azure(
     return body.get("choices", [{}])[0].get("message", {}).get("content", "")
 
 
+def _escape_control_chars_in_strings(text: str) -> str:
+    """Escape rå newlines/tabs/CR INDE i JSON-string-værdier.
+
+    Lokale modeller skriver ofte lange tekstfelter med rigtige linjeskift inde i
+    string-værdien — det er ugyldig JSON. Vi walker tegn for tegn, holder styr på
+    om vi er inde i en string, og escaper kontroltegn der. Formaterings-newlines
+    UDEN for strings bevares (json.loads håndterer dem fint).
+    """
+    out = []
+    in_str = False
+    escaped = False
+    for ch in text:
+        if in_str:
+            if escaped:
+                out.append(ch)
+                escaped = False
+            elif ch == "\\":
+                out.append(ch)
+                escaped = True
+            elif ch == '"':
+                out.append(ch)
+                in_str = False
+            elif ch == "\n":
+                out.append("\\n")
+            elif ch == "\r":
+                out.append("\\r")
+            elif ch == "\t":
+                out.append("\\t")
+            else:
+                out.append(ch)
+        else:
+            out.append(ch)
+            if ch == '"':
+                in_str = True
+    return "".join(out)
+
+
 def _repair_json(text: str) -> str:
-    """Reparér almindelige LLM-JSON-fejl: trailing commas, kommentarer, smart-quotes."""
+    """Reparér almindelige LLM-JSON-fejl: smart-quotes, kommentarer, trailing/lone
+    commas, og rå kontroltegn inde i strings."""
     # Smart-quotes → almindelige
     text = text.replace("“", '"').replace("”", '"').replace("’", "'")
     # Fjern // og /* */ kommentarer
     text = re.sub(r"//[^\n\r]*", "", text)
     text = re.sub(r"/\*[\s\S]*?\*/", "", text)
-    # Fjern trailing commas før } eller ]
+    # Trailing commas før } eller ] (mens rigtige newlines stadig er der)
     text = re.sub(r",(\s*[}\]])", r"\1", text)
+    # Lone/dobbelt commas: ",," eller "," på egen linje før en key/}-]
+    text = re.sub(r",\s*,", ",", text)
+    # Escape rå kontroltegn inde i string-værdier (efter comma-oprydning)
+    text = _escape_control_chars_in_strings(text)
     return text
 
 

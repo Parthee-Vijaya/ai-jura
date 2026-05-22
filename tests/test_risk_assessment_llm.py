@@ -55,6 +55,53 @@ class TestJsonRepair:
         with pytest.raises(RiskLLMError):
             _parse_json("dette er ikke json overhovedet")
 
+    # --- regression: intermittente gemma-fejl (rapporteret af bruger) ---
+
+    def test_unescaped_newline_in_string_value(self):
+        # gemma skriver lange tekstfelter med rå linjeskift → ugyldig JSON
+        bad = '{"formaal_tekst": "Formålet er at\nvurdere systemet.", "omfang_tekst": "Alt."}'
+        out = _parse_json(bad)
+        assert out["omfang_tekst"] == "Alt."
+        assert "vurdere systemet" in out["formaal_tekst"]
+
+    def test_multiline_value_in_fence(self):
+        bad = '```json\n{\n  "a": "linje et\nlinje to.",\n  "b": "ok"\n}\n```'
+        out = _parse_json(bad)
+        assert out["b"] == "ok"
+
+    def test_lone_comma_between_fields(self):
+        assert _parse_json('{"a": "x",\n,\n"b": "y"}') == {"a": "x", "b": "y"}
+
+    def test_tab_in_string_value(self):
+        out = _parse_json('{"a": "kol1\tkol2", "b": "y",}')
+        assert "kol1" in out["a"]
+
+    def test_escaped_quote_preserved(self):
+        out = _parse_json('{"a": "siger \\"hej\\" til"}')
+        assert out["a"] == 'siger "hej" til'
+
+
+class TestRetry:
+    def test_retries_on_parse_failure_then_succeeds(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        calls = {"n": 0}
+
+        def fake_provider(*a, **kw):
+            calls["n"] += 1
+            # Første svar er ugyldigt JSON, andet er gyldigt
+            return "noget vrøvl" if calls["n"] == 1 else '{"ok": true}'
+
+        monkeypatch.setattr(llm_client, "_call_provider", fake_provider)
+        out = llm_client.chat_json("sys", "user", max_attempts=3)
+        assert out == {"ok": True}
+        assert calls["n"] == 2  # fejlede én gang, lykkedes på forsøg 2
+
+    def test_raises_after_all_attempts(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        monkeypatch.setattr(llm_client, "_call_provider", lambda *a, **kw: "ikke json")
+        with pytest.raises(RiskLLMError):
+            llm_client.chat_json("sys", "user", max_attempts=2)
+
 
 # ---- fact_extractor ------------------------------------------------------
 

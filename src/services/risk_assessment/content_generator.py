@@ -62,7 +62,11 @@ Du svarer KUN med valid JSON: en dict med præcis disse nøgler (én streng pr. 
 formaal_tekst, omfang_tekst, ansvarlige_tekst, baggrund_tekst, funktionalitet_tekst,
 interessenter_tekst, personoplysninger_tekst, lokationer_tekst, adgangsrettigheder_tekst,
 saarbarheder_tekst, tiltag_tekst, ansvarlige_tiltag_tekst, kontrolmekanismer_tekst,
-opdatering_tekst."""
+opdatering_tekst.
+
+KRITISK JSON-FORMAT: Hver feltværdi skal være ÉN sammenhængende string på én linje
+— brug ALDRIG rå linjeskift inde i en string (skriv mellemrum i stedet). Ingen
+trailing commas. Ingen kommentarer. Kun gyldig JSON."""
 
 
 def generate_content(
@@ -74,7 +78,7 @@ def generate_content(
     """Generér de 14 prosa-felttekster. Returnér dict {feltnavn: tekst}."""
     user_message = _build_user_prompt(facts, risks)
     try:
-        data = chat_json(SYSTEM_PROMPT, user_message, temperature=0.3, timeout=timeout, expect="object")
+        data = chat_json(SYSTEM_PROMPT, user_message, temperature=0.2, timeout=timeout, expect="object")
     except RiskLLMError:
         raise
     except Exception as exc:  # pragma: no cover
