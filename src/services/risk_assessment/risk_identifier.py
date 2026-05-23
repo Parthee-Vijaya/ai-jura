@@ -19,6 +19,8 @@ logger = logging.getLogger("bifrost.risk_assessment.risks")
 
 
 # Risiko-bibliotek — kategoriseret inspiration. LLM VÆLGER relevante, fyrer ikke alle af.
+# Kategori F + G er Kalundborg-specifikke (jf. Retningslinjer for IT-anskaffelser
+# + Tjekliste for AI-løsninger).
 RISK_LIBRARY = """A. Leverandør-/kontraktrelaterede
    - MSA-klausuler der tillader brug af kundedata til AI-træning/R&D
    - Lavt ansvarsloft / lav indemnification
@@ -48,7 +50,32 @@ E. Organisatoriske
    - Medarbejderovervågning uden TR/MED-inddragelse
    - Manglende oplysning efter art. 13
    - Manglende DPIA før bred udrulning
-   - Manglende awareness-træning"""
+   - Manglende awareness-træning
+
+F. Kommunal proces og indkøbs-compliance (Kalundborg Retningslinjer for IT-anskaffelser)
+   - Kontraktværdi over 4 år nær eller over tærsklen (kr. 1.601.944, 2022) uden EU-udbud
+     → potentielt ulovligt indkøb / udbudsklage
+   - Digitalisering og IT ikke involveret tidligt → arkitektur-mismatch + omarbejde
+   - Manglende indpasning i Den Fælleskommunale Rammearkitektur
+   - Manglende anvendelse af Den Fælleskommunale Serviceplatform til adgang til data
+   - Kontrakt ikke underskrevet af Digitaliserings- og IT-chefen
+     → ikke formelt indgået handel / uklart kontraktejerskab
+   - Manglende ledelsesforankret styregruppe ved EU-udbud
+   - Manglende business case / Direktion-godkendelse (EU-udbud)
+   - Manglende Contract Management i driftsperioden → kontraktforpligtelser glider
+
+G. Forvaltningsret + særlovgivning (AI-tjeklistens punkter)
+   - Manglende national lovhjemmel (GDPR-grundlag alene er ikke tilstrækkeligt)
+   - Manglende kortlægning af fagområdets særlovgivning
+     (fx serviceloven, sundhedsloven, folkeskoleloven, beskæftigelseslovgivning)
+   - Manglende vurdering af forvaltningsretlige principper
+     (saglighed, ligebehandling, proportionalitet)
+   - Manglende tilmelding til fortegnelse efter art. 30
+     (kontakt afdelingens IT-sikkerhedsambassadør)
+   - Manglende opfyldelse af oplysningspligt efter art. 13-14
+   - DPIA-udkast ikke fremsendt til DPO
+   - Manglende dokumenterede AI-færdigheder hos brugerne (AI-forordningens art. 4)
+   - Risiko for ulovlig viderebehandling til formål uforenelige med oprindeligt formål"""
 
 
 SYSTEM_PROMPT = f"""Du er en GDPR- og informationssikkerhedsekspert der identificerer
