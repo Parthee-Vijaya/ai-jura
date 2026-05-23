@@ -232,9 +232,12 @@ class TestClarifying:
         qs = clarifying.build_questions(SystemFacts(hosting_lokation=""))
         assert any(q.key == "hosting_lokation" for q in qs)
 
-    def test_max_5_questions(self):
-        qs = clarifying.build_questions(SystemFacts())
-        assert len(qs) <= 5
+    def test_question_count_within_expected_range(self):
+        # Etape 2: udvidet fra 5 → 8-9 spørgsmål (4 GDPR + 4 Kalundborg + evt. hosting)
+        qs_med_hosting = clarifying.build_questions(SystemFacts(hosting_lokation="Azure"))
+        qs_uden_hosting = clarifying.build_questions(SystemFacts())  # +hosting-spørgsmål
+        assert 8 <= len(qs_med_hosting) <= 10
+        assert len(qs_uden_hosting) == len(qs_med_hosting) + 1  # hosting tilføjes
 
     def test_apply_answers_scope_normalization(self):
         f = SystemFacts()

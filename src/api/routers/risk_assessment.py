@@ -151,8 +151,14 @@ async def render_endpoint(request: Request, response: Response, body: RenderPayl
     except Exception as exc:  # pragma: no cover
         raise AppError("render_failed", f"DOCX-assembly fejlede: {exc}", status=500)
 
-    # Verifikation — log problemer men blokér ikke download (det er et udkast)
-    res = verify_docx(data, expected_n_risks=len(rv.risici), systemnavn=rv.facts.systemnavn)
+    # Verifikation — log problemer men blokér ikke download (det er et udkast).
+    # facts gives med så Kalundborg-compliance-tjekkene også køres.
+    res = verify_docx(
+        data,
+        expected_n_risks=len(rv.risici),
+        systemnavn=rv.facts.systemnavn,
+        facts=rv.facts,
+    )
     if not res.valid:
         logger.warning("Render-verifikation fandt problemer: %s", res.problems)
 

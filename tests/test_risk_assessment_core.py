@@ -14,11 +14,13 @@ import pytest
 from docx import Document
 
 from src.services.risk_assessment.models import (
+    Anskaffelsesvej,
     DataKategori,
     Niveau,
     Risiko,
     Risikovurdering,
     SystemFacts,
+    UDBUDSTERSKEL_KR_4AAR,
     normalize_niveau,
 )
 from src.services.risk_assessment.document_extract import (
@@ -64,6 +66,132 @@ class TestModels:
     def test_alle_felttekster_count(self):
         rv = Risikovurdering(facts=SystemFacts())
         assert len(rv.alle_felttekster()) == 14
+
+
+class TestKalundborgFelter:
+    """Etape 1+2: nye kommunale procesfelter + helpers."""
+
+    def test_udbudsterskel_konstant(self):
+        assert UDBUDSTERSKEL_KR_4AAR == 1_601_944
+
+    def test_er_over_udbudsterskel(self):
+        assert SystemFacts(kontraktvaerdi_4aar_kr=2_000_000).er_over_udbudsterskel() is True
+        assert SystemFacts(kontraktvaerdi_4aar_kr=500_000).er_over_udbudsterskel() is False
+        assert SystemFacts().er_over_udbudsterskel() is None  # ukendt
+
+    def test_udbudspligt_mismatch_over_taerskel_uden_eu_udbud(self):
+        f = SystemFacts(
+            kontraktvaerdi_4aar_kr=3_000_000,
+            anskaffelsesvej=Anskaffelsesvej.SKI_DIREKTE,
+        )
+        assert f.udbudspligt_mismatch() is True
+
+    def test_udbudspligt_mismatch_eu_udbud_ok(self):
+        f = SystemFacts(
+            kontraktvaerdi_4aar_kr=3_000_000,
+            anskaffelsesvej=Anskaffelsesvej.EU_UDBUD,
+        )
+        assert f.udbudspligt_mismatch() is False
+
+    def test_udbudspligt_mismatch_under_taerskel(self):
+        # Under tærskel = ingen mismatch uanset anskaffelsesvej
+        f = SystemFacts(
+            kontraktvaerdi_4aar_kr=500_000,
+            anskaffelsesvej=Anskaffelsesvej.UNDER_TAERSKEL,
+        )
+        assert f.udbudspligt_mismatch() is False
+
+    def test_udbudspligt_mismatch_ukendt_ikke_mismatch(self):
+        # UKENDT-anskaffelsesvej tæller ikke som mismatch (afventer afklaring)
+        f = SystemFacts(
+            kontraktvaerdi_4aar_kr=3_000_000,
+            anskaffelsesvej=Anskaffelsesvej.UKENDT,
+        )
+        assert f.udbudspligt_mismatch() is False
+
+    def test_proces_status_count(self):
+        assert SystemFacts().proces_status_count() == (0, 9)
+        f = SystemFacts(
+            dit_involveret_tidligt=True,
+            cio_har_underskrevet=True,
+            databehandleraftale_indgaaet=True,
+        )
+        assert f.proces_status_count() == (3, 9)
+
+    def test_anskaffelsesvej_enum_has_6_options(self):
+        # SKI direkte/mini, under tærskel, EU-udbud, bygge-anlæg, ukendt
+        assert len(list(Anskaffelsesvej)) == 6
+
+
+class TestClarifyingNewQuestions:
+    """Etape 2: nye spørgsmål + apply_answers parsing."""
+
+    def test_build_questions_includes_kalundborg(self):
+        from src.services.risk_assessment.clarifying import build_questions
+        qs = build_questions(SystemFacts(hosting_lokation="Azure"))
+        keys = [q.key for q in qs]
+        assert "kontraktvaerdi_bucket" in keys
+        assert "anskaffelsesvej" in keys
+        assert "fagomraade_saerlov" in keys
+        assert "proces_status" in keys
+        # Eksisterende stadig der
+        assert "scope" in keys and "tilgang" in keys
+
+    def test_apply_kontraktvaerdi_buckets(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        f1 = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "Under 1,6 mio. kr."})
+        assert f1.er_over_udbudsterskel() is False
+        f2 = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "1,6 - 5 mio. kr."})
+        assert f2.er_over_udbudsterskel() is True
+        f3 = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "Over 5 mio. kr."})
+        assert f3.er_over_udbudsterskel() is True
+        f4 = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "Ved ikke endnu"})
+        assert f4.er_over_udbudsterskel() is None
+
+    def test_apply_anskaffelsesvej_alle_varianter(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        cases = [
+            ("SKI - direkte tildeling", Anskaffelsesvej.SKI_DIREKTE),
+            ("SKI - mini-udbud", Anskaffelsesvej.SKI_MINIUDBUD),
+            ("Under tærskel (ingen udbudspligt)", Anskaffelsesvej.UNDER_TAERSKEL),
+            ("EU-udbud", Anskaffelsesvej.EU_UDBUD),
+            ("Bygge- og anlægsprojekt", Anskaffelsesvej.BYGGE_ANLAEG),
+        ]
+        for answer, expected in cases:
+            f = apply_answers(SystemFacts(), {"anskaffelsesvej": answer})
+            assert f.anskaffelsesvej == expected, f"answer={answer!r}"
+
+    def test_apply_fagomraade_separator(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        # Med separator → split i fagområde + særlov-liste
+        f = apply_answers(SystemFacts(), {"fagomraade_saerlov": "Beskæftigelse — LAB §17a, forvaltningsloven"})
+        assert f.fagomraade == "Beskæftigelse"
+        assert "LAB §17a" in f.saerlovgivning
+        assert "forvaltningsloven" in f.saerlovgivning
+
+    def test_apply_fagomraade_uden_separator(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        f = apply_answers(SystemFacts(), {"fagomraade_saerlov": "Sundhed"})
+        assert f.fagomraade == "Sundhed"
+        assert f.saerlovgivning == []
+
+    def test_apply_proces_status_multiselect(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        f = apply_answers(SystemFacts(), {
+            "proces_status": (
+                "Digitalisering og IT adviseret tidligt,"
+                "CIO har underskrevet kontrakt + DBA,"
+                "DPIA-udkast sendt til DPO,"
+                "AI-færdigheder dokumenteret (AI-forord. art. 4)"
+            ),
+        })
+        assert f.dit_involveret_tidligt is True
+        assert f.cio_har_underskrevet is True
+        assert f.dpia_sendt_til_dpo is True
+        assert f.ai_faerdigheder_dokumenteret is True
+        # Ikke valgte forbliver False
+        assert f.styregruppe_etableret is False
+        assert f.contract_management_plan is False
 
 
 # ---- document_extract ----------------------------------------------------
@@ -204,3 +332,74 @@ class TestAssembler:
     def test_output_filename(self):
         assert output_filename("Velatir") == "Databeskyttelsesretlig risikovurdering - Velatir.docx"
         assert "/" not in output_filename("A/B")
+
+
+@pytest.mark.skipif(
+    not os.path.exists(get_template_path()),
+    reason="master-template ikke til stede",
+)
+class TestVerifierKalundborgCompliance:
+    """Etape 3: verifier flagger kommunale compliance-issues når facts gives."""
+
+    def _rv_med_facts(self, **fact_kwargs):
+        rv = _full_rv()
+        for k, v in fact_kwargs.items():
+            setattr(rv.facts, k, v)
+        return rv
+
+    def test_uden_facts_kører_kun_basis_check(self):
+        # Bagudkompatibelt: ingen facts → ingen kommunale checks
+        data = assemble_docx(_full_rv())
+        res = verify_docx(data, expected_n_risks=8)
+        assert res.valid
+
+    def test_udbudspligt_mismatch_flagges_hvis_ikke_naevnt(self):
+        # Fakta: over tærskel + SKI (mismatch). Standard tiltag-tekst nævner ikke EU-udbud.
+        rv = self._rv_med_facts(
+            kontraktvaerdi_4aar_kr=3_000_000,
+            anskaffelsesvej=Anskaffelsesvej.SKI_DIREKTE,
+        )
+        # Sørg for at teksten IKKE nævner EU-udbud
+        rv.tiltag_tekst = "Generel kryptering og adgangskontrol."
+        rv.ansvarlige_tekst = "Partheepan Vijayamohan, AI Program Lead."
+        # ansvarlige_tekst skal nævne kommunal aktør for at undgå check 6b
+        rv.ansvarlige_tekst = "DPO inddrages. Partheepan Vijayamohan."
+        rv.saarbarheder_tekst = "Ingen kendte."
+        data = assemble_docx(rv)
+        res = verify_docx(data, expected_n_risks=8, facts=rv.facts)
+        assert not res.valid
+        assert any("EU-udbud" in p or "udbudspligt" in p for p in res.problems)
+
+    def test_kommunale_aktorer_mangler_flagges(self):
+        rv = self._rv_med_facts()
+        # Strip kommunale aktører helt fra ansvarlige
+        rv.ansvarlige_tekst = "Partheepan og Anne er ansvarlige."
+        data = assemble_docx(rv)
+        res = verify_docx(data, expected_n_risks=8, facts=rv.facts)
+        assert any("kommunale aktører" in p or "kommunal kontekst" in p for p in res.problems)
+
+    def test_kommunale_aktorer_med_cio_passerer(self):
+        rv = self._rv_med_facts()
+        rv.ansvarlige_tekst = "Digitaliserings- og IT-chefen underskriver kontrakten."
+        data = assemble_docx(rv)
+        res = verify_docx(data, expected_n_risks=8, facts=rv.facts)
+        # Ingen "kommunale aktører"-problem
+        assert not any("kommunale aktører" in p for p in res.problems)
+
+    def test_fagomraade_uden_saerlov_naevnt_flagges(self):
+        rv = self._rv_med_facts(fagomraade="Beskæftigelse", saerlovgivning=["LAB §17a"])
+        # Sørg for at INGEN tekst nævner fagområdet eller særlov
+        for attr in ("formaal_tekst", "omfang_tekst", "ansvarlige_tekst", "baggrund_tekst",
+                     "funktionalitet_tekst", "interessenter_tekst", "personoplysninger_tekst",
+                     "lokationer_tekst", "adgangsrettigheder_tekst", "saarbarheder_tekst",
+                     "tiltag_tekst", "ansvarlige_tiltag_tekst", "kontrolmekanismer_tekst",
+                     "opdatering_tekst"):
+            v = getattr(rv, attr)
+            # Behold en kommunal aktør i ansvarlige så check 6b passerer
+            if attr == "ansvarlige_tekst":
+                setattr(rv, attr, "DPO inddrages.")
+            else:
+                setattr(rv, attr, v.replace("Beskæftigelse", "X").replace("LAB", "X").replace("særlov", "X"))
+        data = assemble_docx(rv)
+        res = verify_docx(data, expected_n_risks=8, facts=rv.facts)
+        assert any("fagområde" in p.lower() or "fagomraade" in p.lower() or "særlov" in p for p in res.problems)
