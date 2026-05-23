@@ -153,6 +153,26 @@ def _build_user_prompt(facts: SystemFacts) -> str:
     kats = ", ".join(k.value for k in facts.persondata_kategorier) or "ukendt"
     flags = "\n".join(f"  - {c}" for c in facts.msa_risiko_klausuler) or "  (ingen identificeret)"
 
+    # Kalundborg-procesblok
+    udbud_status = facts.er_over_udbudsterskel()
+    udbud_label = (
+        f"OVER tærskel (≈{facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is True
+        else f"under tærskel (≈{facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is False
+        else "ukendt værdi"
+    )
+    mismatch_flag = " ⚠ MISMATCH (værdi over tærskel uden EU-udbud — compliance-risiko)" if facts.udbudspligt_mismatch() else ""
+    proces_done, proces_total = facts.proces_status_count()
+    proces_missing = []
+    if not facts.dit_involveret_tidligt: proces_missing.append("D&IT tidlig involvering")
+    if not facts.cio_har_underskrevet: proces_missing.append("CIO-underskrift")
+    if not facts.databehandleraftale_indgaaet: proces_missing.append("DBA indgået")
+    if not facts.styregruppe_etableret: proces_missing.append("styregruppe")
+    if not facts.fortegnelse_art30_opdateret: proces_missing.append("art. 30-fortegnelse")
+    if not facts.oplysningspligt_opfyldt: proces_missing.append("art. 13-14 oplysningspligt")
+    if not facts.dpia_sendt_til_dpo: proces_missing.append("DPIA til DPO")
+    if not facts.ai_faerdigheder_dokumenteret: proces_missing.append("AI-færdigheder art. 4")
+    if not facts.contract_management_plan: proces_missing.append("Contract Management-plan")
+
     return f"""SYSTEMFAKTA:
 Systemnavn: {facts.systemnavn}
 Leverandør: {facts.leverandoer_navn or "(internt udviklet)" if not facts.internt_udviklet else "INTERNT UDVIKLET"} ({facts.leverandoer_land}){f", CVR {facts.leverandoer_cvr}" if facts.leverandoer_cvr else ""}{f", stiftet {facts.leverandoer_stiftet_aar}" if facts.leverandoer_stiftet_aar else ""}
@@ -176,4 +196,14 @@ Ansvarsloft: {facts.ansvarsloft or "ikke angivet"}
 IP-indemnification cap: {facts.ip_indemnification_cap or "ikke angivet"}
 Retention efter ophør: {facts.retention_efter_ophoer or "ikke angivet"}
 
-Generér nu 8-12 systemspecifikke risici som JSON."""
+KOMMUNAL INDKØBSPROCES (jf. Retningslinjer for IT-anskaffelser + AI-tjekliste):
+Anskaffelsesvej: {facts.anskaffelsesvej.value}
+Kontraktværdi over 4 år: {udbud_label}{mismatch_flag}
+Fagområde: {facts.fagomraade or "(ikke angivet)"}
+Særlovgivning nævnt: {", ".join(facts.saerlovgivning) or "(ingen)"}
+National lovhjemmel: {facts.national_lovhjemmel or "(ikke angivet — kræves UDOVER GDPR)"}
+Procesforhold ({proces_done}/{proces_total} på plads): {"mangler: " + ", ".join(proces_missing) if proces_missing else "alt på plads"}
+
+Generér nu 8-12 systemspecifikke risici som JSON. Inkludér nødvendigvis kategori F-
+og G-risici (kommunal proces + forvaltningsret/særlov) når procesforhold mangler
+eller når der er udbudspligt-mismatch."""

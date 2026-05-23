@@ -10,6 +10,7 @@ from typing import Any
 
 from src.services.risk_assessment.llm_client import chat_json, RiskLLMError
 from src.services.risk_assessment.models import (
+    Anskaffelsesvej,
     DataKategori,
     SystemFacts,
     Underdatabehandler,
@@ -62,13 +63,21 @@ Du svarer KUN med valid JSON i præcis dette format:
   "ip_indemnification_cap": "fx 'EUR 10.000' eller null",
   "retention_efter_ophoer": "fx '90 dage' eller null",
   "internt_udviklet": true/false,
-  "medarbejder_overvaagning": true/false
+  "medarbejder_overvaagning": true/false,
+  "kontraktvaerdi_4aar_kr": 2000000 eller null,  // estimat hvis MSA/aftale nævner pris
+  "fagomraade": "fx 'Beskæftigelse', 'Sundhed', 'Borgerservice' — kun hvis dokumenterne afslører det",
+  "saerlovgivning": ["fx 'serviceloven', 'LAB § 17a' — kun hvis dokumenter nævner det"]
 }
 
 Hvis et felt ikke kan udledes med rimelig sikkerhed, sæt det til null (eller tom
-liste/streng). Gæt ALDRIG på CVR-numre, datoer eller paragraf-numre — angiv kun
-hvad der faktisk står i dokumenterne. internt_udviklet=true hvis det er kommunens
-eget system uden ekstern SaaS-leverandør."""
+liste/streng). Gæt ALDRIG på CVR-numre, datoer, paragraf-numre eller priser —
+angiv kun hvad der faktisk står i dokumenterne. internt_udviklet=true hvis det er
+kommunens eget system uden ekstern SaaS-leverandør.
+
+Kommunale procesforhold (om Digitalisering og IT er involveret, om CIO har
+underskrevet, fortegnelse art. 30, DPIA→DPO, AI-færdigheder, styregruppe,
+Contract Management) kan typisk IKKE udledes fra leverandør-dokumenter — disse
+afgøres via afklarende spørgsmål bagefter."""
 
 
 _KAT_MAP = {
@@ -150,6 +159,13 @@ def _coerce_facts(data: dict[str, Any], *, systemnavn_override: str = "") -> Sys
     except (ValueError, TypeError):
         aar = None
 
+    # Kontraktværdi over 4 år — tillad både tal og strenge ("2 mio. kr." parses ikke)
+    kontraktvaerdi = data.get("kontraktvaerdi_4aar_kr")
+    try:
+        kontraktvaerdi = int(kontraktvaerdi) if kontraktvaerdi not in (None, "", "null") else None
+    except (ValueError, TypeError):
+        kontraktvaerdi = None
+
     return SystemFacts(
         systemnavn=(systemnavn_override or str(data.get("systemnavn") or "")).strip(),
         leverandoer_navn=str(data.get("leverandoer_navn") or "").strip(),
@@ -170,4 +186,9 @@ def _coerce_facts(data: dict[str, Any], *, systemnavn_override: str = "") -> Sys
         retention_efter_ophoer=_opt_str("retention_efter_ophoer"),
         internt_udviklet=bool(data.get("internt_udviklet", False)),
         medarbejder_overvaagning=bool(data.get("medarbejder_overvaagning", False)),
+        # Kalundborg-procesfelter (oftest udfyldt via afklarende spørgsmål bagefter)
+        kontraktvaerdi_4aar_kr=kontraktvaerdi,
+        anskaffelsesvej=Anskaffelsesvej.UKENDT,
+        fagomraade=str(data.get("fagomraade") or "").strip(),
+        saerlovgivning=_str_list("saerlovgivning"),
     )

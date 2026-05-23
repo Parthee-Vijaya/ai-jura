@@ -552,6 +552,52 @@ const RisikovurderingPage = () => {
       {/* ---- STEP 3: Preview + download ---- */}
       {step === 3 && rv && (
         <>
+          {/* Kalundborg compliance-status — surfacer kommunale procesforhold før risikolisten */}
+          {(() => {
+            const f = rv.facts || {};
+            const procesFlags = [
+              ['D&IT tidlig involvering', f.dit_involveret_tidligt],
+              ['CIO-underskrift', f.cio_har_underskrevet],
+              ['DBA indgået', f.databehandleraftale_indgaaet],
+              ['Styregruppe', f.styregruppe_etableret],
+              ['Fortegnelse art. 30', f.fortegnelse_art30_opdateret],
+              ['Oplysningspligt art. 13-14', f.oplysningspligt_opfyldt],
+              ['DPIA sendt til DPO', f.dpia_sendt_til_dpo],
+              ['AI-færdigheder art. 4', f.ai_faerdigheder_dokumenteret],
+              ['Contract Management-plan', f.contract_management_plan],
+            ];
+            const done = procesFlags.filter(([, v]) => v).length;
+            const TÆRSKEL = 1601944;
+            const overTærskel = f.kontraktvaerdi_4aar_kr && f.kontraktvaerdi_4aar_kr > TÆRSKEL;
+            const mismatch = overTærskel && f.anskaffelsesvej && f.anskaffelsesvej !== 'eu_udbud' && f.anskaffelsesvej !== 'ukendt';
+            return (
+              <Card>
+                <h3 style={{ marginTop: 0, color: NAVY }}>Kommunal compliance-status</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem 1rem', fontSize: '0.85rem', marginBottom: '0.8rem' }}>
+                  <div><strong>Anskaffelsesvej:</strong> {f.anskaffelsesvej || 'ukendt'}</div>
+                  <div><strong>Kontraktværdi (4 år):</strong> {f.kontraktvaerdi_4aar_kr ? f.kontraktvaerdi_4aar_kr.toLocaleString('da-DK') + ' kr.' : 'ukendt'} {overTærskel ? '⚠ over tærskel' : ''}</div>
+                  <div><strong>Fagområde:</strong> {f.fagomraade || '(ikke angivet)'}</div>
+                  <div><strong>Særlovgivning:</strong> {(f.saerlovgivning || []).join(', ') || '(ikke angivet)'}</div>
+                </div>
+                {mismatch && (
+                  <div style={{ background: 'rgba(160,32,32,0.06)', borderLeft: '3px solid #a02020', padding: '0.5rem 0.8rem', fontSize: '0.85rem', marginBottom: '0.8rem', color: '#a02020' }}>
+                    <strong>⚠ Udbudspligt-mismatch:</strong> Kontraktværdi over tærskel (kr. 1.601.944) men anskaffelsesvej er ikke EU-udbud → potentielt ulovligt indkøb. Bør indgå som blocker.
+                  </div>
+                )}
+                <div style={{ fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                  <strong>Proces-status: {done}/9 punkter gennemført</strong>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
+                  {procesFlags.map(([label, ok]) => (
+                    <div key={label} style={{ color: ok ? '#2d6a31' : '#a02020' }}>
+                      {ok ? '✓' : '✗'} {label}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            );
+          })()}
+
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <FaCheckCircle style={{ color: '#2d6a31' }} />

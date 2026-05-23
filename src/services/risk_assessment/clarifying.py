@@ -1,17 +1,25 @@
-"""Afklarende spørgsmål — beregn hvilke 3-5 spørgsmål brugeren skal svare på.
+"""Afklarende spørgsmål — beregn hvilke spørgsmål brugeren skal svare på.
 
-Standard-spørgsmål stilles altid (scope, tilgang). Yderligere spørgsmål vises
-KUN hvis fact-ekstraktionen har huller (fx hosting-land ukendt).
+Standard-spørgsmål stilles altid (scope, tilgang, kontraktværdi, anskaffelsesvej).
+Yderligere spørgsmål vises betinget (fx hosting-land kun hvis ukendt).
+
+Spørgsmålene populerer både GDPR-fakta (kategorier, overvågning) og de Kalundborg-
+specifikke procesforhold (kontraktværdi, anskaffelsesvej, fagområde, processtatus).
 """
 
-from src.services.risk_assessment.models import ClarifyingQuestion, DataKategori, SystemFacts
+from src.services.risk_assessment.models import (
+    Anskaffelsesvej,
+    ClarifyingQuestion,
+    DataKategori,
+    SystemFacts,
+)
 
 
 def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
     """Returnér de spørgsmål der skal stilles ud fra huller i facts."""
     questions: list[ClarifyingQuestion] = []
 
-    # 1. Scenarie (altid)
+    # ---- GDPR-/vurderings-spørgsmål (altid) ----
     questions.append(ClarifyingQuestion(
         key="scope",
         question="Hvilket scenarie skal vurderes?",
@@ -21,7 +29,6 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         reason="Scope påvirker sandsynlighedsvurderingen og hvilke risici der er relevante.",
     ))
 
-    # 2. Tilgang (altid)
     questions.append(ClarifyingQuestion(
         key="tilgang",
         question="Idealiseret eller realistisk vurdering?",
@@ -31,7 +38,6 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         reason="Idealiseret antager Entra ID, Key Vault, EU-region, databehandleraftaler på plads.",
     ))
 
-    # 3. Datakategorier — forudfyld fra DBA-ekstraktion, men lad bruger bekræfte
     detected = [k.value for k in facts.persondata_kategorier]
     questions.append(ClarifyingQuestion(
         key="persondata_kategorier",
@@ -42,7 +48,6 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         reason="Følsomme/CPR/strafbare hæver risikoniveauet og kan udløse DPIA-krav.",
     ))
 
-    # 4. Medarbejderovervågning — auto-detect, men bekræft hvis usikkert
     questions.append(ClarifyingQuestion(
         key="medarbejder_overvaagning",
         question="Overvåger systemet medarbejderadfærd?",
@@ -52,7 +57,66 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         reason="Medarbejderovervågning kræver TR/MED-inddragelse og oplysning efter art. 13.",
     ))
 
-    # 5. Betingede huller — kun hvis fakta mangler
+    # ---- Kalundborg-specifikke procesforhold (jf. Retningslinjer + AI-tjekliste) ----
+
+    questions.append(ClarifyingQuestion(
+        key="kontraktvaerdi_bucket",
+        question="Estimeret kontraktværdi over 4 år?",
+        type="radio",
+        options=[
+            "Under 1,6 mio. kr.",
+            "1,6 - 5 mio. kr.",
+            "Over 5 mio. kr.",
+            "Ved ikke endnu",
+        ],
+        default="Ved ikke endnu",
+        reason="Tærskel kr. 1.601.944 (2022) afgør EU-udbudspligt jf. Retningslinjer for IT-anskaffelser.",
+    ))
+
+    questions.append(ClarifyingQuestion(
+        key="anskaffelsesvej",
+        question="Hvilken anskaffelsesvej er valgt?",
+        type="radio",
+        options=[
+            "SKI - direkte tildeling",
+            "SKI - mini-udbud",
+            "Under tærskel (ingen udbudspligt)",
+            "EU-udbud",
+            "Bygge- og anlægsprojekt",
+            "Endnu ikke afklaret",
+        ],
+        default="Endnu ikke afklaret",
+        reason="Forskellige indkøbsveje udløser forskellige procesrisici.",
+    ))
+
+    questions.append(ClarifyingQuestion(
+        key="fagomraade_saerlov",
+        question="Hvilket fagområde + relevant særlovgivning?",
+        type="text",
+        default=facts.fagomraade or None,
+        reason="Fx 'Beskæftigelse — LAB §17a', 'Sundhed — sundhedsloven kap. 9'. AI-tjeklisten kræver kortlægning.",
+    ))
+
+    questions.append(ClarifyingQuestion(
+        key="proces_status",
+        question="Hvilke procespunkter er allerede gennemført? (sæt kryds)",
+        type="multiselect",
+        options=[
+            "Digitalisering og IT adviseret tidligt",
+            "CIO har underskrevet kontrakt + DBA",
+            "Databehandleraftale indgået",
+            "Styregruppe etableret (EU-udbud)",
+            "Tilmeldt fortegnelse art. 30 (via IT-sikkerhedsambassadør)",
+            "Oplysningspligt opfyldt (art. 13-14)",
+            "DPIA-udkast sendt til DPO",
+            "AI-færdigheder dokumenteret (AI-forord. art. 4)",
+            "Contract Management-plan klar",
+        ],
+        default=None,
+        reason="Manglende procespunkter bliver til konkrete tiltag i vurderingen.",
+    ))
+
+    # ---- Betinget — kun hvis fakta mangler ----
     if not facts.hosting_lokation:
         questions.append(ClarifyingQuestion(
             key="hosting_lokation",
@@ -60,16 +124,8 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
             type="text",
             reason="Kunne ikke udledes fra dokumenterne — afgørende for tredjelandsvurdering.",
         ))
-    elif not facts.ekstra_interessenter:
-        # Hvis vi allerede har hosting, brug 5. plads til interessent-spørgsmål
-        questions.append(ClarifyingQuestion(
-            key="ekstra_interessenter",
-            question="Specifikke interessenter ud over standard? (valgfrit)",
-            type="text",
-            reason="Fx specifikke afdelinger, fagforeninger eller eksterne parter.",
-        ))
 
-    return questions[:5]
+    return questions  # ingen hård loft — typisk 8-9 spørgsmål
 
 
 def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
@@ -112,5 +168,64 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
         raw = answers["ekstra_interessenter"]
         items = raw.split(",") if isinstance(raw, str) else (raw or [])
         data.ekstra_interessenter = [str(x).strip() for x in items if str(x).strip()]
+
+    # ---- Kalundborg-specifikke svar ----
+
+    if "kontraktvaerdi_bucket" in answers and answers["kontraktvaerdi_bucket"]:
+        v = str(answers["kontraktvaerdi_bucket"]).lower()
+        # Konvertér bucket → repræsentativ midt-værdi (bruges af tærskel-tjek)
+        if "under 1,6" in v:
+            data.kontraktvaerdi_4aar_kr = 800_000          # under tærskel
+        elif "1,6 - 5" in v or "1,6-5" in v:
+            data.kontraktvaerdi_4aar_kr = 3_000_000        # over tærskel
+        elif "over 5" in v:
+            data.kontraktvaerdi_4aar_kr = 7_500_000        # langt over tærskel
+        # "Ved ikke endnu" → bevarer None / eksisterende værdi
+
+    if "anskaffelsesvej" in answers and answers["anskaffelsesvej"]:
+        v = str(answers["anskaffelsesvej"]).lower()
+        if "direkte tildeling" in v:
+            data.anskaffelsesvej = Anskaffelsesvej.SKI_DIREKTE
+        elif "mini-udbud" in v:
+            data.anskaffelsesvej = Anskaffelsesvej.SKI_MINIUDBUD
+        elif "under tærskel" in v:
+            data.anskaffelsesvej = Anskaffelsesvej.UNDER_TAERSKEL
+        elif "eu-udbud" in v:
+            data.anskaffelsesvej = Anskaffelsesvej.EU_UDBUD
+        elif "bygge" in v:
+            data.anskaffelsesvej = Anskaffelsesvej.BYGGE_ANLAEG
+
+    if "fagomraade_saerlov" in answers and answers["fagomraade_saerlov"]:
+        raw = str(answers["fagomraade_saerlov"]).strip()
+        # Heuristik: alt før " - " eller " — " er fagområde, resten er særlov-stikord
+        for sep in (" — ", " - ", ":"):
+            if sep in raw:
+                left, right = raw.split(sep, 1)
+                data.fagomraade = left.strip()
+                # Saml særlovgivning som liste — split på komma
+                data.saerlovgivning = [
+                    s.strip() for s in right.split(",") if s.strip()
+                ]
+                break
+        else:
+            data.fagomraade = raw  # ingen separator → kun fagområde
+
+    if "proces_status" in answers and answers["proces_status"]:
+        raw = answers["proces_status"]
+        items = raw.split(",") if isinstance(raw, str) else (raw or [])
+        items_lower = [str(x).lower() for x in items]
+
+        def _has(substr: str) -> bool:
+            return any(substr in i for i in items_lower)
+
+        data.dit_involveret_tidligt = _has("digitalisering og it adviseret")
+        data.cio_har_underskrevet = _has("cio har underskrevet")
+        data.databehandleraftale_indgaaet = _has("databehandleraftale indgået")
+        data.styregruppe_etableret = _has("styregruppe etableret")
+        data.fortegnelse_art30_opdateret = _has("fortegnelse art. 30")
+        data.oplysningspligt_opfyldt = _has("oplysningspligt opfyldt")
+        data.dpia_sendt_til_dpo = _has("dpia-udkast sendt til dpo")
+        data.ai_faerdigheder_dokumenteret = _has("ai-færdigheder dokumenteret")
+        data.contract_management_plan = _has("contract management-plan")
 
     return data

@@ -31,6 +31,20 @@ class Niveau(str, Enum):
     HOEJ = "Høj"
 
 
+class Anskaffelsesvej(str, Enum):
+    """Indkøbsvej jf. Kalundborg Kommunes Retningslinjer for IT-anskaffelser."""
+    SKI_DIREKTE = "ski_direkte"            # direkte tildeling på SKI-aftale
+    SKI_MINIUDBUD = "ski_miniudbud"        # mini-udbud mellem leverandører på SKI
+    UNDER_TAERSKEL = "under_taerskel"       # < kr. 1.601.944 (2022), ingen udbudspligt
+    EU_UDBUD = "eu_udbud"                   # > tærskel, EU-udbudspligt
+    BYGGE_ANLAEG = "bygge_anlaeg"           # netværk/installationer i kommunale bygninger
+    UKENDT = "ukendt"                       # endnu ikke afklaret
+
+
+# Udbudsterskel (2022) jf. Retningslinjer for IT-anskaffelser — beregnet over 4 år
+UDBUDSTERSKEL_KR_4AAR = 1_601_944
+
+
 # Tilladte fritekst-varianter LLM'en kan finde på at returnere → normalisér
 _NIVEAU_ALIASES = {
     "lav": Niveau.LAV,
@@ -107,6 +121,26 @@ class SystemFacts(BaseModel):
     # Intern/ekstern: påvirker hvilke risici der er relevante
     internt_udviklet: bool = False
 
+    # ---- Kalundborg-specifikke procesforhold (Retningslinjer + AI-tjekliste) ----
+    # Kontraktværdi over 4 år (kr.). Bestemmer udbudspligt vs UDBUDSTERSKEL_KR_4AAR.
+    kontraktvaerdi_4aar_kr: Optional[int] = None
+    anskaffelsesvej: Anskaffelsesvej = Anskaffelsesvej.UKENDT
+    # Fagområde + relevant særlovgivning (fri tekst — fx "Beskæftigelse — LAB §17a")
+    fagomraade: str = ""
+    saerlovgivning: List[str] = Field(default_factory=list)
+    # Hjemmelsgrundlag (national hjemmel UDOVER GDPR-grundlaget)
+    national_lovhjemmel: str = ""
+    # Procesforhold — booleans der afgør compliance med kommunal proces
+    dit_involveret_tidligt: bool = False     # Digitalisering og IT adviseret i idéfasen
+    cio_har_underskrevet: bool = False        # Digitaliserings- og IT-chefens underskrift
+    styregruppe_etableret: bool = False       # ledelsesmæssig forankring (EU-udbud kræver)
+    fortegnelse_art30_opdateret: bool = False # tilmeldt fortegnelse via IT-sikkerhedsambassadør
+    dpia_sendt_til_dpo: bool = False          # konsekvensanalyse-udkast fremsendt
+    oplysningspligt_opfyldt: bool = False     # art. 13-14
+    ai_faerdigheder_dokumenteret: bool = False  # AI-forordningens art. 4
+    databehandleraftale_indgaaet: bool = False  # DBA underskrevet
+    contract_management_plan: bool = False    # plan for driftsperioden
+
     def er_ekstern_leverandoer(self) -> bool:
         return not self.internt_udviklet and bool(self.leverandoer_navn)
 
@@ -115,6 +149,32 @@ class SystemFacts(BaseModel):
             k in (DataKategori.FOELSOMME, DataKategori.CPR, DataKategori.STRAFBARE)
             for k in self.persondata_kategorier
         )
+
+    def er_over_udbudsterskel(self) -> Optional[bool]:
+        """True hvis kontraktværdi > tærskel, False hvis under, None hvis ukendt."""
+        if self.kontraktvaerdi_4aar_kr is None:
+            return None
+        return self.kontraktvaerdi_4aar_kr > UDBUDSTERSKEL_KR_4AAR
+
+    def udbudspligt_mismatch(self) -> bool:
+        """True hvis værdi over tærskel men anskaffelsesvej ikke er EU-udbud →
+        compliance-risiko (potentielt ulovligt indkøb)."""
+        if self.er_over_udbudsterskel() is True:
+            return self.anskaffelsesvej not in (
+                Anskaffelsesvej.EU_UDBUD, Anskaffelsesvej.UKENDT,
+            )
+        return False
+
+    def proces_status_count(self) -> tuple[int, int]:
+        """Returnér (opfyldt, total) for de 9 procesforhold — bruges til status-badge."""
+        flags = [
+            self.dit_involveret_tidligt, self.cio_har_underskrevet,
+            self.styregruppe_etableret, self.fortegnelse_art30_opdateret,
+            self.dpia_sendt_til_dpo, self.oplysningspligt_opfyldt,
+            self.ai_faerdigheder_dokumenteret, self.databehandleraftale_indgaaet,
+            self.contract_management_plan,
+        ]
+        return sum(flags), len(flags)
 
 
 class Risiko(BaseModel):

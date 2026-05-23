@@ -150,6 +150,15 @@ def _build_user_prompt(facts: SystemFacts, risks: list[Risiko]) -> str:
     ) or "  (ingen risici identificeret endnu)"
 
     kats = ", ".join(k.value for k in facts.persondata_kategorier) or "ukendt"
+
+    udbud_status = facts.er_over_udbudsterskel()
+    udbud_line = (
+        f"OVER tærskel ({facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is True
+        else f"under tærskel ({facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is False
+        else "ukendt"
+    )
+    proces_done, proces_total = facts.proces_status_count()
+
     return f"""SYSTEMFAKTA:
 Systemnavn: {facts.systemnavn}
 Leverandør: {"INTERNT UDVIKLET" if facts.internt_udviklet else (facts.leverandoer_navn or "ukendt")} ({facts.leverandoer_land})
@@ -163,10 +172,28 @@ Medarbejderovervågning: {"JA — kræver TR/MED-inddragelse" if facts.medarbejd
 Scope: {facts.scope} | Tilgang: {facts.tilgang}
 Ekstra interessenter: {", ".join(facts.ekstra_interessenter) or "(ingen ud over standard)"}
 
+KOMMUNAL INDKØBSPROCES (jf. Retningslinjer + AI-tjekliste):
+Anskaffelsesvej: {facts.anskaffelsesvej.value}
+Kontraktværdi over 4 år: {udbud_line}
+Fagområde: {facts.fagomraade or "(ikke angivet)"}
+Særlovgivning: {", ".join(facts.saerlovgivning) or "(ikke angivet — nævn at den skal kortlægges)"}
+National lovhjemmel: {facts.national_lovhjemmel or "(ikke angivet — nævn at den kræves UDOVER GDPR)"}
+Procesforhold: {proces_done}/{proces_total} gennemført
+  - D&IT tidlig involvering: {"ja" if facts.dit_involveret_tidligt else "MANGLER"}
+  - CIO-underskrift: {"ja" if facts.cio_har_underskrevet else "MANGLER"}
+  - DBA indgået: {"ja" if facts.databehandleraftale_indgaaet else "MANGLER"}
+  - Styregruppe (EU-udbud): {"ja" if facts.styregruppe_etableret else "MANGLER"}
+  - Fortegnelse art. 30: {"ja" if facts.fortegnelse_art30_opdateret else "MANGLER"}
+  - Oplysningspligt art. 13-14: {"ja" if facts.oplysningspligt_opfyldt else "MANGLER"}
+  - DPIA sendt til DPO: {"ja" if facts.dpia_sendt_til_dpo else "MANGLER"}
+  - AI-færdigheder art. 4: {"ja" if facts.ai_faerdigheder_dokumenteret else "MANGLER"}
+  - Contract Management-plan: {"ja" if facts.contract_management_plan else "MANGLER"}
+
 IDENTIFICEREDE RISICI (referér de vigtigste i tiltag-feltet):
 {risk_summary}
 
 SKRIV DISSE FELTER (JSON-nøgle: instruks):
 {field_instructions}
 
+Tiltag-feltet skal eksplicit referere de MANGLENDE procesforhold som konkrete handlinger.
 Returnér JSON-dict med alle 14 felter."""
