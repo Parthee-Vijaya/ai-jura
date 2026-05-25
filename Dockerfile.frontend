@@ -3,6 +3,16 @@ FROM node:18-alpine as builder
 
 WORKDIR /app
 
+# Build-time configuration. Both are baked into the bundle by react-scripts:
+#   PUBLIC_URL              — where the app is mounted (e.g. /ai-jura). Sets
+#                             asset URLs and the SPA's runtime base.
+#   REACT_APP_API_BASE_URL  — prepended to every axios call (see index.js).
+# Defaults keep root-mounted, same-origin behaviour for vanilla `docker build`.
+ARG PUBLIC_URL=""
+ARG REACT_APP_API_BASE_URL=""
+ENV PUBLIC_URL=$PUBLIC_URL
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
+
 # Copy package files
 COPY frontend/package*.json ./
 
