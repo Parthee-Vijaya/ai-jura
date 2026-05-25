@@ -123,8 +123,9 @@ def extract_intake_from_description(
             timeout=timeout,
         )
     if openai_key:
+        # Respect OPENAI_BASE_URL so local OpenAI-compatible endpoints stay local.
         return _call_via_openai_compatible(
-            base_url="https://api.openai.com/v1",
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             api_key=openai_key,
             model=os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini"),
             description=description,
