@@ -270,6 +270,8 @@ const RisikovurderingPage = () => {
   const [rv, setRv] = useState(null);
   const [compliance, setCompliance] = useState(null);       // server-beregnet (single source of truth)
   const [verifyPreview, setVerifyPreview] = useState(null);  // dokument-tjek FØR download
+  const [assessmentId, setAssessmentId] = useState(null);    // journaliseret server-side
+  const [linkCaseId, setLinkCaseId] = useState('');          // valgfri sag-kobling
   const [downloading, setDownloading] = useState(false);
 
   const addFiles = useCallback((fileList) => {
@@ -329,10 +331,12 @@ const RisikovurderingPage = () => {
       const res = await axios.post('/api/v3/risk-assessment/generate', {
         facts,
         answers,
+        case_id: linkCaseId.trim() || null,
       }, { timeout: 600000 });
       setRv(res.data.risikovurdering);
       setCompliance(res.data.compliance || null);
       setVerifyPreview(res.data.verify_preview || null);
+      setAssessmentId(res.data.assessment_id || null);
       setStep(3);
       toast.success(`${res.data.n_risici} risici genereret — gennemgå udkastet`);
     } catch (err) {
@@ -487,6 +491,36 @@ const RisikovurderingPage = () => {
               <textarea value={facts.formaal_kort || ''}
                 onChange={(e) => setFacts({ ...facts, formaal_kort: e.target.value })} />
             </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem' }}>
+              <Field>
+                <label>
+                  Kontraktværdi 4 år (kr.)
+                  <span className="reason">Fra dokumenter — bucket-spørgsmålet nedenfor kan overstyre</span>
+                </label>
+                <input type="number" min="0" step="1000"
+                  value={facts.kontraktvaerdi_4aar_kr ?? ''}
+                  onChange={(e) => setFacts({
+                    ...facts,
+                    kontraktvaerdi_4aar_kr: e.target.value === '' ? null : Number(e.target.value),
+                    kontraktvaerdi_er_estimat: false,
+                  })} />
+              </Field>
+              <Field>
+                <label>Fagområde</label>
+                <input type="text" placeholder="fx Beskæftigelse"
+                  value={facts.fagomraade || ''}
+                  onChange={(e) => setFacts({ ...facts, fagomraade: e.target.value })} />
+              </Field>
+              <Field>
+                <label>
+                  Knyt til sag (valgfrit)
+                  <span className="reason">Eksternt case-ID, fx K-2026-0042 — journaliseres på sagen</span>
+                </label>
+                <input type="text" placeholder="K-2026-…"
+                  value={linkCaseId}
+                  onChange={(e) => setLinkCaseId(e.target.value)} />
+              </Field>
+            </div>
             {facts.msa_risiko_klausuler?.length > 0 && (
               <div style={{
                 background: 'rgba(160,32,32,0.05)', borderLeft: '3px solid #a02020',
@@ -638,6 +672,13 @@ const RisikovurderingPage = () => {
                 {rv.risici.length} risici identificeret
               </h3>
             </div>
+            {assessmentId && (
+              <p style={{ fontSize: '0.78rem', color: '#6a7180', margin: '0 0 0.6rem' }}>
+                ✓ Journaliseret server-side (ID <code>{assessmentId.slice(0, 8)}…</code>
+                {linkCaseId.trim() ? ` · koblet til sag ${linkCaseId.trim()}` : ''}) —
+                kan re-downloades selv hvis fanen lukkes.
+              </p>
+            )}
             <RiskTable>
               <thead>
                 <tr>

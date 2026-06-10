@@ -372,6 +372,20 @@ class TestAssembler:
         assert output_filename("Velatir") == "Databeskyttelsesretlig risikovurdering - Velatir.docx"
         assert "/" not in output_filename("A/B")
 
+    def test_risk_assessment_row_serialization(self):
+        # Persistens-model: summary uden tung JSON, full med
+        from src.database.risk_assessments import RiskAssessment
+        row = RiskAssessment(
+            id="abc-123", systemnavn="X", case_id="K-2026-1",
+            rv_json={"facts": {"systemnavn": "X"}, "risici": []},
+            n_risici=9, verify_valid=True,
+        )
+        s = row.to_summary()
+        assert s["id"] == "abc-123" and s["n_risici"] == 9
+        assert "risikovurdering" not in s          # liste-visning er let
+        f = row.to_full()
+        assert f["risikovurdering"]["facts"]["systemnavn"] == "X"
+
     def test_output_filename_sanitizes_windows_forbidden(self):
         # Windows afviser \ / : * ? " < > | i filnavne
         navn = output_filename('Sys/V:1*x?"<y>|z\\w')

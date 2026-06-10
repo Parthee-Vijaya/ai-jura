@@ -3,14 +3,21 @@
 Endpoints:
   - POST /api/v3/risk-assessment/analyze   (multipart: files[] + systemnavn)
         → {facts, questions, documents}
-  - POST /api/v3/risk-assessment/generate  (JSON: {facts, answers})
-        → {risikovurdering} (komplet — facts + risici + felttekster)
+  - POST /api/v3/risk-assessment/generate  (JSON: {facts, answers, case_id?, user?})
+        → {risikovurdering, assessment_id, compliance, verify_preview}
   - POST /api/v3/risk-assessment/render     (JSON: {risikovurdering})
         → DOCX-download
+  - GET  /api/v3/risk-assessment/saved              → historik (liste)
+  - GET  /api/v3/risk-assessment/saved/{id}         → gemt vurdering (JSON)
+  - GET  /api/v3/risk-assessment/saved/{id}/docx    → re-render gemt vurdering
 
 Flow: frontend kalder analyze, viser afklarende spørgsmål, kalder generate,
 viser risiko-preview, og kalder til sidst render for at hente Word-filen.
 Render-trinet er deterministisk (ingen LLM) så det er hurtigt + reproducerbart.
+
+Journalisering: hver generate-kørsel persisteres i risk_assessments-tabellen
+(best-effort) så vurderingen overlever lukket browser-tab, kan re-downloades,
+og kan kobles til en sag (AI-tjeklisten kræver journalisering på særskilt sag).
 """
 
 import asyncio
@@ -41,6 +48,9 @@ MAX_FILES = 10
 class GeneratePayload(BaseModel):
     facts: SystemFacts
     answers: dict = Field(default_factory=dict)
+    # Valgfri journalisering: kobl vurderingen til en sag (eksternt case_id)
+    case_id: str | None = Field(default=None, max_length=64)
+    user: str | None = Field(default=None, max_length=128)
 
 
 class RenderPayload(BaseModel):
@@ -150,9 +160,53 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
     except Exception as exc:  # preview er best-effort — blokér aldrig generate
         logger.warning("Verify-preview fejlede: %s", exc)
 
+    # Journalisering — persistér vurderingen (best-effort, blokerer aldrig svaret).
+    # Overlevelse ved lukket tab + revisionsspor + mulig sag-kobling.
+    assessment_id = None
+    try:
+        from src.database.connection import SessionLocal
+        from src.database.risk_assessments import save_assessment
+        from src.database import notifications as notif_svc
+
+        db = SessionLocal()
+        try:
+            row = save_assessment(
+                db,
+                systemnavn=rv.facts.systemnavn,
+                rv_json=rv.model_dump(),
+                n_risici=len(rv.risici),
+                case_id=body.case_id,
+                created_by=body.user,
+                verify_valid=(verify_preview or {}).get("valid"),
+            )
+            assessment_id = row.id
+            try:
+                notif_svc.emit(
+                    db,
+                    kind="info",
+                    title=f"Risikovurdering genereret: {rv.facts.systemnavn or 'system'}",
+                    message=(
+                        f"{len(rv.risici)} risici identificeret. "
+                        f"{'Koblet til sag ' + body.case_id + '. ' if body.case_id else ''}"
+                        f"Udkast kræver efterredigering af AI Program Lead + DPO."
+                    ),
+                    case_id=body.case_id,
+                    link_url="/risikovurdering",
+                    severity="info",
+                    actor=body.user,
+                )
+            except Exception as exc:
+                logger.warning("Notification for risikovurdering fejlede: %s", exc)
+            db.commit()
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.warning("Persistens af risikovurdering fejlede (fortsætter): %s", exc)
+
     proces_done, proces_total = rv.facts.proces_status_count()
     return {
         "risikovurdering": rv.model_dump(),
+        "assessment_id": assessment_id,
         "n_risici": len(rv.risici),
         # Compliance computed server-side — så frontend ikke duplikerer
         # tærskel-logikken (single source of truth = models.py)
@@ -225,3 +279,66 @@ async def render_endpoint(request: Request, response: Response, body: RenderPayl
 def _template_exists() -> bool:
     import os
     return os.path.exists(get_template_path())
+
+
+# ---- Historik / journalisering -------------------------------------------
+
+
+@router.get("/saved")
+@limiter.limit(READ_GENEROUS)
+async def list_saved(request: Request, response: Response, case_id: str | None = None, limit: int = 50):
+    """Liste over gemte risikovurderinger (nyeste først). Filtrér evt. på case_id."""
+    from src.database.connection import SessionLocal
+    from src.database.risk_assessments import list_assessments
+
+    db = SessionLocal()
+    try:
+        rows = list_assessments(db, case_id=case_id, limit=limit)
+        return {"items": [r.to_summary() for r in rows], "count": len(rows)}
+    finally:
+        db.close()
+
+
+@router.get("/saved/{assessment_id}")
+@limiter.limit(READ_GENEROUS)
+async def get_saved(request: Request, response: Response, assessment_id: str):
+    """Hent en gemt vurdering inkl. det fulde Risikovurdering-objekt."""
+    from src.database.connection import SessionLocal
+    from src.database.risk_assessments import get_assessment
+
+    db = SessionLocal()
+    try:
+        row = get_assessment(db, assessment_id)
+        if row is None:
+            raise AppError("not_found", f"Risikovurdering {assessment_id} findes ikke", status=404)
+        return row.to_full()
+    finally:
+        db.close()
+
+
+@router.get("/saved/{assessment_id}/docx")
+@limiter.limit(READ_GENEROUS)
+async def render_saved(request: Request, response: Response, assessment_id: str):
+    """Re-render en gemt vurdering som Word — deterministisk, ingen LLM."""
+    from src.database.connection import SessionLocal
+    from src.database.risk_assessments import get_assessment
+
+    db = SessionLocal()
+    try:
+        row = get_assessment(db, assessment_id)
+        if row is None:
+            raise AppError("not_found", f"Risikovurdering {assessment_id} findes ikke", status=404)
+        rv = Risikovurdering.model_validate(row.rv_json)
+    finally:
+        db.close()
+
+    if not rv.risici:
+        raise AppError("no_risks", "Gemt vurdering har ingen risici", status=400)
+
+    data = await asyncio.to_thread(assemble_docx, rv)
+    filename = output_filename(rv.facts.systemnavn)
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
