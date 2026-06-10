@@ -211,7 +211,16 @@ def _post_openai_compatible(
         raise RiskLLMError(
             f"Provider returnerede ikke-JSON ({resp.status_code}): {resp.text[:150]}"
         ) from exc
-    content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
+    msg = body.get("choices", [{}])[0].get("message", {})
+    content = msg.get("content", "")
+    if not content:
+        # Reasoning-modeller (fx Nemotron) kan bruge hele token-budgettet på
+        # tankeprocessen og efterlade content tom — svaret ligger så i
+        # reasoning_content. Observeret live i eval (Voicecraft-kørsel).
+        # _parse_json udtrækker JSON-blokken hvis den findes derinde.
+        content = msg.get("reasoning_content") or msg.get("reasoning") or ""
+        if content:
+            logger.warning("LLM content tom — bruger reasoning_content som fallback")
     if not content:
         raise RiskLLMError(f"LLM tom respons: {str(body)[:200]}")
     return content

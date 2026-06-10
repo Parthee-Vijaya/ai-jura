@@ -188,6 +188,54 @@ class TestNemotronRouting:
         assert "nvidia" not in calls[0]["base_url"]
 
 
+class TestReasoningContentFallback:
+    """Regression: Nemotron-reasoning kan efterlade content tom med svaret i
+    reasoning_content (observeret live i Voicecraft-eval)."""
+
+    def _fake_response(self, monkeypatch, message: dict):
+        import httpx
+        from src.services.risk_assessment import llm_client
+
+        class FakeResp:
+            status_code = 200
+            text = "ok"
+            def raise_for_status(self): pass
+            def json(self):
+                return {"choices": [{"message": message, "finish_reason": "stop"}]}
+
+        class FakeClient:
+            def __init__(self, **kw): pass
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+            def post(self, *a, **kw): return FakeResp()
+
+        monkeypatch.setattr(httpx, "Client", FakeClient)
+        return llm_client
+
+    def test_tom_content_bruger_reasoning_content(self, monkeypatch):
+        lc = self._fake_response(monkeypatch, {
+            "content": "",
+            "reasoning_content": 'Lad mig tænke... svaret er {"ok": true}',
+        })
+        out = lc._post_openai_compatible(
+            base_url="http://x", api_key="k", model="m",
+            system_prompt="s", user_message="u", temperature=0.2, timeout=5,
+        )
+        assert '{"ok": true}' in out
+        # Og hele vejen gennem parseren:
+        assert lc._parse_json(out) == {"ok": True}
+
+    def test_begge_tomme_raiser(self, monkeypatch):
+        from src.services.risk_assessment.llm_client import RiskLLMError
+        lc = self._fake_response(monkeypatch, {"content": "", "reasoning_content": ""})
+        import pytest as _pytest
+        with _pytest.raises(RiskLLMError, match="tom respons"):
+            lc._post_openai_compatible(
+                base_url="http://x", api_key="k", model="m",
+                system_prompt="s", user_message="u", temperature=0.2, timeout=5,
+            )
+
+
 class TestRetry:
     def test_retries_on_parse_failure_then_succeeds(self, monkeypatch):
         from src.services.risk_assessment import llm_client
