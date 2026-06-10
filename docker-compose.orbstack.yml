@@ -1,0 +1,92 @@
+# OrbStack-stack til lokal containeriseret kørsel — ISOLERET fra den native
+# launchd-installation (:8001/:8090) og fra loom (:8000).
+#
+#   docker compose -f docker-compose.orbstack.yml up -d --build
+#
+# Porte:    API http://localhost:8012   ·   Web http://localhost:8092
+#           (8012, ikke 8002: OrbStacks port-proxy routede 8002 til en anden
+#            container der også bruger intern port 8000 — stale proxy-route)
+# Database: egen PostgreSQL-container (volume judge-dredd-pgdata) — deler IKKE
+#           data med den native installation. Tabeller auto-oprettes ved
+#           opstart (main.py kører idempotent create_all).
+# LLM:      LM Studio på HOSTEN nås via host.docker.internal:1234 (OrbStack
+#           understøtter det out-of-the-box). Nemotron-cloud virker uændret
+#           via NEMOTRON_* fra .env (metadata-trin; dokumenter forbliver på
+#           host-LM-Studio jf. sensitivity-grænsen).
+# Kendt støj: SMTP_HOST=localhost fra .env virker ikke i containeren —
+#           mail-afsendelse logger fejl men blokerer intet.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: judge-dredd-postgres
+    environment:
+      POSTGRES_DB: bifrost
+      POSTGRES_USER: bifrost
+      POSTGRES_PASSWORD: bifrost-local
+    volumes:
+      - judge-dredd-pgdata:/var/lib/postgresql/data
+    networks:
+      - judge-dredd-orb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bifrost -d bifrost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: judge-dredd-backend-orb
+    ports:
+      - "8012:8000"
+    env_file:
+      - .env
+    environment:
+      # Overrides af .env (environment vinder over env_file i compose):
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://bifrost:bifrost-local@postgres:5432/bifrost
+      # LM Studio kører på HOSTEN — localhost i containeren er containeren selv
+      - LM_STUDIO_BASE_URL=http://host.docker.internal:1234/v1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - judge-dredd-orb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: judge-dredd-frontend-orb
+    ports:
+      - "8092:80"
+    depends_on:
+      - backend
+    networks:
+      - judge-dredd-orb
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+networks:
+  judge-dredd-orb:
+    driver: bridge
+
+volumes:
+  judge-dredd-pgdata:

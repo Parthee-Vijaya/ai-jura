@@ -1,19 +1,30 @@
 # Multi-stage build for React Frontend
+#
+# Repoet er et npm-WORKSPACE (root package.json -> workspaces: ["frontend"]).
+# Den autoritative lockfil er rodens package-lock.json — frontend/ har en
+# forældet standalone-lockfil som npm ci afviser ("not in sync"). Derfor
+# installeres fra roden (workspace-aware), præcis som i lokal dev.
 FROM node:18-alpine as builder
 
-WORKDIR /app
+WORKDIR /repo
 
-# Copy package files
-COPY frontend/package*.json ./
+# Workspace-manifester først (layer-cache: deps geninstalleres kun ved ændring)
+COPY package.json package-lock.json ./
+COPY frontend/package.json ./frontend/
 
-# Install dependencies
+# Install dependencies (hoistes til /repo/node_modules)
 RUN npm ci --prefer-offline --no-audit
 
 # Copy frontend source
-COPY frontend/ ./
+COPY frontend/ ./frontend/
 
-# Build production bundle
-RUN npm run build
+# public/mockups er et symlink til ../../mockups (dev-bekvemmelighed) — målet
+# ligger uden for frontend/ og findes ikke i imaget, så CRA's public-kopiering
+# fejler med ENOENT. Design-mockups hører ikke til i produktions-bundtet.
+RUN rm -f ./frontend/public/mockups
+
+# Build production bundle (react-scripts løses via hoistede node_modules)
+RUN npm run build --workspace=frontend
 
 # Production stage with nginx
 FROM nginx:alpine
@@ -22,7 +33,7 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built assets from builder
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /repo/frontend/build /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80

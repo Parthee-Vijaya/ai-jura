@@ -29,6 +29,23 @@ from src.database.models import (
     QuickCheckHistory
 )
 
+# Registrér ALLE model-moduler på Base.metadata FØR create_all. Moduler der
+# kun importeres lazily inde i endpoints (fx risk_assessments, comments,
+# skabelon-bibliotek) bliver ellers aldrig oprettet på en frisk database —
+# observeret i container-deploy hvor 3 tabeller manglede. Alembic dækker den
+# eksisterende native DB; create_all + denne liste dækker friske miljøer.
+from src.database import (  # noqa: F401, E402
+    audit_access_log as _m_audit_access,
+    cases as _m_cases,
+    evidence as _m_evidence,
+    evidence_comments as _m_evidence_comments,
+    notifications as _m_notifications,
+    risk_assessments as _m_risk_assessments,
+    skabelon_bibliotek as _m_skabelon,
+    users as _m_users,
+)
+from src.rule_engine import audit as _m_v3_audit  # noqa: F401, E402
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
