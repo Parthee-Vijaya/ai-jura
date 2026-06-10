@@ -153,11 +153,12 @@ def _build_user_prompt(facts: SystemFacts) -> str:
     kats = ", ".join(k.value for k in facts.persondata_kategorier) or "ukendt"
     flags = "\n".join(f"  - {c}" for c in facts.msa_risiko_klausuler) or "  (ingen identificeret)"
 
-    # Kalundborg-procesblok
+    # Kalundborg-procesblok. kontraktvaerdi_label() bruger bucket-intervallet
+    # ved estimater så LLM aldrig citerer et opdigtet repræsentativt beløb.
     udbud_status = facts.er_over_udbudsterskel()
     udbud_label = (
-        f"OVER tærskel (≈{facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is True
-        else f"under tærskel (≈{facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is False
+        f"OVER tærskel — {facts.kontraktvaerdi_label()}" if udbud_status is True
+        else f"under tærskel — {facts.kontraktvaerdi_label()}" if udbud_status is False
         else "ukendt værdi"
     )
     mismatch_flag = " ⚠ MISMATCH (værdi over tærskel uden EU-udbud — compliance-risiko)" if facts.udbudspligt_mismatch() else ""
@@ -173,9 +174,17 @@ def _build_user_prompt(facts: SystemFacts) -> str:
     if not facts.ai_faerdigheder_dokumenteret: proces_missing.append("AI-færdigheder art. 4")
     if not facts.contract_management_plan: proces_missing.append("Contract Management-plan")
 
+    # NB: betinget udtryk i parentes — `x or y if cond else z` parser som
+    # `(x or y) if cond else z` og gav tidligere "(internt udviklet)"-label
+    # til eksterne leverandører med tomt navn.
+    leverandoer_label = (
+        "INTERNT UDVIKLET" if facts.internt_udviklet
+        else (facts.leverandoer_navn or "ukendt leverandør")
+    )
+
     return f"""SYSTEMFAKTA:
 Systemnavn: {facts.systemnavn}
-Leverandør: {facts.leverandoer_navn or "(internt udviklet)" if not facts.internt_udviklet else "INTERNT UDVIKLET"} ({facts.leverandoer_land}){f", CVR {facts.leverandoer_cvr}" if facts.leverandoer_cvr else ""}{f", stiftet {facts.leverandoer_stiftet_aar}" if facts.leverandoer_stiftet_aar else ""}
+Leverandør: {leverandoer_label} ({facts.leverandoer_land}){f", CVR {facts.leverandoer_cvr}" if facts.leverandoer_cvr else ""}{f", stiftet {facts.leverandoer_stiftet_aar}" if facts.leverandoer_stiftet_aar else ""}
 Formål: {facts.formaal_kort}
 Funktionalitet: {facts.funktionalitet}
 Hosting: {facts.hosting_lokation or "ukendt"}

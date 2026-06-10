@@ -60,9 +60,15 @@ async def analyze_endpoint(request: Request, response: Response):
     systemnavn = (form.get("systemnavn") or "").strip()
 
     files: list[tuple[str, bytes]] = []
-    # Saml alle upload-felter (kan hedde 'files' gentaget eller 'file')
+    # Saml alle upload-felter (kan hedde 'files' gentaget eller 'file').
+    # MAX_FILES håndhæves FØR append og i BEGGE loops — et enkelt inner-break
+    # lod tidligere filer fordelt over flere feltnavne overstige loftet.
     for key in form:
+        if len(files) >= MAX_FILES:
+            break
         for item in form.getlist(key):
+            if len(files) >= MAX_FILES:
+                break
             if hasattr(item, "read") and hasattr(item, "filename") and item.filename:
                 data = await item.read()
                 if len(data) > MAX_BYTES:
@@ -72,8 +78,6 @@ async def analyze_endpoint(request: Request, response: Response):
                         status=413,
                     )
                 files.append((item.filename, data))
-            if len(files) >= MAX_FILES:
-                break
 
     if not files and not systemnavn:
         raise AppError(
@@ -122,9 +126,44 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
             status=502,
         )
 
+    # Indholds-guard: hvis LLM returnerede et hult svar (mange tomme felter)
+    # er dokumentet ubrugeligt — fejl tidligt i stedet for tom docx.
+    tomme = [k for k, v in rv.alle_felttekster().items() if not v.strip()]
+    if len(tomme) > 4:
+        raise AppError(
+            "incomplete_content",
+            f"LLM udfyldte kun {14 - len(tomme)}/14 felttekster (mangler: {', '.join(tomme[:6])}…) "
+            "— prøv igen",
+            status=502,
+        )
+
+    # Verify-preview: kør den deterministiske DOCX-assembly + verifikation NU
+    # (~100ms, ingen LLM) så brugeren ser problemer FØR download i stedet for
+    # kun en header bagefter.
+    verify_preview = None
+    try:
+        docx_bytes = await asyncio.to_thread(assemble_docx, rv)
+        pre = verify_docx(
+            docx_bytes, expected_n_risks=len(rv.risici), facts=rv.facts,
+        )
+        verify_preview = pre.to_dict()
+    except Exception as exc:  # preview er best-effort — blokér aldrig generate
+        logger.warning("Verify-preview fejlede: %s", exc)
+
+    proces_done, proces_total = rv.facts.proces_status_count()
     return {
         "risikovurdering": rv.model_dump(),
         "n_risici": len(rv.risici),
+        # Compliance computed server-side — så frontend ikke duplikerer
+        # tærskel-logikken (single source of truth = models.py)
+        "compliance": {
+            "er_over_udbudsterskel": rv.facts.er_over_udbudsterskel(),
+            "udbudspligt_mismatch": rv.facts.udbudspligt_mismatch(),
+            "proces_done": proces_done,
+            "proces_total": proces_total,
+            "kontraktvaerdi_er_estimat": rv.facts.kontraktvaerdi_er_estimat,
+        },
+        "verify_preview": verify_preview,
         "disclaimer": (
             "AI-genereret FØRSTEUDKAST. Skal efterredigeres af AI Program Lead + DPO "
             "før det er en gyldig risikovurdering."
@@ -137,6 +176,15 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
 async def render_endpoint(request: Request, response: Response, body: RenderPayload):
     """Fase 6-7: Risikovurdering JSON → udfyldt DOCX (deterministisk, ingen LLM)."""
     rv = body.risikovurdering
+    # Defense-in-depth: generate afviser tomme risici-lister, men render kan
+    # kaldes direkte med vilkårlig payload — afvis så skemaet ikke leveres
+    # med placeholder-rækker.
+    if not rv.risici:
+        raise AppError(
+            "no_risks",
+            "Risikovurderingen indeholder ingen risici — kør generate først",
+            status=400,
+        )
     if not get_template_path() or not _template_exists():
         raise AppError(
             "template_missing",

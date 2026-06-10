@@ -44,6 +44,23 @@ class Anskaffelsesvej(str, Enum):
 # Udbudsterskel (2022) jf. Retningslinjer for IT-anskaffelser — beregnet over 4 år
 UDBUDSTERSKEL_KR_4AAR = 1_601_944
 
+# De 9 kommunale procespunkter — SINGLE SOURCE OF TRUTH.
+# (attribut-navn på SystemFacts, option-label vist i UI).
+# clarifying.build_questions genererer multiselect-options herfra, og
+# apply_answers matcher svar mod labels — så label-tekst og parsing aldrig
+# kan divergere. Ændr label her, og begge sider følger med.
+PROCES_PUNKTER: list[tuple[str, str]] = [
+    ("dit_involveret_tidligt", "Digitalisering og IT adviseret tidligt"),
+    ("cio_har_underskrevet", "CIO har underskrevet kontrakt + DBA"),
+    ("databehandleraftale_indgaaet", "Databehandleraftale indgået"),
+    ("styregruppe_etableret", "Styregruppe etableret (EU-udbud)"),
+    ("fortegnelse_art30_opdateret", "Tilmeldt fortegnelse art. 30 (via IT-sikkerhedsambassadør)"),
+    ("oplysningspligt_opfyldt", "Oplysningspligt opfyldt (art. 13-14)"),
+    ("dpia_sendt_til_dpo", "DPIA-udkast sendt til DPO"),
+    ("ai_faerdigheder_dokumenteret", "AI-færdigheder dokumenteret (AI-forord. art. 4)"),
+    ("contract_management_plan", "Contract Management-plan klar"),
+]
+
 
 # Tilladte fritekst-varianter LLM'en kan finde på at returnere → normalisér
 _NIVEAU_ALIASES = {
@@ -124,6 +141,12 @@ class SystemFacts(BaseModel):
     # ---- Kalundborg-specifikke procesforhold (Retningslinjer + AI-tjekliste) ----
     # Kontraktværdi over 4 år (kr.). Bestemmer udbudspligt vs UDBUDSTERSKEL_KR_4AAR.
     kontraktvaerdi_4aar_kr: Optional[int] = None
+    # Når værdien stammer fra et bucket-svar (ikke et faktisk beløb) sættes
+    # er_estimat=True + bucket_label, så prompts viser intervallet i stedet for
+    # det repræsentative tal — ellers risikerer LLM at citere et opdigtet beløb
+    # som faktum i et officielt dokument.
+    kontraktvaerdi_er_estimat: bool = False
+    kontraktvaerdi_bucket_label: str = ""
     anskaffelsesvej: Anskaffelsesvej = Anskaffelsesvej.UKENDT
     # Fagområde + relevant særlovgivning (fri tekst — fx "Beskæftigelse — LAB §17a")
     fagomraade: str = ""
@@ -155,6 +178,18 @@ class SystemFacts(BaseModel):
         if self.kontraktvaerdi_4aar_kr is None:
             return None
         return self.kontraktvaerdi_4aar_kr > UDBUDSTERSKEL_KR_4AAR
+
+    def kontraktvaerdi_label(self) -> str:
+        """Tekst til LLM-prompts. Bruger bucket-intervallet når værdien er et
+        estimat, så et opdigtet repræsentativt tal aldrig citeres som faktum."""
+        if self.kontraktvaerdi_4aar_kr is None:
+            return "ukendt"
+        if self.kontraktvaerdi_er_estimat:
+            return (
+                f"{self.kontraktvaerdi_bucket_label} (bruger-estimat — "
+                f"citér IKKE et konkret beløb i teksten)"
+            )
+        return f"{self.kontraktvaerdi_4aar_kr:,} kr.".replace(",", ".")
 
     def udbudspligt_mismatch(self) -> bool:
         """True hvis værdi over tærskel men anskaffelsesvej ikke er EU-udbud →

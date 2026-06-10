@@ -80,6 +80,41 @@ class TestJsonRepair:
         out = _parse_json('{"a": "siger \\"hej\\" til"}')
         assert out["a"] == 'siger "hej" til'
 
+    def test_think_block_stripped(self):
+        # Reasoning-modeller wrapper tankeproces i <think> — kan indeholde { }
+        thinky = '<think>\nOvervejer... {"draft": 1} er ikke nok.\n</think>\n{"quality": 4}'
+        assert _parse_json(thinky) == {"quality": 4}
+
+    def test_thinking_block_case_insensitive(self):
+        thinky = '<THINKING>noget {x} her</THINKING>```json\n{"ok": true}\n```'
+        assert _parse_json(thinky) == {"ok": True}
+
+
+class TestRiskPromptLabels:
+    """Regression: leverandør-label precedence-bug (ekstern + tomt navn)."""
+
+    def test_ekstern_uden_navn_siger_ukendt(self):
+        from src.services.risk_assessment.risk_identifier import _build_user_prompt
+        prompt = _build_user_prompt(SystemFacts(systemnavn="X", internt_udviklet=False))
+        assert "ukendt leverandør" in prompt
+        assert "(internt udviklet)" not in prompt
+
+    def test_internt_udviklet_label(self):
+        from src.services.risk_assessment.risk_identifier import _build_user_prompt
+        prompt = _build_user_prompt(SystemFacts(systemnavn="X", internt_udviklet=True))
+        assert "INTERNT UDVIKLET" in prompt
+
+    def test_estimat_label_ikke_fabrikeret_beloeb(self):
+        # Bucket-svar må ALDRIG vises som konkret beløb i prompts
+        from src.services.risk_assessment.risk_identifier import _build_user_prompt
+        from src.services.risk_assessment.clarifying import apply_answers
+        f = apply_answers(SystemFacts(systemnavn="X"), {"kontraktvaerdi_bucket": "1,6 - 5 mio. kr."})
+        prompt = _build_user_prompt(f)
+        assert "1,6 - 5 mio. kr." in prompt          # interval vises
+        assert "3,000,000" not in prompt              # det repræsentative tal vises IKKE
+        assert "3.000.000" not in prompt
+        assert "bruger-estimat" in prompt
+
 
 class TestRetry:
     def test_retries_on_parse_failure_then_succeeds(self, monkeypatch):

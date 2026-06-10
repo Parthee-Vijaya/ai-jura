@@ -268,6 +268,8 @@ const RisikovurderingPage = () => {
 
   const [generating, setGenerating] = useState(false);
   const [rv, setRv] = useState(null);
+  const [compliance, setCompliance] = useState(null);       // server-beregnet (single source of truth)
+  const [verifyPreview, setVerifyPreview] = useState(null);  // dokument-tjek FØR download
   const [downloading, setDownloading] = useState(false);
 
   const addFiles = useCallback((fileList) => {
@@ -322,11 +324,15 @@ const RisikovurderingPage = () => {
   const runGenerate = async () => {
     setGenerating(true);
     try {
+      // Timeout 600s: 2 LLM-kald × op til 3 retry-forsøg kan overstige 300s
+      // på lokal model — lad backend gøre arbejdet færdigt.
       const res = await axios.post('/api/v3/risk-assessment/generate', {
         facts,
         answers,
-      }, { timeout: 300000 });
+      }, { timeout: 600000 });
       setRv(res.data.risikovurdering);
+      setCompliance(res.data.compliance || null);
+      setVerifyPreview(res.data.verify_preview || null);
       setStep(3);
       toast.success(`${res.data.n_risici} risici genereret — gennemgå udkastet`);
     } catch (err) {
@@ -346,7 +352,9 @@ const RisikovurderingPage = () => {
       const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Databeskyttelsesretlig risikovurdering - ${rv.facts.systemnavn || 'system'}.docx`;
+      // Sanitize filnavn — Windows afviser \ / : * ? " < > |
+      const safeNavn = (rv.facts.systemnavn || 'system').replace(/[\\/:*?"<>|]/g, '-');
+      a.download = `Databeskyttelsesretlig risikovurdering - ${safeNavn}.docx`;
       a.click();
       URL.revokeObjectURL(url);
       const valid = res.headers['x-verify-valid'] === 'true';
@@ -566,16 +574,25 @@ const RisikovurderingPage = () => {
               ['AI-færdigheder art. 4', f.ai_faerdigheder_dokumenteret],
               ['Contract Management-plan', f.contract_management_plan],
             ];
-            const done = procesFlags.filter(([, v]) => v).length;
+            // Foretræk server-beregnet compliance (single source of truth i models.py);
+            // lokal beregning er kun fallback hvis ældre backend-svar mangler blokken.
             const TÆRSKEL = 1601944;
-            const overTærskel = f.kontraktvaerdi_4aar_kr && f.kontraktvaerdi_4aar_kr > TÆRSKEL;
-            const mismatch = overTærskel && f.anskaffelsesvej && f.anskaffelsesvej !== 'eu_udbud' && f.anskaffelsesvej !== 'ukendt';
+            const done = compliance?.proces_done ?? procesFlags.filter(([, v]) => v).length;
+            const overTærskel = compliance?.er_over_udbudsterskel
+              ?? (f.kontraktvaerdi_4aar_kr && f.kontraktvaerdi_4aar_kr > TÆRSKEL);
+            const mismatch = compliance?.udbudspligt_mismatch
+              ?? (overTærskel && f.anskaffelsesvej && f.anskaffelsesvej !== 'eu_udbud' && f.anskaffelsesvej !== 'ukendt');
+            const erEstimat = compliance?.kontraktvaerdi_er_estimat ?? f.kontraktvaerdi_er_estimat;
             return (
               <Card>
                 <h3 style={{ marginTop: 0, color: NAVY }}>Kommunal compliance-status</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem 1rem', fontSize: '0.85rem', marginBottom: '0.8rem' }}>
                   <div><strong>Anskaffelsesvej:</strong> {f.anskaffelsesvej || 'ukendt'}</div>
-                  <div><strong>Kontraktværdi (4 år):</strong> {f.kontraktvaerdi_4aar_kr ? f.kontraktvaerdi_4aar_kr.toLocaleString('da-DK') + ' kr.' : 'ukendt'} {overTærskel ? '⚠ over tærskel' : ''}</div>
+                  <div><strong>Kontraktværdi (4 år):</strong> {f.kontraktvaerdi_4aar_kr
+                    ? (erEstimat
+                      ? `${f.kontraktvaerdi_bucket_label || 'estimat'} (estimat)`
+                      : f.kontraktvaerdi_4aar_kr.toLocaleString('da-DK') + ' kr.')
+                    : 'ukendt'} {overTærskel ? '⚠ over tærskel' : ''}</div>
                   <div><strong>Fagområde:</strong> {f.fagomraade || '(ikke angivet)'}</div>
                   <div><strong>Særlovgivning:</strong> {(f.saerlovgivning || []).join(', ') || '(ikke angivet)'}</div>
                 </div>
@@ -597,6 +614,22 @@ const RisikovurderingPage = () => {
               </Card>
             );
           })()}
+
+          {/* Dokument-verifikation kørt server-side under generate — vis problemer FØR download */}
+          {verifyPreview && !verifyPreview.valid && verifyPreview.problems?.length > 0 && (
+            <Card style={{ borderLeft: '4px solid #b08a4a' }}>
+              <h3 style={{ marginTop: 0, color: '#6e5527' }}>
+                <FaExclamationTriangle style={{ marginRight: '0.4rem' }} />
+                Dokument-tjek fandt {verifyPreview.problems.length} bemærkning{verifyPreview.problems.length === 1 ? '' : 'er'}
+              </h3>
+              <p style={{ fontSize: '0.83rem', color: '#6a7180', marginTop: '-0.3rem' }}>
+                Word-dokumentet kan stadig downloades — men gennemgå disse punkter i efterredigeringen:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                {verifyPreview.problems.map((p, i) => <li key={i}>{p}</li>)}
+              </ul>
+            </Card>
+          )}
 
           <Card>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>

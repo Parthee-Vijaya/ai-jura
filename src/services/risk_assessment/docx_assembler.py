@@ -269,6 +269,12 @@ def assemble_to_file(rv: Risikovurdering, output_path: str, *, template_path: st
 
 
 def output_filename(systemnavn: str) -> str:
-    """Standard-filnavn jf. Kalundborg-konvention."""
-    safe = (systemnavn or "system").replace("/", "-").strip()
+    """Standard-filnavn jf. Kalundborg-konvention.
+
+    Sanitizer alle tegn der er ulovlige i Windows/macOS-filnavne — ikke kun '/'
+    (Windows afviser fx 'System*V2.docx' ved download).
+    """
+    import re as _re
+    safe = _re.sub(r'[\\/:*?"<>|]', "-", (systemnavn or "system")).strip()
+    safe = _re.sub(r"-{2,}", "-", safe).strip("- ") or "system"
     return f"Databeskyttelsesretlig risikovurdering - {safe}.docx"

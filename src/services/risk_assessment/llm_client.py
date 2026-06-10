@@ -25,6 +25,11 @@ class RiskLLMError(Exception):
 
 _JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```")
 
+# Reasoning-modeller (deepseek-r1, qwq, visse gemma-configs) wrapper deres
+# tankeproces i <think>/<thinking>-tags FØR selve svaret. Indholdet kan selv
+# indeholde { } som ødelægger brace-extraction — strip blokken helt.
+_THINK_BLOCK = re.compile(r"<think(?:ing)?>[\s\S]*?</think(?:ing)?>\s*", re.IGNORECASE)
+
 
 def chat_json(
     system_prompt: str,
@@ -33,7 +38,7 @@ def chat_json(
     temperature: float = 0.2,
     timeout: float = 90.0,
     expect: str = "object",  # "object" | "array"
-    max_tokens: int = 4096,
+    max_tokens: int = 8192,
     max_attempts: int = 3,
 ) -> Any:
     """Send en chat-forespørgsel og returnér parset JSON.
@@ -117,7 +122,7 @@ def _call_provider(system_prompt, user_message, *, temperature, timeout, max_tok
 
 
 def _post_openai_compatible(
-    *, base_url, api_key, model, system_prompt, user_message, temperature, timeout, max_tokens=4096
+    *, base_url, api_key, model, system_prompt, user_message, temperature, timeout, max_tokens=8192
 ) -> str:
     url = f"{base_url}/chat/completions"
     payload = {
@@ -149,7 +154,13 @@ def _post_openai_compatible(
     except httpx.RequestError as exc:
         raise RiskLLMError(f"LLM-connection: {exc}") from exc
 
-    body = resp.json()
+    try:
+        body = resp.json()
+    except Exception as exc:
+        # 2xx med ikke-JSON body (fx HTML-fejlside fra en proxy) → klar fejl
+        raise RiskLLMError(
+            f"Provider returnerede ikke-JSON ({resp.status_code}): {resp.text[:150]}"
+        ) from exc
     content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
     if not content:
         raise RiskLLMError(f"LLM tom respons: {str(body)[:200]}")
@@ -157,7 +168,7 @@ def _post_openai_compatible(
 
 
 def _post_azure(
-    *, endpoint, api_key, deployment, api_version, system_prompt, user_message, temperature, timeout, max_tokens=4096
+    *, endpoint, api_key, deployment, api_version, system_prompt, user_message, temperature, timeout, max_tokens=8192
 ) -> str:
     url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={api_version}"
     payload = {
@@ -176,13 +187,30 @@ def _post_azure(
             resp = client.post(url, json=payload, headers=headers)
         resp.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        raise RiskLLMError(
-            f"Azure {exc.response.status_code}: {exc.response.text[:200]}"
-        ) from exc
+        # Samme response_format-fallback som OpenAI-compatible: ældre Azure-
+        # deployments afviser json_object med 400 — retry uden.
+        if exc.response.status_code == 400 and "response_format" in exc.response.text:
+            logger.warning("Azure afviste response_format — retry uden JSON-mode")
+            payload.pop("response_format", None)
+            try:
+                with httpx.Client(timeout=timeout) as client:
+                    resp = client.post(url, json=payload, headers=headers)
+                resp.raise_for_status()
+            except (httpx.HTTPStatusError, httpx.RequestError) as exc2:
+                raise RiskLLMError(f"Azure (fallback): {exc2}") from exc2
+        else:
+            raise RiskLLMError(
+                f"Azure {exc.response.status_code}: {exc.response.text[:200]}"
+            ) from exc
     except httpx.RequestError as exc:
         raise RiskLLMError(f"Azure-connection: {exc}") from exc
 
-    body = resp.json()
+    try:
+        body = resp.json()
+    except Exception as exc:
+        raise RiskLLMError(
+            f"Azure returnerede ikke-JSON ({resp.status_code}): {resp.text[:150]}"
+        ) from exc
     return body.get("choices", [{}])[0].get("message", {}).get("content", "")
 
 
@@ -243,6 +271,8 @@ def _repair_json(text: str) -> str:
 def _parse_json(content: str, *, expect: str = "object") -> Any:
     """Parse JSON robust — håndterer markdown-fence, prose-wrapper og almindelige fejl."""
     text = (content or "").strip()
+    # Strip reasoning-blokke FØR brace/fence-søgning — de kan indeholde { }
+    text = _THINK_BLOCK.sub("", text).strip()
     m = _JSON_FENCE.search(text)
     if m:
         text = m.group(1).strip()

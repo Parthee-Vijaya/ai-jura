@@ -153,8 +153,8 @@ def _build_user_prompt(facts: SystemFacts, risks: list[Risiko]) -> str:
 
     udbud_status = facts.er_over_udbudsterskel()
     udbud_line = (
-        f"OVER tærskel ({facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is True
-        else f"under tærskel ({facts.kontraktvaerdi_4aar_kr:,} kr.)" if udbud_status is False
+        f"OVER tærskel — {facts.kontraktvaerdi_label()}" if udbud_status is True
+        else f"under tærskel — {facts.kontraktvaerdi_label()}" if udbud_status is False
         else "ukendt"
     )
     proces_done, proces_total = facts.proces_status_count()

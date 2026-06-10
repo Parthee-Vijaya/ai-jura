@@ -175,6 +175,45 @@ class TestClarifyingNewQuestions:
         assert f.fagomraade == "Sundhed"
         assert f.saerlovgivning == []
 
+    def test_proces_punkter_single_source_of_truth(self):
+        # Options i spørgsmålet SKAL være identiske med PROCES_PUNKTER-labels,
+        # og hver attr skal eksistere på SystemFacts — ellers divergerer UI og parsing.
+        from src.services.risk_assessment.models import PROCES_PUNKTER
+        from src.services.risk_assessment.clarifying import build_questions
+        assert len(PROCES_PUNKTER) == 9
+        f = SystemFacts()
+        for attr, label in PROCES_PUNKTER:
+            assert hasattr(f, attr), f"SystemFacts mangler {attr}"
+            assert "," not in label, f"Label {label!r} indeholder komma — bryder split"
+        qs = build_questions(SystemFacts(hosting_lokation="Azure"))
+        proces_q = next(q for q in qs if q.key == "proces_status")
+        assert proces_q.options == [label for _, label in PROCES_PUNKTER]
+
+    def test_apply_kontraktvaerdi_saetter_estimat_flag(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        f = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "Over 5 mio. kr."})
+        assert f.kontraktvaerdi_er_estimat is True
+        assert f.kontraktvaerdi_bucket_label == "Over 5 mio. kr."
+        assert "Over 5 mio. kr." in f.kontraktvaerdi_label()
+        assert "estimat" in f.kontraktvaerdi_label()
+
+    def test_kontraktvaerdi_label_faktisk_beloeb(self):
+        # Værdi fra dokument-ekstraktion (ikke bucket) → vis det faktiske tal
+        f = SystemFacts(kontraktvaerdi_4aar_kr=2_400_000, kontraktvaerdi_er_estimat=False)
+        label = f.kontraktvaerdi_label()
+        assert "2.400.000" in label
+        assert "estimat" not in label
+
+    def test_ingen_kategori_konflikt_droppes(self):
+        from src.services.risk_assessment.clarifying import apply_answers
+        # "ingen" + konkrete kategorier → konkrete vinder
+        f = apply_answers(SystemFacts(), {"persondata_kategorier": "ingen,cpr"})
+        assert DataKategori.CPR in f.persondata_kategorier
+        assert DataKategori.INGEN not in f.persondata_kategorier
+        # "ingen" alene → bevares
+        f2 = apply_answers(SystemFacts(), {"persondata_kategorier": "ingen"})
+        assert f2.persondata_kategorier == [DataKategori.INGEN]
+
     def test_apply_proces_status_multiselect(self):
         from src.services.risk_assessment.clarifying import apply_answers
         f = apply_answers(SystemFacts(), {
@@ -332,6 +371,15 @@ class TestAssembler:
     def test_output_filename(self):
         assert output_filename("Velatir") == "Databeskyttelsesretlig risikovurdering - Velatir.docx"
         assert "/" not in output_filename("A/B")
+
+    def test_output_filename_sanitizes_windows_forbidden(self):
+        # Windows afviser \ / : * ? " < > | i filnavne
+        navn = output_filename('Sys/V:1*x?"<y>|z\\w')
+        for ch in '\\/:*?"<>|':
+            assert ch not in navn.replace(".docx", "").split(" - ")[1], f"{ch!r} ikke sanitized"
+        # Tomt navn → fallback
+        assert output_filename("") == "Databeskyttelsesretlig risikovurdering - system.docx"
+        assert output_filename("***") == "Databeskyttelsesretlig risikovurdering - system.docx"
 
 
 @pytest.mark.skipif(

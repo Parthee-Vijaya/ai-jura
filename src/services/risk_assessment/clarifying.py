@@ -11,8 +11,31 @@ from src.services.risk_assessment.models import (
     Anskaffelsesvej,
     ClarifyingQuestion,
     DataKategori,
+    PROCES_PUNKTER,
     SystemFacts,
 )
+
+# Centrale option-maps — options genereres herfra OG svar matches mod dem.
+# Exact match (normaliseret) først, substring som fallback for robusthed.
+KONTRAKTVAERDI_BUCKETS: list[tuple[str, int | None]] = [
+    ("Under 1,6 mio. kr.", 800_000),
+    ("1,6 - 5 mio. kr.", 3_000_000),
+    ("Over 5 mio. kr.", 7_500_000),
+    ("Ved ikke endnu", None),
+]
+
+ANSKAFFELSESVEJ_OPTIONS: list[tuple[str, Anskaffelsesvej]] = [
+    ("SKI - direkte tildeling", Anskaffelsesvej.SKI_DIREKTE),
+    ("SKI - mini-udbud", Anskaffelsesvej.SKI_MINIUDBUD),
+    ("Under tærskel (ingen udbudspligt)", Anskaffelsesvej.UNDER_TAERSKEL),
+    ("EU-udbud", Anskaffelsesvej.EU_UDBUD),
+    ("Bygge- og anlægsprojekt", Anskaffelsesvej.BYGGE_ANLAEG),
+    ("Endnu ikke afklaret", Anskaffelsesvej.UKENDT),
+]
+
+
+def _norm(s) -> str:
+    return str(s).strip().lower()
 
 
 def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
@@ -63,12 +86,7 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         key="kontraktvaerdi_bucket",
         question="Estimeret kontraktværdi over 4 år?",
         type="radio",
-        options=[
-            "Under 1,6 mio. kr.",
-            "1,6 - 5 mio. kr.",
-            "Over 5 mio. kr.",
-            "Ved ikke endnu",
-        ],
+        options=[label for label, _ in KONTRAKTVAERDI_BUCKETS],
         default="Ved ikke endnu",
         reason="Tærskel kr. 1.601.944 (2022) afgør EU-udbudspligt jf. Retningslinjer for IT-anskaffelser.",
     ))
@@ -77,14 +95,7 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         key="anskaffelsesvej",
         question="Hvilken anskaffelsesvej er valgt?",
         type="radio",
-        options=[
-            "SKI - direkte tildeling",
-            "SKI - mini-udbud",
-            "Under tærskel (ingen udbudspligt)",
-            "EU-udbud",
-            "Bygge- og anlægsprojekt",
-            "Endnu ikke afklaret",
-        ],
+        options=[label for label, _ in ANSKAFFELSESVEJ_OPTIONS],
         default="Endnu ikke afklaret",
         reason="Forskellige indkøbsveje udløser forskellige procesrisici.",
     ))
@@ -101,17 +112,7 @@ def build_questions(facts: SystemFacts) -> list[ClarifyingQuestion]:
         key="proces_status",
         question="Hvilke procespunkter er allerede gennemført? (sæt kryds)",
         type="multiselect",
-        options=[
-            "Digitalisering og IT adviseret tidligt",
-            "CIO har underskrevet kontrakt + DBA",
-            "Databehandleraftale indgået",
-            "Styregruppe etableret (EU-udbud)",
-            "Tilmeldt fortegnelse art. 30 (via IT-sikkerhedsambassadør)",
-            "Oplysningspligt opfyldt (art. 13-14)",
-            "DPIA-udkast sendt til DPO",
-            "AI-færdigheder dokumenteret (AI-forord. art. 4)",
-            "Contract Management-plan klar",
-        ],
+        options=[label for _, label in PROCES_PUNKTER],
         default=None,
         reason="Manglende procespunkter bliver til konkrete tiltag i vurderingen.",
     ))
@@ -150,10 +151,14 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
         items = raw.split(",") if isinstance(raw, str) else (raw or [])
         kats = []
         for it in items:
-            key = str(it).strip().lower()
+            key = _norm(it)
             for kat in DataKategori:
                 if kat.value == key and kat not in kats:
                     kats.append(kat)
+        # Konflikt-resolution: "ingen" sammen med rigtige kategorier er selvmodsigende
+        # — de konkrete kategorier vinder, INGEN droppes.
+        if DataKategori.INGEN in kats and len(kats) > 1:
+            kats = [k for k in kats if k != DataKategori.INGEN]
         if kats:
             data.persondata_kategorier = kats
 
@@ -172,28 +177,43 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
     # ---- Kalundborg-specifikke svar ----
 
     if "kontraktvaerdi_bucket" in answers and answers["kontraktvaerdi_bucket"]:
-        v = str(answers["kontraktvaerdi_bucket"]).lower()
-        # Konvertér bucket → repræsentativ midt-værdi (bruges af tærskel-tjek)
-        if "under 1,6" in v:
-            data.kontraktvaerdi_4aar_kr = 800_000          # under tærskel
-        elif "1,6 - 5" in v or "1,6-5" in v:
-            data.kontraktvaerdi_4aar_kr = 3_000_000        # over tærskel
-        elif "over 5" in v:
-            data.kontraktvaerdi_4aar_kr = 7_500_000        # langt over tærskel
-        # "Ved ikke endnu" → bevarer None / eksisterende værdi
+        v = _norm(answers["kontraktvaerdi_bucket"])
+        # Exact match mod centrale buckets (normaliseret), substring-fallback
+        matched = next(
+            (pair for pair in KONTRAKTVAERDI_BUCKETS if _norm(pair[0]) == v),
+            None,
+        ) or next(
+            (pair for pair in KONTRAKTVAERDI_BUCKETS
+             if pair[1] is not None and _norm(pair[0])[:9] in v),
+            None,
+        )
+        if matched and matched[1] is not None:
+            label, value = matched
+            data.kontraktvaerdi_4aar_kr = value
+            data.kontraktvaerdi_er_estimat = True   # repræsentativ værdi — IKKE faktisk beløb
+            data.kontraktvaerdi_bucket_label = label
+        # "Ved ikke endnu" / no match → bevarer None / eksisterende værdi
 
     if "anskaffelsesvej" in answers and answers["anskaffelsesvej"]:
-        v = str(answers["anskaffelsesvej"]).lower()
-        if "direkte tildeling" in v:
-            data.anskaffelsesvej = Anskaffelsesvej.SKI_DIREKTE
-        elif "mini-udbud" in v:
-            data.anskaffelsesvej = Anskaffelsesvej.SKI_MINIUDBUD
-        elif "under tærskel" in v:
-            data.anskaffelsesvej = Anskaffelsesvej.UNDER_TAERSKEL
-        elif "eu-udbud" in v:
-            data.anskaffelsesvej = Anskaffelsesvej.EU_UDBUD
-        elif "bygge" in v:
-            data.anskaffelsesvej = Anskaffelsesvej.BYGGE_ANLAEG
+        v = _norm(answers["anskaffelsesvej"])
+        matched_vej = next(
+            (vej for label, vej in ANSKAFFELSESVEJ_OPTIONS if _norm(label) == v),
+            None,
+        )
+        if matched_vej is None:
+            # Substring-fallback (robusthed mod label-varianter)
+            if "direkte tildeling" in v:
+                matched_vej = Anskaffelsesvej.SKI_DIREKTE
+            elif "mini-udbud" in v:
+                matched_vej = Anskaffelsesvej.SKI_MINIUDBUD
+            elif "under tærskel" in v:
+                matched_vej = Anskaffelsesvej.UNDER_TAERSKEL
+            elif "eu-udbud" in v:
+                matched_vej = Anskaffelsesvej.EU_UDBUD
+            elif "bygge" in v:
+                matched_vej = Anskaffelsesvej.BYGGE_ANLAEG
+        if matched_vej is not None and matched_vej != Anskaffelsesvej.UKENDT:
+            data.anskaffelsesvej = matched_vej
 
     if "fagomraade_saerlov" in answers and answers["fagomraade_saerlov"]:
         raw = str(answers["fagomraade_saerlov"]).strip()
@@ -213,19 +233,14 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
     if "proces_status" in answers and answers["proces_status"]:
         raw = answers["proces_status"]
         items = raw.split(",") if isinstance(raw, str) else (raw or [])
-        items_lower = [str(x).lower() for x in items]
+        items_norm = [_norm(x) for x in items if _norm(x)]
 
-        def _has(substr: str) -> bool:
-            return any(substr in i for i in items_lower)
-
-        data.dit_involveret_tidligt = _has("digitalisering og it adviseret")
-        data.cio_har_underskrevet = _has("cio har underskrevet")
-        data.databehandleraftale_indgaaet = _has("databehandleraftale indgået")
-        data.styregruppe_etableret = _has("styregruppe etableret")
-        data.fortegnelse_art30_opdateret = _has("fortegnelse art. 30")
-        data.oplysningspligt_opfyldt = _has("oplysningspligt opfyldt")
-        data.dpia_sendt_til_dpo = _has("dpia-udkast sendt til dpo")
-        data.ai_faerdigheder_dokumenteret = _has("ai-færdigheder dokumenteret")
-        data.contract_management_plan = _has("contract management-plan")
+        # Match mod PROCES_PUNKTER-labels (single source of truth):
+        # exact normaliseret match først, substring-fallback (begge retninger)
+        # for robusthed mod afkortede/let ændrede labels.
+        for attr, label in PROCES_PUNKTER:
+            ln = _norm(label)
+            hit = any(i == ln or ln in i or (len(i) >= 12 and i in ln) for i in items_norm)
+            setattr(data, attr, hit)
 
     return data
