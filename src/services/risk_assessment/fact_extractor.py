@@ -114,7 +114,12 @@ DOKUMENTER:
 Uddrag SystemFacts nu som JSON."""
 
     try:
-        data = chat_json(SYSTEM_PROMPT, user_message, temperature=0.1, timeout=timeout, expect="object")
+        # sensitivity="documents": rå MSA/DBA-tekst kan indeholde persondata —
+        # SKAL forblive på lokal kæde, aldrig Nemotron/cloud-først
+        data = chat_json(
+            SYSTEM_PROMPT, user_message, temperature=0.1, timeout=timeout,
+            expect="object", sensitivity="documents",
+        )
     except RiskLLMError:
         raise
     except Exception as exc:  # pragma: no cover - defensiv

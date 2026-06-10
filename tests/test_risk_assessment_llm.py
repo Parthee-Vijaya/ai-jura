@@ -116,6 +116,78 @@ class TestRiskPromptLabels:
         assert "bruger-estimat" in prompt
 
 
+class TestNemotronRouting:
+    """GDPR-grænsen i provider-valget: documents → ALDRIG Nemotron; metadata → gerne."""
+
+    def _track_posts(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        calls = []
+
+        def fake_post(*, base_url, model, **kw):
+            calls.append({"base_url": base_url, "model": model})
+            return '{"ok": true}'
+
+        monkeypatch.setattr(llm_client, "_post_openai_compatible", fake_post)
+        monkeypatch.setattr(llm_client, "_post_azure", lambda **kw: '{"ok": true}')
+        return calls
+
+    def test_documents_sensitivity_skips_nemotron(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        monkeypatch.setenv("NEMOTRON_API_KEY", "nvapi-test")
+        monkeypatch.setenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+        calls = self._track_posts(monkeypatch)
+        llm_client.chat_json("sys", "user", sensitivity="documents")
+        assert len(calls) == 1
+        assert "nvidia" not in calls[0]["base_url"]          # rå dokumenter → lokal
+        assert "localhost:1234" in calls[0]["base_url"]
+
+    def test_metadata_sensitivity_prefers_nemotron(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        monkeypatch.setenv("NEMOTRON_API_KEY", "nvapi-test")
+        monkeypatch.setenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+        calls = self._track_posts(monkeypatch)
+        llm_client.chat_json("sys", "user", sensitivity="metadata")
+        assert len(calls) == 1
+        assert "integrate.api.nvidia.com" in calls[0]["base_url"]
+        assert "nemotron" in calls[0]["model"]
+
+    def test_metadata_uden_noegle_bruger_lokal(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        monkeypatch.delenv("NEMOTRON_API_KEY", raising=False)
+        monkeypatch.setenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+        calls = self._track_posts(monkeypatch)
+        llm_client.chat_json("sys", "user", sensitivity="metadata")
+        assert "localhost:1234" in calls[0]["base_url"]
+
+    def test_nemotron_fejl_falder_tilbage_til_lokal(self, monkeypatch):
+        from src.services.risk_assessment import llm_client
+        from src.services.risk_assessment.llm_client import RiskLLMError
+        monkeypatch.setenv("NEMOTRON_API_KEY", "nvapi-test")
+        monkeypatch.setenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+        calls = []
+
+        def fake_post(*, base_url, model, **kw):
+            calls.append(base_url)
+            if "nvidia" in base_url:
+                raise RiskLLMError("503 rate limited")
+            return '{"ok": true}'
+
+        monkeypatch.setattr(llm_client, "_post_openai_compatible", fake_post)
+        out = llm_client.chat_json("sys", "user", sensitivity="metadata")
+        assert out == {"ok": True}
+        assert len(calls) == 2                                # nemotron → fallback lokal
+        assert "nvidia" in calls[0] and "localhost" in calls[1]
+
+    def test_default_sensitivity_er_documents(self, monkeypatch):
+        # Udeladt sensitivity SKAL være den sikre (lokal) — fail-safe default
+        from src.services.risk_assessment import llm_client
+        monkeypatch.setenv("NEMOTRON_API_KEY", "nvapi-test")
+        monkeypatch.setenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
+        calls = self._track_posts(monkeypatch)
+        llm_client.chat_json("sys", "user")                   # ingen sensitivity angivet
+        assert "nvidia" not in calls[0]["base_url"]
+
+
 class TestRetry:
     def test_retries_on_parse_failure_then_succeeds(self, monkeypatch):
         from src.services.risk_assessment import llm_client

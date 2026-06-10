@@ -124,7 +124,12 @@ def generate_content(
     """Generér de 14 prosa-felttekster. Returnér dict {feltnavn: tekst}."""
     user_message = _build_user_prompt(facts, risks)
     try:
-        data = chat_json(SYSTEM_PROMPT, user_message, temperature=0.2, timeout=timeout, expect="object")
+        # sensitivity="metadata": kun strukturerede facts + risiko-titler i prompten
+        # — ingen rå dokumenter. Må bruge Nemotron hvis konfigureret.
+        data = chat_json(
+            SYSTEM_PROMPT, user_message, temperature=0.2, timeout=timeout,
+            expect="object", sensitivity="metadata",
+        )
     except RiskLLMError:
         raise
     except Exception as exc:  # pragma: no cover

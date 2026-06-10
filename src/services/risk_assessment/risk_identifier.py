@@ -122,7 +122,13 @@ def identify_risks(facts: SystemFacts, *, timeout: float = 120.0) -> list[Risiko
     """Generér systemspecifikke risici ud fra SystemFacts."""
     user_message = _build_user_prompt(facts)
     try:
-        data = chat_json(SYSTEM_PROMPT, user_message, temperature=0.3, timeout=timeout, expect="object")
+        # sensitivity="metadata": prompten indeholder kun strukturerede SystemFacts
+        # (leverandør, hosting-label, kategori-labels) — ingen rå dokumenter eller
+        # persondata. Må bruge Nemotron hvis konfigureret.
+        data = chat_json(
+            SYSTEM_PROMPT, user_message, temperature=0.3, timeout=timeout,
+            expect="object", sensitivity="metadata",
+        )
     except RiskLLMError:
         raise
     except Exception as exc:  # pragma: no cover

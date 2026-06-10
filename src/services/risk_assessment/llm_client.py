@@ -1,11 +1,25 @@
 """Delt LLM-klient for risikovurderingsmotoren.
 
-Følger Bifrosts standard provider-kæde: lokal LM Studio → Azure OpenAI → OpenAI.
-Lokal-først af GDPR-hensyn — de uploadede dokumenter (MSA, DBA, persondata)
-må ikke sendes til en US-cloud-API, da det er netop de data værktøjet vurderer.
+PROVIDER-STRATEGI med GDPR-grænse bygget ind i koden (sensitivity-parameter):
+
+  sensitivity="documents"  → ALTID lokal kæde (LM Studio → Azure → OpenAI).
+      Bruges af fact-extraction der ser de RÅ dokumenter (MSA, DBA — kan
+      indeholde persondata). Disse må aldrig sendes til en US-cloud-API.
+
+  sensitivity="metadata"   → Nemotron først (hvis NEMOTRON_API_KEY er sat),
+      fallback til lokal kæde. Bruges af risiko-identifikation + indholds-
+      generering der KUN modtager den strukturerede SystemFacts (leverandør-
+      navn, hosting-label, kategori-labels, proces-flags) — system-metadata,
+      ikke personoplysninger. Det er de to tunge ræsonnement-trin hvor en
+      stærkere hosted model løfter kvalitet + JSON-stabilitet.
+
+Nemotron-config (.env):
+  NEMOTRON_API_KEY   — nvapi-... (build.nvidia.com) eller anden OpenAI-kompatibel host
+  NEMOTRON_BASE_URL  — default https://integrate.api.nvidia.com/v1
+  NEMOTRON_MODEL     — default nvidia/llama-3.3-nemotron-super-49b-v1
 
 Eksponerer chat_json() der returnerer parset JSON (dict eller list) med robust
-håndtering af markdown-fence + prose-wrapper + malformed output.
+håndtering af markdown-fence, <think>-blokke, prose-wrapper + malformed output.
 """
 
 import json
@@ -40,11 +54,12 @@ def chat_json(
     expect: str = "object",  # "object" | "array"
     max_tokens: int = 8192,
     max_attempts: int = 3,
+    sensitivity: str = "documents",  # "documents" (lokal-only) | "metadata" (cloud ok)
 ) -> Any:
     """Send en chat-forespørgsel og returnér parset JSON.
 
-    Provider-kæde: LM Studio → Azure → OpenAI. Bruger response_format=json_object
-    hvor muligt, med fallback hvis provider ikke understøtter det.
+    sensitivity styrer provider-valget (se modul-docstring): "documents" går
+    ALDRIG til Nemotron/cloud-først; "metadata" må. Default er den sikre.
 
     Lokale modeller (fx gemma) producerer LEJLIGHEDSVIS ugyldig JSON (stray commas,
     unescaped newlines i lange tekstfelter). Derfor: op til max_attempts forsøg,
@@ -62,6 +77,7 @@ def chat_json(
         raw = _call_provider(
             system_prompt, user_message,
             temperature=temp, timeout=timeout, max_tokens=max_tokens,
+            sensitivity=sensitivity,
         )
         try:
             return _parse_json(raw, expect=expect)
@@ -74,7 +90,29 @@ def chat_json(
     raise last_err if last_err else RiskLLMError("JSON-parse fejlede uden detaljer")
 
 
-def _call_provider(system_prompt, user_message, *, temperature, timeout, max_tokens) -> str:
+def _nemotron_configured() -> bool:
+    return bool(os.getenv("NEMOTRON_API_KEY"))
+
+
+def _call_provider(system_prompt, user_message, *, temperature, timeout, max_tokens, sensitivity="documents") -> str:
+    # Nemotron FØRST for metadata-kald (stærkere ræsonnement + bedre JSON) —
+    # men kun metadata: rå dokumenter (sensitivity="documents") går aldrig hertil.
+    if sensitivity == "metadata" and _nemotron_configured():
+        try:
+            return _post_openai_compatible(
+                base_url=(os.getenv("NEMOTRON_BASE_URL") or "https://integrate.api.nvidia.com/v1").rstrip("/"),
+                api_key=os.getenv("NEMOTRON_API_KEY"),
+                model=os.getenv("NEMOTRON_MODEL", "nvidia/llama-3.3-nemotron-super-49b-v1"),
+                system_prompt=system_prompt,
+                user_message=user_message,
+                temperature=temperature,
+                timeout=timeout,
+                max_tokens=max_tokens,
+            )
+        except RiskLLMError as exc:
+            # Cloud nede / rate-limit / auth → fald tilbage til lokal kæde
+            logger.warning("Nemotron fejlede (%s) — falder tilbage til lokal kæde", str(exc)[:100])
+
     lm_studio_url = (os.getenv("LM_STUDIO_BASE_URL") or "").rstrip("/")
     if lm_studio_url:
         return _post_openai_compatible(
@@ -142,14 +180,26 @@ def _post_openai_compatible(
             resp = client.post(url, json=payload, headers=headers)
         resp.raise_for_status()
     except httpx.HTTPStatusError as exc:
-        if exc.response.status_code == 400 and "response_format" in exc.response.text:
-            payload.pop("response_format", None)
-            with httpx.Client(timeout=timeout) as client:
-                resp = client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
+        body_text = exc.response.text
+        if exc.response.status_code == 400 and (
+            "response_format" in body_text or "max_tokens" in body_text
+        ):
+            # To kendte 400-årsager med billig retry:
+            #   - provider understøtter ikke json_object → drop response_format
+            #   - model capper max_tokens (fx NVIDIA-modeller ved 4096) → sænk
+            if "response_format" in body_text:
+                payload.pop("response_format", None)
+            if "max_tokens" in body_text:
+                payload["max_tokens"] = min(payload.get("max_tokens", 8192), 4096)
+            try:
+                with httpx.Client(timeout=timeout) as client:
+                    resp = client.post(url, json=payload, headers=headers)
+                resp.raise_for_status()
+            except (httpx.HTTPStatusError, httpx.RequestError) as exc2:
+                raise RiskLLMError(f"LLM-API (fallback): {exc2}") from exc2
         else:
             raise RiskLLMError(
-                f"LLM-API {exc.response.status_code}: {exc.response.text[:200]}"
+                f"LLM-API {exc.response.status_code}: {body_text[:200]}"
             ) from exc
     except httpx.RequestError as exc:
         raise RiskLLMError(f"LLM-connection: {exc}") from exc
