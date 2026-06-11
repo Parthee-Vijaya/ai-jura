@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R2 Teglværk — Forside</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="%23c94416"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="white" stroke-width=".9"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0" stroke="white" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M9.5 17h5" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ R2 · TEGLVÆRK — Kalundborg brand-først, varm myndighed ============ */
+:root{
+  --tegl:#c94416; --tegl-dark:#a03612; --tegl-deep:#7e2a0e; --tegl-soft:#f7e3d8;
+  --sand:#faf6f1; --sand-deep:#f1e9df; --surface:#fffdfa;
+  --ink:#2b211b; --ink-soft:#5d5048; --ink-faded:#6e6058;
+  --line:#e2d8cc; --line-soft:#ede5da;
+  --go:#2f6b2f; --go-soft:#e3eedc; --nogo:#a52822; --nogo-soft:#f4dfdc;
+  --bet:#8a5a18; --bet-soft:#f6ead2;
+  --sans:"IBM Plex Sans",-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",monospace;
+  --serif:"IBM Plex Serif",Georgia,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--sand);color:var(--ink);font-size:15px;line-height:1.55}
+a{color:inherit;text-decoration:none}
+.mock-bar{position:fixed;top:0;left:0;right:0;height:36px;background:#1f2329;color:#cfd3da;display:flex;align-items:center;gap:14px;padding:0 14px;font-size:12px;z-index:200;font-family:var(--mono)}
+.mock-bar a{color:#cfd3da;padding:3px 8px;border-radius:4px}
+.mock-bar a:hover{background:#343a44}
+.mock-bar .label{opacity:.55}.mock-bar .active{background:#3d4654;color:#fff}.mock-bar .spacer{flex:1}
+.app{display:flex;min-height:100vh;padding-top:36px}
+.sidebar{width:256px;background:var(--surface);border-right:1px solid var(--line);position:fixed;top:36px;bottom:0;display:flex;flex-direction:column;overflow-y:auto}
+.s-head{padding:20px 18px 16px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px}
+.brand .name{font-family:var(--serif);font-weight:700;font-size:1.25rem}
+.brand .badge{font-family:var(--mono);font-size:.62rem;background:var(--tegl-soft);color:var(--tegl-dark);padding:2px 7px;border-radius:9px;font-weight:600}
+.s-head .sub{font-size:.72rem;color:var(--ink-faded);margin-top:7px}
+.s-sec{padding:14px 10px 4px}
+.s-sec h4{font-size:.62rem;text-transform:uppercase;letter-spacing:.16em;color:var(--tegl-dark);font-weight:700;padding:0 10px;margin-bottom:6px}
+.s-sec a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;font-size:.88rem;color:var(--ink-soft);border-left:3px solid transparent}
+.s-sec a .ic{width:16px;text-align:center;opacity:.7;font-size:.8rem}
+.s-sec a:hover{background:var(--sand-deep);color:var(--ink)}
+.s-sec a.on{background:var(--tegl-soft);color:var(--tegl-deep);font-weight:600;border-left-color:var(--tegl)}
+.s-sec a.dead{cursor:not-allowed;opacity:.45}
+.s-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--line);font-size:.68rem;color:var(--ink-faded);line-height:1.6}
+.main{margin-left:256px;flex:1;padding:44px 56px 80px;max-width:1180px}
+
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tegl-dark);font-weight:600;margin-bottom:14px}
+.hero{display:grid;grid-template-columns:1.4fr 1fr;gap:56px;align-items:start;margin-bottom:64px}
+.hero h1{font-family:var(--serif);font-size:clamp(2.2rem,4.5vw,3.4rem);font-weight:700;line-height:1.12;margin-bottom:18px}
+.hero h1 em{font-style:italic;color:var(--tegl)}
+.hero .lede{font-size:1.08rem;color:var(--ink-soft);max-width:54ch;margin-bottom:28px}
+.cta{display:flex;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:5px;font-weight:600;font-size:.92rem;border:1px solid transparent;cursor:pointer}
+.btn.p{background:var(--tegl-dark);color:#fff}
+.btn.p:hover{background:var(--tegl-deep)}
+.btn.g{border-color:var(--line);color:var(--ink);background:var(--surface)}
+.btn.g:hover{border-color:var(--tegl-dark);color:var(--tegl-dark)}
+.stat-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--tegl);border-radius:8px;padding:24px;box-shadow:0 6px 14px -6px rgba(43,33,27,.1)}
+.stat-card h3{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--tegl-dark);margin-bottom:16px}
+.stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.stat-row:last-child{border:none}
+.stat-row .k{font-size:.85rem;color:var(--ink-soft)}
+.stat-row .v{font-family:var(--serif);font-size:1.55rem;font-weight:700;color:var(--tegl-dark);font-variant-numeric:tabular-nums}
+
+.sec{margin-bottom:56px}
+.sec h2{font-family:var(--serif);font-size:1.5rem;font-weight:700;margin-bottom:6px}
+.sec .sub{color:var(--ink-faded);font-size:.92rem;margin-bottom:24px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;position:relative;overflow:hidden}
+.step::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--tegl),var(--tegl-soft))}
+.step .n{font-family:var(--mono);font-size:.72rem;color:var(--tegl-dark);font-weight:600;margin-bottom:10px}
+.step h3{font-size:.98rem;font-weight:600;margin-bottom:6px}
+.step p{font-size:.82rem;color:var(--ink-soft)}
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;transition:.15s}
+.case:hover{border-color:var(--tegl);box-shadow:0 10px 22px -10px rgba(201,68,22,.28);transform:translateY(-1px)}
+.case .id{font-family:var(--mono);font-size:.72rem;color:var(--ink-faded);margin-bottom:6px}
+.case h3{font-family:var(--serif);font-size:1.04rem;font-weight:600;margin-bottom:10px}
+.pill{display:inline-block;font-family:var(--mono);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:10px;letter-spacing:.04em}
+.pill.go{background:var(--go-soft);color:var(--go)}
+.pill.bet{background:var(--bet-soft);color:var(--bet)}
+.pill.nogo{background:var(--nogo-soft);color:var(--nogo)}
+.quote{border-left:3px solid var(--tegl);background:var(--surface);padding:18px 22px;border-radius:0 8px 8px 0;max-width:720px}
+.quote p{font-family:var(--serif);font-style:italic;font-size:1.02rem;color:var(--ink-soft);margin-bottom:8px}
+.quote cite{font-family:var(--mono);font-size:.72rem;color:var(--tegl-dark);font-style:normal}
+</style>
+</head>
+<body>
+<div class="mock-bar">
+  <a href="../index.html">← Alle retninger</a>
+  <span class="label">R2 · Teglværk</span>
+  <span class="spacer"></span>
+  <span class="label">Side:</span>
+  <a class="active" href="forside.html">Forside</a>
+  <a href="sager.html">Sager</a>
+  <a href="risikovurdering.html">Risikovurdering</a>
+  <span class="spacer"></span>
+  <span class="label">Sammenlign:</span>
+  <a href="../r1-tyr-civic/forside.html">R1</a>
+  <a class="active" href="#">R2</a>
+  <a href="../r3-nordlys/forside.html">R3</a>
+  <a href="../r4-protokol/forside.html">R4</a>
+</div>
+
+<div class="app">
+  <nav class="sidebar">
+    <div class="s-head">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="11" fill="#c94416"/>
+          <circle cx="12" cy="12" r="8.6" fill="none" stroke="#fffdfa" stroke-width=".9"/>
+          <path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0 M9.5 17h5" stroke="#fffdfa" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span class="name">Tyr</span><span class="badge">beta 3</span>
+      </div>
+      <div class="sub">AI-kompliance · Kalundborg Kommune</div>
+    </div>
+    <div class="s-sec"><h4>Arbejde</h4>
+      <a class="on" href="forside.html"><span class="ic">⌂</span> Forside</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Proces (3 trin)</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> Indkøbsproces</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> EU AI Act Checker</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> Vurdering</a>
+      <a href="risikovurdering.html"><span class="ic">▸</span> Risikovurdering</a>
+    </div>
+    <div class="s-sec"><h4>Sager &amp; Historik</h4>
+      <a href="sager.html"><span class="ic">☰</span> Sager (kanban)</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▦</span> Portefølje-overblik</a>
+      <a class="dead" title="Kun mockup"><span class="ic">◷</span> Historik (audit log)</a>
+    </div>
+    <div class="s-sec"><h4>Reference</h4>
+      <a class="dead" title="Kun mockup"><span class="ic">▤</span> Videnbase</a>
+      <a class="dead" title="Kun mockup"><span class="ic">§</span> Lov Assistent</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⌬</span> AI Løsninger</a>
+      <a class="dead" title="Kun mockup"><span class="ic">◍</span> Juridisk Research</a>
+      <a class="dead" title="Kun mockup"><span class="ic">↗</span> Relevante Links</a>
+    </div>
+    <div class="s-sec"><h4>Drift</h4>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Drift-overblik</a>
+      <a class="dead" title="Kun mockup"><span class="ic">§</span> Lov-overvågning</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Indstillinger</a>
+    </div>
+    <div class="s-foot">Tyr · beta 3<br>Kun til internt brug — Digitalisering &amp; IT</div>
+  </nav>
+
+  <main class="main">
+    <div class="eyebrow">Kommunal AI-compliance · EU AI Act + GDPR</div>
+    <div class="hero">
+      <div>
+        <h1>Myndighedens svar, bygget <em>sten for sten</em> på loven.</h1>
+        <p class="lede">Tyr vurderer kommunens AI-løsninger mod EU AI Act, GDPR og dansk særlovgivning — i Kalundborgs egne farver, med deterministisk regelmotor og fuldt revisionsspor.</p>
+        <div class="cta">
+          <a class="btn p" href="risikovurdering.html">Start risikovurdering</a>
+          <a class="btn g" href="sager.html">Se sager</a>
+        </div>
+      </div>
+      <aside class="stat-card">
+        <h3>Status lige nu</h3>
+        <div class="stat-row"><span class="k">Aktive regler</span><span class="v">24</span></div>
+        <div class="stat-row"><span class="k">Sager i alt</span><span class="v">17</span></div>
+        <div class="stat-row"><span class="k">Afventer remediation</span><span class="v">3</span></div>
+        <div class="stat-row"><span class="k">Lovkilder verificeret</span><span class="v">49</span></div>
+      </aside>
+    </div>
+
+    <div class="sec">
+      <h2>Sådan virker Tyr</h2>
+      <div class="sub">Fra idé til godkendt AI-løsning i fire spor</div>
+      <div class="steps">
+        <div class="step"><div class="n">TRIN 1</div><h3>Indkøbsproces</h3><p>Beskriv behovet — AI udfylder intake fra fritekst eller dokumenter.</p></div>
+        <div class="step"><div class="n">TRIN 2</div><h3>Vurdering</h3><p>Regelmotoren afgør GO / BETINGET-GO / NO-GO med lovcitater.</p></div>
+        <div class="step"><div class="n">TRIN 3</div><h3>Risikovurdering</h3><p>Upload MSA + DBA — få et færdigt Word-udkast på kommunens skabelon.</p></div>
+        <div class="step"><div class="n">TRIN 4</div><h3>Evidens &amp; drift</h3><p>Evidens-checkliste, årligt review og tamper-sikret audit-trail.</p></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Seneste sager</h2>
+      <div class="sub">Klik for kanban-overblik</div>
+      <div class="cases">
+        <a class="case" href="sager.html"><div class="id">K-2026-0042</div><h3>Velatir — AI-governance platform</h3><span class="pill bet">BETINGET-GO</span></a>
+        <a class="case" href="sager.html"><div class="id">K-2026-0038</div><h3>Voicecraft — TTS til IVR</h3><span class="pill go">GO</span></a>
+        <a class="case" href="sager.html"><div class="id">K-2026-0031</div><h3>Ruteoptimering — Madservice</h3><span class="pill go">GO</span></a>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Lovgrundlag, ordret</h2>
+      <div class="sub">Alle citater verificeres dagligt mod kilden</div>
+      <div class="quote">
+        <p>"Udbydere og idriftsættere af AI-systemer træffer foranstaltninger til i videst muligt omfang at sikre et tilstrækkeligt niveau af AI-færdigheder hos deres personale…"</p>
+        <cite>EU AI Act, artikel 4 · verificeret 10. juni 2026</cite>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

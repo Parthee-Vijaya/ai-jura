@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tyr UI-redesign 2026 — 4 retninger</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="none" stroke="%230d2e54" stroke-width="1.6"/><path d="M12 19V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="%230d2e54" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14181f; --soft:#555a64; --faded:#6b7280; --line:#d8d3c5; --paper:#f5f4ef; --surface:#fff;
+  --sans:"IBM Plex Sans",sans-serif; --mono:"IBM Plex Mono",monospace; --serif:"IBM Plex Serif",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55}
+a{text-decoration:none;color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:56px 32px 100px}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#6e5527;font-weight:600;margin-bottom:14px}
+h1{font-size:clamp(2rem,4vw,3rem);font-weight:700;letter-spacing:-0.025em;margin-bottom:12px}
+.lede{font-size:1.08rem;color:var(--soft);max-width:68ch;margin-bottom:14px}
+.hint{font-size:.84rem;color:var(--faded);margin-bottom:44px}
+.hint code{font-family:var(--mono);background:#ebe9e2;padding:2px 7px;border-radius:4px;font-size:.78rem}
+
+h2{font-size:1.35rem;font-weight:700;letter-spacing:-0.015em;margin:54px 0 6px}
+.sub{color:var(--faded);font-size:.9rem;margin-bottom:22px}
+
+/* retningskort */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.dir{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:.16s;display:block}
+.dir:hover{transform:translateY(-3px);box-shadow:0 24px 48px -20px rgba(20,24,31,.25)}
+.dir .preview{height:148px;display:flex;align-items:center;justify-content:center;position:relative}
+.dir .preview .chip{position:absolute;top:12px;left:14px;font-family:var(--mono);font-size:.66rem;font-weight:600;letter-spacing:.1em;padding:3px 10px;border-radius:10px}
+.dir .body{padding:20px 22px 22px}
+.dir h3{font-size:1.18rem;font-weight:700;margin-bottom:6px}
+.dir p{font-size:.88rem;color:var(--soft);margin-bottom:14px;min-height:42px}
+.dir .links{display:flex;gap:8px;flex-wrap:wrap}
+.dir .links span{font-family:var(--mono);font-size:.72rem;padding:5px 12px;border:1px solid var(--line);border-radius:14px;color:var(--soft);transition:.12s}
+.dir .links span:hover{border-color:var(--ink);color:var(--ink)}
+.dir .links .main-link{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* preview-baggrunde pr. retning */
+.pv1{background:linear-gradient(135deg,#fbfaf7 0%,#e2eaf3 100%)}
+.pv2{background:linear-gradient(135deg,#faf6f1 0%,#f3d9c9 100%)}
+.pv3{background:linear-gradient(135deg,#14181f 0%,#1d3046 100%)}
+.pv4{background:repeating-linear-gradient(0deg,#f7f5f0,#f7f5f0 26px,#eceadf 26px,#eceadf 27px)}
+.c1{background:#e2eaf3;color:#0d2e54}.c2{background:#f7e3d8;color:#a03612}
+.c3{background:#1d3046;color:#8fb8e0}.c4{background:#ecebe6;color:#1a1a18}
+
+/* logo-showcase */
+.logo-table{display:flex;flex-direction:column;gap:14px}
+.lo-row{display:grid;grid-template-columns:200px 150px 1fr 220px;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 22px}
+.lo-row .name{font-weight:700;font-size:.95rem}
+.lo-row .name small{display:block;font-weight:400;color:var(--faded);font-size:.74rem;margin-top:2px}
+.sizes{display:flex;align-items:flex-end;gap:18px}
+.sizes .s{text-align:center}
+.sizes .s b{display:block;font-family:var(--mono);font-size:.6rem;color:var(--faded);font-weight:400;margin-top:5px}
+.fav{display:flex;align-items:center;gap:9px;background:#e9e7e0;border-radius:8px 8px 0 0;padding:7px 13px;font-size:.74rem;color:var(--soft);max-width:215px;border:1px solid var(--line);border-bottom:none}
+.fav img,.fav svg{flex-shrink:0}
+.fav .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dark-chip{display:flex;gap:14px;align-items:center}
+.swatch{width:74px;height:46px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.swatch.d{background:#14181f;border-color:#14181f}
+.swatch.l{background:#fff}
+
+/* sammenligning */
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:.86rem}
+th{font-family:var(--mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:var(--faded);text-align:left;padding:12px 16px;border-bottom:2px solid var(--line);background:#faf9f5}
+td{padding:13px 16px;border-bottom:1px solid #ebe7da;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.dirname{font-weight:700;white-space:nowrap}
+.dots{display:flex;gap:5px;margin-top:4px}
+.dot{width:17px;height:17px;border-radius:50%;border:1px solid rgba(0,0,0,.12)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Tyr / Bifrost · UI-redesign · juni 2026</div>
+  <h1>Fire retninger. Klik dig igennem hver.</h1>
+  <p class="lede">Hver retning er en komplet, klikbar mockup med eget logo, egen palette og tre rigtige skærme: <strong>Forside</strong>, <strong>Sager (kanban)</strong> og <strong>Risikovurdering</strong> (3-trins flow med klikbar stepper). Indholdet er ægte data fra platformen.</p>
+  <p class="hint">Tip: brug <code>Sammenlign: R1 R2 R3 R4</code> i den mørke bjælke øverst på hver side for at hoppe til samme skærm i en anden retning.</p>
+
+  <div class="grid">
+    <a class="dir" href="r1-tyr-civic/forside.html">
+      <div class="preview pv1">
+        <span class="chip c1">R1</span>
+        <svg width="76" height="76" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="1.4"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="body">
+        <h3>Tyr Civic</h3>
+        <p>Lys myndighed med Tiwaz-mærket ᛏ. Navy + bronze beholdt men strammere — gov.uk-ro. Evolution, ikke revolution.</p>
+        <div class="links"><span class="main-link">Åbn mockup →</span><span>Forside</span><span>Sager</span><span>Risikovurdering</span></div>
+      </div>
+    </a>
+
+    <a class="dir" href="r2-teglvaerk/forside.html">
+      <div class="preview pv2">
+        <span class="chip c2">R2</span>
+        <svg width="80" height="80" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fffdfa" stroke-width=".9"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0 M9.5 17h5" stroke="#fffdfa" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="body">
+        <h3>Teglværk</h3>
+        <p>Kalundborg-teglrød som primær, varm sandsten, serif-overskrifter og segl-logo. Kommunens egen identitet, borgernær.</p>
+        <div class="links"><span class="main-link">Åbn mockup →</span><span>Forside</span><span>Sager</span><span>Risikovurdering</span></div>
+      </div>
+    </a>
+
+    <a class="dir" href="r3-nordlys/forside.html">
+      <div class="preview pv3">
+        <span class="chip c3">R3</span>
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none"><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="1.8" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#d4a866" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1" stroke-linecap="round"/></svg>
+      </div>
+      <div class="body">
+        <h3>Nordlys</h3>
+        <p>Mørkt drift-cockpit med Bifrost-broens bue som mærke. Isblå + lys bronze, mono-tunge nøgletal, Linear-agtig densitet.</p>
+        <div class="links"><span class="main-link">Åbn mockup →</span><span>Forside</span><span>Sager</span><span>Risikovurdering</span></div>
+      </div>
+    </a>
+
+    <a class="dir" href="r4-protokol/forside.html">
+      <div class="preview pv4">
+        <span class="chip c4">R4</span>
+        <svg width="78" height="78" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="#fdfcf9" stroke="#1a1a18" stroke-width="1.4"/><rect x="4.6" y="4.6" width="14.8" height="14.8" fill="none" stroke="#1a1a18" stroke-width=".6"/><text x="7" y="16.4" font-family="IBM Plex Serif,Georgia,serif" font-size="11.5" fill="#1a1a18">§</text><path d="M16 16.2V10 M16 10l-2.1 2.1 M16 10l2.1 2.1" stroke="#a52822" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="body">
+        <h3>Protokol</h3>
+        <p>Dokumentet er interfacet: serif, hairlines, stempel-verdicts, ingen afrundinger. Rød optræder kun når loven kræver det.</p>
+        <div class="links"><span class="main-link">Åbn mockup →</span><span>Forside</span><span>Sager</span><span>Risikovurdering</span></div>
+      </div>
+    </a>
+  </div>
+
+  <h2>Ikonerne — alle størrelser</h2>
+  <div class="sub">Hvert mærke testet fra 128 px ned til 16 px favicon + på mørk/lys flade. Faviconet er LIVE i fanebladet på hver mockup-side.</div>
+  <div class="logo-table">
+
+    <div class="lo-row">
+      <div class="name">R1 · Tiwaz-mærket<small>ᛏ — lovens pil, cirkelindrammet</small></div>
+      <div class="sizes">
+        <div class="s"><svg width="64" height="64" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="1.4"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>64</b></div>
+        <div class="s"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg><b>32</b></div>
+        <div class="s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="2"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><b>16</b></div>
+      </div>
+      <div class="fav"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="2"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2.6"/></svg><span class="t">Tyr — AI-kompliance</span></div>
+      <div class="dark-chip">
+        <div class="swatch l"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#0d2e54" stroke-width="1.6"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#0d2e54" stroke-width="2.2"/></svg></div>
+        <div class="swatch d"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#9db4cf" stroke-width="1.6"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="#9db4cf" stroke-width="2.2"/></svg></div>
+      </div>
+    </div>
+
+    <div class="lo-row">
+      <div class="name">R2 · Tegl-seglet<small>vægtskåle i kommunens stempel</small></div>
+      <div class="sizes">
+        <div class="s"><svg width="64" height="64" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fffdfa" stroke-width=".9"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0 M9.5 17h5" stroke="#fffdfa" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg><b>64</b></div>
+        <div class="s"><svg width="32" height="32" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fffdfa" stroke-width="1"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0 M9.5 17h5" stroke="#fffdfa" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg><b>32</b></div>
+        <div class="s"><svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0 M9.5 17h5" stroke="#fffdfa" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg><b>16</b></div>
+      </div>
+      <div class="fav"><svg width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0" stroke="#fff" stroke-width="1.9" fill="none"/></svg><span class="t">Tyr — AI-kompliance</span></div>
+      <div class="dark-chip">
+        <div class="swatch l"><svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#c94416"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0" stroke="#fff" stroke-width="1.6" fill="none"/></svg></div>
+        <div class="swatch d"><svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#e85a28"/><path d="M12 17V8 M8.5 9.5h7 M8.5 9.5v1.6a1.7 1.7 0 003.4 0 M15.5 9.5v1.6a1.7 1.7 0 01-3.4 0" stroke="#14181f" stroke-width="1.6" fill="none"/></svg></div>
+      </div>
+    </div>
+
+    <div class="lo-row">
+      <div class="name">R3 · Bro-buen<small>Bifrost / nordlys — dobbeltbue</small></div>
+      <div class="sizes">
+        <div class="s"><svg width="64" height="64" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#14181f"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="1.8" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#d4a866" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1"/></svg><b>64</b></div>
+        <div class="s"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#14181f"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="2" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#d4a866" stroke-width="1.5" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1"/></svg><b>32</b></div>
+        <div class="s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#14181f"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="2.6" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1.3"/></svg><b>16</b></div>
+      </div>
+      <div class="fav"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#14181f"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="2.6"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1.3"/></svg><span class="t">Tyr — AI-kompliance</span></div>
+      <div class="dark-chip">
+        <div class="swatch l"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#0d2e54" stroke-width="1.8" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#6e5527" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#5b6573" stroke-width="1"/></svg></div>
+        <div class="swatch d"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="1.8" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#d4a866" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1"/></svg></div>
+      </div>
+    </div>
+
+    <div class="lo-row">
+      <div class="name">R4 · Embeds-stemplet<small>§ + ᛏ i stempelramme</small></div>
+      <div class="sizes">
+        <div class="s"><svg width="64" height="64" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="#fdfcf9" stroke="#1a1a18" stroke-width="1.4"/><rect x="4.6" y="4.6" width="14.8" height="14.8" fill="none" stroke="#1a1a18" stroke-width=".6"/><text x="7" y="16.4" font-family="IBM Plex Serif,Georgia,serif" font-size="11.5" fill="#1a1a18">§</text><path d="M16 16.2V10 M16 10l-2.1 2.1 M16 10l2.1 2.1" stroke="#a52822" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>64</b></div>
+        <div class="s"><svg width="32" height="32" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="#fdfcf9" stroke="#1a1a18" stroke-width="1.6"/><text x="7" y="16.4" font-family="IBM Plex Serif,Georgia,serif" font-size="12" fill="#1a1a18">§</text><path d="M16 16.2V10 M16 10l-2.1 2.1 M16 10l2.1 2.1" stroke="#a52822" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>32</b></div>
+        <div class="s"><svg width="16" height="16" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="#fdfcf9" stroke="#1a1a18" stroke-width="2"/><text x="6.4" y="17" font-family="IBM Plex Serif,Georgia,serif" font-size="13.5" fill="#1a1a18">§</text></svg><b>16</b></div>
+      </div>
+      <div class="fav"><svg width="15" height="15" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="#fdfcf9" stroke="#1a1a18" stroke-width="2"/><text x="6.4" y="17" font-family="Georgia,serif" font-size="13.5" fill="#1a1a18">§</text></svg><span class="t">Tyr — AI-kompliance</span></div>
+      <div class="dark-chip">
+        <div class="swatch l"><svg width="26" height="26" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="#1a1a18" stroke-width="1.6"/><text x="6.6" y="16.8" font-family="Georgia,serif" font-size="12.5" fill="#1a1a18">§</text><path d="M16.5 16V10.4 M16.5 10.4l-1.9 1.9 M16.5 10.4l1.9 1.9" stroke="#a52822" stroke-width="1.4" fill="none"/></svg></div>
+        <div class="swatch d"><svg width="26" height="26" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="#e8e6df" stroke-width="1.6"/><text x="6.6" y="16.8" font-family="Georgia,serif" font-size="12.5" fill="#e8e6df">§</text><path d="M16.5 16V10.4 M16.5 10.4l-1.9 1.9 M16.5 10.4l1.9 1.9" stroke="#e08a85" stroke-width="1.4" fill="none"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Hurtig sammenligning</h2>
+  <div class="sub">Samme tre skærme i alle fire retninger — brug R-switcheren på siderne til side-om-side-hop</div>
+  <table>
+    <tr><th>Retning</th><th>Palette</th><th>Typografi</th><th>Karakter</th><th>Bedst til</th></tr>
+    <tr>
+      <td class="dirname">R1 · Tyr Civic</td>
+      <td><div class="dots"><span class="dot" style="background:#0d2e54"></span><span class="dot" style="background:#6e5527"></span><span class="dot" style="background:#fbfaf7"></span></div></td>
+      <td>IBM Plex Sans</td>
+      <td>Rolig, lys myndighed — lav forandringsrisiko</td>
+      <td>Hurtig opgradering af det kendte</td>
+    </tr>
+    <tr>
+      <td class="dirname">R2 · Teglværk</td>
+      <td><div class="dots"><span class="dot" style="background:#c94416"></span><span class="dot" style="background:#a03612"></span><span class="dot" style="background:#faf6f1"></span></div></td>
+      <td>Plex Serif + Sans</td>
+      <td>Varm, kommunal, brand-tro</td>
+      <td>Identitet sammen med kalundborg.dk</td>
+    </tr>
+    <tr>
+      <td class="dirname">R3 · Nordlys</td>
+      <td><div class="dots"><span class="dot" style="background:#14181f"></span><span class="dot" style="background:#5a8ec4"></span><span class="dot" style="background:#d4a866"></span></div></td>
+      <td>Plex Sans + Mono</td>
+      <td>Mørkt, tæt, cockpit-effektivt</td>
+      <td>Daglige power-brugere i D&amp;IT</td>
+    </tr>
+    <tr>
+      <td class="dirname">R4 · Protokol</td>
+      <td><div class="dots"><span class="dot" style="background:#1a1a18"></span><span class="dot" style="background:#a52822"></span><span class="dot" style="background:#f7f5f0"></span></div></td>
+      <td>Plex Serif-bærende</td>
+      <td>Juridisk dokument-æstetik, stempler</td>
+      <td>Tillid hos jurister, DPO &amp; revision</td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

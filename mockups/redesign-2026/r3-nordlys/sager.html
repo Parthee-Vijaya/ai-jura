@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R3 · Nordlys — Sager</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="%2314181f"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="%235a8ec4" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="%23d4a866" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M3.5 17h17" stroke="%239aa1ad" stroke-width="1" stroke-linecap="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d2e54; --navy-dark:#082040; --navy-soft:#e2eaf3;
+  --bronze:#6e5527; --bronze-soft:#f3ead6;
+  --paper:#fbfaf7; --surface:#ffffff; --paper-soft:#f0eee8;
+  --ink:#14181f; --ink-soft:#555a64; --ink-faded:#5b6573;
+  --line:#d8d3c5; --line-soft:#ebe7da;
+  --go:#2f6b2f; --go-soft:#e3eedc; --nogo:#a52822; --nogo-soft:#f4dfdc;
+  --sans:"IBM Plex Sans",-apple-system,sans-serif; --mono:"IBM Plex Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.55}
+a{color:inherit;text-decoration:none}
+.mock-bar{position:fixed;top:0;left:0;right:0;height:36px;background:#1f2329;color:#cfd3da;display:flex;align-items:center;gap:14px;padding:0 14px;font-size:12px;z-index:200;font-family:var(--mono)}
+.mock-bar a{color:#cfd3da;padding:3px 8px;border-radius:4px}
+.mock-bar a:hover{background:#343a44}
+.mock-bar .label{opacity:.55}.mock-bar .active{background:#3d4654;color:#fff}.mock-bar .spacer{flex:1}
+.app{display:flex;min-height:100vh;padding-top:36px}
+.sidebar{width:256px;background:var(--surface);border-right:1px solid var(--line);position:fixed;top:36px;bottom:0;display:flex;flex-direction:column;overflow-y:auto}
+.s-head{padding:20px 18px 16px;border-bottom:1px solid var(--line-soft)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .mark{color:var(--navy)}
+.brand .name{font-weight:700;font-size:1.15rem}
+.brand .badge{font-family:var(--mono);font-size:.62rem;background:var(--bronze-soft);color:var(--bronze);padding:2px 7px;border-radius:9px;font-weight:600}
+.s-head .sub{font-size:.72rem;color:var(--ink-faded);margin-top:6px}
+.s-sec{padding:14px 10px 4px}
+.s-sec h4{font-size:.62rem;text-transform:uppercase;letter-spacing:.16em;color:var(--bronze);font-weight:700;padding:0 10px;margin-bottom:6px}
+.s-sec a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:5px;font-size:.88rem;color:var(--ink-soft);border-left:3px solid transparent}
+.s-sec a .ic{width:16px;text-align:center;opacity:.75;font-size:.8rem}
+.s-sec a:hover{background:var(--paper-soft);color:var(--ink)}
+.s-sec a.on{background:var(--navy-soft);color:var(--navy);font-weight:600;border-left-color:var(--bronze)}
+.s-sec a.dead{cursor:not-allowed;opacity:.45}
+.s-foot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--line-soft);font-size:.68rem;color:var(--ink-faded);line-height:1.6}
+.main{margin-left:256px;flex:1;padding:36px 40px 80px}
+
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:10px}
+.head-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px}
+h1{font-size:2rem;font-weight:700;letter-spacing:-0.02em}
+.head-row .sub{color:var(--ink-faded);font-size:.92rem;margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:5px;font-weight:600;font-size:.88rem;background:var(--navy);color:#fff;border:none;cursor:pointer}
+.btn:hover{background:var(--navy-dark)}
+
+.board{display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:14px;overflow-x:auto}
+.col{min-width:190px}
+.col-h{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;border-bottom:3px solid var(--line);margin-bottom:12px}
+.col-h .t{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+.col-h .c{font-family:var(--mono);font-size:.72rem;color:var(--ink-faded);background:var(--paper-soft);padding:1px 8px;border-radius:9px}
+.col.kladde .col-h{border-color:#b9b4a6}
+.col.vurderet .col-h{border-color:var(--navy-soft);border-bottom-color:#9db4cf}
+.col.remediation .col-h{border-bottom-color:var(--bronze)}
+.col.godkendt .col-h{border-bottom-color:var(--go)}
+.col.idriftsat .col-h{border-bottom-color:var(--navy)}
+.col.arkiveret .col-h{border-bottom-color:var(--line)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:.14s}
+.card:hover{border-color:var(--navy);box-shadow:0 8px 18px -8px rgba(13,46,84,.2);transform:translateY(-1px)}
+.card .id{font-family:var(--mono);font-size:.68rem;color:var(--ink-faded);margin-bottom:5px;display:flex;justify-content:space-between}
+.card h3{font-size:.9rem;font-weight:600;line-height:1.3;margin-bottom:8px}
+.card .meta{font-size:.72rem;color:var(--ink-faded)}
+.pill{display:inline-block;font-family:var(--mono);font-size:.64rem;font-weight:600;padding:2px 9px;border-radius:9px;letter-spacing:.04em}
+.pill.go{background:var(--go-soft);color:var(--go)}
+.pill.bet{background:var(--bronze-soft);color:var(--bronze)}
+.pill.nogo{background:var(--nogo-soft);color:var(--nogo)}
+.bar{height:4px;background:var(--paper-soft);border-radius:2px;margin-top:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--go);border-radius:2px}
+
+/* detalje-drawer */
+.drawer{position:fixed;top:36px;right:-440px;width:420px;bottom:0;background:var(--surface);border-left:1px solid var(--line);box-shadow:-24px 0 48px -24px rgba(20,24,31,.25);transition:right .22s ease-out;z-index:150;padding:28px;overflow-y:auto}
+.drawer.open{right:0}
+.drawer .x{position:absolute;top:18px;right:18px;background:none;border:none;font-size:1.1rem;color:var(--ink-faded);cursor:pointer}
+.drawer .id{font-family:var(--mono);font-size:.72rem;color:var(--ink-faded);margin-bottom:6px}
+.drawer h2{font-size:1.3rem;font-weight:700;margin-bottom:12px;letter-spacing:-0.015em}
+.drawer .sec{margin-top:22px}
+.drawer .sec h4{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.14em;color:var(--bronze);margin-bottom:10px}
+.kv{display:flex;justify-content:space-between;font-size:.85rem;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+.kv .k{color:var(--ink-soft)}.kv .v{font-weight:600}
+.blocker{background:var(--nogo-soft);border-left:3px solid var(--nogo);padding:10px 12px;border-radius:0 5px 5px 0;font-size:.82rem;margin-bottom:8px}
+.blocker.warn{background:var(--bronze-soft);border-left-color:var(--bronze)}
+.overlay{position:fixed;inset:36px 0 0 0;background:rgba(20,24,31,.18);opacity:0;pointer-events:none;transition:.2s;z-index:140}
+.overlay.show{opacity:1;pointer-events:auto}
+</style>
+<style>
+/* ===== R3 NORDLYS overrides — mørkt cockpit, data-først ===== */
+:root{--navy:#5a8ec4;--navy-dark:#7da9d8;--navy-light:#8fb8e0;--navy-soft:#1d3046;
+--bronze:#d4a866;--bronze-soft:#33291a;--paper:#14181f;--surface:#1c2129;--paper-soft:#252b35;
+--ink:#e8eaed;--ink-soft:#b6bcc6;--ink-faded:#9aa1ad;--line:#2a3140;--line-soft:#232936;
+--go:#8fce8f;--go-soft:#1d2b1d;--nogo:#e08a85;--nogo-soft:#352120}
+body{font-size:14px}
+.btn.p{color:#0e1116;font-weight:700}
+.btn.g{background:var(--surface)}
+.s-sec a{padding:6px 10px}
+.case:hover,.card.card:hover{box-shadow:0 0 0 1px var(--navy),0 10px 28px -10px rgba(90,142,196,.35)}
+.sc.mh{color:#e8a06a}.sc.lm{color:#a4cf8e}
+.mismatch{color:#f0b6b1}
+.vbanner{border-color:#4a3c20}
+.vbanner,.notice{color:#e8d4ae}
+.flag{color:#f0c7c2}
+.blocker{color:#f0c7c2}.blocker.warn{color:#e8d4ae}
+.quote p{color:var(--ink-soft)}
+.journal code{background:#252b35}
+input[type=text]{background:var(--paper);color:var(--ink)}
+.eyebrow,.col-h .t,.fact .k,th{font-family:"IBM Plex Mono",monospace}
+</style>
+</head>
+<body>
+<div class="mock-bar">
+  <a href="../index.html">← Alle retninger</a>
+  <span class="label">R3 · Nordlys</span>
+  <span class="spacer"></span>
+  <span class="label">Side:</span>
+  <a href="forside.html">Forside</a>
+  <a class="active" href="sager.html">Sager</a>
+  <a href="risikovurdering.html">Risikovurdering</a>
+  <span class="spacer"></span>
+  <span class="label">Sammenlign:</span>
+  <a href="../r1-tyr-civic/sager.html">R1</a>
+  <a href="../r2-teglvaerk/sager.html">R2</a>
+  <a class="active" href="#">R3</a>
+  <a href="../r4-protokol/sager.html">R4</a>
+</div>
+
+<div class="app">
+  <nav class="sidebar">
+    <div class="s-head">
+      <div class="brand">
+        <svg class="mark" width="30" height="30" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#10141b"/><path d="M3.5 17 Q12 5.5 20.5 17" stroke="#5a8ec4" stroke-width="1.8" stroke-linecap="round"/><path d="M6 17 Q12 9 18 17" stroke="#d4a866" stroke-width="1.4" stroke-linecap="round"/><path d="M3.5 17h17" stroke="#9aa1ad" stroke-width="1" stroke-linecap="round"/></svg>
+        <span class="name">Tyr</span><span class="badge">beta 3</span>
+      </div>
+      <div class="sub">AI-kompliance · Kalundborg Kommune</div>
+    </div>
+    <div class="s-sec"><h4>Arbejde</h4>
+      <a href="forside.html"><span class="ic">⌂</span> Forside</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Proces (3 trin)</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> Indkøbsproces</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> EU AI Act Checker</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▸</span> Vurdering</a>
+      <a href="risikovurdering.html"><span class="ic">▸</span> Risikovurdering</a>
+    </div>
+    <div class="s-sec"><h4>Sager &amp; Historik</h4>
+      <a class="on" href="sager.html"><span class="ic">☰</span> Sager (kanban)</a>
+      <a class="dead" title="Kun mockup"><span class="ic">▦</span> Portefølje-overblik</a>
+      <a class="dead" title="Kun mockup"><span class="ic">◷</span> Historik (audit log)</a>
+    </div>
+    <div class="s-sec"><h4>Reference</h4>
+      <a class="dead" title="Kun mockup"><span class="ic">▤</span> Videnbase</a>
+      <a class="dead" title="Kun mockup"><span class="ic">§</span> Lov Assistent</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⌬</span> AI Løsninger</a>
+      <a class="dead" title="Kun mockup"><span class="ic">◍</span> Juridisk Research</a>
+      <a class="dead" title="Kun mockup"><span class="ic">↗</span> Relevante Links</a>
+    </div>
+    <div class="s-sec"><h4>Drift</h4>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Drift-overblik</a>
+      <a class="dead" title="Kun mockup"><span class="ic">§</span> Lov-overvågning</a>
+      <a class="dead" title="Kun mockup"><span class="ic">⚙</span> Indstillinger</a>
+    </div>
+    <div class="s-foot">Tyr · beta 3<br>Kun til internt brug — Digitalisering &amp; IT</div>
+  </nav>
+
+  <main class="main">
+    <div class="eyebrow">Sager &amp; Historik</div>
+    <div class="head-row">
+      <div>
+        <h1>Sager</h1>
+        <div class="sub">17 sager · træk kort mellem kolonner · klik for detaljer</div>
+      </div>
+      <button class="btn">+ Ny sag</button>
+    </div>
+
+    <div class="board">
+      <div class="col kladde">
+        <div class="col-h"><span class="t">Kladde</span><span class="c">3</span></div>
+        <div class="card" onclick="openCase('chatbot')"><div class="id">K-2026-0051</div><h3>Chatbot Borgerservice</h3><div class="meta">Oprettet 8. jun · Borgerservice</div></div>
+        <div class="card"><div class="id">K-2026-0049</div><h3>Sagsresumé-assistent</h3><div class="meta">Oprettet 4. jun · Jobcenter</div></div>
+        <div class="card"><div class="id">K-2026-0047</div><h3>Journalnotat-AI</h3><div class="meta">Oprettet 1. jun · Sundhed</div></div>
+      </div>
+      <div class="col vurderet">
+        <div class="col-h"><span class="t">Vurderet</span><span class="c">2</span></div>
+        <div class="card" onclick="openCase('velatir')"><div class="id">K-2026-0042 <span class="pill bet">BETINGET</span></div><h3>Velatir — AI-governance</h3><div class="meta">Vurderet 22. maj · 10 risici</div><div class="bar"><i style="width:44%"></i></div></div>
+        <div class="card"><div class="id">K-2026-0044 <span class="pill nogo">NO-GO</span></div><h3>Ansigtsgenkendelse P-kontrol</h3><div class="meta">Vurderet 28. maj · Art. 5-konflikt</div></div>
+      </div>
+      <div class="col remediation">
+        <div class="col-h"><span class="t">Remediation</span><span class="c">3</span></div>
+        <div class="card"><div class="id">K-2026-0040 <span class="pill bet">BETINGET</span></div><h3>Dokument-klassificering</h3><div class="meta">2 betingelser åbne · DBA mangler</div><div class="bar"><i style="width:62%;background:var(--bronze)"></i></div></div>
+        <div class="card"><div class="id">K-2026-0036 <span class="pill bet">BETINGET</span></div><h3>Oversættelses-AI</h3><div class="meta">DPIA-udkast hos DPO</div><div class="bar"><i style="width:78%;background:var(--bronze)"></i></div></div>
+        <div class="card"><div class="id">K-2026-0034 <span class="pill bet">BETINGET</span></div><h3>Mødetransskribering</h3><div class="meta">Art. 13-oplysning mangler</div><div class="bar"><i style="width:55%;background:var(--bronze)"></i></div></div>
+      </div>
+      <div class="col godkendt">
+        <div class="col-h"><span class="t">Godkendt</span><span class="c">2</span></div>
+        <div class="card"><div class="id">K-2026-0038 <span class="pill go">GO</span></div><h3>Voicecraft — TTS til IVR</h3><div class="meta">Godkendt 12. maj · evidens 8/8</div><div class="bar"><i style="width:100%"></i></div></div>
+        <div class="card"><div class="id">K-2026-0031 <span class="pill go">GO</span></div><h3>Ruteoptimering Madservice</h3><div class="meta">Godkendt 2. maj · review maj 2027</div><div class="bar"><i style="width:100%"></i></div></div>
+      </div>
+      <div class="col idriftsat">
+        <div class="col-h"><span class="t">Idriftsat</span><span class="c">4</span></div>
+        <div class="card"><div class="id">K-2025-0019 <span class="pill go">GO</span></div><h3>Hviske — transskribering</h3><div class="meta">Drift siden jan · næste review jan 2027</div></div>
+        <div class="card"><div class="id">K-2025-0014 <span class="pill go">GO</span></div><h3>Postsortering NLP</h3><div class="meta">Drift siden 2025</div></div>
+      </div>
+      <div class="col arkiveret">
+        <div class="col-h"><span class="t">Arkiveret</span><span class="c">3</span></div>
+        <div class="card" style="opacity:.6"><div class="id">K-2025-0008</div><h3>Pilot: prædiktiv vedligehold</h3><div class="meta">Lukket — leverandør konkurs</div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="ov" onclick="closeCase()"></div>
+<aside class="drawer" id="drawer">
+  <button class="x" onclick="closeCase()">✕</button>
+  <div class="id" id="d-id">K-2026-0042</div>
+  <h2 id="d-title">Velatir — AI-governance platform</h2>
+  <span class="pill bet" id="d-pill">BETINGET-GO</span>
+  <div class="sec">
+    <h4>Nøgletal</h4>
+    <div class="kv"><span class="k">Anskaffelsesvej</span><span class="v">SKI — direkte tildeling</span></div>
+    <div class="kv"><span class="k">Kontraktværdi (4 år)</span><span class="v">1,6–5 mio. kr. ⚠ over tærskel</span></div>
+    <div class="kv"><span class="k">Evidens-progress</span><span class="v">4 / 9</span></div>
+    <div class="kv"><span class="k">Persondata</span><span class="v">alm. + følsomme + CPR</span></div>
+  </div>
+  <div class="sec">
+    <h4>Top-blockers</h4>
+    <div class="blocker"><strong>MSA § 6.2</strong> — leverandør må træne AI-modeller på kundedata. Skal fremforhandles før produktionssætning.</div>
+    <div class="blocker warn"><strong>Udbudspligt-mismatch</strong> — kontraktværdi over tærskel (1.601.944 kr.) men anskaffelsesvej er ikke EU-udbud.</div>
+    <div class="blocker warn"><strong>DPIA</strong> — udkast ikke fremsendt til DPO endnu.</div>
+  </div>
+  <div class="sec">
+    <h4>Handling</h4>
+    <a class="btn" href="risikovurdering.html" style="width:100%;justify-content:center">Åbn risikovurdering →</a>
+  </div>
+</aside>
+
+<script>
+const cases={
+  velatir:{id:"K-2026-0042",title:"Velatir — AI-governance platform",pill:["bet","BETINGET-GO"]},
+  chatbot:{id:"K-2026-0051",title:"Chatbot Borgerservice",pill:["bet","KLADDE"]}
+};
+function openCase(k){
+  const c=cases[k]||cases.velatir;
+  document.getElementById('d-id').textContent=c.id;
+  document.getElementById('d-title').textContent=c.title;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('ov').classList.add('show');
+}
+function closeCase(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('ov').classList.remove('show');
+}
+document.querySelectorAll('.card:not([onclick])').forEach(c=>c.addEventListener('click',()=>openCase('velatir')));
+</script>
+</body>
+</html>
