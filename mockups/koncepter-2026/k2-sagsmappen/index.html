@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K2 · Sagsmappen — hele sagen er ét dokument</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="none" stroke="%230d2e54" stroke-width="1.6"/><path d="M12 19V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="%230d2e54" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d2e54;--navy-soft:#e2eaf3;--bronze:#6e5527;--bronze-soft:#f3ead6;
+  --paper:#f5f4ef;--surface:#fff;--paper-soft:#ebe9e2;--ink:#14181f;--soft:#555a64;--faded:#5b6573;
+  --line:#d8d3c5;--line-soft:#ebe7da;--go:#2f6b2f;--go-soft:#e3eedc;--nogo:#a52822;--nogo-soft:#f4dfdc;
+  --sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace;--serif:"IBM Plex Serif",Georgia,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.6}
+a{color:inherit;text-decoration:none}
+.mock-bar{position:fixed;top:0;left:0;right:0;height:36px;background:#1f2329;color:#cfd3da;display:flex;align-items:center;gap:12px;padding:0 14px;font-size:12px;z-index:400;font-family:var(--mono)}
+.mock-bar a{color:#cfd3da;padding:3px 8px;border-radius:4px}
+.mock-bar a:hover{background:#343a44}
+.mock-bar .label{opacity:.55}.mock-bar .active{background:#3d4654;color:#fff}.mock-bar .spacer{flex:1}
+
+/* topbar: kun sagsvælger — appen ER dokumentet */
+.top{position:fixed;top:36px;left:0;right:0;height:50px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;z-index:100}
+.top .mark{color:var(--navy);display:flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem}
+.picker{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:7px;padding:6px 13px;font-size:.85rem;cursor:pointer;background:var(--surface)}
+.picker:hover{border-color:var(--navy)}
+.picker code{font-family:var(--mono);font-size:.72rem;color:var(--faded)}
+.picker .chev{color:var(--faded);font-size:.7rem}
+.top .right{margin-left:auto;display:flex;gap:9px;align-items:center}
+.top .act{font-size:.8rem;font-weight:600;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;background:var(--surface)}
+.top .act.p{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* tre-spaltet dokumentlayout: outline · dossier · marginalia */
+.doc{display:grid;grid-template-columns:230px minmax(0,760px) 280px;gap:44px;max-width:1380px;margin:0 auto;padding:116px 28px 120px}
+
+/* outline (scroll-spy) */
+.outline{position:sticky;top:106px;align-self:start;font-size:.84rem}
+.outline .t{font-family:var(--mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.14em;color:var(--bronze);margin-bottom:10px}
+.outline a{display:flex;gap:9px;padding:6px 10px;border-left:2px solid var(--line-soft);color:var(--faded)}
+.outline a .no{font-family:var(--mono);font-size:.7rem;width:18px;color:var(--line)}
+.outline a:hover{color:var(--ink)}
+.outline a.on{border-left-color:var(--navy);color:var(--navy);font-weight:600;background:linear-gradient(90deg,var(--navy-soft),transparent)}
+.outline a.on .no{color:var(--bronze)}
+.outline .done .no{color:var(--go)}
+.outline .meter{margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.outline .meter .lbl{font-size:.7rem;color:var(--faded);margin-bottom:7px}
+.outline .meter .bar{height:6px;background:var(--paper-soft);border-radius:3px;overflow:hidden}
+.outline .meter .bar i{display:block;height:100%;width:58%;background:linear-gradient(90deg,var(--navy),#1c4a7d)}
+
+/* dossieret */
+.dossier{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:54px 60px;box-shadow:0 24px 60px -30px rgba(20,24,31,.18)}
+.stamp-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.case-id{font-family:var(--mono);font-size:.74rem;color:var(--faded)}
+.stamp{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.12em;color:var(--bronze);border:2.5px solid var(--bronze);border-radius:7px;padding:7px 14px;transform:rotate(-2.5deg);background:var(--bronze-soft)}
+h1{font-family:var(--serif);font-size:2.1rem;font-weight:600;line-height:1.15;margin:6px 0 10px}
+.byline{font-size:.82rem;color:var(--faded);padding-bottom:26px;border-bottom:1px solid var(--line-soft);margin-bottom:34px}
+section{margin-bottom:44px;scroll-margin-top:110px}
+section h2{font-family:var(--serif);font-size:1.3rem;font-weight:600;margin-bottom:4px;display:flex;align-items:baseline;gap:11px}
+section h2 .no{font-family:var(--mono);font-size:.76rem;color:var(--bronze)}
+section .when{font-family:var(--mono);font-size:.68rem;color:var(--faded);margin-bottom:14px}
+section p{color:var(--soft);margin-bottom:10px}
+.field{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:.9rem}
+.field .k{color:var(--faded);font-size:.82rem}
+.field .v{font-weight:500}
+.field .v[contenteditable]{outline:none;border-bottom:1px dashed transparent}
+.field .v[contenteditable]:hover{border-bottom-color:var(--bronze)}
+.field .v[contenteditable]:focus{border-bottom-color:var(--navy);background:var(--navy-soft)}
+.inline-flag{background:var(--nogo-soft);border-left:3px solid var(--nogo);padding:11px 15px;border-radius:0 7px 7px 0;font-size:.85rem;margin:14px 0}
+.verdict-line{display:flex;gap:10px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:13px 17px;margin:12px 0;font-size:.88rem}
+.verdict-line .led{width:11px;height:11px;border-radius:50%}
+.verdict-line.go .led{background:var(--go)}
+.verdict-line.warn .led{background:var(--bronze)}
+.verdict-line code{font-family:var(--mono);font-size:.7rem;color:var(--faded);margin-left:auto}
+table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:8px}
+th{font-family:var(--mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--faded);text-align:left;padding:8px 9px;border-bottom:2px solid var(--line)}
+td{padding:9px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.sc{font-family:var(--mono);font-weight:700;white-space:nowrap}
+.sc.h{color:var(--nogo)}.sc.mh{color:#c2410c}.sc.m{color:var(--bronze)}
+.chkrow{display:flex;align-items:center;gap:11px;padding:8px 0;font-size:.88rem;border-bottom:1px solid var(--line-soft)}
+.chkrow .b{width:17px;height:17px;border:2px solid var(--line);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
+.chkrow.done .b{background:var(--go);border-color:var(--go)}
+.chkrow.done span{color:var(--faded);text-decoration:line-through}
+.audit{font-family:var(--mono);font-size:.74rem;color:var(--soft);line-height:2}
+.audit b{color:var(--ink)}
+.audit .hash{color:var(--line);font-size:.64rem}
+
+/* marginalia */
+.margin{position:sticky;top:106px;align-self:start;display:flex;flex-direction:column;gap:14px;font-size:.8rem}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:13px 15px;position:relative}
+.note::before{content:"";position:absolute;left:-44px;top:18px;width:34px;border-top:1.5px dashed var(--line)}
+.note .who{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.note .ava{width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-size:.62rem;display:flex;align-items:center;justify-content:center;font-weight:600}
+.note .who b{font-size:.78rem}
+.note .who time{font-family:var(--mono);font-size:.62rem;color:var(--faded);margin-left:auto}
+.note p{color:var(--soft);line-height:1.5}
+.note.law{border-left:3px solid var(--bronze)}
+.note.law .q{font-family:var(--serif);font-style:italic;color:var(--soft)}
+.note.law cite{font-family:var(--mono);font-size:.64rem;color:var(--bronze);font-style:normal;display:block;margin-top:6px}
+.note .reply{font-size:.72rem;color:var(--navy);font-weight:600;margin-top:8px;cursor:pointer}
+.concept-note{position:fixed;bottom:18px;right:18px;max-width:280px;background:#1f2329;color:#cfd3da;border-radius:10px;padding:13px 16px;font-size:.76rem;line-height:1.5;z-index:90;opacity:.94}
+.concept-note b{color:#fff}
+@media(max-width:1200px){.doc{grid-template-columns:200px 1fr}.margin{display:none}}
+</style>
+</head>
+<body>
+<div class="mock-bar">
+  <a href="../index.html">← Koncept-hub</a>
+  <span class="label">K2 · Sagsmappen</span>
+  <span class="spacer"></span>
+  <span class="label">Koncept:</span>
+  <a href="../k1-opgavekoen/index.html">K1</a>
+  <a class="active" href="#">K2</a>
+  <a href="../k3-pipelinen/index.html">K3</a>
+  <a href="../k4-samtalen/index.html">K4</a>
+</div>
+
+<header class="top">
+  <div class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Tyr</div>
+  <div class="picker"><code>K-2026-0042</code> Velatir — AI-governance platform <span class="chev">▾</span></div>
+  <div class="right">
+    <button class="act">🖨 Print</button>
+    <button class="act">⤓ Word</button>
+    <button class="act p">Del med DPO</button>
+  </div>
+</header>
+
+<div class="doc">
+  <!-- ====== OUTLINE ====== -->
+  <nav class="outline" id="outline">
+    <div class="t">Sagsmappen</div>
+    <a href="#resume" class="on done"><span class="no">1</span> Resumé &amp; verdict</a>
+    <a href="#intake" class="done"><span class="no">2</span> Intake</a>
+    <a href="#vurdering" class="done"><span class="no">3</span> Regel-vurdering</a>
+    <a href="#risiko"><span class="no">4</span> Risikoskema</a>
+    <a href="#proces"><span class="no">5</span> Kommunale procespunkter</a>
+    <a href="#evidens"><span class="no">6</span> Evidens</a>
+    <a href="#audit"><span class="no">7</span> Audit-spor</a>
+    <div class="meter">
+      <div class="lbl">Sagen er 58 % færdig</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </nav>
+
+  <!-- ====== DOSSIERET ====== -->
+  <article class="dossier">
+    <div class="stamp-row">
+      <div class="case-id">SAGSMAPPE · K-2026-0042 · KALUNDBORG KOMMUNE</div>
+      <div class="stamp">BETINGET-GO</div>
+    </div>
+    <h1>Velatir — AI-governance platform</h1>
+    <div class="byline">Oprettet 14. maj 2026 af Partheepan Vijayamohan · Digitalisering &amp; IT · sidst ændret i dag 09:41</div>
+
+    <section id="resume">
+      <h2><span class="no">1</span> Resumé &amp; verdict</h2>
+      <div class="when">AUTO-OPDATERET VED HVER ÆNDRING</div>
+      <p>Kommunen ønsker at indkøbe Velatir til styring og overvågning af medarbejdernes AI-brug. Regelmotoren giver <strong>BETINGET-GO</strong>: tre kontraktuelle og to processuelle betingelser skal lukkes før idriftsættelse.</p>
+      <div class="inline-flag"><strong>Største blocker:</strong> MSA § 6.2 giver leverandøren ret til at træne egne AI-modeller på kommunens data — skal fremforhandles.</div>
+    </section>
+
+    <section id="intake">
+      <h2><span class="no">2</span> Intake</h2>
+      <div class="when">UDFYLDT 14. MAJ · AI-ASSISTERET FRA MSA + DBA · klik i et felt for at rette</div>
+      <div class="field"><span class="k">Leverandør</span><span class="v" contenteditable>Velatir ApS · CVR 45436489 · Danmark · stiftet 2024</span></div>
+      <div class="field"><span class="k">Hosting</span><span class="v" contenteditable>Scaleway SAS · Frankrig/Nederlandene (EU)</span></div>
+      <div class="field"><span class="k">Persondata</span><span class="v" contenteditable>Almindelige + følsomme + CPR (i fritekst-prompts)</span></div>
+      <div class="field"><span class="k">Kontraktværdi (4 år)</span><span class="v" contenteditable>1,6 – 5 mio. kr. (estimat)</span></div>
+      <div class="field"><span class="k">Anskaffelsesvej</span><span class="v" contenteditable>SKI — direkte tildeling</span></div>
+      <div class="field"><span class="k">Authentication</span><span class="v" contenteditable>Entra ID SSO + MFA</span></div>
+    </section>
+
+    <section id="vurdering">
+      <h2><span class="no">3</span> Regel-vurdering</h2>
+      <div class="when">KØRT 22. MAJ · RULE ENGINE v3 · 24 REGLER · AUDIT-ID 7c2f…</div>
+      <div class="verdict-line warn"><span class="led"></span> EU AI Act art. 4 — AI-færdigheder skal dokumenteres <code>BETINGET</code></div>
+      <div class="verdict-line warn"><span class="led"></span> GDPR art. 35 — DPIA påkrævet før bred udrulning <code>BETINGET</code></div>
+      <div class="verdict-line go"><span class="led"></span> GDPR art. 28 — databehandleraftale indgået <code>OPFYLDT</code></div>
+      <div class="verdict-line go"><span class="led"></span> EU AI Act art. 5 — ingen forbudt praksis <code>OPFYLDT</code></div>
+    </section>
+
+    <section id="risiko">
+      <h2><span class="no">4</span> Risikoskema</h2>
+      <div class="when">GENERERET 10. JUNI · 10 RISICI · WORD-UDKAST KLAR TIL DPO</div>
+      <table>
+        <tr><th style="width:38%">Risiko</th><th>Konsekvens</th><th style="width:84px">Sandsynl.</th><th style="width:92px">Score</th></tr>
+        <tr><td><strong>MSA § 6.2</strong> — kundedata til AI-træning</td><td>Ikke-tilbagekaldeligt datatab; brud på formålsbegrænsning</td><td>Middel</td><td class="sc h">Høj</td></tr>
+        <tr><td>Udbudspligt-mismatch</td><td>Ulovligt indkøb; udbudsklage</td><td>Middel</td><td class="sc mh">Middel-høj</td></tr>
+        <tr><td>CPR i fritekst — falsk negativ</td><td>Lækage m. anmeldelsespligt art. 33/34</td><td>Lav-middel</td><td class="sc mh">Middel-høj</td></tr>
+        <tr><td>Leverandørkontinuitet (2024-startup)</td><td>Afbrudt drift; 90-dages datavindue</td><td>Middel</td><td class="sc mh">Middel-høj</td></tr>
+        <tr><td>Manglende DPIA før udrulning</td><td>Art. 35-overtrædelse i sig selv</td><td>Lav-middel</td><td class="sc m">Middel</td></tr>
+      </table>
+    </section>
+
+    <section id="proces">
+      <h2><span class="no">5</span> Kommunale procespunkter</h2>
+      <div class="when">JF. RETNINGSLINJER FOR IT-ANSKAFFELSER + AI-TJEKLISTEN · 3/9</div>
+      <div class="chkrow done"><span class="b">✓</span><span>Digitalisering og IT adviseret tidligt</span></div>
+      <div class="chkrow done"><span class="b">✓</span><span>Databehandleraftale indgået</span></div>
+      <div class="chkrow done"><span class="b">✓</span><span>AI-færdigheder dokumenteret (AI-forordningen art. 4)</span></div>
+      <div class="chkrow"><span class="b"></span><span><strong>CIO-underskrift</strong> på kontrakt + DBA</span></div>
+      <div class="chkrow"><span class="b"></span><span><strong>DPIA-udkast til DPO</strong> — klar til afsendelse</span></div>
+      <div class="chkrow"><span class="b"></span><span>EU-udbudsafklaring med Team Økonomi og Udbud</span></div>
+      <div class="chkrow"><span class="b"></span><span>Fortegnelse art. 30 via IT-sikkerhedsambassadør</span></div>
+      <div class="chkrow"><span class="b"></span><span>Oplysningspligt art. 13-14 til medarbejdere</span></div>
+      <div class="chkrow"><span class="b"></span><span>Contract Management-plan for driftsperioden</span></div>
+    </section>
+
+    <section id="evidens">
+      <h2><span class="no">6</span> Evidens</h2>
+      <div class="when">4 AF 9 ARTEFAKTER FÆRDIGE</div>
+      <div class="chkrow done"><span class="b">✓</span><span>Databehandleraftale (underskrevet PDF)</span></div>
+      <div class="chkrow done"><span class="b">✓</span><span>Risikostyringsplan</span></div>
+      <div class="chkrow done"><span class="b">✓</span><span>Databeskyttelsesretlig risikovurdering (Word-udkast)</span></div>
+      <div class="chkrow done"><span class="b">✓</span><span>AI-færdigheds-dokumentation</span></div>
+      <div class="chkrow"><span class="b"></span><span>DPIA / konsekvensanalyse</span></div>
+      <div class="chkrow"><span class="b"></span><span>Kontraktnotat om MSA-ændringer</span></div>
+    </section>
+
+    <section id="audit">
+      <h2><span class="no">7</span> Audit-spor</h2>
+      <div class="when">TAMPER-SIKRET HASH-KÆDE · ALLE HÆNDELSER</div>
+      <div class="audit">
+        <div><b>10. jun 14:31</b> Risikovurdering genereret (10 risici) · PV <span class="hash">sha 07ea51fc…</span></div>
+        <div><b>28. maj 09:12</b> DBA markeret indgået · PV <span class="hash">sha 9804a4d9…</span></div>
+        <div><b>22. maj 13:47</b> Regel-vurdering kørt → BETINGET-GO <span class="hash">sha c2218df0…</span></div>
+        <div><b>14. maj 10:03</b> Sag oprettet via AI-intake <span class="hash">sha 5df7504c…</span></div>
+      </div>
+    </section>
+  </article>
+
+  <!-- ====== MARGINALIA ====== -->
+  <aside class="margin">
+    <div class="note law">
+      <div class="q">"…retten til indsigelse mod automatiserede individuelle afgørelser…"</div>
+      <cite>GDPR art. 22 · følger afsnit 3 · verificeret i dag</cite>
+    </div>
+    <div class="note">
+      <div class="who"><span class="ava">AD</span><b>Anne Dandanell</b><time>i går</time></div>
+      <p>Kan vi få MED-udvalgets behandling fremrykket? Uge 25 kolliderer med ferien.</p>
+      <div class="reply">Svar ↩</div>
+    </div>
+    <div class="note">
+      <div class="who"><span class="ava" style="background:var(--bronze)">DPO</span><b>Databeskyttelsesrådgiver</b><time>2. jun</time></div>
+      <p>Husk at DPIA'en skal beskrive fravalg af on-prem-alternativet, jf. minimering.</p>
+      <div class="reply">Svar ↩</div>
+    </div>
+  </aside>
+</div>
+
+<div class="concept-note"><b>Koncept K2:</b> Ingen moduler eller faner — hele sagen er ét levende dokument. Outline til venstre scroll-spy'er, kommentarer og lovcitater hænger i margenen. Prøv: scroll, og klik i et intake-felt.</div>
+
+<script>
+const links=[...document.querySelectorAll('.outline a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+addEventListener('scroll',()=>{
+  let i=secs.findLastIndex(s=>s.getBoundingClientRect().top<150);
+  if(i<0)i=0;
+  links.forEach((a,j)=>a.classList.toggle('on',j===i));
+},{passive:true});
+</script>
+</body>
+</html>

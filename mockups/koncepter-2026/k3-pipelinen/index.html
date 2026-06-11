@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K3 · Pipelinen — processen er interfacet</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="none" stroke="%230d2e54" stroke-width="1.6"/><path d="M12 19V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="%230d2e54" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d2e54;--navy-dark:#082040;--navy-soft:#e2eaf3;--bronze:#6e5527;--bronze-soft:#f3ead6;
+  --paper:#f5f4ef;--surface:#fff;--paper-soft:#ebe9e2;--ink:#14181f;--soft:#555a64;--faded:#5b6573;
+  --line:#d8d3c5;--line-soft:#ebe7da;--go:#2f6b2f;--go-soft:#e3eedc;--nogo:#a52822;--nogo-soft:#f4dfdc;
+  --sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.5;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.mock-bar{position:fixed;top:0;left:0;right:0;height:36px;background:#1f2329;color:#cfd3da;display:flex;align-items:center;gap:12px;padding:0 14px;font-size:12px;z-index:400;font-family:var(--mono)}
+.mock-bar a{color:#cfd3da;padding:3px 8px;border-radius:4px}
+.mock-bar a:hover{background:#343a44}
+.mock-bar .label{opacity:.55}.mock-bar .active{background:#3d4654;color:#fff}.mock-bar .spacer{flex:1}
+
+/* top: portefølje-puls + zoom */
+.top{position:fixed;top:36px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--line);z-index:100;padding:13px 22px;display:flex;align-items:center;gap:20px}
+.top .mark{color:var(--navy);display:flex;align-items:center;gap:8px;font-weight:700}
+.pulse{display:flex;align-items:center;gap:9px;background:var(--bronze-soft);border:1px solid #dcc89a;border-radius:8px;padding:7px 14px;font-size:.84rem}
+.pulse .dot{width:9px;height:9px;border-radius:50%;background:var(--bronze);animation:blink 1.8s infinite}
+@keyframes blink{50%{opacity:.35}}
+.pulse b{color:var(--bronze)}
+.zoom{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.zoom span{padding:7px 15px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--faded)}
+.zoom span.on{background:var(--navy);color:#fff}
+.zoom span:not(.on):hover{background:var(--paper-soft);color:var(--ink)}
+
+/* pipelinen */
+.canvas{padding:128px 26px 60px;overflow-x:auto;min-height:100vh}
+.lanes{display:grid;grid-template-columns:repeat(7,minmax(176px,1fr));gap:0;position:relative;min-width:1280px}
+.flow{position:absolute;top:34px;left:3%;right:3%;height:3px;background:linear-gradient(90deg,var(--line) 0%,var(--navy) 45%,var(--bronze) 70%,var(--go) 100%);border-radius:2px;opacity:.5}
+.lane{padding:0 9px;position:relative}
+.lane+.lane::before{content:"";position:absolute;left:0;top:64px;bottom:0;border-left:1px dashed var(--line)}
+.lh{text-align:center;margin-bottom:30px;position:relative;z-index:2}
+.lh .ic{width:34px;height:34px;border-radius:50%;background:var(--surface);border:2.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:7px}
+.lane.hot .lh .ic{border-color:var(--bronze);background:var(--bronze-soft)}
+.lh .t{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--soft)}
+.lh .c{font-family:var(--mono);font-size:.66rem;color:var(--faded)}
+.lh .sla{font-family:var(--mono);font-size:.62rem;color:var(--bronze);margin-top:2px}
+
+.chip{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:.13s;position:relative}
+.chip:hover{transform:translateY(-2px);box-shadow:0 10px 22px -10px rgba(13,46,84,.3);border-color:var(--navy);border-left-color:var(--navy)}
+.chip.sel{border-color:var(--navy);border-left-color:var(--navy);box-shadow:0 0 0 3px var(--navy-soft)}
+.chip .id{font-family:var(--mono);font-size:.62rem;color:var(--faded)}
+.chip h4{font-size:.82rem;font-weight:600;line-height:1.25;margin:3px 0 6px}
+.chip .tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:.58rem;font-weight:600;padding:2px 7px;border-radius:8px;letter-spacing:.04em}
+.tag.go{background:var(--go-soft);color:var(--go)}
+.tag.bet{background:var(--bronze-soft);color:var(--bronze)}
+.tag.nogo{background:var(--nogo-soft);color:var(--nogo)}
+.tag.t{background:var(--paper-soft);color:var(--faded)}
+.chip.stuck{border-left-color:var(--nogo)}
+.chip.stuck::after{content:"⏳ 12 dage";position:absolute;top:-9px;right:8px;font-family:var(--mono);font-size:.58rem;background:var(--nogo);color:#fff;border-radius:8px;padding:1px 7px}
+.chip.flow-on{border-left-color:var(--go)}
+.lane .empty{border:1.5px dashed var(--line);border-radius:8px;padding:16px 10px;text-align:center;font-size:.7rem;color:var(--faded)}
+
+/* inspektør */
+.insp{position:fixed;top:36px;right:-420px;width:400px;bottom:0;background:var(--surface);border-left:1px solid var(--line);box-shadow:-28px 0 60px -28px rgba(20,24,31,.3);transition:right .2s ease-out;z-index:150;display:flex;flex-direction:column}
+.insp.open{right:0}
+.insp .head{padding:22px 24px 16px;border-bottom:1px solid var(--line-soft)}
+.insp .x{position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.05rem;color:var(--faded);cursor:pointer}
+.insp .id{font-family:var(--mono);font-size:.7rem;color:var(--faded)}
+.insp h2{font-size:1.2rem;font-weight:700;margin:4px 0 8px}
+.insp .body{padding:18px 24px;overflow-y:auto;flex:1}
+.insp h5{font-family:var(--mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.13em;color:var(--bronze);margin:16px 0 9px}
+.insp h5:first-child{margin-top:0}
+.kv{display:flex;justify-content:space-between;font-size:.84rem;padding:6px 0;border-bottom:1px solid var(--line-soft)}
+.kv .k{color:var(--faded)}.kv .v{font-weight:600}
+.block{background:var(--nogo-soft);border-left:3px solid var(--nogo);padding:9px 12px;border-radius:0 6px 6px 0;font-size:.8rem;margin-bottom:7px}
+.block.w{background:var(--bronze-soft);border-left-color:var(--bronze)}
+.mini-flow{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.6rem;color:var(--faded);margin:6px 0 2px;flex-wrap:wrap}
+.mini-flow .st{padding:3px 8px;border-radius:9px;background:var(--paper-soft)}
+.mini-flow .st.done{background:var(--go-soft);color:var(--go)}
+.mini-flow .st.now{background:var(--navy);color:#fff}
+.insp .foot{padding:16px 24px;border-top:1px solid var(--line-soft);display:flex;gap:9px}
+.btn{flex:1;text-align:center;padding:11px;border-radius:7px;font-weight:600;font-size:.86rem;cursor:pointer;border:1px solid var(--line);background:var(--surface)}
+.btn.p{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn.p:hover{background:var(--navy-dark)}
+.concept-note{position:fixed;bottom:18px;left:18px;max-width:280px;background:#1f2329;color:#cfd3da;border-radius:10px;padding:13px 16px;font-size:.76rem;line-height:1.5;z-index:90;opacity:.94}
+.concept-note b{color:#fff}
+</style>
+</head>
+<body>
+<div class="mock-bar">
+  <a href="../index.html">← Koncept-hub</a>
+  <span class="label">K3 · Pipelinen</span>
+  <span class="spacer"></span>
+  <span class="label">Koncept:</span>
+  <a href="../k1-opgavekoen/index.html">K1</a>
+  <a href="../k2-sagsmappen/index.html">K2</a>
+  <a class="active" href="#">K3</a>
+  <a href="../k4-samtalen/index.html">K4</a>
+</div>
+
+<header class="top">
+  <div class="mark"><svg width="23" height="23" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Tyr · Pipeline</div>
+  <div class="pulse"><span class="dot"></span> Flaskehals: <b>Remediation</b> — 3 sager, median 12 dage (norm: 5)</div>
+  <div class="zoom">
+    <span class="on" onclick="zoom(this,'alle')">Portefølje</span>
+    <span onclick="zoom(this,'mine')">Mine sager</span>
+    <span onclick="zoom(this,'kvartal')">Dette kvartal</span>
+  </div>
+</header>
+
+<main class="canvas">
+  <div class="lanes">
+    <div class="flow"></div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">💡</div><div class="t">Idé</div><div class="c">2 sager</div></div>
+      <div class="chip" data-own="andre" onclick="insp(this,'idea1')"><div class="id">NY</div><h4>AI-referat i Byrådet</h4><div class="tags"><span class="tag t">Sekretariat</span></div></div>
+      <div class="chip" data-own="mine" onclick="insp(this,'idea2')"><div class="id">NY</div><h4>Chatbot Borgerservice</h4><div class="tags"><span class="tag t">Borgerservice</span></div></div>
+    </div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">📝</div><div class="t">Intake</div><div class="c">2 sager · ~1 dag</div></div>
+      <div class="chip" data-own="andre" onclick="insp(this,'in1')"><div class="id">K-2026-0049</div><h4>Sagsresumé-assistent</h4><div class="tags"><span class="tag t">Jobcenter</span></div></div>
+      <div class="chip" data-own="andre" onclick="insp(this,'in2')"><div class="id">K-2026-0047</div><h4>Journalnotat-AI</h4><div class="tags"><span class="tag t">Sundhed</span></div></div>
+    </div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">⚖️</div><div class="t">Vurdering</div><div class="c">2 sager · ~2 t</div></div>
+      <div class="chip" data-own="andre" onclick="insp(this,'v1')"><div class="id">K-2026-0044</div><h4>Ansigtsgenkendelse P-kontrol</h4><div class="tags"><span class="tag nogo">NO-GO</span><span class="tag t">art. 5</span></div></div>
+      <div class="chip" data-own="mine" onclick="insp(this,'v2')"><div class="id">K-2026-0046</div><h4>Email-triage NLP</h4><div class="tags"><span class="tag t">kører…</span></div></div>
+    </div>
+
+    <div class="lane hot">
+      <div class="lh"><div class="ic">⚠️</div><div class="t">Remediation</div><div class="c">3 sager</div><div class="sla">median 12 dage ⚠</div></div>
+      <div class="chip stuck sel" data-own="mine" onclick="insp(this,'velatir')"><div class="id">K-2026-0042</div><h4>Velatir — AI-governance</h4><div class="tags"><span class="tag bet">BETINGET</span><span class="tag t">4 åbne</span></div></div>
+      <div class="chip" data-own="andre" onclick="insp(this,'r2')"><div class="id">K-2026-0040</div><h4>Dokument-klassificering</h4><div class="tags"><span class="tag bet">BETINGET</span><span class="tag t">DBA mangler</span></div></div>
+      <div class="chip" data-own="mine" onclick="insp(this,'r3')"><div class="id">K-2026-0036</div><h4>Oversættelses-AI</h4><div class="tags"><span class="tag bet">BETINGET</span><span class="tag t">hos DPO</span></div></div>
+    </div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">📎</div><div class="t">Evidens</div><div class="c">1 sag · ~4 dage</div></div>
+      <div class="chip flow-on" data-own="andre" onclick="insp(this,'e1')"><div class="id">K-2026-0034</div><h4>Mødetransskribering</h4><div class="tags"><span class="tag bet">BETINGET</span><span class="tag t">7/9 ✓</span></div></div>
+    </div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">✅</div><div class="t">Godkendt</div><div class="c">2 sager</div></div>
+      <div class="chip flow-on" data-own="mine" onclick="insp(this,'g1')"><div class="id">K-2026-0038</div><h4>Voicecraft — TTS</h4><div class="tags"><span class="tag go">GO</span></div></div>
+      <div class="chip flow-on" data-own="andre" onclick="insp(this,'g2')"><div class="id">K-2026-0031</div><h4>Ruteoptimering</h4><div class="tags"><span class="tag go">GO</span></div></div>
+    </div>
+
+    <div class="lane">
+      <div class="lh"><div class="ic">🚀</div><div class="t">Drift</div><div class="c">6 systemer</div></div>
+      <div class="chip flow-on" data-own="andre" onclick="insp(this,'d1')"><div class="id">K-2025-0019</div><h4>Hviske transskribering</h4><div class="tags"><span class="tag go">GO</span><span class="tag t">review 6 dage ⏰</span></div></div>
+      <div class="chip flow-on" data-own="andre" onclick="insp(this,'d2')"><div class="id">K-2025-0014</div><h4>Postsortering NLP</h4><div class="tags"><span class="tag go">GO</span></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- INSPEKTØR -->
+<aside class="insp open" id="insp">
+  <button class="x" onclick="closeInsp()">✕</button>
+  <div class="head">
+    <div class="id" id="i-id">K-2026-0042 · Remediation · dag 12</div>
+    <h2 id="i-title">Velatir — AI-governance</h2>
+    <div class="mini-flow">
+      <span class="st done">IDÉ</span>›<span class="st done">INTAKE</span>›<span class="st done">VURD.</span>›<span class="st now">REMED.</span>›<span class="st">EVIDENS</span>›<span class="st">GODK.</span>›<span class="st">DRIFT</span>
+    </div>
+  </div>
+  <div class="body">
+    <h5>Hvorfor sidder den fast?</h5>
+    <div class="block"><strong>MSA § 6.2</strong> — AI-træningsklausul skal fremforhandles (ejer: PV)</div>
+    <div class="block w">DPIA-udkast klar — venter på afsendelse til DPO</div>
+    <div class="block w">EU-udbudsafklaring med Team Økonomi og Udbud</div>
+    <div class="block w">MED-udvalg behandler medarbejderovervågning (uge 25)</div>
+    <h5>Nøgletal</h5>
+    <div class="kv"><span class="k">Verdict</span><span class="v" style="color:var(--bronze)">BETINGET-GO</span></div>
+    <div class="kv"><span class="k">Kontraktværdi (4 år)</span><span class="v">1,6–5 mio. ⚠ over tærskel</span></div>
+    <div class="kv"><span class="k">Procespunkter</span><span class="v">3 / 9</span></div>
+    <div class="kv"><span class="k">Evidens</span><span class="v">4 / 9</span></div>
+    <div class="kv"><span class="k">Risici (Word-udkast)</span><span class="v">10 · klar til DPO</span></div>
+    <h5>Prognose</h5>
+    <div class="kv"><span class="k">Næste fase tidligst</span><span class="v">uge 26 (efter MED)</span></div>
+  </div>
+  <div class="foot">
+    <div class="btn">Åbn sagsmappe</div>
+    <div class="btn p">Ryk blocker → send DPIA</div>
+  </div>
+</aside>
+
+<div class="concept-note"><b>Koncept K3:</b> Hele appen er processen — sager flyder venstre→højre, flaskehalsen lyser op i toppen, og inspektøren til højre svarer på "hvorfor sidder den fast?". Prøv: klik på brikker + zoom-filtret "Mine sager".</div>
+
+<script>
+const D={
+ velatir:{id:"K-2026-0042 · Remediation · dag 12",t:"Velatir — AI-governance"},
+ r2:{id:"K-2026-0040 · Remediation · dag 8",t:"Dokument-klassificering"},
+ r3:{id:"K-2026-0036 · Remediation · dag 15",t:"Oversættelses-AI"},
+ v1:{id:"K-2026-0044 · Vurdering",t:"Ansigtsgenkendelse P-kontrol"},
+ g1:{id:"K-2026-0038 · Godkendt",t:"Voicecraft — TTS"},
+ d1:{id:"K-2025-0019 · Drift · review om 6 dage",t:"Hviske transskribering"},
+ idea2:{id:"NY · Idé",t:"Chatbot Borgerservice"},
+};
+function insp(el,key){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const d=D[key]||D.velatir;
+  document.getElementById('i-id').textContent=d.id;
+  document.getElementById('i-title').textContent=d.t;
+  document.getElementById('insp').classList.add('open');
+}
+function closeInsp(){document.getElementById('insp').classList.remove('open')}
+function zoom(el,mode){
+  document.querySelectorAll('.zoom span').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.style.display=(mode==='mine'&&c.dataset.own!=='mine')?'none':'';
+    if(mode==='kvartal')c.style.display='';
+  });
+}
+</script>
+</body>
+</html>
