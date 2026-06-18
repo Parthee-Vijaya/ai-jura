@@ -1,29 +1,42 @@
 # Docker Deployment Guide - Judge Dredd AI Compliance Platform
 
-## 🚀 Hurtig Start
+## 🚀 Hurtig Start (OrbStack / Docker Desktop)
 
-### Prerequisites
-- Docker (version 20.10+)
-- Docker Compose (version 2.0+)
-- `.env` fil med nødvendige API nøgler
-
-### Start systemet
+Stacken er **selvstændig** — den medbringer sin egen PostgreSQL, og `.env` er
+**valgfri**. Med OrbStack (eller Docker Desktop) kørende er det én kommando:
 
 ```bash
-# Build og start alle services
-docker-compose up -d
-
-# Se logs
-docker-compose logs -f
-
-# Stop alle services
-docker-compose down
+docker compose up --build
 ```
 
-Applikationen vil være tilgængelig på:
-- **Frontend**: http://localhost
-- **Backend API**: http://localhost:8000
-- **API Dokumentation**: http://localhost:8000/docs
+Åbn derefter **http://localhost** i browseren. Det er det.
+
+| URL | Hvad |
+|-----|------|
+| http://localhost | Frontend (nginx proxy'er `/api` → backend, så ingen CORS) |
+| http://localhost:8000 | Backend API direkte |
+| http://localhost:8000/docs | Interaktiv API-dokumentation |
+
+Stop igen (og slet DB-data) med:
+
+```bash
+docker compose down          # stop containere, behold DB-data
+docker compose down -v       # stop + slet PostgreSQL-volumen
+```
+
+> **LLM-funktioner:** Appen booter og UI'et virker uden API-nøgler
+> (`STRICT_CONFIG_VALIDATION=false` er sat i compose). For at aktivere de
+> rigtige compliance-analyser: opret en `.env` (fx `cp .env.example .env`) og
+> sæt `OPENAI_API_KEY`. Compose læser `.env` automatisk hvis den findes.
+
+### Forudsætninger
+- OrbStack, Docker Desktop, eller Docker Engine 24+ med Compose v2
+- Port **80** og **8000** ledige på maskinen (skift `ports` i
+  `docker-compose.yml` hvis de er optaget)
+
+## 📋 Detaljeret Setup
+
+### 1. Opret .env fil (valgfri — kun nødvendig for LLM-nøgler)
 
 ## 📋 Detaljeret Setup
 
