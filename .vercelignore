@@ -1,0 +1,37 @@
+# Vercel bygger KUN frontenden (React/CRA). Backenden (FastAPI) hører hjemme
+# på en langtidskørende host — se render.yaml / VERCEL_DEPLOY.md.
+#
+# Mønstre er ROD-ankrede (ledende "/") så de IKKE rammer noget under frontend/.
+# (fx ville et u-ankret "src/" også matche frontend/src/ og ødelægge buildet.)
+
+# Python backend (kun rod)
+/src/
+/main.py
+/requirements.txt
+/alembic/
+/alembic.ini
+/config/
+/rules/
+/scripts/
+/tests/
+/examples/
+/mockups/
+/docs/
+/test_parallel_execution.py
+
+# Databaser / cache / data
+*.db
+/.cache/
+/data/
+
+# Andre deploy-targets (ikke nødvendige for Vercel)
+/Dockerfile
+/Dockerfile.backend
+/Dockerfile.frontend
+/docker-compose.yml
+/nginx.conf
+/render.yaml
+
+# Virtuelt miljø / Python-artefakter
+/venv/
+__pycache__/
