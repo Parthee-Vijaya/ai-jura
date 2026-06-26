@@ -124,17 +124,51 @@ section.blk{padding:96px 0}
 .audcard li span{color:var(--ink-soft)}
 @media(max-width:820px){.aud{grid-template-columns:1fr}}
 
-/* pipeline */
-.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-top:20px;position:relative}
-.pipe::before{content:"";position:absolute;top:33px;left:8%;right:8%;height:2px;background:linear-gradient(90deg,var(--line),var(--navy),var(--bronze),var(--go));opacity:.4}
-.pstep{text-align:center;padding:0 10px;position:relative}
-.pstep .ring{width:66px;height:66px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;position:relative;z-index:2;transition:border-color .2s,transform .2s}
-.pstep:hover .ring{border-color:var(--navy);transform:scale(1.06)}
-.pstep .ring svg{color:var(--navy);width:26px;height:26px}
-.pstep .n{font-family:var(--mono);font-size:.66rem;color:var(--bronze);font-weight:600;margin-bottom:5px}
-.pstep h4{font-size:.98rem;font-weight:600;margin-bottom:7px}
-.pstep p{font-size:.82rem;color:var(--ink-faded);line-height:1.45}
-@media(max-width:820px){.pipe{grid-template-columns:1fr 1fr;gap:34px 0}.pipe::before{display:none}}
+/* journey — oversigtskort */
+.journey{background:var(--paper-warm)}
+.jmap{display:flex;align-items:flex-start;gap:0;margin:0 0 54px;overflow-x:auto;padding:4px 0 10px}
+.jmap .jn{flex:1;min-width:118px;text-align:center;position:relative;padding:0 5px}
+.jmap .jn:not(:last-child)::after{content:"";position:absolute;top:25px;left:62%;right:-38%;height:2px;background:var(--line);z-index:0}
+.jmap .jn .dot{width:50px;height:50px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 11px;position:relative;z-index:2;color:var(--navy);transition:border-color .18s,transform .18s}
+.jmap .jn:hover .dot{border-color:var(--navy);transform:translateY(-2px)}
+.jmap .jn .dot svg{width:22px;height:22px}
+.jmap .jn .num{position:absolute;top:-4px;right:calc(50% - 33px);width:19px;height:19px;border-radius:50%;background:var(--bronze);color:#fff;font-family:var(--mono);font-size:.6rem;font-weight:600;display:flex;align-items:center;justify-content:center;z-index:3}
+.jmap .jn .t{font-size:.82rem;font-weight:600;line-height:1.25}
+/* journey — detaljerede trin */
+.jsteps{display:flex;flex-direction:column;gap:0}
+.jstep{display:grid;grid-template-columns:54px 1fr;gap:22px}
+.jstep .spine{display:flex;flex-direction:column;align-items:center}
+.jstep .spine .num{width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:1.02rem;flex-shrink:0;z-index:2}
+.jstep .spine .line{flex:1;width:2px;background:var(--line);margin:7px 0}
+.jstep:last-child .spine .line{display:none}
+.jcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:20px;flex:1}
+.jcard .jch{display:flex;align-items:center;gap:13px;margin-bottom:8px}
+.jcard .jch .ji{width:40px;height:40px;border-radius:10px;background:var(--navy-soft);display:flex;align-items:center;justify-content:center;color:var(--navy);flex-shrink:0}
+.jcard .jch h3{font-family:var(--serif);font-size:1.42rem;font-weight:600;letter-spacing:-0.01em}
+.jcard .jtag{font-size:.98rem;color:var(--ink-soft);margin-bottom:20px;padding-left:53px;line-height:1.5}
+.jphases{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.jp{border-radius:10px;padding:14px 16px;border:1px solid var(--line-soft)}
+.jp .pl{font-family:var(--mono);font-size:.64rem;text-transform:uppercase;letter-spacing:.09em;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.jp .pl svg{width:14px;height:14px}
+.jp p{font-size:.88rem;line-height:1.5;color:var(--ink-soft)}
+.jp.du{background:var(--paper)}.jp.du .pl{color:var(--ink-faded)}
+.jp.tyr{background:var(--bronze-soft)}.jp.tyr .pl{color:var(--bronze)}
+.jp.faar{background:var(--go-soft)}.jp.faar .pl{color:var(--go)}
+.jcard .jlaw{margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.jcard .jlaw .ll{font-size:.74rem;color:var(--ink-faded);font-weight:600;font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em}
+.jcard .jlaw .lc{font-family:var(--mono);font-size:.7rem;background:var(--paper-warm);border:1px solid var(--line);border-radius:7px;padding:3px 10px;color:var(--ink-soft)}
+/* løbende lovovervågning */
+.lawband{margin-top:8px;background:var(--navy);color:#fff;border-radius:16px;padding:30px 34px;display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;position:relative;overflow:hidden}
+.lawband::after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border:1px solid rgba(255,255,255,.06);border-radius:50%}
+.lawband .lbi{width:56px;height:56px;border-radius:15px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:var(--bronze-light);flex-shrink:0}
+.lawband .lbt .et{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--bronze-light);font-weight:600;margin-bottom:7px}
+.lawband h3{font-size:1.24rem;font-weight:600;margin-bottom:6px}
+.lawband p{font-size:.95rem;color:rgba(255,255,255,.72);line-height:1.55;max-width:62ch}
+.lawband .lbnums{display:flex;gap:28px;flex-shrink:0}
+.lawband .lbnums .bn{text-align:center}
+.lawband .lbnums .bn .v{font-family:var(--serif);font-size:1.9rem;font-weight:700;line-height:1}
+.lawband .lbnums .bn .k{font-size:.72rem;color:rgba(255,255,255,.65);margin-top:5px;max-width:11ch}
+@media(max-width:820px){.jphases{grid-template-columns:1fr}.jcard .jtag{padding-left:0}.jstep{grid-template-columns:42px 1fr;gap:14px}.lawband{grid-template-columns:1fr;gap:20px;text-align:center}.lawband .lbi{margin:0 auto}.lawband p{margin:0 auto}.lawband .lbnums{justify-content:center}}
 
 /* trust/data section */
 .data{background:var(--paper-warm)}
@@ -307,20 +341,135 @@ footer .fmeta .chip{background:var(--paper-warm);border:1px solid var(--line);bo
   </div>
 </section>
 
-<section class="blk" id="proces" style="background:var(--paper-warm)">
+<section class="blk journey" id="proces">
   <div class="wrap">
     <div class="shead ctr">
-      <span class="eyebrow">Sådan virker det</span>
-      <h2>Fra idé til godkendt AI-løsning</h2>
-      <p>Seks trin. Hvert trin efterlader et spor, så den næste i rækken — og revisoren bagefter — kan se hvad der skete og hvorfor.</p>
+      <span class="eyebrow">Brugerrejsen, trin for trin</span>
+      <h2>Du beskriver. Tyr strukturerer, vurderer og dokumenterer.</h2>
+      <p>Som jurist får du sagerne ind færdigt struktureret og gennemgået — ikke som løse mails og regneark. På hvert trin er det tydeligt hvad du gør, hvad systemet gør, og hvad du står med bagefter.</p>
     </div>
-    <div class="pipe">
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1-1 2H9c0-1-.3-1.4-1-2A6 6 0 0 1 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="n">TRIN 1</div><h4>Idé &amp; intake</h4><p>Beskriv behovet. AI udfylder sagen fra tekst eller dokumenter.</p></div>
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="n">TRIN 2</div><h4>Vurdering</h4><p>Regelmotor afgør GO / BETINGET / NO-GO med lovcitater.</p></div>
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 3</div><h4>Risikovurdering</h4><p>Upload MSA + DBA. Få et færdigt Word-udkast retur.</p></div>
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5h6M5 8h14v13H5V8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 4</div><h4>Evidens</h4><p>Checkliste med AI-kvalitetsreview af materialet.</p></div>
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 4 3 7 8 9 5-2 8-5 8-9V7l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="n">TRIN 5</div><h4>Godkendelse</h4><p>Formel underskrift og EU-register efter art. 49.</p></div>
-      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19c2-7 7-13 14-14-1 7-7 12-14 14ZM5 19l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 6</div><h4>Drift</h4><p>Årligt review og tamper-sikret audit-spor i drift.</p></div>
+
+    <div class="jmap">
+      <a class="jn" href="#t1"><span class="num">1</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1-1 2H9c0-1-.3-1.4-1-2A6 6 0 0 1 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="t">Beskriv løsningen</span></a>
+      <a class="jn" href="#t2"><span class="num">2</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span><span class="t">Vurdér mod loven</span></a>
+      <a class="jn" href="#t3"><span class="num">3</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Risikovurdering</span></a>
+      <a class="jn" href="#t4"><span class="num">4</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8l3 3v13H5V4h3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h4m-4 3h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.4"/></svg></span><span class="t">Konsekvensanalyse</span></a>
+      <a class="jn" href="#t5"><span class="num">5</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5h6M5 8h14v13H5V8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Evidens</span></a>
+      <a class="jn" href="#t6"><span class="num">6</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 4 3 7 8 9 5-2 8-5 8-9V7l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="t">Godkend &amp; registrér</span></a>
+      <a class="jn" href="#t7"><span class="num">7</span><span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19c2-7 7-13 14-14-1 7-7 12-14 14ZM5 19l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Drift &amp; review</span></a>
+    </div>
+
+    <div class="jsteps">
+      <div class="jstep" id="t1">
+        <div class="spine"><div class="num">1</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1-1 2H9c0-1-.3-1.4-1-2A6 6 0 0 1 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><h3>Beskriv løsningen</h3></div>
+          <div class="jtag">Fortæl kort hvad AI-systemet skal — eller upload det materiale du allerede har. Du behøver ikke kende alle de juridiske felter på forhånd.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Skriv i fritekst hvad systemet skal, eller upload notat, tilbud eller produktblad.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>AI-intake udtrækker sektor, AI-type, persondata-kategorier og formål, og opretter en struktureret sag.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>En oprettet, journaliseret sag med felterne udfyldt — klar til vurdering.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">Formålsbegrænsning · art. 5</span><span class="lc">Saglighed</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t2">
+        <div class="spine"><div class="num">2</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span><h3>Vurdér mod loven</h3></div>
+          <div class="jtag">Vælg dybde — hurtig screening, struktureret 7-punkts eller fuld analyse. Regelmotoren gætter ikke; den følger 24 faste regler med hjemmel.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Vælg vurderingsniveau og bekræft de oplysninger, systemet har udtrukket.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Klassificerer mod EU AI Act-risikoniveau, GDPR og særlov; web-research understøtter med kilder.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>En afgørelse — GO / BETINGET-GO / NO-GO — med hjemmel bag hver delkonklusion.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">EU AI Act risk-klasse</span><span class="lc">GDPR art. 6 &amp; 9</span><span class="lc">National hjemmel</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t3">
+        <div class="spine"><div class="num">3</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Risikovurdering</h3></div>
+          <div class="jtag">Upload kontrakt og databehandleraftale. Dokumenterne læses af en sprogmodel der kører <strong>lokalt i kommunen</strong> — de forlader aldrig huset.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Upload MSA, databehandleraftale og produktmateriale. Svar på et par afklarende spørgsmål.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Udtrækker fakta, fanger røde flag (AI-trænings-klausuler, udbudspligt-mismatch) og scorer 10 risici Lav→Høj.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>Et færdigt Word-udkast på kommunens egen skabelon, journaliseret på sagen.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">GDPR art. 32</span><span class="lc">Risikobaseret tilgang</span><span class="lc">IT-anskaffelsesregler</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t4">
+        <div class="spine"><div class="num">4</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M8 4h8l3 3v13H5V4h3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h4m-4 3h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.4"/></svg></span><h3>Konsekvensanalyse (DPIA)</h3></div>
+          <div class="jtag">Når data og risiko kræver det, foreslår Tyr en konsekvensanalyse — og bygger den oven på risikovurderingen, så du ikke starter forfra.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Bekræft om en DPIA er nødvendig — Tyr foreslår det ud fra data-kategorier og risikoniveau.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Genererer et DPIA-udkast og peger på mitigerende tekniske og organisatoriske foranstaltninger.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>Et konsekvensanalyse-udkast klar til fremsendelse til DPO.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">GDPR art. 35</span><span class="lc">DPO-inddragelse</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t5">
+        <div class="spine"><div class="num">5</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 5h6M5 8h14v13H5V8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Evidens &amp; dokumentation</h3></div>
+          <div class="jtag">Saml det materiale, der skal kunne fremvises ved tilsyn. Tyr kvalitetstjekker det udfyldte, før det går videre til godkendelse.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Vedhæft evidens — databehandleraftale, risikoplan, AI-færdigheds-dokumentation.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Kører AI-kvalitetsreview af det udfyldte; @-mentions trækker de rette kolleger ind med besked.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>En komplet evidens-pakke med de 9 kommunale procespunkter afkrydset.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">AI-forordningen art. 4</span><span class="lc">Fortegnelse art. 30</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t6">
+        <div class="spine"><div class="num">6</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 4 3 7 8 9 5-2 8-5 8-9V7l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><h3>Godkend &amp; registrér</h3></div>
+          <div class="jtag">Indstil sagen til formel godkendelse, og registrér løsningen dér hvor loven kræver det. Tyr klargør det, der skal forelægges.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Indstil til godkendelse hos Digitaliserings- og IT-chefen og evt. styregruppe.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Genererer mødeoversigt-PDF til styregruppen og fører dig gennem EU-databaseregistreringen.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>Formel godkendelse plus registrering efter EU AI Act art. 49.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">EU AI Act art. 49</span><span class="lc">IT-anskaffelsesregler</span></div>
+        </div>
+      </div>
+
+      <div class="jstep" id="t7">
+        <div class="spine"><div class="num">7</div><div class="line"></div></div>
+        <div class="jcard">
+          <div class="jch"><span class="ji"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M5 19c2-7 7-13 14-14-1 7-7 12-14 14ZM5 19l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Drift &amp; genvurdering</h3></div>
+          <div class="jtag">Når løsningen er i drift, holder Tyr øje — så en godkendt sag ikke stille bliver forældet, og spor altid kan fremvises.</div>
+          <div class="jphases">
+            <div class="jp du"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.3 3-5 7-5s7 1.7 7 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Du gør</div><p>Modtag påmindelser; bekræft eller genvurdér ved det årlige review.</p></div>
+            <div class="jp tyr"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Tyr gør</div><p>Planlægger reviews, fører tamper-sikret hash-kæde-audit og kører GDPR retention-sweep.</p></div>
+            <div class="jp faar"><div class="pl"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Du får</div><p>En sag der bliver ved med at være ajour — og kan revideres til hver en tid.</p></div>
+          </div>
+          <div class="jlaw"><span class="ll">Grundlag</span><span class="lc">SHA-256 hash-kæde</span><span class="lc">GDPR retention</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lawband">
+      <div class="lbi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 4l1.5 1.5M22 3l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <div class="lbt">
+        <div class="et">Løber under hele rejsen</div>
+        <h3>Opdateret lovgivning — automatisk</h3>
+        <p>Mens sagerne kører, holder Tyr lovgrundlaget ajour. Hver dag verificeres lovkilderne mod kilden, og lov-overvågningen fanger ændringer i EU AI Act og dansk ret. Ændrer en artikel sig, bliver de berørte sager flagget — så en godkendt vurdering aldrig stille bliver forældet.</p>
+      </div>
+      <div class="lbnums">
+        <div class="bn"><div class="v">49</div><div class="k">kilder tjekket dagligt</div></div>
+        <div class="bn"><div class="v">Auto</div><div class="k">flag på berørte sager</div></div>
+      </div>
     </div>
   </div>
 </section>
