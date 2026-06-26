@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tyr — AI-compliance der kan stå for en revision</title>
+<meta name="description" content="Tyr vurderer kommunens AI-løsninger mod EU AI Act, GDPR og dansk særlovgivning. Ordret-verificerede lovcitater, tamper-sikret revisionsspor, og data der aldrig forlader kommunen.">
+<meta property="og:title" content="Tyr — AI-compliance for kommunen">
+<meta property="og:description" content="Fra idé til godkendt AI-løsning. Hver beslutning har hjemmel. Hvert dokument kan revideres.">
+<meta property="og:type" content="website">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="none" stroke="%230d2e54" stroke-width="1.6"/><path d="M12 19V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="%230d2e54" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d2e54; --navy-dark:#082040; --navy-light:#1c4a7d; --navy-soft:#e8eef5;
+  --bronze:#6e5527; --bronze-light:#9a7a3e; --bronze-soft:#f3ead6;
+  --paper:#faf9f6; --paper-warm:#f3f0e9; --surface:#ffffff;
+  --ink:#171b22; --ink-soft:#4d525c; --ink-faded:#737a86;
+  --line:#e3ddd0; --line-soft:#eee9dd;
+  --go:#2f6b2f; --go-soft:#e6efe1; --bet:#8a5a18; --bet-soft:#f6ead2; --nogo:#a52822; --nogo-soft:#f6e0dd;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",monospace;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --maxw:1140px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);font-weight:600}
+
+/* ---------- NAV ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:66px;background:rgba(250,249,246,.82);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .25s,background .25s}
+nav.scrolled{border-bottom-color:var(--line);background:rgba(250,249,246,.94)}
+nav .wrap{height:100%;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:1.18rem;letter-spacing:-0.01em}
+.brand svg{color:var(--navy)}
+.brand .v{font-family:var(--mono);font-size:.6rem;font-weight:600;background:var(--bronze-soft);color:var(--bronze);padding:2px 7px;border-radius:9px;letter-spacing:.04em}
+.navlinks{margin-left:auto;display:flex;gap:30px;align-items:center}
+.navlinks a{font-size:.92rem;font-weight:500;color:var(--ink-soft);transition:color .15s}
+.navlinks a:hover{color:var(--navy)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.94rem;border-radius:8px;padding:11px 22px;cursor:pointer;border:1.5px solid transparent;transition:all .16s;white-space:nowrap}
+.btn.p{background:var(--navy);color:#fff}
+.btn.p:hover{background:var(--navy-dark);transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(13,46,84,.5)}
+.btn.g{border-color:var(--line);color:var(--ink);background:var(--surface)}
+.btn.g:hover{border-color:var(--navy);color:var(--navy)}
+.btn.lg{padding:15px 30px;font-size:1.02rem}
+.navlinks .btn{padding:9px 18px}
+@media(max-width:860px){.navlinks a:not(.btn){display:none}}
+
+/* ---------- HERO ---------- */
+.hero{padding:142px 0 80px;position:relative}
+.hero::before{content:"";position:absolute;top:0;right:0;width:46%;height:560px;background:radial-gradient(ellipse at 70% 30%,var(--navy-soft) 0%,transparent 70%);opacity:.6;z-index:-1}
+.hero .wrap{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center}
+.hero .badge{display:inline-flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:30px;padding:7px 16px 7px 9px;font-size:.8rem;font-weight:500;color:var(--ink-soft);margin-bottom:26px}
+.hero .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--go);box-shadow:0 0 0 3px var(--go-soft)}
+.hero h1{font-family:var(--serif);font-size:clamp(2.5rem,5vw,3.8rem);font-weight:700;line-height:1.08;letter-spacing:-0.02em;margin-bottom:22px}
+.hero h1 em{font-style:italic;color:var(--navy)}
+.hero .sub{font-size:1.2rem;color:var(--ink-soft);max-width:38ch;margin-bottom:34px;line-height:1.55}
+.hero .cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
+.hero .reassure{font-size:.86rem;color:var(--ink-faded);display:flex;align-items:center;gap:8px}
+.hero .reassure svg{color:var(--go);flex-shrink:0}
+
+/* hero verdict-kort */
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 40px 80px -40px rgba(23,27,34,.3),0 0 0 1px rgba(23,27,34,.02);overflow:hidden}
+.vcard .vh{padding:20px 24px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
+.vcard .vh .id{font-family:var(--mono);font-size:.74rem;color:var(--ink-faded)}
+.vcard .vh .stamp{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--bet);background:var(--bet-soft);border:1.5px solid var(--bet);border-radius:6px;padding:5px 11px}
+.vcard .vbody{padding:22px 24px}
+.vcard h3{font-family:var(--serif);font-size:1.28rem;font-weight:600;margin-bottom:16px}
+.vrow{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:.9rem}
+.vrow:last-child{border:none}
+.vrow .led{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.vrow.go .led{background:var(--go)}.vrow.warn .led{background:var(--bet)}
+.vrow .law{margin-left:auto;font-family:var(--mono);font-size:.7rem;color:var(--ink-faded)}
+.vcard .quote{margin-top:16px;background:var(--paper-warm);border-left:3px solid var(--bronze);border-radius:0 8px 8px 0;padding:13px 16px}
+.vcard .quote p{font-family:var(--serif);font-style:italic;font-size:.9rem;color:var(--ink-soft);line-height:1.5}
+.vcard .quote cite{font-family:var(--mono);font-size:.66rem;color:var(--bronze);font-style:normal;display:block;margin-top:7px}
+@media(max-width:880px){.hero .wrap{grid-template-columns:1fr;gap:44px}.hero{padding:120px 0 60px}}
+
+/* ---------- TRUST STRIP ---------- */
+.trust{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface)}
+.trust .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 28px;flex-wrap:wrap}
+.trust .lab{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faded)}
+.trust .items{display:flex;gap:34px;flex-wrap:wrap}
+.trust .it{display:flex;align-items:center;gap:9px;font-weight:600;font-size:.94rem;color:var(--ink-soft)}
+.trust .it svg{color:var(--navy)}
+
+/* ---------- SECTIONS ---------- */
+section.blk{padding:96px 0}
+.shead{max-width:680px;margin-bottom:52px}
+.shead.ctr{margin-left:auto;margin-right:auto;text-align:center}
+.shead h2{font-family:var(--serif);font-size:clamp(2rem,3.6vw,2.7rem);font-weight:700;line-height:1.14;letter-spacing:-0.015em;margin:14px 0 16px}
+.shead p{font-size:1.12rem;color:var(--ink-soft);line-height:1.55}
+
+/* problem */
+.problem{background:var(--navy);color:#fff;position:relative;overflow:hidden}
+.problem::after{content:"";position:absolute;bottom:-160px;left:-80px;width:420px;height:420px;border:1px solid rgba(255,255,255,.07);border-radius:50%}
+.problem .shead h2{color:#fff}
+.problem .eyebrow{color:var(--bronze-light)}
+.problem .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:8px}
+.problem .pc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:26px}
+.problem .pc .n{font-family:var(--mono);font-size:.74rem;color:var(--bronze-light);font-weight:600;margin-bottom:12px}
+.problem .pc h3{font-size:1.12rem;font-weight:600;margin-bottom:9px}
+.problem .pc p{font-size:.94rem;color:rgba(255,255,255,.7);line-height:1.55}
+@media(max-width:820px){.problem .pgrid{grid-template-columns:1fr}}
+
+/* audience split */
+.aud{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.audcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:38px 36px;position:relative;transition:transform .2s,box-shadow .2s}
+.audcard:hover{transform:translateY(-3px);box-shadow:0 30px 60px -30px rgba(23,27,34,.22)}
+.audcard .tag{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--bronze);margin-bottom:18px}
+.audcard .tag .ico{width:34px;height:34px;border-radius:9px;background:var(--bronze-soft);display:flex;align-items:center;justify-content:center}
+.audcard .tag .ico svg{color:var(--bronze)}
+.audcard h3{font-family:var(--serif);font-size:1.6rem;font-weight:600;margin-bottom:10px;letter-spacing:-0.01em}
+.audcard>p{font-size:1.02rem;color:var(--ink-soft);margin-bottom:24px;line-height:1.5}
+.audcard ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+.audcard li{display:flex;gap:13px;align-items:flex-start;font-size:.96rem}
+.audcard li svg{color:var(--go);flex-shrink:0;margin-top:3px}
+.audcard li b{font-weight:600}
+.audcard li span{color:var(--ink-soft)}
+@media(max-width:820px){.aud{grid-template-columns:1fr}}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-top:20px;position:relative}
+.pipe::before{content:"";position:absolute;top:33px;left:8%;right:8%;height:2px;background:linear-gradient(90deg,var(--line),var(--navy),var(--bronze),var(--go));opacity:.4}
+.pstep{text-align:center;padding:0 10px;position:relative}
+.pstep .ring{width:66px;height:66px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;position:relative;z-index:2;transition:border-color .2s,transform .2s}
+.pstep:hover .ring{border-color:var(--navy);transform:scale(1.06)}
+.pstep .ring svg{color:var(--navy);width:26px;height:26px}
+.pstep .n{font-family:var(--mono);font-size:.66rem;color:var(--bronze);font-weight:600;margin-bottom:5px}
+.pstep h4{font-size:.98rem;font-weight:600;margin-bottom:7px}
+.pstep p{font-size:.82rem;color:var(--ink-faded);line-height:1.45}
+@media(max-width:820px){.pipe{grid-template-columns:1fr 1fr;gap:34px 0}.pipe::before{display:none}}
+
+/* trust/data section */
+.data{background:var(--paper-warm)}
+.data .wrap{display:grid;grid-template-columns:.95fr 1.05fr;gap:64px;align-items:center}
+.data .vis{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:0 30px 60px -36px rgba(23,27,34,.2)}
+.bzone{border-radius:12px;padding:18px 18px 8px}
+.bzone.in{border:1.5px solid var(--go);background:var(--go-soft)}
+.bzone.out{border:1.5px dashed var(--navy-light);background:var(--navy-soft);margin-top:14px}
+.bzone .zl{font-family:var(--mono);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.bzone.in .zl{color:var(--go)}.bzone.out .zl{color:var(--navy)}
+.bnode{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:11px 14px;margin-bottom:10px}
+.bnode svg{flex-shrink:0}
+.bzone.in .bnode svg{color:var(--go)}.bzone.out .bnode svg{color:var(--navy)}
+.bnode b{font-size:.86rem;display:block}
+.bnode span{font-family:var(--mono);font-size:.7rem;color:var(--ink-faded)}
+.gateline{text-align:center;font-family:var(--mono);font-size:.68rem;color:var(--navy);font-weight:600;padding:10px 0 2px}
+.data ul{list-style:none;display:flex;flex-direction:column;gap:18px;margin-top:26px}
+.data li{display:flex;gap:14px;align-items:flex-start}
+.data li .ic{width:40px;height:40px;border-radius:10px;background:var(--navy-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.data li .ic svg{color:var(--navy)}
+.data li b{font-weight:600;display:block;margin-bottom:3px}
+.data li p{font-size:.94rem;color:var(--ink-soft);line-height:1.5}
+@media(max-width:880px){.data .wrap{grid-template-columns:1fr;gap:40px}}
+
+/* numbers */
+.nums{background:var(--navy);color:#fff}
+.numgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden}
+.ncell{background:var(--navy);padding:34px 24px;text-align:center}
+.ncell .big{font-family:var(--serif);font-size:2.8rem;font-weight:700;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.ncell .lbl{font-size:.9rem;color:rgba(255,255,255,.7);margin-top:10px}
+.ncell .note{font-family:var(--mono);font-size:.66rem;color:var(--bronze-light);margin-top:5px}
+@media(max-width:820px){.numgrid{grid-template-columns:1fr 1fr}}
+
+/* CTA */
+.cta-final{text-align:center}
+.cta-final .box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:62px 40px;position:relative;overflow:hidden}
+.cta-final .box::before{content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:520px;height:280px;background:radial-gradient(ellipse,var(--navy-soft),transparent 70%);opacity:.7}
+.cta-final h2{font-family:var(--serif);font-size:clamp(2rem,3.6vw,2.7rem);font-weight:700;margin-bottom:16px;position:relative}
+.cta-final p{font-size:1.14rem;color:var(--ink-soft);max-width:46ch;margin:0 auto 32px;position:relative}
+.cta-final .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:46px 0 40px;background:var(--surface)}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start}
+footer .brand{margin-bottom:12px}
+footer .fcol p{font-size:.86rem;color:var(--ink-faded);max-width:32ch;line-height:1.55}
+footer .fmeta{font-family:var(--mono);font-size:.72rem;color:var(--ink-faded);text-align:right;line-height:1.9}
+footer .fmeta .stack{margin-top:8px;display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+footer .fmeta .chip{background:var(--paper-warm);border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-size:.66rem}
+
+/* reveal anim */
+.rv{opacity:0;transform:translateY(20px);transition:opacity .6s ease-out,transform .6s ease-out}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="wrap">
+    <a href="#top" class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tyr <span class="v">EU AI Act</span>
+    </a>
+    <div class="navlinks">
+      <a href="#problem">Hvorfor</a>
+      <a href="#maalgruppe">For hvem</a>
+      <a href="#proces">Sådan virker det</a>
+      <a href="#data">Data &amp; tillid</a>
+      <a href="#kontakt" class="btn p">Book en gennemgang</a>
+    </div>
+  </div>
+</nav>
+
+<a id="top"></a>
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <div class="badge"><span class="dot"></span> EU AI Act er trådt i kraft — kommunen skal kunne dokumentere</div>
+      <h1>Tag AI i brug.<br><em>Behold ansvarligheden.</em></h1>
+      <p class="sub">Tyr vurderer kommunens AI-løsninger mod EU AI Act, GDPR og dansk særlovgivning — fra idé til drift. Hver beslutning får hjemmel. Hvert dokument kan revideres.</p>
+      <div class="cta">
+        <a href="#kontakt" class="btn p lg">Book en gennemgang</a>
+        <a href="#proces" class="btn g lg">Se hvordan det virker</a>
+      </div>
+      <div class="reassure">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Bygget lokal-først: persondata forlader aldrig kommunen.
+      </div>
+    </div>
+
+    <div class="vcard rv">
+      <div class="vh">
+        <span class="id">SAG K-2026-0042 · KALUNDBORG KOMMUNE</span>
+        <span class="stamp">BETINGET-GO</span>
+      </div>
+      <div class="vbody">
+        <h3>Velatir — AI-governance platform</h3>
+        <div class="vrow warn"><span class="led"></span> EU AI Act art. 4 — AI-færdigheder <span class="law">BETINGET</span></div>
+        <div class="vrow warn"><span class="led"></span> GDPR art. 35 — DPIA før udrulning <span class="law">BETINGET</span></div>
+        <div class="vrow go"><span class="led"></span> GDPR art. 28 — databehandleraftale <span class="law">OPFYLDT</span></div>
+        <div class="vrow go"><span class="led"></span> EU AI Act art. 5 — ingen forbudt brug <span class="law">OPFYLDT</span></div>
+        <div class="quote">
+          <p>"…sikre et tilstrækkeligt niveau af AI-færdigheder hos deres personale…"</p>
+          <cite>EU AI Act, art. 4 · verificeret mod kilden i dag</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="trust">
+  <div class="wrap">
+    <span class="lab">Vurderer mod</span>
+    <div class="items">
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 7l7-4 7 4M5 7v10l7 4 7-4V7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> EU AI Act</div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg> GDPR &amp; databeskyttelsesloven</div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l3 3v15H6V3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Dansk særlovgivning</div>
+      <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> Forvaltningsret</div>
+    </div>
+  </div>
+</div>
+
+<section class="blk problem" id="problem">
+  <div class="wrap">
+    <div class="shead">
+      <span class="eyebrow">Hvorfor nu</span>
+      <h2>AI er nemt at tage i brug. Svært at stå inde for.</h2>
+      <p style="color:rgba(255,255,255,.72)">Hver gang en afdeling kobler en AI-løsning på, opstår en kæde af juridiske forpligtelser. Uden et fælles system bliver de håndteret forskelligt — eller slet ikke.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pc rv"><div class="n">FORPLIGTELSEN</div><h3>EU AI Act er bindende</h3><p>Risk-klassificering, AI-færdigheder (art. 4), gennemsigtighed og dokumentation er ikke længere valgfrit for offentlige myndigheder.</p></div>
+      <div class="pc rv"><div class="n">RISIKOEN</div><h3>Leverandøren er ikke nok</h3><p>Kommunen skal foretage sin egen selvstændige vurdering. I kan ikke lægge leverandørens ord til grund — det skal kunne dokumenteres på sagen.</p></div>
+      <div class="pc rv"><div class="n">PRØVEN</div><h3>Det skal kunne revideres</h3><p>Når Datatilsynet, en borger eller en revisor spørger, skal beslutningen kunne genfindes — med hjemmel, dato og spor. Et regneark holder ikke.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="maalgruppe">
+  <div class="wrap">
+    <div class="shead ctr">
+      <span class="eyebrow">Bygget til to stole</span>
+      <h2>Juristen kan forsvare det. Lederen kan styre det.</h2>
+      <p>Samme platform, to perspektiver. Det juridiske arbejde og ledelsesoverblikket lever samme sted — ingen genindtastning, ingen versioner der driver fra hinanden.</p>
+    </div>
+    <div class="aud">
+      <div class="audcard rv">
+        <div class="tag"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span> For juristen</div>
+        <h3>Hjemmel for hver linje</h3>
+        <p>Ingen sorte bokse. Hver vurdering peger på den ordret-verificerede lovartikel — og kan stå for en revision.</p>
+        <ul>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Ordret lovcitater</b> — 49 kilder verificeres dagligt mod kilden, så et citat aldrig er forældet.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Deterministisk regelmotor</b> — beslutningen gætter ikke. 24 faste regler giver GO / BETINGET-GO / NO-GO.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Tamper-sikret revisionsspor</b> — SHA-256 hash-kæde på hver hændelse. Ingen kan ændre historikken ubemærket.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Færdig risikovurdering</b> — på kommunens egen skabelon, klar til DPO og til journalisering på sagen.</span></li>
+        </ul>
+      </div>
+      <div class="audcard rv">
+        <div class="tag"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19V9l5-3 5 3 6-3v13" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 19h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> For lederen</div>
+        <h3>Overblik uden mikrostyring</h3>
+        <p>Se hele porteføljen på ét sted: hvad venter, hvad sidder fast, hvad er klar til drift. Beslut med tal, ikke fornemmelser.</p>
+        <ul>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Porteføljeoverblik</b> — alle sager i én kanban: fra kladde til idriftsat. Flaskehalse er synlige med det samme.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Timer sparet pr. sag</b> — intake, risikovurdering og dokument-udkast er minutters arbejde, ikke dages.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Ensartet proces</b> — følger kommunens retningslinjer for IT-anskaffelser. De 9 procespunkter er bygget ind.</span></li>
+          <li><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Automatiske påmindelser</b> — årlige reviews og frister kommer af sig selv. Intet falder mellem to stole.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="proces" style="background:var(--paper-warm)">
+  <div class="wrap">
+    <div class="shead ctr">
+      <span class="eyebrow">Sådan virker det</span>
+      <h2>Fra idé til godkendt AI-løsning</h2>
+      <p>Seks trin. Hvert trin efterlader et spor, så den næste i rækken — og revisoren bagefter — kan se hvad der skete og hvorfor.</p>
+    </div>
+    <div class="pipe">
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1-1 2H9c0-1-.3-1.4-1-2A6 6 0 0 1 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="n">TRIN 1</div><h4>Idé &amp; intake</h4><p>Beskriv behovet. AI udfylder sagen fra tekst eller dokumenter.</p></div>
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M5 8l7-4 7 4M3 12l2-4 2 4a2 2 0 0 1-4 0Zm12 0 2-4 2 4a2 2 0 0 1-4 0Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div class="n">TRIN 2</div><h4>Vurdering</h4><p>Regelmotor afgør GO / BETINGET / NO-GO med lovcitater.</p></div>
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 3</div><h4>Risikovurdering</h4><p>Upload MSA + DBA. Få et færdigt Word-udkast retur.</p></div>
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5h6M5 8h14v13H5V8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8 13 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 4</div><h4>Evidens</h4><p>Checkliste med AI-kvalitetsreview af materialet.</p></div>
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 7v5c0 4 3 7 8 9 5-2 8-5 8-9V7l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div><div class="n">TRIN 5</div><h4>Godkendelse</h4><p>Formel underskrift og EU-register efter art. 49.</p></div>
+      <div class="pstep rv"><div class="ring"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19c2-7 7-13 14-14-1 7-7 12-14 14ZM5 19l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="n">TRIN 6</div><h4>Drift</h4><p>Årligt review og tamper-sikret audit-spor i drift.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="blk data" id="data">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Data &amp; tillid</span>
+      <h2 style="font-family:var(--serif);font-size:clamp(2rem,3.6vw,2.7rem);font-weight:700;line-height:1.14;letter-spacing:-0.015em;margin:14px 0 18px">Dine dokumenter forlader aldrig kommunen.</h2>
+      <p style="font-size:1.1rem;color:var(--ink-soft);line-height:1.55">De fortrolige dokumenter — kontrakter, databehandleraftaler, materiale med personoplysninger — læses af en sprogmodel der kører <strong>lokalt i kommunen</strong>. Kun anonym systemmetadata kan vælge at bruge ekstern kapacitet. Det er ikke en indstilling du skal huske at slå til. Det er bygget ind i koden.</p>
+      <ul>
+        <li><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6"/></svg></span><div><b>Lokal-først af design</b><p>Rå dokumenter behandles på kommunens egen maskine. Ingen tredjelandsoverførsel, ingen cloud-eksponering af persondata.</p></div></li>
+        <li><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 8 3 12l4 4M17 8l4 4-4 4M14 5l-4 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Grænsen er i koden</b><p>Fakta-udtræk fra fortrolige filer kan teknisk ikke nå skyen. Det er testet og låst — ikke en politik der kan glemmes.</p></div></li>
+        <li><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Kører på jeres infrastruktur</b><p>Containeriseret og klar til kommunens eget Azure-miljø i EU eller en lokal server. I ejer driften.</p></div></li>
+      </ul>
+    </div>
+    <div class="vis rv">
+      <div class="bzone in">
+        <div class="zl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg> Inde i kommunen</div>
+        <div class="bnode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 20h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><b>Fortrolige dokumenter</b><span>MSA · DBA · materiale med persondata</span></div></div>
+        <div class="bnode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="5" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 9h6v6H9zM2 10v4M22 10v4M10 2h4M10 22h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><b>Lokal sprogmodel</b><span>kører på kommunens maskine</span></div></div>
+        <div class="bnode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><b>Anonym metadata</b><span>kategori-labels — ingen persondata</span></div></div>
+      </div>
+      <div class="gateline">↓ kun anonym metadata krydser grænsen</div>
+      <div class="bzone out">
+        <div class="zl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 18a4 4 0 0 1 0-8 6 6 0 0 1 11.5 2A3.5 3.5 0 0 1 17 18H7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> Valgfri ekstern kapacitet</div>
+        <div class="bnode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="m12 3 2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><div><b>Stærkere ræsonnement</b><span>kun til risici + tekst · aldrig dokumenter</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk nums">
+  <div class="wrap">
+    <div class="shead ctr">
+      <span class="eyebrow" style="color:var(--bronze-light)">I tal</span>
+      <h2 style="color:#fff;font-family:var(--serif)">Grundighed, gjort målbar</h2>
+    </div>
+    <div class="numgrid">
+      <div class="ncell rv"><div class="big">24</div><div class="lbl">faste regler</div><div class="note">EU AI Act + GDPR + særlov</div></div>
+      <div class="ncell rv"><div class="big">49</div><div class="lbl">lovkilder verificeret</div><div class="note">tjekkes dagligt</div></div>
+      <div class="ncell rv"><div class="big">0</div><div class="lbl">persondata i skyen</div><div class="note">lokal-først af design</div></div>
+      <div class="ncell rv"><div class="big">3</div><div class="lbl">niveauer af vurdering</div><div class="note">hurtig · 7-punkts · fuld</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="blk cta-final" id="kontakt">
+  <div class="wrap">
+    <div class="box">
+      <h2>Se Tyr på jeres egen sag</h2>
+      <p>En kort gennemgang på en rigtig AI-anskaffelse fra jeres kommune. Ingen slides — bare værktøjet, jeres lovgrundlag og et færdigt dokument til sidst.</p>
+      <div class="cta">
+        <a href="mailto:pavi@kalundborg.dk?subject=Gennemgang%20af%20Tyr%20AI-compliance" class="btn p lg">Book en gennemgang</a>
+        <a href="#top" class="btn g lg">Tilbage til toppen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fcol">
+      <a href="#top" class="brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="var(--navy)" stroke-width="1.5"/><path d="M12 19 V6.5 M12 6.5 L7.5 11 M12 6.5 L16.5 11" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tyr
+      </a>
+      <p>AI-compliance-platform til Kalundborg Kommune. Týr — den nordiske gud for lov, ed og retfærdighed.</p>
+    </div>
+    <div class="fmeta">
+      Digitalisering &amp; IT · Kalundborg Kommune<br>
+      Kun til internt brug
+      <div class="stack">
+        <span class="chip">EU AI Act</span><span class="chip">GDPR</span><span class="chip">Lokal LLM</span><span class="chip">Hash-kæde audit</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var nav=document.getElementById('nav');
+  var onScroll=function(){nav.classList.toggle('scrolled',window.scrollY>10)};
+  onScroll();window.addEventListener('scroll',onScroll,{passive:true});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}});
+    },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
+  }else{
+    document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in')});
+  }
+})();
+</script>
+</body>
+</html>
