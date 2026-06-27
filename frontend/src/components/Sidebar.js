@@ -20,6 +20,7 @@ import {
   FaSearch,
   FaChartBar,
   FaShieldAlt,
+  FaInfoCircle,
 } from 'react-icons/fa';
 import NotificationsBell from './notifications/NotificationsBell';
 import BifrostLogo from './BifrostLogo';
@@ -500,6 +501,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         { path: '/ai-losninger', icon: FaRobot, text: 'AI Løsninger' },
         { path: '/research', icon: FaGlobeEurope, text: 'Juridisk Research' },
         { path: '/ressourcer', icon: FaExternalLinkAlt, text: 'Relevante Links' },
+        { path: '/om', icon: FaInfoCircle, text: 'Om Bifrost' },
       ],
     },
     {

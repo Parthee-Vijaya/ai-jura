@@ -50,6 +50,7 @@ const LovOvervaagningPage = React.lazy(() => import('./pages/LovOvervaagningPage
 const EvidensPrintPage = React.lazy(() => import('./pages/EvidensPrintPage'));
 const PortfolioDashboardPage = React.lazy(() => import('./pages/PortfolioDashboardPage'));
 const RisikovurderingPage = React.lazy(() => import('./pages/RisikovurderingPage'));
+const OmBifrostPage = React.lazy(() => import('./pages/OmBifrostPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -366,6 +367,9 @@ const AppInner = () => {
 
                   {/* Lov-overvågning — daglig citation-verifier (Step 3) */}
                   <Route path="/lov-overvaagning" element={<LovOvervaagningPage />} />
+
+                  {/* Om Bifrost — fra ønske til jurist + link til oplysningsside */}
+                  <Route path="/om" element={<OmBifrostPage />} />
 
                   {/* Back-compat redirects from removed pages */}
                   <Route path="/hurtig-tjek" element={<Navigate to="/vurdering" replace />} />
