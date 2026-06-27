@@ -9,7 +9,7 @@ import {
   FaExternalLinkAlt,
 } from 'react-icons/fa';
 
-const LANDING_URL = 'https://tyr-compliance-xi.vercel.app';
+const LANDING_URL = 'https://bifrost-compliance.vercel.app';
 
 const Page = styled.div`
   max-width: 980px;
