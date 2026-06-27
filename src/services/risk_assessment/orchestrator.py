@@ -58,6 +58,21 @@ def analyze(
         facts.systemnavn = systemnavn
 
     questions = clarifying.build_questions(facts)
+    # Datatilsyn-forankret opfølgnings-motor: stiller dynamiske spørgsmål ud fra
+    # huller i de udtrukne fakta, formuleret efter Datatilsynets DPIA-skabelon.
+    # Best-effort — blokerer aldrig analyse hvis motoren fejler.
+    try:
+        from src.services.risk_assessment.datatilsyn_questions import build_dynamic_questions
+        dyn = build_dynamic_questions(
+            facts,
+            use_llm=bool(combined.strip()),  # LLM-lag kun når der faktisk er dokumenter
+            timeout=min(timeout, 60.0),
+            existing_keys={q.key for q in questions},
+        )
+        questions.extend(dyn)
+    except Exception as exc:  # pragma: no cover - defensiv
+        logger.warning("Datatilsyn-spørgsmål fejlede (fortsætter): %s", exc)
+
     return AnalyzeResult(
         facts=facts,
         questions=questions,

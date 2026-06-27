@@ -243,4 +243,14 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
             hit = any(i == ln or ln in i or (len(i) >= 12 and i in ln) for i in items_norm)
             setattr(data, attr, hit)
 
+    # ---- Datatilsyn-skabelon-svar (dynamiske dt_-spørgsmål) ----
+    # Samles i datatilsyn_svar-dict (uden dt_-præfiks) så de kan bruges som
+    # ekstra kontekst i risiko- og indholdsgenereringen.
+    dt = dict(data.datatilsyn_svar)
+    for k, v in answers.items():
+        if k.startswith("dt_") and v not in (None, "", []):
+            dt[k[3:]] = v if isinstance(v, str) else ", ".join(map(str, v)) if isinstance(v, list) else str(v)
+    if dt:
+        data.datatilsyn_svar = dt
+
     return data

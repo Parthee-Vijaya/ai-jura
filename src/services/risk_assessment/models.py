@@ -153,6 +153,9 @@ class SystemFacts(BaseModel):
     saerlovgivning: List[str] = Field(default_factory=list)
     # Hjemmelsgrundlag (national hjemmel UDOVER GDPR-grundlaget)
     national_lovhjemmel: str = ""
+    # Svar på de dynamiske Datatilsyn-skabelon-spørgsmål (key uden dt_-præfiks → svar).
+    # Bruges som ekstra kontekst til risiko- og indholdsgenerering.
+    datatilsyn_svar: dict = Field(default_factory=dict)
     # Procesforhold — booleans der afgør compliance med kommunal proces
     dit_involveret_tidligt: bool = False     # Digitalisering og IT adviseret i idéfasen
     cio_har_underskrevet: bool = False        # Digitaliserings- og IT-chefens underskrift

@@ -219,6 +219,11 @@ Særlovgivning nævnt: {", ".join(facts.saerlovgivning) or "(ingen)"}
 National lovhjemmel: {facts.national_lovhjemmel or "(ikke angivet — kræves UDOVER GDPR)"}
 Procesforhold ({proces_done}/{proces_total} på plads): {"mangler: " + ", ".join(proces_missing) if proces_missing else "alt på plads"}
 
+DATATILSYN-SKABELON — afklarede DPIA-forhold (art. 35, stk. 7):
+{chr(10).join(f"  - {k}: {v}" for k, v in facts.datatilsyn_svar.items()) or "  (ingen afklaret)"}
+
 Generér nu 8-12 systemspecifikke risici som JSON. Inkludér nødvendigvis kategori F-
 og G-risici (kommunal proces + forvaltningsret/særlov) når procesforhold mangler
-eller når der er udbudspligt-mismatch."""
+eller når der er udbudspligt-mismatch. Brug Datatilsyn-svarene ovenfor: fx en
+risiko om automatiske afgørelser (art. 22) hvis systemet træffer dem, eller om
+tredjelandsoverførsel hvis overførselsgrundlaget mangler."""

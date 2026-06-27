@@ -194,6 +194,9 @@ Procesforhold: {proces_done}/{proces_total} gennemført
   - AI-færdigheder art. 4: {"ja" if facts.ai_faerdigheder_dokumenteret else "MANGLER"}
   - Contract Management-plan: {"ja" if facts.contract_management_plan else "MANGLER"}
 
+DATATILSYN-SKABELON — afklarede DPIA-forhold (brug i de relevante felttekster):
+{chr(10).join(f"  - {k}: {v}" for k, v in facts.datatilsyn_svar.items()) or "  (ingen afklaret)"}
+
 IDENTIFICEREDE RISICI (referér de vigtigste i tiltag-feltet):
 {risk_summary}
 
@@ -201,4 +204,7 @@ SKRIV DISSE FELTER (JSON-nøgle: instruks):
 {field_instructions}
 
 Tiltag-feltet skal eksplicit referere de MANGLENDE procesforhold som konkrete handlinger.
+Indarbejd Datatilsyn-svarene i de relevante felter: behandlingsgrundlag i
+personoplysninger_tekst/baggrund, automatiske afgørelser + nødvendighed i
+saarbarheder_tekst, opbevaring i personoplysninger_tekst.
 Returnér JSON-dict med alle 14 felter."""
