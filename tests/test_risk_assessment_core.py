@@ -148,6 +148,14 @@ class TestClarifyingNewQuestions:
         f4 = apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "Ved ikke endnu"})
         assert f4.er_over_udbudsterskel() is None
 
+    def test_apply_kontraktvaerdi_kompakt_variant(self):
+        # Regression: API-kaldere må gerne sende den kompakte dash-variant uden
+        # mellemrum — whitespace-insensitivt fallback skal stadig ramme bucket'en.
+        from src.services.risk_assessment.clarifying import apply_answers
+        assert apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "1,6-5 mio. kr."}).er_over_udbudsterskel() is True
+        assert apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "over 5 mio"}).er_over_udbudsterskel() is True
+        assert apply_answers(SystemFacts(), {"kontraktvaerdi_bucket": "under 1,6 mio"}).er_over_udbudsterskel() is False
+
     def test_apply_anskaffelsesvej_alle_varianter(self):
         from src.services.risk_assessment.clarifying import apply_answers
         cases = [

@@ -17,7 +17,7 @@ from datetime import datetime, UTC
 from typing import Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, JSON, String
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from src.database.connection import Base
 
@@ -87,7 +87,13 @@ def list_assessments(
     case_id: Optional[str] = None,
     limit: int = 50,
 ) -> list[RiskAssessment]:
-    q = db.query(RiskAssessment).order_by(RiskAssessment.created_at.desc())
+    # Liste-visning bruger kun to_summary() → udskyd den store rv_json-kolonne,
+    # så vi ikke henter + deserialiserer hele vurderingen for hver række.
+    q = (
+        db.query(RiskAssessment)
+        .options(defer(RiskAssessment.rv_json))
+        .order_by(RiskAssessment.created_at.desc())
+    )
     if case_id:
         q = q.filter(RiskAssessment.case_id == case_id)
     return q.limit(min(limit, 200)).all()

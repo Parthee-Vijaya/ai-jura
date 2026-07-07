@@ -34,7 +34,7 @@ ANSKAFFELSESVEJ_OPTIONS: list[tuple[str, Anskaffelsesvej]] = [
 ]
 
 
-def _norm(s) -> str:
+def _norm(s: object) -> str:
     return str(s).strip().lower()
 
 
@@ -178,13 +178,16 @@ def apply_answers(facts: SystemFacts, answers: dict) -> SystemFacts:
 
     if "kontraktvaerdi_bucket" in answers and answers["kontraktvaerdi_bucket"]:
         v = _norm(answers["kontraktvaerdi_bucket"])
-        # Exact match mod centrale buckets (normaliseret), substring-fallback
+        # Exact match mod centrale buckets (normaliseret), derefter et
+        # whitespace-insensitivt substring-fallback så både "1,6 - 5 mio. kr."
+        # og den kompakte variant "1,6-5 mio. kr." parses ens.
+        v_compact = v.replace(" ", "")
         matched = next(
             (pair for pair in KONTRAKTVAERDI_BUCKETS if _norm(pair[0]) == v),
             None,
         ) or next(
             (pair for pair in KONTRAKTVAERDI_BUCKETS
-             if pair[1] is not None and _norm(pair[0])[:9] in v),
+             if pair[1] is not None and _norm(pair[0]).replace(" ", "")[:8] in v_compact),
             None,
         )
         if matched and matched[1] is not None:

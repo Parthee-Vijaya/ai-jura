@@ -145,12 +145,29 @@ def init_db() -> None:
     """
     from .models import Base  # Import here to avoid circular imports
 
-    # Registrér ALLE model-moduler på Base.metadata FØR create_all. Moduler
-    # der kun importeres lazily inde i endpoints (fx risk_assessments,
-    # evidence_comments, skabelon_bibliotek) bliver ellers aldrig oprettet på
-    # en FRISK database — observeret i container-deploy hvor 3 tabeller
-    # manglede. Runtime-import her undgår cirkulære imports (modulerne
-    # importerer selv connection.Base på module-niveau).
+    register_all_models()
+
+    try:
+        logger.info("Initializing database tables...")
+        Base.metadata.create_all(bind=engine)
+        _ensure_runtime_columns()
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
+
+
+def register_all_models() -> None:
+    """Importér ALLE ORM-model-moduler så deres tabeller registreres på
+    Base.metadata FØR create_all — enkelt kilde til sandhed.
+
+    create_all bygger kun tabeller hvis klasse er importeret. Model-moduler der
+    ellers kun importeres lazily inde i endpoints (risk_assessments,
+    evidence_comments, skabelon_bibliotek, …) ville aldrig blive oprettet på en
+    FRISK database uden dette — observeret i container-deploy hvor 3 tabeller
+    manglede. Runtime-import undgår cirkulære imports (modulerne importerer selv
+    connection.Base på module-niveau). Tilføj nye model-moduler HER — ét sted.
+    """
     from src.database import (  # noqa: F401
         audit_access_log as _m_audit_access,
         cases as _m_cases,
@@ -162,15 +179,6 @@ def init_db() -> None:
         users as _m_users,
     )
     from src.rule_engine import audit as _m_v3_audit  # noqa: F401
-
-    try:
-        logger.info("Initializing database tables...")
-        Base.metadata.create_all(bind=engine)
-        _ensure_runtime_columns()
-        logger.info("Database tables created successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
-        raise
 
 
 def _ensure_runtime_columns() -> None:

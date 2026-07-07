@@ -16,7 +16,9 @@ import logging
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from sqlalchemy.orm import Session
-from src.database.connection import engine, Base, SessionLocal, check_db_connection
+from src.database.connection import (
+    engine, Base, SessionLocal, check_db_connection, register_all_models,
+)
 from src.database.models import (
     ComplianceControlAssessment,
     ComplianceHardStop,
@@ -29,22 +31,10 @@ from src.database.models import (
     QuickCheckHistory
 )
 
-# Registrér ALLE model-moduler på Base.metadata FØR create_all. Moduler der
-# kun importeres lazily inde i endpoints (fx risk_assessments, comments,
-# skabelon-bibliotek) bliver ellers aldrig oprettet på en frisk database —
-# observeret i container-deploy hvor 3 tabeller manglede. Alembic dækker den
-# eksisterende native DB; create_all + denne liste dækker friske miljøer.
-from src.database import (  # noqa: F401, E402
-    audit_access_log as _m_audit_access,
-    cases as _m_cases,
-    evidence as _m_evidence,
-    evidence_comments as _m_evidence_comments,
-    notifications as _m_notifications,
-    risk_assessments as _m_risk_assessments,
-    skabelon_bibliotek as _m_skabelon,
-    users as _m_users,
-)
-from src.rule_engine import audit as _m_v3_audit  # noqa: F401, E402
+# Registrér ALLE model-moduler på Base.metadata FØR create_all, så friske
+# databaser får hver tabel (også dem der ellers kun importeres lazily i
+# endpoints). Enkelt kilde til sandhed — se register_all_models i connection.py.
+register_all_models()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

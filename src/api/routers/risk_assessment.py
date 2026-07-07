@@ -160,6 +160,10 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
     except Exception as exc:  # preview er best-effort — blokér aldrig generate
         logger.warning("Verify-preview fejlede: %s", exc)
 
+    # Serialisér én gang — genbruges til både persistering og svar (objektet er
+    # stort: 10+ risici × 14 felttekster).
+    rv_dump = rv.model_dump()
+
     # Journalisering — persistér vurderingen (best-effort, blokerer aldrig svaret).
     # Overlevelse ved lukket tab + revisionsspor + mulig sag-kobling.
     assessment_id = None
@@ -173,7 +177,7 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
             row = save_assessment(
                 db,
                 systemnavn=rv.facts.systemnavn,
-                rv_json=rv.model_dump(),
+                rv_json=rv_dump,
                 n_risici=len(rv.risici),
                 case_id=body.case_id,
                 created_by=body.user,
@@ -205,7 +209,7 @@ async def generate_endpoint(request: Request, response: Response, body: Generate
 
     proces_done, proces_total = rv.facts.proces_status_count()
     return {
-        "risikovurdering": rv.model_dump(),
+        "risikovurdering": rv_dump,
         "assessment_id": assessment_id,
         "n_risici": len(rv.risici),
         # Compliance computed server-side — så frontend ikke duplikerer
@@ -286,7 +290,7 @@ def _template_exists() -> bool:
 
 @router.get("/saved")
 @limiter.limit(READ_GENEROUS)
-async def list_saved(request: Request, response: Response, case_id: str | None = None, limit: int = 50):
+async def list_saved(request: Request, response: Response, case_id: str | None = None, limit: int = 50) -> dict:
     """Liste over gemte risikovurderinger (nyeste først). Filtrér evt. på case_id."""
     from src.database.connection import SessionLocal
     from src.database.risk_assessments import list_assessments
@@ -301,7 +305,7 @@ async def list_saved(request: Request, response: Response, case_id: str | None =
 
 @router.get("/saved/{assessment_id}")
 @limiter.limit(READ_GENEROUS)
-async def get_saved(request: Request, response: Response, assessment_id: str):
+async def get_saved(request: Request, response: Response, assessment_id: str) -> dict:
     """Hent en gemt vurdering inkl. det fulde Risikovurdering-objekt."""
     from src.database.connection import SessionLocal
     from src.database.risk_assessments import get_assessment
@@ -318,7 +322,7 @@ async def get_saved(request: Request, response: Response, assessment_id: str):
 
 @router.get("/saved/{assessment_id}/docx")
 @limiter.limit(READ_GENEROUS)
-async def render_saved(request: Request, response: Response, assessment_id: str):
+async def render_saved(request: Request, response: Response, assessment_id: str) -> Response:
     """Re-render en gemt vurdering som Word — deterministisk, ingen LLM."""
     from src.database.connection import SessionLocal
     from src.database.risk_assessments import get_assessment
