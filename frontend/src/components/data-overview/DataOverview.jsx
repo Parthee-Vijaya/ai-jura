@@ -420,9 +420,13 @@ const DataOverview = ({ scope = 'global' }) => {
 
   const [audit, setAudit] = useState({ items: [], total: 0 });
   const [cases, setCases] = useState({ items: [] });
-  const [freshness, setFreshness] = useState({ items: [], counts: { verified: 0, flagged: 0, total: 0 } });
+  const [freshness, setFreshness] = useState({
+    items: [],
+    counts: { verified: 0, flagged: 0, total: 0 },
+    lastCheckedAt: null,
+  });
   const [version, setVersion] = useState(null);
-  const [llm, setLlm] = useState(null);
+  const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -430,11 +434,12 @@ const DataOverview = ({ scope = 'global' }) => {
 
     const load = async () => {
       try {
-        const [auditRes, casesRes, freshRes, versionRes] = await Promise.allSettled([
+        const [auditRes, casesRes, freshRes, versionRes, healthRes] = await Promise.allSettled([
           axios.get('/api/v3/audit?limit=5'),
           axios.get('/api/v3/cases?limit=50'),
           axios.get('/api/v3/law/freshness'),
           axios.get('/api/version'),
+          axios.get('/health'),
         ]);
 
         if (cancelled) return;
@@ -445,17 +450,18 @@ const DataOverview = ({ scope = 'global' }) => {
           const items = freshRes.value.data.items || [];
           const verified = items.filter((i) => i.citation_found).length;
           const flagged = items.filter((i) => i.flagged_for_review).length;
-          setFreshness({ items, counts: { verified, flagged, total: items.length } });
+          const timestamps = items
+            .map((item) => item.last_checked_at)
+            .filter(Boolean)
+            .sort();
+          setFreshness({
+            items,
+            counts: { verified, flagged, total: items.length },
+            lastCheckedAt: timestamps.at(-1) || null,
+          });
         }
         if (versionRes.status === 'fulfilled') setVersion(versionRes.value.data);
-
-        // Background LLM probe — non-blocking
-        try {
-          const llmRes = await axios.post('/api/compliance/test-llm', { prompt: 'ok' }, { timeout: 6000 });
-          if (!cancelled) setLlm(llmRes.data);
-        } catch {
-          if (!cancelled) setLlm({ success: false });
-        }
+        if (healthRes.status === 'fulfilled') setHealth(healthRes.value.data);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -474,6 +480,19 @@ const DataOverview = ({ scope = 'global' }) => {
   const conditionalOpen = (cases.items || []).filter(
     (c) => c.last_aggregate_status === 'BETINGET-GO' && c.status !== 'arkiveret',
   ).length;
+
+  const serviceState = (name) => health?.services?.[name];
+  const serviceTone = (name) => {
+    const state = serviceState(name);
+    if (state === 'operational') return 'ok';
+    return state ? 'warn' : undefined;
+  };
+  const serviceLabel = (name) => {
+    const state = serviceState(name);
+    if (state === 'operational') return 'operationel';
+    if (state === 'down') return 'utilgængelig';
+    return 'ukendt';
+  };
 
   return (
     <Wrap>
@@ -517,7 +536,9 @@ const DataOverview = ({ scope = 'global' }) => {
         <Stat $tone="success">
           <div className="label">Citater verificeret</div>
           <div className="value">{loading ? '…' : `${freshness.counts.verified}/${freshness.counts.total}`}</div>
-          <div className="delta">friske kl. 04:00</div>
+          <div className="delta">
+            {freshness.lastCheckedAt ? `senest ${formatHHmm(freshness.lastCheckedAt)}` : 'ikke kontrolleret'}
+          </div>
         </Stat>
         <Stat $tone={freshness.counts.flagged > 0 ? 'danger' : 'success'}>
           <div className="label">Flagget til jurist-review</div>
@@ -565,7 +586,9 @@ const DataOverview = ({ scope = 'global' }) => {
         <Panel>
           <PanelHead>
             <span className="title">Citat-friskhed</span>
-            <span className="meta">04:00 / dag</span>
+            <span className="meta">
+              dagligt{freshness.lastCheckedAt ? ` · senest ${formatHHmm(freshness.lastCheckedAt)}` : ''}
+            </span>
           </PanelHead>
           {/* Kompakt: 6 citater i 3×2 grid. Detaljeret: 14 citater i 1 kolonne med fulde rule_ids */}
           <CitationGrid $detailed={detailed}>
@@ -593,17 +616,17 @@ const DataOverview = ({ scope = 'global' }) => {
 
       {/* 5-cell status bar */}
       <StatusBar>
-        <StatusCell $tone="ok">
+        <StatusCell $tone={serviceTone('api')}>
           <div className="label">Backend</div>
-          <div className="value">8001 · ok</div>
+          <div className="value">{serviceLabel('api')}</div>
         </StatusCell>
-        <StatusCell $tone="ok">
+        <StatusCell $tone={serviceTone('database')}>
           <div className="label">Database</div>
-          <div className="value">SQLite</div>
+          <div className="value">{serviceLabel('database')}</div>
         </StatusCell>
-        <StatusCell $tone={llm?.success ? 'ok' : 'warn'}>
+        <StatusCell $tone={serviceTone('llm')}>
           <div className="label">LLM</div>
-          <div className="value">{llm?.success ? (llm.model || 'aktiv') : 'offline'}</div>
+          <div className="value">{serviceLabel('llm')}</div>
         </StatusCell>
         <StatusCell $tone={freshness.counts.flagged > 0 ? 'warn' : 'ok'}>
           <div className="label">Citat-verifier</div>
@@ -612,8 +635,8 @@ const DataOverview = ({ scope = 'global' }) => {
             {freshness.counts.flagged > 0 ? ` · ${freshness.counts.flagged} flagget` : ''}
           </div>
         </StatusCell>
-        <StatusCell $tone="ok">
-          <div className="label">Rule engine</div>
+        <StatusCell $tone={version?.version ? 'ok' : undefined}>
+          <div className="label">Bifrost</div>
           <div className="value">{version?.version ? `v${version.version}` : '—'}</div>
         </StatusCell>
       </StatusBar>
