@@ -459,7 +459,9 @@ const ProcessPage = () => {
     const ecStatus = ecComplete ? 'done' : 'pending';
 
     const vurderinger = events.filter((e) => e.kind === 'vurdering');
-    const vurderingStatus = vurderinger.length > 0 ? 'done' : 'pending';
+    const vurderingStatus = vurderinger.length > 0
+      ? ecComplete ? 'done' : 'partial'
+      : 'pending';
 
     const evidenceDone = evidenceItems.filter((item) => (
       item.status === 'faerdig' || item.status === 'godkendt'
@@ -482,7 +484,12 @@ const ProcessPage = () => {
     return {
       indkoeb: { status: indkoebStatus, count: requiredFilled, total: requiredTotal },
       'eu-checker': { status: ecStatus, count: ecFlagCount, complete: ecComplete },
-      vurdering: { status: vurderingStatus, count: vurderinger.length, latest: vurderinger[0] },
+      vurdering: {
+        status: vurderingStatus,
+        count: vurderinger.length,
+        latest: vurderinger[0],
+        classificationComplete: ecComplete,
+      },
       risiko: {
         status: riskStatus,
         riskCount,
@@ -644,9 +651,13 @@ const ProcessPage = () => {
               metaText = 'Gennemført · ingen særlige krav';
             }
           } else if (step.id === 'vurdering') {
-            metaText = statusInfo.count > 0
-              ? `${statusInfo.count} vurdering${statusInfo.count === 1 ? '' : 'er'} kørt`
-              : 'Ikke kørt';
+            if (statusInfo.count === 0) {
+              metaText = 'Ikke kørt';
+            } else if (!statusInfo.classificationComplete) {
+              metaText = `${statusInfo.count} historiske · EU-tjek mangler`;
+            } else {
+              metaText = `${statusInfo.count} vurdering${statusInfo.count === 1 ? '' : 'er'} kørt`;
+            }
           } else if (step.id === 'risiko') {
             metaText = `${statusInfo.riskCount} risikovurdering${statusInfo.riskCount === 1 ? '' : 'er'} · ${statusInfo.evidenceDone}/${statusInfo.evidenceTotal} evidens`;
           } else if (step.id === 'godkendelse') {
