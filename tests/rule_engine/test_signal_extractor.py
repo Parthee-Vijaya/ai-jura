@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+import src.rule_engine.signal_extractor as signal_extractor
 from src.rule_engine.loader import RuleLoader
 from src.rule_engine.signal_extractor import (
     SignalExtractionError,
@@ -114,7 +115,12 @@ class TestParseLlmJson:
 
 
 class TestExtractor:
-    def test_returns_empty_when_no_llm_configured(self, rules_by_id):
+    def test_explicit_none_disables_configured_default(self, rules_by_id, monkeypatch):
+        monkeypatch.setattr(
+            signal_extractor, "_default_llm", lambda: StubLLM('{"system.x": true}')
+        )
+        assert SignalExtractor().is_configured
+
         extractor = SignalExtractor(llm=None)
         assert not extractor.is_configured
         assert extractor.extract_for_rule("anything", rules_by_id["gdpr.art22.automatiseret_individuel_afgorelse"]) == {}

@@ -55,6 +55,13 @@ class SignalExtractionError(Exception):
     pass
 
 
+class _UseDefaultLLM:
+    """Private sentinel that distinguishes an omitted LLM from explicit None."""
+
+
+_USE_DEFAULT_LLM = _UseDefaultLLM()
+
+
 def _default_llm() -> LLMClient | None:
     """Build an LLM client from environment variables.
 
@@ -163,8 +170,18 @@ def _parse_llm_json(content: str, expected_signals: set[str]) -> dict[str, Signa
 
 
 class SignalExtractor:
-    def __init__(self, llm: LLMClient | None = None):
-        self._llm = llm if llm is not None else _default_llm()
+    def __init__(self, llm: LLMClient | None | _UseDefaultLLM = _USE_DEFAULT_LLM):
+        """Create an extractor.
+
+        Omitting ``llm`` selects the configured provider. Passing ``None``
+        explicitly disables LLM extraction, which keeps deterministic callers
+        and tests independent of the host environment.
+        """
+        self._llm: LLMClient | None
+        if llm is _USE_DEFAULT_LLM:
+            self._llm = _default_llm()
+        else:
+            self._llm = llm
 
     @property
     def is_configured(self) -> bool:
