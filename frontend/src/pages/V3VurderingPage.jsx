@@ -894,12 +894,19 @@ const VerdictBanner = styled.div`
   padding: 1.25rem 1.5rem;
   margin: 1.75rem 0 2.75rem;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'pill metric'
+    'copy metric';
+  align-items: start;
+  gap: 0.85rem 1.25rem;
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'pill'
+      'copy'
+      'metric';
     gap: 0.85rem;
   }
 `;
@@ -915,6 +922,13 @@ const VerdictPill = styled.div`
   border-radius: 3px;
   text-transform: uppercase;
   white-space: nowrap;
+  grid-area: pill;
+  justify-self: start;
+`;
+
+const VerdictCopy = styled.div`
+  grid-area: copy;
+  min-width: 0;
 `;
 
 const VerdictStatus = styled.div`
@@ -938,6 +952,11 @@ const VerdictText = styled.div`
 `;
 
 const VerdictMetric = styled.div`
+  grid-area: metric;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   font-family: ${(p) => p.theme.fonts.mono};
   font-size: 0.72rem;
   color: ${(p) => p.theme.colors.inkFaded};
@@ -1923,6 +1942,13 @@ const V3VurderingPage = () => {
   // Filter out infrastructure/config noise warnings — only show warnings
   // that are relevant to the legal output.
   const relevantWarnings = filterNoiseWarnings(result?.warnings || []);
+  const triggeredFlaggedRuleIds = decisions
+    .filter((decision) => flaggedRuleIds.includes(decision.rule_id))
+    .map((decision) => decision.rule_id);
+  const requiresCitationReview = triggeredFlaggedRuleIds.length > 0;
+  const verdictTone = requiresCitationReview && result?.aggregate_status === 'GO'
+    ? 'BETINGET-GO'
+    : result?.aggregate_status;
 
   // Derive case display fields. For document-mode, fall back to the
   // filename if no description was provided.
@@ -2392,27 +2418,24 @@ const V3VurderingPage = () => {
             </Warnings>
           )}
 
-          {(() => {
-            const triggeredFlagged = decisions
-              .filter((d) => flaggedRuleIds.includes(d.rule_id))
-              .map((d) => d.rule_id);
-            if (triggeredFlagged.length === 0) return null;
-            return (
-              <FlaggedBanner>
-                <strong>⚠ Lov-citater kræver juridisk review</strong>
-                <p style={{ margin: '0.4rem 0 0' }}>
-                  {triggeredFlagged.length === 1
-                    ? 'Én af de udløste regler bygger på et lov-citat der ikke kunne verificeres ordret i kilden ved seneste tjek. Verificér manuelt at lovteksten stadig understøtter konklusionen.'
-                    : `${triggeredFlagged.length} af de udløste regler bygger på lov-citater der ikke kunne verificeres ordret i kilden ved seneste tjek. Verificér manuelt at lovteksten stadig understøtter konklusionen.`}
-                  {' '}
-                  <a href="/lov-overvaagning">Se status →</a>
-                </p>
-                <ul>
-                  {triggeredFlagged.map((rid) => <li key={rid}>{rid}</li>)}
-                </ul>
-              </FlaggedBanner>
-            );
-          })()}
+          {requiresCitationReview && (
+            <FlaggedBanner>
+              <strong>⚠ Ikke klar til endelig godkendelse</strong>
+              <p style={{ margin: '0.4rem 0 0' }}>
+                {triggeredFlaggedRuleIds.length === 1
+                  ? 'Én udløst regel bygger på et lovcitat, der ikke kunne verificeres ordret ved seneste tjek.'
+                  : `${triggeredFlaggedRuleIds.length} udløste regler bygger på lovcitater, der ikke kunne verificeres ordret ved seneste tjek.`}
+                {' '}Regelmotorens resultat står ved magt, men kildestatus skal
+                afklares af en jurist, før vurderingen bruges som endelig godkendelse.{' '}
+                <a href="/lov-overvaagning">Se kildestatus →</a>
+              </p>
+              <ul>
+                {triggeredFlaggedRuleIds.map((ruleId) => (
+                  <li key={ruleId}>{ruleId}</li>
+                ))}
+              </ul>
+            </FlaggedBanner>
+          )}
 
           {/* Sag-komplet-overblik også i result-mode — så sagsbehandleren kan se
               hvad der lå til grund + hvad der mangler at blive udfyldt. Default
@@ -2424,16 +2447,27 @@ const V3VurderingPage = () => {
             />
           )}
 
-          <VerdictBanner $status={result.aggregate_status}>
-            <VerdictPill $status={result.aggregate_status}>{statusLabel(result.aggregate_status)}</VerdictPill>
-            <div>
-              <VerdictStatus>Samlet vurdering</VerdictStatus>
+          <VerdictBanner $status={verdictTone}>
+            <VerdictPill $status={verdictTone}>
+              {statusLabel(result.aggregate_status)}
+              {requiresCitationReview ? ' · kilde-review' : ''}
+            </VerdictPill>
+            <VerdictCopy>
+              <VerdictStatus>Regelmotorens resultat</VerdictStatus>
               <VerdictText>
                 {result.aggregate_status === 'GO' && (
-                  <>
-                    Ingen lovartikler udløser krav før idriftsættelse — systemet kan
-                    tages i brug uden særlige compliance-tiltag.
-                  </>
+                  requiresCitationReview ? (
+                    <>
+                      Ingen regler udløser yderligere krav, men resultatet er
+                      foreløbigt. De flaggede lovcitater skal verificeres, før
+                      vurderingen kan bruges som endelig godkendelse.
+                    </>
+                  ) : (
+                    <>
+                      Ingen lovartikler udløser krav før idriftsættelse — systemet kan
+                      tages i brug uden særlige compliance-tiltag.
+                    </>
+                  )
                 )}
                 {result.aggregate_status === 'BETINGET-GO' && (
                   <>
@@ -2449,7 +2483,7 @@ const V3VurderingPage = () => {
                   </>
                 )}
               </VerdictText>
-            </div>
+            </VerdictCopy>
             {result.aggregate_status === 'BETINGET-GO' && requiringDecisions.length > 0 && (
               <VerdictMetric>
                 <span className="number">{requiringDecisions.length}/{result.rules_loaded}</span>
