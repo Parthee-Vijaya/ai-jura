@@ -1,0 +1,18 @@
+felt;system_of_record;registreres_i;genbruges_i;redigeringsregel;bemærkning
+case_id;Case.case_id;Intake fase 1;EU-tjek|juridisk vurdering|risikovurdering|evidens|rapporter|audit;Låses efter bekræftet oprettelse;Gennemgående eksternt sags-ID
+behov;Case.intake_state.behov;Intake trin 1;Sagsoversigt|juridisk vurdering fallback|risikovurdering formål fallback|rapporter;Kan rettes i intake uden at slette senere fasefelter;Kort problem- og behovsbeskrivelse
+system_name;Case.intake_state.system_name;Intake trin 3;EU-kontekst|risikovurdering|sagsoversigt|rapporter;Kan korrigeres efter dokumentanalyse;Menneskeligt genkendeligt produkt- eller systemnavn
+system_description;Case.intake_state.system_description;Intake trin 3;Juridisk vurdering|risikovurdering formål|sagsoversigt|rapporter;Kan beriges eller korrigeres;Primær beskrivelse til regelmotoren
+serviceportal_dato;Case.intake_state.serviceportal_dato;Intake trin 2;Sagsoversigt|rapport|audit;Kan rettes ved dokumenteret fejl;Dokumenterer eksternt Serviceportal-trin
+indkoeb_eller_udvikling;Case.intake_state.indkoeb_eller_udvikling;Intake trin 3;Processtatus|sagsfiltre|rapport;Kan rettes før endelig godkendelse;Indkøb eller egen udvikling
+ec_answers;Case.intake_state.ec_answers;EU-tjek fase 2;Genoptagelse|juridisk sporbarhed|audit;Overskrives kun ved eksplicit nyt EU-tjek;Svarhistorik fra klassifikationsflowet
+ec_flags;Case.intake_state.ec_flags;EU-tjek fase 2;Juridisk vurdering|sagsoversigt|processtatus;Overskrives kun ved eksplicit nyt EU-tjek;Tomt objekt er et gyldigt resultat
+ec_language;Case.intake_state.ec_language;EU-tjek fase 2;Audit|genoptagelse;Følger seneste gennemførte tjek;Sprog for den viste hjælpetekst
+ec_completed_at;Case.intake_state.ec_completed_at;EU-tjek fase 2;Fasegate|processtatus|sagsoversigt;Nyt tidspunkt ved eksplicit genkørsel;Autoritativ markør for gennemført klassifikation
+assessment_log_id;Case.last_assessment_log_id + V3AssessmentLog;Juridisk vurdering fase 3;Sagsoversigt|rapport|audit;Append-only vurderingshistorik med pointer til seneste;Kobler resultatet til sagen
+aggregate_status;Case.last_aggregate_status;Juridisk vurdering fase 3;Processtatus|godkendelsesgrundlag|sagsoversigt|rapport;Ændres ved en ny vurdering;GO|BETINGET-GO|NO-GO
+risk_facts;SavedRiskAssessment;Risikovurdering fase 4;Risikooversigt|rapport|godkendelsesgrundlag;Dokumentudtræk kan korrigere intake-prefill;Kobles til case_id
+risk_answers;SavedRiskAssessment;Risikovurdering fase 4;Risikorapport|audit;Brugerens afklaringer er autoritative;Holdes separat fra EC-svar
+evidence_items;CaseEvidence;Evidens fase 4;Sagsoversigt|processtatus|rapport|godkendelsesgrundlag;Hvert artefakt har egen status og historik;Oprettes målrettet efter vurderingen
+workflow_status;Case.status + CaseTransition;Vurdering og menneskelig godkendelse;Sagsoversigt|proces|dashboard|påmindelser;Kun eksplicit transition eller dokumenteret vurderingskobling;kladde|vurderet|remediation|godkendt|idriftsat|arkiveret
+next_review_at;Case.next_review_at;Ved menneskelig godkendelse;Drift|påmindelser|sagsoversigt;Kan planlægges om med audit;Sættes som udgangspunkt 12 måneder efter godkendelse
