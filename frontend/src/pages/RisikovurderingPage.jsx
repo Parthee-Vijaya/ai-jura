@@ -1,4 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from 'axios';
 import {
@@ -6,7 +7,7 @@ import {
   FaExclamationTriangle, FaShieldAlt, FaMagic, FaDownload,
 } from 'react-icons/fa';
 
-import { useToast } from '../components/ui';
+import { Banner, Breadcrumb, useToast } from '../components/ui';
 
 /**
  * RisikovurderingPage — automatiseret databeskyttelsesretlig risikovurdering.
@@ -118,6 +119,11 @@ const DropZone = styled.div`
   cursor: pointer;
   background: ${(p) => (p.$drag ? 'rgba(13,46,84,0.04)' : '#fafbfc')};
   transition: all 0.15s;
+
+  &:focus-visible {
+    outline: 2px solid ${NAVY};
+    outline-offset: 3px;
+  }
 
   svg { font-size: 2rem; color: ${NAVY}; margin-bottom: 0.6rem; }
   .hint { color: #6a7180; font-size: 0.88rem; }
@@ -255,6 +261,9 @@ const SCORE_CLASS = (v) => (v || '').replace(/\s/g, '');
 
 const RisikovurderingPage = () => {
   const toast = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlCaseId = searchParams.get('case_id') || '';
   const fileInputRef = useRef(null);
   const [step, setStep] = useState(1);
   const [drag, setDrag] = useState(false);
@@ -271,8 +280,32 @@ const RisikovurderingPage = () => {
   const [compliance, setCompliance] = useState(null);       // server-beregnet (single source of truth)
   const [verifyPreview, setVerifyPreview] = useState(null);  // dokument-tjek FØR download
   const [assessmentId, setAssessmentId] = useState(null);    // journaliseret server-side
-  const [linkCaseId, setLinkCaseId] = useState('');          // valgfri sag-kobling
+  const [linkCaseId, setLinkCaseId] = useState(urlCaseId);   // valgfri sag-kobling
   const [downloading, setDownloading] = useState(false);
+  const [caseContext, setCaseContext] = useState(null);
+
+  useEffect(() => {
+    if (!urlCaseId) {
+      setCaseContext(null);
+      return undefined;
+    }
+    let cancelled = false;
+    axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(urlCaseId)}`)
+      .then((response) => {
+        if (cancelled) return;
+        const caseData = response.data;
+        const intake = caseData?.intake_state || {};
+        setCaseContext(caseData);
+        setLinkCaseId(urlCaseId);
+        setSystemnavn((current) => (
+          current || intake.system_name || caseData.title || ''
+        ));
+      })
+      .catch(() => {
+        if (!cancelled) setCaseContext(null);
+      });
+    return () => { cancelled = true; };
+  }, [urlCaseId]);
 
   const addFiles = useCallback((fileList) => {
     const accepted = ['.pdf', '.docx', '.txt', '.md'];
@@ -306,7 +339,19 @@ const RisikovurderingPage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 240000,
       });
-      setFacts(res.data.facts);
+      const intake = caseContext?.intake_state || {};
+      setFacts({
+        ...res.data.facts,
+        systemnavn: res.data.facts?.systemnavn
+          || intake.system_name
+          || systemnavn.trim()
+          || caseContext?.title
+          || '',
+        formaal_kort: res.data.facts?.formaal_kort
+          || intake.system_description
+          || intake.behov
+          || '',
+      });
       setQuestions(res.data.questions || []);
       // Forudfyld answers med defaults
       const init = {};
@@ -375,6 +420,15 @@ const RisikovurderingPage = () => {
 
   return (
     <Page>
+      {urlCaseId && (
+        <Breadcrumb
+          items={[
+            { label: 'Proces', to: `/proces?case_id=${encodeURIComponent(urlCaseId)}&step=risiko` },
+            { label: urlCaseId, to: `/sag/${encodeURIComponent(urlCaseId)}` },
+            { label: 'Risikovurdering' },
+          ]}
+        />
+      )}
       <Eyebrow>Databeskyttelse · Automatiseret udkast</Eyebrow>
       <Title>Risikovurdering</Title>
       <Lede>
@@ -382,6 +436,14 @@ const RisikovurderingPage = () => {
         svar på et par spørgsmål, og få et færdigt Word-udkast baseret på Kalundborg
         Kommunes officielle skabelon.
       </Lede>
+
+      {caseContext && (
+        <Banner $tone="info">
+          <strong>Data overført fra sag {urlCaseId}.</strong>{' '}
+          Systemnavn, formål og sagskobling er forudfyldt fra intake. Ret kun
+          oplysningerne, hvis dokumenterne viser noget andet.
+        </Banner>
+      )}
 
       <Disclaimer>
         <FaShieldAlt />
@@ -420,7 +482,16 @@ const RisikovurderingPage = () => {
 
           <DropZone
             $drag={drag}
+            role="button"
+            tabIndex={0}
+            aria-label="Vælg dokumenter til risikovurderingen"
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
             onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
             onDrop={onDrop}
@@ -441,11 +512,11 @@ const RisikovurderingPage = () => {
           {files.length > 0 && (
             <FileList>
               {files.map((f, i) => (
-                <li key={i}>
+                <li key={`${f.name}-${f.size}-${f.lastModified}`}>
                   <FaFileWord style={{ color: NAVY }} />
                   <span className="name">{f.name}</span>
                   <span className="size">{(f.size / 1024).toFixed(0)} KB</span>
-                  <button onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} aria-label="Fjern">
+                  <button type="button" onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} aria-label={`Fjern ${f.name}`}>
                     <FaTimes />
                   </button>
                 </li>
@@ -467,7 +538,7 @@ const RisikovurderingPage = () => {
           <Card>
             <h3 style={{ marginTop: 0, color: NAVY }}>Udtrukne fakta</h3>
             <p style={{ fontSize: '0.83rem', color: '#8a909c', marginTop: '-0.5rem' }}>
-              AI-udtrukket fra dokumenterne — ret hvis noget er forkert.
+              Samlet fra sagen og de uploadede dokumenter — ret hvis noget er forkert.
             </p>
             <Field>
               <label>Systemnavn</label>
@@ -518,6 +589,7 @@ const RisikovurderingPage = () => {
                 </label>
                 <input type="text" placeholder="K-2026-…"
                   value={linkCaseId}
+                  readOnly={Boolean(urlCaseId)}
                   onChange={(e) => setLinkCaseId(e.target.value)} />
               </Field>
             </div>
@@ -728,11 +800,20 @@ const RisikovurderingPage = () => {
             </span>
           </Disclaimer>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
             <GhostBtn onClick={() => setStep(2)} disabled={downloading}>← Tilbage</GhostBtn>
-            <PrimaryBtn onClick={runDownload} disabled={downloading}>
-              {downloading ? <><Spin /> Bygger Word…</> : <><FaDownload /> Download Word-dokument</>}
-            </PrimaryBtn>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {urlCaseId && (
+                <GhostBtn
+                  onClick={() => navigate(`/proces?case_id=${encodeURIComponent(urlCaseId)}&step=godkendelse`)}
+                >
+                  Fortsæt i processen →
+                </GhostBtn>
+              )}
+              <PrimaryBtn onClick={runDownload} disabled={downloading}>
+                {downloading ? <><Spin /> Bygger Word…</> : <><FaDownload /> Download Word-dokument</>}
+              </PrimaryBtn>
+            </div>
           </div>
         </>
       )}

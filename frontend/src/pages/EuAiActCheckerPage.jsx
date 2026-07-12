@@ -9,68 +9,13 @@ import {
   PrimaryButton,
 } from '../components/page-chrome/PageChrome';
 import { Breadcrumb, Banner, ErrorState } from '../components/ui';
-
-// ---- Routing engine ------------------------------------------------------
-//
-// EC's logic.json bruger 5 condition-typer:
-//  - answer_is:                     radio — selected answer index = N
-//  - flag_equals:                   {flag_name, value} sammenligner flag-state
-//  - if_any_answer_in:              checkbox — mindst ét af N er valgt
-//  - if_none_selected_in:           checkbox — ingen af N er valgt
-//  - is_this_exact_match_selected:  checkbox — præcis disse (no more, no less)
-//
-// Vi evaluerer betingelser i samme rækkefølge som EC's egen JSON og picker
-// første matchende routing-rule.
-
-function selectedSet(answer) {
-  if (Array.isArray(answer)) return new Set(answer.map(Number));
-  if (answer === null || answer === undefined) return new Set();
-  return new Set([Number(answer)]);
-}
-
-function evalCondition(cond, answer, flags) {
-  if ('answer_is' in cond) {
-    return Number(answer) === Number(cond.answer_is);
-  }
-  if ('flag_equals' in cond) {
-    const { flag_name, value } = cond.flag_equals;
-    return flags[flag_name] === value;
-  }
-  const sel = selectedSet(answer);
-  if ('if_any_answer_in' in cond) {
-    return cond.if_any_answer_in.some((n) => sel.has(Number(n)));
-  }
-  if ('if_none_selected_in' in cond) {
-    return !cond.if_none_selected_in.some((n) => sel.has(Number(n)));
-  }
-  if ('is_this_exact_match_selected' in cond) {
-    const target = new Set(cond.is_this_exact_match_selected.map(Number));
-    if (target.size !== sel.size) return false;
-    for (const v of target) if (!sel.has(v)) return false;
-    return true;
-  }
-  // Unknown condition — defensiv: fail
-  return false;
-}
-
-function evalRouting(question, answer, flags) {
-  for (const route of question.routing || []) {
-    const allMatch = (route.conditions || []).every((c) =>
-      evalCondition(c, answer, flags),
-    );
-    if (allMatch) return route;
-  }
-  return null;
-}
-
-function applyFlagOps(flags, ops) {
-  if (!ops) return flags;
-  const next = { ...flags };
-  for (const { flag_name, value } of ops) {
-    next[flag_name] = value;
-  }
-  return next;
-}
+import {
+  applyFlagOps,
+  cleanTranslatedText,
+  evalRouting,
+  normalizeRaisedFlags,
+  resolveAutomaticNodes,
+} from '../utils/euCheckerEngine';
 
 // ---- Styled --------------------------------------------------------------
 
@@ -312,6 +257,54 @@ const TranslationBanner = styled.div`
   strong { color: ${(p) => p.theme.colors.bronze || '#b08a4a'}; }
 `;
 
+const CaseContextCard = styled.div`
+  background: ${(p) => p.theme.colors.surface};
+  border: 1px solid ${(p) => p.theme.colors.border};
+  border-left: 3px solid ${(p) => p.theme.colors.primary};
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+
+  .label {
+    font-family: ${(p) => p.theme.fonts.mono};
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: ${(p) => p.theme.colors.textMuted};
+    margin-bottom: 0.35rem;
+  }
+
+  .value {
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: ${(p) => p.theme.colors.text};
+  }
+`;
+
+const HelpDetails = styled.details`
+  margin-top: 0.35rem;
+  color: ${(p) => p.theme.colors.textMuted};
+
+  summary {
+    width: fit-content;
+    cursor: pointer;
+    font-family: ${(p) => p.theme.fonts.sans};
+    font-size: 0.78rem;
+    color: ${(p) => p.theme.colors.primary};
+  }
+
+  .help-copy {
+    margin-top: 0.5rem;
+    padding: 0.65rem 0.8rem;
+    border-left: 2px solid ${(p) => p.theme.colors.border};
+    font-family: ${(p) => p.theme.fonts.body};
+    font-size: 0.84rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+`;
+
 const FunnelCard = styled.div`
   margin-top: 1.5rem;
   background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
@@ -368,6 +361,11 @@ const EuAiActCheckerPage = () => {
   const [flags, setFlags] = useState({});
   const [history, setHistory] = useState([]); // [{qid, answer, snapshotFlags}]
   const [showInfo, setShowInfo] = useState(false);
+  const [flowError, setFlowError] = useState(null);
+  const [caseContext, setCaseContext] = useState(null);
+  const [showExistingResult, setShowExistingResult] = useState(true);
+  const [saveError, setSaveError] = useState(null);
+  const [isPersisting, setIsPersisting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -385,6 +383,22 @@ const EuAiActCheckerPage = () => {
     return () => { cancelled = true; };
   }, [lang, loadAttempt]);
 
+  useEffect(() => {
+    if (!fromIndkoeb) {
+      setCaseContext(null);
+      return undefined;
+    }
+    let cancelled = false;
+    axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}`)
+      .then((response) => {
+        if (!cancelled) setCaseContext(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setCaseContext(null);
+      });
+    return () => { cancelled = true; };
+  }, [fromIndkoeb]);
+
   const switchLang = (next) => {
     setLang(next);
     if (typeof window !== 'undefined') {
@@ -396,13 +410,16 @@ const EuAiActCheckerPage = () => {
   // Hvis ?fromIndkoeb=K-... var sat, persisteres flag også i sagens
   // intake_state.ec_flags så det overlever sessions og vises i
   // sag-komplet-overblikket på /vurdering + /sag/{id}.
-  const continueToVurdering = async (raisedFlagMap) => {
+  const continueToVurdering = async (raisedFlagMap, answerHistory = history) => {
+    const capturedAt = new Date().toISOString();
+    setSaveError(null);
+    setIsPersisting(true);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(
         'tyrEcCheckerFlags',
         JSON.stringify({
           flags: raisedFlagMap,
-          captured_at: new Date().toISOString(),
+          captured_at: capturedAt,
           lang,
         }),
       );
@@ -413,17 +430,30 @@ const EuAiActCheckerPage = () => {
     if (fromIndkoeb) {
       try {
         // Hent eksisterende intake_state først så vi merger korrekt
-        const cur = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}`)
-          .then((r) => r.data?.intake_state || {})
-          .catch(() => ({}));
-        const merged = { ...cur, ec_flags: raisedFlagMap, ec_captured_at: new Date().toISOString() };
+        const cur = await axios
+          .get(`/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}`)
+          .then((r) => r.data?.intake_state || {});
+        const merged = {
+          ...cur,
+          ec_flags: raisedFlagMap,
+          ec_answers: answerHistory,
+          ec_language: lang,
+          ec_completed_at: capturedAt,
+          ec_captured_at: capturedAt,
+        };
         await axios.put(
           `/api/v3/cases/by-case-id/${encodeURIComponent(fromIndkoeb)}/intake`,
           { intake_state: merged },
         );
       } catch (err) {
         console.warn('Failed to persist EC flags to intake_state', err);
+        setSaveError(
+          'Klassifikationen er færdig, men kunne ikke gemmes på sagen. Prøv igen, før du fortsætter.',
+        );
+        setIsPersisting(false);
+        return;
       }
+      setIsPersisting(false);
       // Hvis brugeren kom fra /proces, send tilbage dertil i stedet for vurdering
       if (fromProces) {
         navigate(`/proces?case_id=${encodeURIComponent(fromIndkoeb)}&step=vurdering`);
@@ -431,13 +461,17 @@ const EuAiActCheckerPage = () => {
         navigate(`/vurdering?from=ec-checker&case_id=${encodeURIComponent(fromIndkoeb)}`);
       }
     } else {
+      setIsPersisting(false);
       navigate('/vurdering?from=ec-checker');
     }
   };
 
   const questionsLogic = payload?.logic?.questions_logic || {};
   const questionsContent = payload?.content?.questions_content || {};
-  const flagsContent = payload?.content?.flags_content || {};
+  const flagsContent = useMemo(
+    () => payload?.content?.flags_content || {},
+    [payload],
+  );
 
   const isEnd = currentQid === 'END' || currentQid === null;
   const currentLogic = questionsLogic[currentQid];
@@ -450,6 +484,9 @@ const EuAiActCheckerPage = () => {
     setFlags({});
     setHistory([]);
     setShowInfo(false);
+    setFlowError(null);
+    setShowExistingResult(false);
+    setSaveError(null);
   };
 
   const goBack = () => {
@@ -460,6 +497,8 @@ const EuAiActCheckerPage = () => {
     setAnswer(last.answer);
     setFlags(last.snapshotFlags);
     setShowInfo(false);
+    setFlowError(null);
+    setSaveError(null);
   };
 
   const handleNext = () => {
@@ -472,20 +511,28 @@ const EuAiActCheckerPage = () => {
     if (isCheckbox) {
       for (const idx of answer) {
         const a = currentLogic.answers?.[String(idx)];
-        if (a?.set_flags) nextFlags = applyFlagOps(nextFlags, a.set_flags);
+        if (a?.set_flags) nextFlags = applyFlagOps(nextFlags, a.set_flags, answer);
       }
     } else {
       const a = currentLogic.answers?.[String(answer)];
-      if (a?.set_flags) nextFlags = applyFlagOps(nextFlags, a.set_flags);
+      if (a?.set_flags) nextFlags = applyFlagOps(nextFlags, a.set_flags, answer);
     }
 
     // Evaluate routing
     const route = evalRouting(currentLogic, answer, nextFlags);
-    if (route?.set_flags) nextFlags = applyFlagOps(nextFlags, route.set_flags);
+    if (route?.set_flags) nextFlags = applyFlagOps(nextFlags, route.set_flags, answer);
+
+    const resolved = resolveAutomaticNodes({
+      qid: route?.go_to || 'END',
+      flags: nextFlags,
+      questionsLogic,
+      questionsContent,
+    });
 
     setHistory([...history, { qid: currentQid, answer, snapshotFlags: flags }]);
-    setFlags(nextFlags);
-    setCurrentQid(route?.go_to || 'END');
+    setFlags(resolved.flags);
+    setCurrentQid(resolved.qid);
+    setFlowError(resolved.error);
     setAnswer(null);
     setShowInfo(false);
   };
@@ -512,12 +559,7 @@ const EuAiActCheckerPage = () => {
   // Result-page: filter raised flags
   const raisedFlags = useMemo(() => {
     if (!isEnd) return [];
-    const out = [];
-    for (const [name, value] of Object.entries(flags)) {
-      if (value === false || value === undefined || value === null) continue;
-      const meta = flagsContent[name] || {};
-      out.push({ name, value, ...meta });
-    }
+    const out = normalizeRaisedFlags(flags, flagsContent);
     // Sort: risk first, then obligation, then info
     const tone = (n) => {
       if (/risk|prohibit|highrisk/i.test(n)) return 0;
@@ -527,6 +569,20 @@ const EuAiActCheckerPage = () => {
     out.sort((a, b) => tone(a.name) - tone(b.name));
     return out;
   }, [isEnd, flags, flagsContent]);
+
+  const publicRaisedFlags = raisedFlags.filter((flag) => flag.hasPublicCopy);
+
+  const caseIntake = caseContext?.intake_state || {};
+  const existingEcComplete = Boolean(
+    caseIntake.ec_completed_at || caseIntake.ec_captured_at,
+  );
+  const existingEcFlags = (
+    caseIntake.ec_flags && typeof caseIntake.ec_flags === 'object'
+  ) ? caseIntake.ec_flags : {};
+  const showSavedGate = existingEcComplete
+    && showExistingResult
+    && history.length === 0
+    && currentQid === 'Q1';
 
   if (error) {
     return (
@@ -590,6 +646,50 @@ const EuAiActCheckerPage = () => {
         lede="Officiel beslutningsstøtte fra Europa-Kommissionen. 33 spørgsmål der kortlægger om dit AI-system falder under AI Act, og hvilke obligationer der gælder. Cached lokalt fra ai-act-service-desk.ec.europa.eu og opdateres ugentligt."
       />
 
+      {caseContext && (
+        <CaseContextCard>
+          <div className="label">Data med fra sag {fromIndkoeb}</div>
+          <div className="value">
+            {caseIntake.system_description || caseIntake.behov || caseContext.title}
+          </div>
+        </CaseContextCard>
+      )}
+
+      {showSavedGate && (
+        <ResultCard style={{ marginBottom: '1rem' }}>
+          <Eyebrow>Allerede gennemført</Eyebrow>
+          <QuestionTitle>Brug den gemte klassificering</QuestionTitle>
+          <p style={{ lineHeight: 1.55 }}>
+            Sagen blev senest klassificeret{' '}
+            {new Date(caseIntake.ec_completed_at || caseIntake.ec_captured_at)
+              .toLocaleString('da-DK')}.
+            {' '}Du behøver kun køre tjekket igen, hvis systemets formål, funktioner
+            eller rolle har ændret sig.
+          </p>
+          <Controls>
+            <PrimaryButton
+              type="button"
+              onClick={() => {
+                setFlags(existingEcFlags);
+                setHistory(caseIntake.ec_answers || []);
+                setCurrentQid('END');
+                setAnswer(null);
+                setFlowError(null);
+                setShowExistingResult(false);
+              }}
+            >
+              Vis seneste resultat →
+            </PrimaryButton>
+            <SecondaryButton
+              type="button"
+              onClick={() => setShowExistingResult(false)}
+            >
+              Kør tjek igen
+            </SecondaryButton>
+          </Controls>
+        </ResultCard>
+      )}
+
       <Toolbar>
         <span>
           EC last update: <VersionBadge>{meta.last_update_date || '?'}</VersionBadge>{' '}
@@ -639,11 +739,24 @@ const EuAiActCheckerPage = () => {
         </TranslationBanner>
       )}
 
-      {!isEnd && currentLogic && currentContent && (
+      {flowError && (
+        <ErrorState
+          title="EU-flowet kunne ikke fortsætte"
+          error={new Error(flowError)}
+          detail="Ingen svar er gået tabt. Start tjekket forfra, eller skift til den engelske kildetekst og prøv igen."
+          onRetry={reset}
+        />
+      )}
+
+      {!showSavedGate && !flowError && !isEnd && currentLogic && currentContent && (
         <QuestionCard>
           <Eyebrow>{currentQid}</Eyebrow>
-          <QuestionTitle>{currentContent.main_title}</QuestionTitle>
-          <QuestionText>{currentContent.secondary_title}</QuestionText>
+          <QuestionTitle>
+            {cleanTranslatedText(currentContent.main_title, currentQid)}
+          </QuestionTitle>
+          <QuestionText>
+            {cleanTranslatedText(currentContent.secondary_title)}
+          </QuestionText>
 
           {currentContent.info && (
             <>
@@ -677,8 +790,15 @@ const EuAiActCheckerPage = () => {
                     }}
                   />
                   <div style={{ flex: 1 }}>
-                    <div>{ans.label}</div>
-                    {ans.help && <span className="help">{ans.help}</span>}
+                    <div>{cleanTranslatedText(ans.label, `Svar ${i + 1}`)}</div>
+                    {ans.help && (
+                      <HelpDetails>
+                        <summary>Juridisk forklaring</summary>
+                        <div className="help-copy">
+                          {cleanTranslatedText(ans.help)}
+                        </div>
+                      </HelpDetails>
+                    )}
                   </div>
                 </OptionLabel>
               );
@@ -713,12 +833,13 @@ const EuAiActCheckerPage = () => {
           </p>
 
           <FlagList>
-            {raisedFlags.length === 0 ? (
+            {publicRaisedFlags.length === 0 ? (
               <div style={{ fontStyle: 'italic', opacity: 0.7 }}>
-                Ingen obligationer eller risiko-flags rejst — systemet falder uden for AI Act's anvendelsesområde.
+                Ingen specifikke risiko- eller obligationsflag blev rejst i denne
+                svarsti. Klassificeringen gemmes stadig på sagen som gennemført.
               </div>
             ) : (
-              raisedFlags.map((f) => {
+              publicRaisedFlags.map((f) => {
                 const tone = /risk|prohibit|highrisk/i.test(f.name)
                   ? 'risk'
                   : /obligation/i.test(f.name)
@@ -727,19 +848,31 @@ const EuAiActCheckerPage = () => {
                 return (
                   <FlagRow key={f.name} $tone={tone}>
                     <div style={{ flex: 1 }}>
-                      <div>{f.label || f.title || f.name}</div>
-                      {f.description && (
+                      <div>{cleanTranslatedText(f.label || f.title || f.description)}</div>
+                      {f.description && (f.label || f.title) && (
                         <div style={{ fontSize: '0.84rem', opacity: 0.8, marginTop: '0.2rem' }}>
                           {f.description}
                         </div>
                       )}
-                      <div className="name">{f.name}</div>
                     </div>
                   </FlagRow>
                 );
               })
             )}
           </FlagList>
+
+          {raisedFlags.length > 0 && (
+            <HelpDetails>
+              <summary>Vis tekniske EC-flag ({raisedFlags.length})</summary>
+              <div className="help-copy">
+                {raisedFlags.map((flag) => (
+                  <div key={flag.name}>
+                    <code>{flag.name}</code> = <code>{String(flag.value)}</code>
+                  </div>
+                ))}
+              </div>
+            </HelpDetails>
+          )}
 
           <FunnelCard>
             <div className="copy">
@@ -748,8 +881,14 @@ const EuAiActCheckerPage = () => {
               GDPR + sektorlov. Du springer direkte til de relevante regler — og
               de felter EC ikke spurgte om markeres som påkrævede.
             </div>
+            {saveError && (
+              <Banner $tone="danger" style={{ flexBasis: '100%' }}>
+                <strong>Resultatet er ikke gemt endnu.</strong> {saveError}
+              </Banner>
+            )}
             <PrimaryButton
               type="button"
+              disabled={isPersisting}
               onClick={() => {
                 // Send kun *rejste* flag (truthy values)
                 const raised = {};
@@ -760,7 +899,7 @@ const EuAiActCheckerPage = () => {
                 continueToVurdering(raised);
               }}
             >
-              Fortsæt til Bifrost-vurdering →
+              {isPersisting ? 'Gemmer klassifikation…' : 'Fortsæt til Bifrost-vurdering →'}
             </PrimaryButton>
           </FunnelCard>
 

@@ -136,6 +136,12 @@ class TestAttachAssessment:
         assert case.status == "remediation"
         assert case.last_assessment_log_id == "log-2"
 
+    def test_first_betinget_go_transitions_directly_to_remediation(self, session):
+        case = v3_cases.create_case(session, case_id="K-1", title="t")
+        v3_cases.attach_assessment(session, case.id, "log-1", "BETINGET-GO")
+        assert case.status == "remediation"
+        assert case.last_aggregate_status == "BETINGET-GO"
+
     def test_no_auto_transition_when_already_in_terminal_state(self, session):
         case = v3_cases.create_case(
             session, case_id="K-1", title="t", status="godkendt",

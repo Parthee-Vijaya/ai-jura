@@ -13,7 +13,10 @@ import styled from 'styled-components';
  */
 
 export const PageShell = styled.div`
+  width: 100%;
   max-width: 1240px;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0 auto;
   padding: 2.25rem 1.75rem 4rem;
 

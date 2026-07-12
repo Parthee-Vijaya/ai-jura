@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import axios from 'axios';
 import { filterNoiseWarnings } from '../utils/warnings';
 import DataOverview from '../components/data-overview/DataOverview';
@@ -269,20 +269,6 @@ const BackLink = styled.button`
   cursor: pointer;
 
   &:hover { color: ${(p) => p.theme.colors.ink}; }
-`;
-
-const Breadcrumb = styled.div`
-  font-family: ${(p) => p.theme.fonts.sans};
-  font-size: 0.82rem;
-  color: ${(p) => p.theme.colors.inkFaded};
-  margin-bottom: 1.5rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-
-  span.crumb-sep { color: ${(p) => p.theme.colors.borderSoft}; }
-  span.crumb-current { color: ${(p) => p.theme.colors.inkSoft}; }
 `;
 
 const CaseId = styled.div`
@@ -1340,12 +1326,15 @@ const RuleBlock = styled.div`
     color: ${(p) => p.theme.colors.inkFaded};
     margin-bottom: 0.4rem;
     letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 `;
 
 const PredField = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
   gap: 0.5rem 0.85rem;
   padding: 0.55rem 0.7rem;
   border: 1px solid ${(p) => (p.$required && !p.$filled ? '#a03612' : 'transparent')};
@@ -1370,11 +1359,18 @@ const PredField = styled.div`
     line-height: 1.45;
     margin-top: 0.3rem;
     white-space: pre-wrap;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
 const BoolToggle = styled.div`
   display: inline-flex;
+  max-width: 100%;
   border: 1px solid ${(p) => p.theme.colors.line};
   border-radius: 4px;
   overflow: hidden;
@@ -1397,6 +1393,14 @@ const BoolToggle = styled.div`
       background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'};
     }
   }
+
+  @media (max-width: 600px) {
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
+  }
 `;
 
 const EnumSelect = styled.select`
@@ -1408,10 +1412,17 @@ const EnumSelect = styled.select`
   background: ${(p) => p.theme.colors.paper};
   color: ${(p) => p.theme.colors.ink};
   min-width: 240px;
+  max-width: 100%;
   &:focus {
     outline: none;
     border-color: ${(p) => p.theme.colors.primary};
     box-shadow: 0 0 0 3px rgba(13, 46, 84, 0.08);
+  }
+
+
+  @media (max-width: 600px) {
+    width: 100%;
+    min-width: 0;
   }
 `;
 
@@ -1648,6 +1659,7 @@ const V3VurderingPage = () => {
   // signal-extractor (if configured) infer them from the description.
   const [loadedExample, setLoadedExample] = useState(null);
   const [expandedExplanations, setExpandedExplanations] = useState({});
+  const queryClient = useQueryClient();
 
   // ---- EC-checker funnel state ------------------------------------------
   const [ecPrefill, setEcPrefill] = useState(null); // server response from /api/v3/assess/from-ec-checker
@@ -1660,8 +1672,25 @@ const V3VurderingPage = () => {
   const [editorArtifactId, setEditorArtifactId] = useState(null);
   const [evidenceCounter, setEvidenceCounter] = useState(0); // bump to refetch after save
 
-  const mutation = useMutation(postAssess);
-  const documentMutation = useMutation(postDocumentAnalyze);
+  const invalidateLinkedCaseQueries = () => {
+    const linkedCaseId = caseId.trim();
+    if (!linkedCaseId) return;
+    [
+      ['sag-overview-case', linkedCaseId],
+      ['sag-overview-timeline', linkedCaseId],
+      ['process-case', linkedCaseId],
+      ['process-timeline', linkedCaseId],
+      ['sag-timeline', linkedCaseId],
+    ].forEach((key) => queryClient.invalidateQueries(key));
+    queryClient.invalidateQueries('v3-cases');
+  };
+
+  const mutation = useMutation(postAssess, {
+    onSuccess: invalidateLinkedCaseQueries,
+  });
+  const documentMutation = useMutation(postDocumentAnalyze, {
+    onSuccess: invalidateLinkedCaseQueries,
+  });
   const rulesQuery = useQuery('v3-rules-corpus', fetchRules, {
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -1697,12 +1726,13 @@ const V3VurderingPage = () => {
     return () => { cancelled = true; };
   }, [location.search]);
 
-  // Mount-effect: hvis brugeren kom fra /indkoebsproces → /vurdering?from=indkoeb&case_id=...,
-  // hent intake_state fra backend og pre-fyld description + caseId
+  // Hent den tilknyttede sag uanset om overgangen kommer direkte fra intake
+  // eller via EU-checkeren. Dermed følger beskrivelsen og sags-id'et med hele vejen.
   const [indkoebPrefill, setIndkoebPrefill] = useState(null); // {behov, system_description, case_id}
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('from') !== 'indkoeb') return;
+    const source = params.get('from');
+    if (!['indkoeb', 'ec-checker'].includes(source)) return;
     const cid = params.get('case_id');
     if (!cid) return;
     let cancelled = false;
@@ -1722,7 +1752,22 @@ const V3VurderingPage = () => {
           case_id: cid,
           behov: intake.behov,
           system_description: intake.system_description,
+          system_name: intake.system_name,
+          ec_flags: intake.ec_flags || {},
+          ec_completed_at: intake.ec_completed_at || intake.ec_captured_at || null,
         });
+        // Ved direkte adgang fra indkøbsflowet skal den gemte klassifikation
+        // mappes. Fra EU-checkeren er sessionens netop afsluttede resultat allerede
+        // indlæst af effekten ovenfor, så vi undgår et ekstra/konkurrerende kald.
+        if (
+          source === 'indkoeb' &&
+          (intake.ec_completed_at || intake.ec_captured_at)
+        ) {
+          const data = await postEcPrefill(intake.ec_flags || {});
+          if (cancelled) return;
+          setEcPrefill(data);
+          setEcPredicates({ ...(data.predicates || {}) });
+        }
       } catch (err) {
         // 404 = ikke en eksisterende sag, ignorér
         if (err?.response?.status !== 404) {
@@ -1734,7 +1779,17 @@ const V3VurderingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
 
+  const ecClassificationMissing = Boolean(
+    indkoebPrefill?.case_id && !indkoebPrefill.ec_completed_at,
+  );
+
   const clearEcPrefill = () => {
+    if (indkoebPrefill?.case_id) {
+      navigate(
+        `/eu-checker?fromIndkoeb=${encodeURIComponent(indkoebPrefill.case_id)}`,
+      );
+      return;
+    }
     setEcPrefill(null);
     setEcPredicates({});
     setEcError(null);
@@ -1788,6 +1843,7 @@ const V3VurderingPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (ecClassificationMissing) return;
     // EC-prefill mode: signals + predicates kommer fra mapperen + brugerens edits
     if (ecPrefill) {
       mutation.mutate({
@@ -1796,7 +1852,7 @@ const V3VurderingPage = () => {
         predicates: { ...(ecPrefill.predicates || {}), ...ecPredicates },
         use_llm_extraction: !!description.trim(),
         case_id: caseId.trim() || undefined,
-        note: note.trim() || `EC-funnel: ${ecPrefill.matched_flags?.length || 0} flag mapped`,
+        note: note.trim() || `EC-flow: ${ecPrefill.matched_flags?.length || 0} klassifikationspunkter matchet`,
       });
       return;
     }
@@ -1812,6 +1868,7 @@ const V3VurderingPage = () => {
 
   const handleFileDrop = (file) => {
     if (!file) return;
+    if (ecClassificationMissing) return;
     documentMutation.mutate({
       file,
       caseId: caseId.trim() || undefined,
@@ -2017,6 +2074,25 @@ const V3VurderingPage = () => {
           </EcBanner>
         )}
 
+        {ecClassificationMissing && (
+          <ErrorBox>
+            <strong>EU AI Act-klassifikationen mangler på sagen.</strong>{' '}
+            Vurderingen er sat på pause, så Bifrost ikke kan returnere et
+            misvisende GO uden data fra fase 2.{' '}
+            <button
+              type="button"
+              onClick={() => navigate(`/eu-checker?fromIndkoeb=${encodeURIComponent(indkoebPrefill.case_id)}`)}
+              style={{
+                background: 'transparent', border: 0, color: 'inherit',
+                textDecoration: 'underline', cursor: 'pointer', font: 'inherit',
+                padding: 0,
+              }}
+            >
+              Gennemfør EU AI Act-tjek →
+            </button>
+          </ErrorBox>
+        )}
+
         {ecPrefill && (
           <EcBanner>
             <div className="eyebrow">Forudvurdering fra EU AI Act-tjekken</div>
@@ -2030,10 +2106,10 @@ const V3VurderingPage = () => {
             )}
             <div className="actions">
               <ClearEcButton type="button" onClick={clearEcPrefill}>
-                Ryd EC-data og start forfra
+                {indkoebPrefill?.case_id ? 'Kør EU-tjek igen' : 'Ryd EC-data og start forfra'}
               </ClearEcButton>
               <span style={{ fontSize: '0.78rem', opacity: 0.65, alignSelf: 'center' }}>
-                {ecPrefill.matched_flags?.length || 0} flag mapped ·{' '}
+                {ecPrefill.matched_flags?.length || 0} EC-punkter matchet ·{' '}
                 {ecPrefill.surfaced_rules?.length || 0} regler relevante af{' '}
                 {ecPrefill.all_rules_count || rulesQuery.data?.count || '?'}
               </span>
@@ -2046,7 +2122,7 @@ const V3VurderingPage = () => {
             type="file"
             accept=".pdf,.docx"
             onChange={onFileInputChange}
-            disabled={documentMutation.isLoading}
+            disabled={documentMutation.isLoading || ecClassificationMissing}
           />
           <DropIcon aria-hidden="true" />
           <div>
@@ -2112,10 +2188,13 @@ const V3VurderingPage = () => {
               type="submit"
               disabled={
                 mutation.isLoading ||
+                ecClassificationMissing ||
                 (ecPrefill ? !allRequiredFilled : false)
               }
               title={
-                ecPrefill && !allRequiredFilled
+                ecClassificationMissing
+                  ? 'Gennemfør EU AI Act-tjekket på sagen først'
+                  : ecPrefill && !allRequiredFilled
                   ? `Udfyld de ${requiredPredicateIds.filter((id) => ecPredicates[id] === undefined || ecPredicates[id] === '').length} påkrævede felter først`
                   : undefined
               }
@@ -2129,7 +2208,7 @@ const V3VurderingPage = () => {
             )}
             {ecPrefill && (
               <SecondaryButton type="button" onClick={clearEcPrefill}>
-                Ryd EC-data
+                {indkoebPrefill?.case_id ? 'Kør EU-tjek igen' : 'Ryd EC-data'}
               </SecondaryButton>
             )}
             {loadedExample && (
@@ -2503,6 +2582,31 @@ const V3VurderingPage = () => {
               </VerdictMetric>
             )}
           </VerdictBanner>
+
+          {linkedCaseData && (
+            <EcBanner>
+              <div className="eyebrow">Fortsæt sagsrejsen</div>
+              <div className="summary">
+                Vurderingen er gemt på sag <strong>{linkedCaseData.case_id}</strong>.
+                Næste fase genbruger sags-ID, systemnavn og formål i
+                risikovurdering og evidensarbejde.
+              </div>
+              <div className="actions">
+                <PrimaryButton
+                  type="button"
+                  onClick={() => navigate(`/proces?case_id=${encodeURIComponent(linkedCaseData.case_id)}&step=risiko`)}
+                >
+                  Fortsæt til risiko & evidens →
+                </PrimaryButton>
+                <SecondaryButton
+                  type="button"
+                  onClick={() => navigate(`/sag/${encodeURIComponent(linkedCaseData.case_id)}`)}
+                >
+                  Åbn samlet sag
+                </SecondaryButton>
+              </div>
+            </EcBanner>
+          )}
 
             {isDocumentResult && Object.keys(result.extracted_predicates || {}).length > 0 && (
               <ChunksSection>

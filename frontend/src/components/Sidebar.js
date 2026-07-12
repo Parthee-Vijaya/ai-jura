@@ -476,7 +476,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       sectionKey: 'arbejde',
       items: [
         { path: '/', icon: FaHome, text: 'Forside' },
-        { path: '/proces', icon: FaShoppingCart, text: 'Proces (3 trin)' },
+        { path: '/proces', icon: FaShoppingCart, text: 'Proces (5 faser)' },
         { path: '/indkoebsproces', icon: FaShoppingCart, text: '› Indkøbsproces' },
         { path: '/eu-checker', icon: FaBalanceScale, text: '› EU AI Act Checker' },
         { path: '/vurdering', icon: FaClipboardList, text: '› Vurdering' },

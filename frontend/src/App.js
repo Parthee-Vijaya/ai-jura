@@ -259,6 +259,8 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
   margin-left: ${props => props.sidebarCollapsed ? '76px' : '256px'};
   padding: 20px;
   transition: margin-left 0.3s ease;

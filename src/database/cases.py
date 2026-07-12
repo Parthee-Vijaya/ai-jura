@@ -363,12 +363,19 @@ def attach_assessment(
     case.last_aggregate_status = aggregate_status
     case.updated_at = datetime.now(UTC)
 
-    # Auto-transition kladde → vurderet on first assessment.
+    # First assessment moves the case to the state implied by its verdict.
+    # A BETINGET-GO/NO-GO must not appear in the neutral "vurderet" column;
+    # it already requires remediation work.
     if case.status == "kladde":
+        target_status = (
+            "remediation"
+            if aggregate_status in ("BETINGET-GO", "NO-GO")
+            else "vurderet"
+        )
         transition_case(
             session,
             case_db_id,
-            "vurderet",
+            target_status,
             note=f"Auto-transition efter første vurdering ({aggregate_status})",
         )
     # Suggest remediation if BETINGET-GO/NO-GO and currently in vurderet.

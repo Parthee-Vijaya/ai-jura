@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 
 import { Pill } from './ui';
+import { summarizeEcFlags } from '../utils/ecFlagDisplay';
 
 /**
  * IndkoebsOverviewPanel — samlet "Sag-komplet-overblik" der vises på
@@ -78,6 +79,13 @@ const INTAKE_FIELD_REQUIREMENTS = {
       { lov: 'AI Act Art. 16-22', desc: 'Bestemmer udbyder-forpligtelser' },
     ],
   },
+  system_name: {
+    label: 'Systemnavn / arbejdstitel',
+    required: false,
+    requirements: [
+      { lov: 'Internt workflow', desc: 'Genbruges i rapporter og risikovurdering' },
+    ],
+  },
   system_description: {
     label: 'Systembeskrivelse',
     required: true,
@@ -87,21 +95,6 @@ const INTAKE_FIELD_REQUIREMENTS = {
       { lov: 'GDPR Art. 30', desc: 'Fortegnelse over behandlingsaktiviteter' },
     ],
   },
-};
-
-// EU AI Act-flag → kort dansk forklaring + tone
-const FLAG_DISPLAY = {
-  flag_risklevel_aisystem_highrisk_output: { label: 'Højrisiko AI-system (Bilag III)', tone: 'danger' },
-  flag_risklevel_aisystem_nohighrisk_output: { label: 'Ikke-højrisiko AI-system', tone: 'success' },
-  flag_obligations_prohibitedsystems_result_output: { label: 'Mulig forbudt praksis (Art. 5)', tone: 'danger' },
-  flag_outofscope: { label: 'Uden for AI Act-anvendelsesområde', tone: 'info' },
-  flag_ai_system_role_provider: { label: 'Rolle: Udbyder', tone: 'info' },
-  flag_ai_system_role_deployer: { label: 'Rolle: Idriftsætter', tone: 'info' },
-  flag_ai_system_role_distributor: { label: 'Rolle: Distributør', tone: 'info' },
-  flag_ai_system_role_importer: { label: 'Rolle: Importør', tone: 'info' },
-  flag_fr_impact_assessment_deployer: { label: 'FRIA påkrævet', tone: 'warn' },
-  flag_obligation_transparency_provider: { label: 'Transparenskrav (udbyder)', tone: 'warn' },
-  flag_obligation_transparency_deployer: { label: 'Transparenskrav (idriftsætter)', tone: 'warn' },
 };
 
 // ---- Helpers ------------------------------------------------------------
@@ -300,6 +293,8 @@ const FieldRow = styled.div`
     font-size: 0.78rem;
     color: ${(p) => p.theme.colors.textMuted};
     line-height: 1.45;
+    min-width: 0;
+    overflow-wrap: anywhere;
 
     .lov {
       font-family: ${(p) => p.theme.fonts.mono};
@@ -314,6 +309,7 @@ const FieldRow = styled.div`
 const FlagRow = styled.div`
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 10px;
   padding: 6px 0;
   font-family: ${(p) => p.theme.fonts.body};
@@ -338,6 +334,21 @@ const FlagRow = styled.div`
     font-size: 0.7rem;
     color: ${(p) => p.theme.colors.textFaded};
     margin-left: auto;
+    max-width: 50%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: right;
+  }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+
+    code {
+      flex: 1 0 calc(100% - 18px);
+      max-width: calc(100% - 18px);
+      margin-left: 18px;
+      text-align: left;
+    }
   }
 `;
 
@@ -409,8 +420,8 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
     { enabled: !!caseData, retry: false, staleTime: 30_000 },
   );
 
-  const intake = caseData?.intake_state || {};
-  const evidence = evidenceData?.items || [];
+  const intake = useMemo(() => caseData?.intake_state || {}, [caseData]);
+  const evidence = useMemo(() => evidenceData?.items || [], [evidenceData]);
   const events = timelineData?.events || [];
   const vurderinger = events.filter((e) => e.kind === 'vurdering');
 
@@ -448,19 +459,29 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
     return { done, total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
   }, [evidence]);
 
-  const flagsActive = Object.entries(ecFlags).filter(([, v]) => v && v !== false).length;
+  const ecFlagSummary = useMemo(() => summarizeEcFlags(ecFlags), [ecFlags]);
+  const flagsActive = ecFlagSummary.length;
+  const ecComplete = Boolean(intake.ec_completed_at || intake.ec_captured_at);
 
   if (!caseId) return null;
 
   // Don't render if there's truly nothing to show
-  const hasData = intakeStats.filled > 0 || flagsActive > 0 || evidence.length > 0 || vurderinger.length > 0;
+  const hasData = intakeStats.filled > 0 || ecComplete || flagsActive > 0
+    || evidence.length > 0 || vurderinger.length > 0;
   if (!hasData) return null;
 
   // Overall sag-completion percentage
-  const overallPct = Math.round(
-    ((intakeStats.requiredFilled / Math.max(1, intakeStats.requiredTotal)) * 50)
-    + ((evidenceStats.done / Math.max(1, evidenceStats.total)) * 50)
-  );
+  const intakeComplete = intakeStats.requiredFilled === intakeStats.requiredTotal;
+  const assessmentComplete = vurderinger.length > 0;
+  const evidenceComplete = evidence.length === 0
+    ? assessmentComplete
+    : evidenceStats.done === evidenceStats.total;
+  const overallPct = Math.round(([
+    intakeComplete,
+    ecComplete,
+    assessmentComplete,
+    evidenceComplete,
+  ].filter(Boolean).length / 4) * 100);
 
   return (
     <Wrap>
@@ -473,9 +494,9 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
           <span><FaCheckCircle style={{ color: '#2d6a31', verticalAlign: 'middle', marginRight: 3 }} />
             {intakeStats.requiredFilled}/{intakeStats.requiredTotal} indkøbs-felter
           </span>
-          {flagsActive > 0 && (
+          {ecComplete && (
             <span><FaCircle style={{ color: '#0d2e54', fontSize: '0.5rem', verticalAlign: 'middle', marginRight: 3 }} />
-              {flagsActive} EC-flag
+              EU-tjek gennemført{flagsActive > 0 ? ` · ${flagsActive} punkter` : ''}
             </span>
           )}
           {evidence.length > 0 && (
@@ -530,7 +551,9 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
                             ? (typeof value === 'boolean'
                                 ? (value ? 'Ja' : 'Nej')
                                 : String(value).slice(0, 200))
-                            : `(mangler — spærrer for ${def.requirements.length} lovkrav)`}
+                            : def.required
+                              ? `(mangler — spærrer for ${def.requirements.length} lovkrav)`
+                              : '(valgfrit — ikke angivet)'}
                         </div>
                         <div className="req-list">
                           {def.requirements.map((req, i) => (
@@ -548,29 +571,32 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
           </Section>
 
           {/* ---- Section 2: EU AI Act-flag ---- */}
-          {flagsActive > 0 && (
+          {ecComplete && (
             <Section>
               <SectionHead onClick={() => toggle('ec')} aria-expanded={openSections.ec}>
                 <span className="label">
                   {openSections.ec ? <FaChevronDown size={11} /> : <FaChevronRight size={11} />}
-                  2. EU AI Act-tjek — {flagsActive} aktive flag
+                  2. EU AI Act-tjek — gennemført
                 </span>
                 <span className="stat">{intake.ec_flags ? 'persisteret på sag' : 'fra session'}</span>
               </SectionHead>
               {openSections.ec && (
                 <SectionContent>
-                  {Object.entries(ecFlags)
-                    .filter(([, v]) => v && v !== false)
-                    .map(([flag]) => {
-                      const display = FLAG_DISPLAY[flag] || { label: flag.replace(/^flag_/, '').replace(/_/g, ' '), tone: 'info' };
-                      return (
-                        <FlagRow key={flag} $tone={display.tone}>
+                  {flagsActive === 0 ? (
+                    <div style={{ fontSize: '0.84rem', color: '#5f6b7a' }}>
+                      Klassifikationen er gemt uden særlige risiko- eller obligationspunkter.
+                    </div>
+                  ) : (
+                    <>
+                      {ecFlagSummary.map((display) => (
+                        <FlagRow key={display.key} $tone={display.tone}>
                           <span className="marker" />
                           <span>{display.label}</span>
-                          <code>{flag}</code>
+                          <code>{display.key}</code>
                         </FlagRow>
-                      );
-                    })}
+                      ))}
+                    </>
+                  )}
                 </SectionContent>
               )}
             </Section>

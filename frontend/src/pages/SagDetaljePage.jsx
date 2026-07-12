@@ -15,6 +15,8 @@ import {
   FaCopy,
   FaFileWord,
   FaFilePdf,
+  FaShieldAlt,
+  FaTasks,
 } from 'react-icons/fa';
 
 import {
@@ -356,6 +358,17 @@ const SagDetaljePage = () => {
     { enabled: !!case_id, staleTime: 10_000 },
   );
 
+  const { data: riskData } = useQuery(
+    ['sag-risikovurderinger', case_id],
+    async () => {
+      const r = await axios.get(
+        `/api/v3/risk-assessment/saved?case_id=${encodeURIComponent(case_id)}&limit=20`,
+      );
+      return r.data;
+    },
+    { enabled: !!case_id, staleTime: 10_000 },
+  );
+
   // Fetch citation-flags — viser banner hvis et lov-citat er stale
   const { data: citationFlags } = useQuery(
     ['sag-citation-flags', case_id],
@@ -367,8 +380,9 @@ const SagDetaljePage = () => {
   );
 
   const caseRow = timelineData?.case;
-  const events = timelineData?.events || [];
+  const events = useMemo(() => timelineData?.events || [], [timelineData]);
   const intake = caseRow?.intake_state || {};
+  const riskAssessments = riskData?.items || [];
 
   const evidenceItems = useMemo(() => {
     return (evidenceData?.items || []).map((it) => ({
@@ -391,11 +405,6 @@ const SagDetaljePage = () => {
 
   const vurderinger = useMemo(
     () => events.filter((e) => e.kind === 'vurdering'),
-    [events],
-  );
-
-  const transitions = useMemo(
-    () => events.filter((e) => e.kind === 'transition' || e.kind === 'intake_updated'),
     [events],
   );
 
@@ -607,11 +616,18 @@ const SagDetaljePage = () => {
               </Button>
             )}
             <Button
-              $variant="primary"
+              $variant="secondary"
               $size="sm"
               onClick={() => navigate(`/vurdering?case_id=${encodeURIComponent(case_id)}&from=indkoeb`)}
             >
               <FaPlay /> Ny vurdering
+            </Button>
+            <Button
+              $variant="primary"
+              $size="sm"
+              onClick={() => navigate(`/proces?case_id=${encodeURIComponent(case_id)}`)}
+            >
+              <FaTasks /> Åbn proces
             </Button>
           </div>
         </HeroBar>
@@ -655,6 +671,7 @@ const SagDetaljePage = () => {
         vurderingerCount={vurderinger.length}
         evidenceProgress={evidenceProgress}
         evidenceItems={evidenceItems}
+        riskAssessmentsCount={riskAssessments.length}
         caseId={case_id}
         onOpenTab={setTab}
         onOpenEvidens={openEvidens}
@@ -672,16 +689,30 @@ const SagDetaljePage = () => {
             <h2 style={{ fontFamily: 'inherit', fontSize: '1.05rem', fontWeight: 600, margin: '1rem 0 0.6rem' }}>Næste skridt</h2>
             <QuickLinkGrid>
               <QuickLink onClick={() => setTab('evidens')}>
-                <span className="h"><FaCheckCircle className="icon" /> {evidenceProgress.total - evidenceProgress.done} evidens-artefakter mangler <FaArrowRight /></span>
-                <span className="desc">Udfyld <Term>DPIA</Term>, <Term term="dbs">databehandleraftale</Term>, risikostyringsplan og resten af de påkrævede skabeloner.</span>
+                <span className="h">
+                  <FaCheckCircle className="icon" />{' '}
+                  {evidenceProgress.total > 0
+                    ? `${evidenceProgress.total - evidenceProgress.done} evidens-artefakter mangler`
+                    : 'Ingen evidenskrav oprettet endnu'}{' '}
+                  <FaArrowRight />
+                </span>
+                <span className="desc">
+                  {evidenceProgress.total > 0
+                    ? <>Udfyld <Term>DPIA</Term>, <Term term="dbs">databehandleraftale</Term> og de øvrige påkrævede skabeloner.</>
+                    : 'Relevante artefakter vises her, når en vurdering udløser dokumentationskrav.'}
+                </span>
               </QuickLink>
               <QuickLink onClick={() => setTab('vurderinger')}>
                 <span className="h"><FaClipboardCheck className="icon" /> {vurderinger.length === 0 ? 'Ingen vurderinger endnu' : `Se ${vurderinger.length} tidligere vurdering${vurderinger.length === 1 ? '' : 'er'}`} <FaArrowRight /></span>
                 <span className="desc">Kør Bifrost-vurderingsmotor eller åbn et tidligere resultat.</span>
               </QuickLink>
               <QuickLink onClick={() => navigate(`/eu-checker?fromIndkoeb=${encodeURIComponent(case_id)}`)}>
-                <span className="h"><FaShoppingCart className="icon" /> EU AI Act-tjek <FaArrowRight /></span>
-                <span className="desc">Klassificér systemet i EC's officielle compliance-wizard.</span>
+                <span className="h"><FaShoppingCart className="icon" /> EU AI Act-tjek {intake.ec_completed_at || intake.ec_captured_at ? '· gennemført' : ''} <FaArrowRight /></span>
+                <span className="desc">Brug gemt klassificering eller kør EC's officielle compliance-wizard igen.</span>
+              </QuickLink>
+              <QuickLink onClick={() => navigate(`/risikovurdering?case_id=${encodeURIComponent(case_id)}`)}>
+                <span className="h"><FaShieldAlt className="icon" /> Risikovurdering · {riskAssessments.length} gemt <FaArrowRight /></span>
+                <span className="desc">Systemnavn, formål og sags-ID overføres automatisk til det databeskyttelsesretlige udkast.</span>
               </QuickLink>
             </QuickLinkGrid>
 

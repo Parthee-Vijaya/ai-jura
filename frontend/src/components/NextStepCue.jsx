@@ -10,6 +10,7 @@ import {
   FaExclamationTriangle,
   FaPlay,
   FaCheck,
+  FaShieldAlt,
 } from 'react-icons/fa';
 
 /**
@@ -177,6 +178,7 @@ const NextStepCue = ({
   vurderingerCount = 0,
   evidenceProgress = { done: 0, total: 0, pct: 0 },
   evidenceItems = [],
+  riskAssessmentsCount = 0,
   caseId,
   onOpenTab,
   onOpenEvidens,
@@ -213,9 +215,10 @@ const NextStepCue = ({
       };
     }
 
-    // 3. EU AI Act-tjek mangler (ec_flags er typisk udfyldt af checker)
-    const ecFlagCount = Object.keys(intake?.ec_flags || {}).length;
-    if (ecFlagCount === 0) {
+    // 3. EU AI Act-tjek mangler. Et gennemført tjek kan legitimt give 0 flag,
+    // så completion-timestamp er autoritativt — ikke antal flag.
+    const ecComplete = Boolean(intake?.ec_completed_at || intake?.ec_captured_at);
+    if (!ecComplete) {
       return {
         tone: 'info',
         eyebrow: 'Trin 2 — EU AI Act-tjek',
@@ -235,7 +238,7 @@ const NextStepCue = ({
         eyebrow: 'Trin 3 — Vurdering',
         icon: <FaPlay className="icon" aria-hidden="true" />,
         title: 'Kør første Bifrost-vurdering',
-        desc: 'Bifrost samler dine indtastninger og kører dem mod 21 lov-regler. Resultat: GO / BETINGET-GO / NO-GO med citater.',
+        desc: 'Bifrost samler dine indtastninger og kører dem mod de deklarative lovregler. Resultat: GO / BETINGET-GO / NO-GO med citater.',
         ctaLabel: 'Kør vurdering',
         action: () =>
           navigate(
@@ -286,10 +289,25 @@ const NextStepCue = ({
       };
     }
 
-    // 7. Alt færdigt
+    // 7. Juridisk vurdering færdig, men risikovurdering er ikke afklaret.
     if (
       (verdict === 'GO' || verdict === 'BETINGET-GO') &&
-      evidenceProgress.total > 0 &&
+      riskAssessmentsCount === 0
+    ) {
+      return {
+        tone: 'info',
+        eyebrow: 'Fase 4 — Risiko & evidens',
+        icon: <FaShieldAlt className="icon" aria-hidden="true" />,
+        title: 'Afklar databeskyttelsesrisiko',
+        desc: 'Sags-ID, systemnavn og formål følger med. Tilføj dokumenter og afklar med DPO, om et formelt udkast er nødvendigt.',
+        ctaLabel: 'Åbn risikovurdering',
+        action: () => navigate(`/risikovurdering?case_id=${encodeURIComponent(caseId)}`),
+      };
+    }
+
+    // 8. Alt færdigt
+    if (
+      (verdict === 'GO' || verdict === 'BETINGET-GO') &&
       evidenceProgress.done >= evidenceProgress.total
     ) {
       return {

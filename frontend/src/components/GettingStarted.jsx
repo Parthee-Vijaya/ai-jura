@@ -7,13 +7,15 @@ import {
   FaClipboardCheck,
   FaArrowRight,
   FaBookOpen,
+  FaShieldAlt,
+  FaTasks,
 } from 'react-icons/fa';
 
 /**
  * Bifrost — Getting Started / Onboarding-kort.
  *
  * Vises når en bruger er ny og ikke har data endnu (fx ingen sager på
- * SagerPage). Forklarer 3-trins workflow og giver tydelige CTAs.
+ * SagerPage). Forklarer den samlede 5-fase-rejse og giver tydelige CTAs.
  *
  * Kompakt variant: <GettingStarted compact /> — bruges i sidepanel.
  *
@@ -68,7 +70,7 @@ const Wrap = styled.section`
     gap: 0.75rem;
 
     @media (min-width: 700px) {
-      grid-template-columns: ${(p) => (p.$compact ? '1fr' : 'repeat(3, 1fr)')};
+      grid-template-columns: ${(p) => (p.$compact ? '1fr' : 'repeat(auto-fit, minmax(160px, 1fr))')};
     }
   }
 `;
@@ -186,9 +188,25 @@ const STEPS = [
     num: '3',
     icon: FaClipboardCheck,
     title: 'Bifrost-vurdering',
-    desc: 'Kør den deterministiske regelmotor mod 21 lov-regler — får GO / BETINGET-GO / NO-GO med citater.',
+    desc: 'Kør den deterministiske regelmotor og få GO / BETINGET-GO / NO-GO med konkrete lovcitater.',
     path: '/proces?step=vurdering',
     cta: 'Kør vurdering',
+  },
+  {
+    num: '4',
+    icon: FaShieldAlt,
+    title: 'Risiko & evidens',
+    desc: 'Genbrug sagens data i risikovurderingen og udfyld de artefakter, der faktisk kræves.',
+    path: '/proces?step=risiko',
+    cta: 'Se næste fase',
+  },
+  {
+    num: '5',
+    icon: FaTasks,
+    title: 'Godkendelse & drift',
+    desc: 'Saml grundlag, afgørelse og audit-spor før menneskelig godkendelse og idriftsættelse.',
+    path: '/proces?step=godkendelse',
+    cta: 'Se afslutning',
   },
 ];
 
@@ -199,11 +217,11 @@ const GettingStarted = ({ compact = false, hideTitle = false }) => {
       {!hideTitle && (
         <div className="intro">
           <p className="eyebrow">Sådan kommer du i gang</p>
-          <h2>Tre trin fra idé til hjemlet AI-vurdering</h2>
+          <h2>Fem faser fra idé til godkendt AI-løsning</h2>
           <p>
             Bifrost guider dig fra første tanke om en AI-løsning til en
-            samlet compliance-vurdering med ordret lovcitat. Du kan
-            altid hoppe mellem trinene — sagen følger med.
+            samlet compliance-vurdering, evidens og godkendelse. Samme sag og
+            data følger med gennem alle faser.
           </p>
         </div>
       )}
@@ -216,10 +234,10 @@ const GettingStarted = ({ compact = false, hideTitle = false }) => {
                 key={s.num}
                 type="button"
                 onClick={() => navigate(s.path)}
-                aria-label={`Trin ${s.num}: ${s.title}`}
+                aria-label={`Fase ${s.num}: ${s.title}`}
               >
                 <span className="head">
-                  <span className="num">Trin {s.num}</span>
+                  <span className="num">Fase {s.num}</span>
                   <Icon className="icon" aria-hidden="true" />
                 </span>
                 <span className="title">{s.title}</span>
@@ -236,7 +254,7 @@ const GettingStarted = ({ compact = false, hideTitle = false }) => {
             <FaBookOpen aria-hidden="true" /> Lov-bibliotek + skabeloner
           </a>
           <a href="/proces">
-            Hele 3-trins-flowet på én side <FaArrowRight aria-hidden="true" />
+            Hele 5-fase-rejsen på én side <FaArrowRight aria-hidden="true" />
           </a>
         </HelpRow>
       </div>

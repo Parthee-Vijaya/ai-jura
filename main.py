@@ -2778,6 +2778,36 @@ async def v3_assess(request: V3AssessRequest):
                 user_id=request.user_id,
                 note=request.note,
             )
+            if request.case_id:
+                try:
+                    from src.database.cases import (
+                        attach_assessment,
+                        find_case_by_external_id,
+                    )
+
+                    case = find_case_by_external_id(db, request.case_id)
+                    if case is not None:
+                        attach_assessment(
+                            db,
+                            case.id,
+                            entry.id,
+                            response["aggregate_status"],
+                        )
+                        response["case_linked"] = True
+                        response["case_status"] = case.status
+                    else:
+                        response["case_linked"] = False
+                        response.setdefault("warnings", []).append(
+                            f"case_id not found; assessment saved without workflow link: {request.case_id}"
+                        )
+                except Exception as exc:
+                    logger.warning(
+                        "v3 case link failed for %s: %s", request.case_id, exc
+                    )
+                    response["case_linked"] = False
+                    response.setdefault("warnings", []).append(
+                        "case workflow link unavailable"
+                    )
             db.commit()
             response["audit_log_id"] = entry.id
         finally:

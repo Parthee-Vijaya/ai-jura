@@ -16,6 +16,8 @@ import {
   FaFileWord,
   FaFilePdf,
   FaFolderOpen,
+  FaShieldAlt,
+  FaTasks,
 } from 'react-icons/fa';
 
 import {
@@ -29,19 +31,22 @@ import {
   ErrorState,
   Term,
 } from '../components/ui';
+import { summarizeEcFlags } from '../utils/ecFlagDisplay';
 
 /**
- * ProcessPage — én samlet /proces-side der binder de 3 trin sammen:
+ * ProcessPage — én samlet /proces-side der binder hele sagsrejsen sammen:
  *
  *   1. Indkøbsproces (intake — behov + sagsnummer + indkøb-vs-udvikling)
  *   2. EU AI Act-tjek (klassificering — flag der driver vurdering)
- *   3. Vurdering (Bifrosts regelmotor — endeligt GO/BETINGET-GO/NO-GO)
+ *   3. Vurdering (Bifrosts regelmotor — GO/BETINGET-GO/NO-GO)
+ *   4. Risiko & evidens (databeskyttelse + konkrete artefakter)
+ *   5. Godkendelse & drift (workflow-status, rapport og opfølgning)
  *
  * Fri navigation: brugeren kan klikke direkte på ethvert trin uanset
  * progress. Tidligere færdige trin viser ✓ checkmark, kommende viser
  * advarsel hvis ikke gennemført.
  *
- * URL: /proces?case_id=K-...&step=1|2|3
+ * URL: /proces?case_id=K-...&step=indkoeb|eu-checker|vurdering|risiko|godkendelse
  *
  * Hver trin-section embedder en SIMPLIFIED visning af det pågældende
  * trin's data + en "Åbn fuld side"-knap der dybt-linker til den
@@ -64,6 +69,7 @@ const HeaderBar = styled.header`
     align-items: center;
     gap: 14px;
     min-width: 0;
+    flex: 1 1 320px;
   }
 
   .case-id {
@@ -71,6 +77,7 @@ const HeaderBar = styled.header`
     font-size: 0.78rem;
     color: ${(p) => p.theme.colors.primary};
     font-weight: 600;
+    flex-shrink: 0;
   }
 
   .case-title {
@@ -81,6 +88,7 @@ const HeaderBar = styled.header`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
   }
 
   .actions {
@@ -88,13 +96,29 @@ const HeaderBar = styled.header`
     gap: 8px;
     flex-wrap: wrap;
   }
+
+  @media (max-width: 720px) {
+    align-items: flex-start;
+
+    .left {
+      width: 100%;
+      flex-basis: 100%;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+    }
+
+    .case-title {
+      width: 100%;
+      white-space: normal;
+    }
+  }
 `;
 
-// ---- 3-trin stepper ----------------------------------------------------
+// ---- 5-fase stepper ----------------------------------------------------
 
 const StepperBar = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr;
   align-items: stretch;
   gap: 0;
   margin-bottom: 1.75rem;
@@ -104,7 +128,7 @@ const StepperBar = styled.div`
   overflow: hidden;
 
   @media (max-width: 720px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
 
     .connector {
       display: none;
@@ -124,6 +148,8 @@ const StepCard = styled.button`
   gap: 12px;
   align-items: center;
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-bottom: 3px solid ${(p) => (p.$active ? p.theme.colors.primary : 'transparent')};
 
   &:hover {
@@ -218,6 +244,14 @@ const StepShell = styled.section`
     margin-bottom: 1.5rem;
     max-width: 720px;
   }
+
+  @media (max-width: 720px) {
+    padding: 1.15rem;
+
+    h2 {
+      font-size: 1.3rem;
+    }
+  }
 `;
 
 const FieldList = styled.div`
@@ -293,6 +327,7 @@ const INTAKE_FIELDS = [
   { key: 'sagsnummer', label: 'Serviceportal-sagsnummer', required: true },
   { key: 'serviceportal_dato', label: 'Oprettelsesdato', required: false },
   { key: 'indkoeb_eller_udvikling', label: 'Indkøb eller udvikling', required: true },
+  { key: 'system_name', label: 'Systemnavn / arbejdstitel', required: false },
   { key: 'system_description', label: 'Systembeskrivelse', required: true },
 ];
 
@@ -324,6 +359,20 @@ const STEPS = [
     title: 'Bifrost-vurdering',
     icon: FaClipboardCheck,
     description: 'Kør den deterministiske regelmotor mod AI Act + GDPR + dansk forvaltningsret. Producerer GO / BETINGET-GO / NO-GO med konkrete krav og lovcitater.',
+  },
+  {
+    num: 4,
+    id: 'risiko',
+    title: 'Risiko & evidens',
+    icon: FaShieldAlt,
+    description: 'Genbrug sagens formål og systemdata i risikovurderingen, og udfyld kun de evidens-artefakter vurderingen kræver.',
+  },
+  {
+    num: 5,
+    id: 'godkendelse',
+    title: 'Godkendelse & drift',
+    icon: FaTasks,
+    description: 'Saml vurdering, risiko, evidens og audit-spor før sagen godkendes, sættes i drift og planlægges til genvurdering.',
   },
 ];
 
@@ -365,14 +414,36 @@ const ProcessPage = () => {
     { enabled: !!caseId, retry: false },
   );
 
+  const { data: evidenceData } = useQuery(
+    ['process-evidence', caseId],
+    async () => {
+      const r = await axios.get(`/api/v3/cases/${encodeURIComponent(caseId)}/evidence`);
+      return r.data;
+    },
+    { enabled: !!caseId, retry: false },
+  );
+
+  const { data: riskData } = useQuery(
+    ['process-risk-assessments', caseId],
+    async () => {
+      const r = await axios.get(
+        `/api/v3/risk-assessment/saved?case_id=${encodeURIComponent(caseId)}&limit=20`,
+      );
+      return r.data;
+    },
+    { enabled: !!caseId, retry: false },
+  );
+
   const setStep = (id) => {
     const params = new URLSearchParams(searchParams);
     params.set('step', id);
     setSearchParams(params, { replace: true });
   };
 
-  const intake = caseData?.intake_state || {};
-  const events = timelineData?.events || [];
+  const intake = useMemo(() => caseData?.intake_state || {}, [caseData]);
+  const events = useMemo(() => timelineData?.events || [], [timelineData]);
+  const evidenceItems = useMemo(() => evidenceData?.items || [], [evidenceData]);
+  const riskAssessments = useMemo(() => riskData?.items || [], [riskData]);
 
   // Compute step statuses
   const stepStatuses = useMemo(() => {
@@ -383,22 +454,48 @@ const ProcessPage = () => {
       : 'partial';
 
     const ecFlags = intake.ec_flags || {};
-    const ecFlagCount = Object.values(ecFlags).filter((v) => v && v !== false).length;
-    const ecStatus = ecFlagCount > 0 ? 'done' : 'pending';
+    const ecFlagCount = summarizeEcFlags(ecFlags).length;
+    const ecComplete = Boolean(intake.ec_completed_at || intake.ec_captured_at);
+    const ecStatus = ecComplete ? 'done' : 'pending';
 
     const vurderinger = events.filter((e) => e.kind === 'vurdering');
     const vurderingStatus = vurderinger.length > 0 ? 'done' : 'pending';
 
+    const evidenceDone = evidenceItems.filter((item) => (
+      item.status === 'faerdig' || item.status === 'godkendt'
+    )).length;
+    const evidenceTotal = evidenceItems.length;
+    const riskCount = riskAssessments.length;
+    const riskStatus = riskCount > 0 && (evidenceTotal === 0 || evidenceDone === evidenceTotal)
+      ? 'done'
+      : riskCount > 0 || evidenceTotal > 0
+        ? 'partial'
+        : 'pending';
+
+    const approvedStatuses = new Set(['godkendt', 'idriftsat', 'arkiveret']);
+    const approvalStatus = approvedStatuses.has(caseData?.status)
+      ? 'done'
+      : ['vurderet', 'remediation'].includes(caseData?.status)
+        ? 'partial'
+        : 'pending';
+
     return {
       indkoeb: { status: indkoebStatus, count: requiredFilled, total: requiredTotal },
-      'eu-checker': { status: ecStatus, count: ecFlagCount },
+      'eu-checker': { status: ecStatus, count: ecFlagCount, complete: ecComplete },
       vurdering: { status: vurderingStatus, count: vurderinger.length, latest: vurderinger[0] },
+      risiko: {
+        status: riskStatus,
+        riskCount,
+        evidenceDone,
+        evidenceTotal,
+      },
+      godkendelse: { status: approvalStatus, caseStatus: caseData?.status },
     };
-  }, [intake, events]);
+  }, [caseData?.status, evidenceItems, events, intake, riskAssessments]);
 
   // ---- No case_id: list drafts ----
   if (!caseId) {
-    const drafts = draftsData?.items || [];
+    const drafts = (draftsData?.items || []).filter((item) => item.case_id !== '__draft__');
     return (
       <PageShell>
         <Breadcrumb items={[{ label: 'Proces' }]} />
@@ -419,7 +516,7 @@ const ProcessPage = () => {
           maxWidth: 720,
           lineHeight: 1.55,
         }}>
-          Tre-trins proces der følger Kalundborg Kommunes faktiske workflow.
+          Fem sammenhængende faser fra behov til godkendelse og drift.
           Vælg en åben sag herunder eller start en ny.
         </p>
 
@@ -539,13 +636,21 @@ const ProcessPage = () => {
           if (step.id === 'indkoeb') {
             metaText = `${statusInfo.count}/${statusInfo.total} felter udfyldt`;
           } else if (step.id === 'eu-checker') {
-            metaText = statusInfo.count > 0
-              ? `${statusInfo.count} flag rejst`
-              : 'Ikke startet';
+            if (!statusInfo.complete) {
+              metaText = 'Ikke gennemført';
+            } else if (statusInfo.count > 0) {
+              metaText = `${statusInfo.count} klassifikationspunkter`;
+            } else {
+              metaText = 'Gennemført · ingen særlige krav';
+            }
           } else if (step.id === 'vurdering') {
             metaText = statusInfo.count > 0
               ? `${statusInfo.count} vurdering${statusInfo.count === 1 ? '' : 'er'} kørt`
               : 'Ikke kørt';
+          } else if (step.id === 'risiko') {
+            metaText = `${statusInfo.riskCount} risikovurdering${statusInfo.riskCount === 1 ? '' : 'er'} · ${statusInfo.evidenceDone}/${statusInfo.evidenceTotal} evidens`;
+          } else if (step.id === 'godkendelse') {
+            metaText = caseData?.status_label || statusInfo.caseStatus || 'Kladde';
           }
 
           return (
@@ -560,7 +665,7 @@ const ProcessPage = () => {
                   {status === 'done' ? <FaCheckCircle /> : <step.icon />}
                 </span>
                 <div className="body">
-                  <div className="step-num">Trin {step.num}</div>
+                  <div className="step-num">Fase {step.num}</div>
                   <div className="step-title">{step.title}</div>
                   <div className="step-meta">{metaText}</div>
                 </div>
@@ -577,7 +682,7 @@ const ProcessPage = () => {
 
       {activeStep.id === 'indkoeb' && (
         <StepShell>
-          <h2><FaShoppingCart style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Trin 1 — Indkøbsproces</h2>
+          <h2><FaShoppingCart style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Fase 1 — Indkøbsproces</h2>
           <p className="lede">{activeStep.description}</p>
 
           <FieldList>
@@ -624,34 +729,40 @@ const ProcessPage = () => {
 
       {activeStep.id === 'eu-checker' && (() => {
         const flags = intake.ec_flags || {};
-        const activeFlags = Object.entries(flags).filter(([, v]) => v && v !== false);
+        const activeFlags = summarizeEcFlags(flags);
+        const ecComplete = Boolean(intake.ec_completed_at || intake.ec_captured_at);
         return (
           <StepShell>
-            <h2><FaBalanceScale style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Trin 2 — EU AI Act-tjek</h2>
+            <h2><FaBalanceScale style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Fase 2 — EU AI Act-tjek</h2>
             <p className="lede">{activeStep.description}</p>
 
-            {activeFlags.length === 0 ? (
+            {!ecComplete ? (
               <Banner $tone="info">
-                <strong>EU AI Act-tjek er ikke kørt endnu.</strong>
+                <strong>EU AI Act-tjek er ikke gennemført endnu.</strong>
                 {' '}Klassificeringen tager ~5 minutter via EC's officielle 33-spørgsmåls-wizard.
-                Resultatet driver hvilke regler Bifrost-vurderingen skal anvende i Trin 3.
+                Resultatet driver hvilke regler Bifrost-vurderingen skal anvende i fase 3.
               </Banner>
             ) : (
               <>
-                <Banner $tone={activeFlags.some(([k]) => k.includes('highrisk') || k.includes('prohibited')) ? 'warn' : 'success'}>
-                  <strong>Klassificeret med {activeFlags.length} aktive flag.</strong>
-                  {' '}Resultatet anvendes automatisk når du kører Trin 3.
+                <Banner $tone={activeFlags.some((item) => item.tone === 'danger') ? 'warn' : 'success'}>
+                  <strong>
+                    Klassificering gennemført
+                    {activeFlags.length > 0 ? ` med ${activeFlags.length} resultatpunkter` : ' uden særlige krav'}.
+                  </strong>
+                  {' '}Resultatet anvendes automatisk i fase 3.
                 </Banner>
-                <FlagList>
-                  {activeFlags.slice(0, 12).map(([flag]) => (
-                    <Pill key={flag} tone="info">
-                      {flag.replace(/^flag_/, '').replace(/_/g, ' ')}
-                    </Pill>
-                  ))}
-                  {activeFlags.length > 12 && (
-                    <Pill tone="neutral">+{activeFlags.length - 12} flere</Pill>
-                  )}
-                </FlagList>
+                {activeFlags.length > 0 && (
+                  <FlagList>
+                    {activeFlags.slice(0, 12).map((item) => (
+                      <Pill key={item.key} tone={item.tone}>
+                        {item.label}
+                      </Pill>
+                    ))}
+                    {activeFlags.length > 12 && (
+                      <Pill tone="neutral">+{activeFlags.length - 12} flere</Pill>
+                    )}
+                  </FlagList>
+                )}
               </>
             )}
 
@@ -662,9 +773,9 @@ const ProcessPage = () => {
                   $variant="secondary"
                   onClick={() => navigate(`/eu-checker?fromIndkoeb=${encodeURIComponent(caseId)}&fromProces=1`)}
                 >
-                  {activeFlags.length > 0 ? <><FaEdit /> Kør om</> : <><FaPlay /> Start EU AI Act-tjek</>}
+                  {ecComplete ? <><FaEdit /> Se eller kør om</> : <><FaPlay /> Start EU AI Act-tjek</>}
                 </Button>
-                <Button $variant="primary" onClick={() => setStep('vurdering')}>
+                <Button $variant="primary" disabled={!ecComplete} onClick={() => setStep('vurdering')}>
                   Næste: Vurdering <FaArrowRight />
                 </Button>
               </div>
@@ -678,16 +789,25 @@ const ProcessPage = () => {
         const latest = vurderinger[0];
         const verdictFromTimeline = latest?.label?.match(/^Vurdering: (\S+)/)?.[1];
         const verdict = verdictFromTimeline || lastVerdict;
+        const ecComplete = Boolean(intake.ec_completed_at || intake.ec_captured_at);
 
         return (
           <StepShell>
-            <h2><FaClipboardCheck style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Trin 3 — Bifrost-vurdering</h2>
+            <h2><FaClipboardCheck style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} /> Fase 3 — Bifrost-vurdering</h2>
             <p className="lede">{activeStep.description}</p>
+
+            {!ecComplete && (
+              <Banner $tone="warn">
+                <strong>Fase 2 mangler.</strong>{' '}
+                Gennemfør EU AI Act-tjekket, før vurderingen køres på sagen.
+                Det forhindrer et misvisende GO-resultat uden klassifikationsdata.
+              </Banner>
+            )}
 
             {vurderinger.length === 0 ? (
               <Banner $tone="info">
                 <strong>Ingen vurdering kørt endnu.</strong>
-                {' '}Bifrost samler dine indtastninger fra Trin 1 + EU <Term term="ai_act">AI Act</Term>-flag fra Trin 2 og kører dem mod alle 21 deklarative regler. Resultatet er et samlet <Term>GO</Term> / <Term>BETINGET-GO</Term> / <Term>NO-GO</Term> med konkrete krav og lovcitater.
+                {' '}Bifrost samler dine indtastninger fra fase 1 + EU <Term term="ai_act">AI Act</Term>-klassifikationen fra fase 2 og kører dem mod alle deklarative regler. Resultatet er et samlet <Term>GO</Term> / <Term>BETINGET-GO</Term> / <Term>NO-GO</Term> med konkrete krav og lovcitater.
               </Banner>
             ) : (
               <>
@@ -724,9 +844,178 @@ const ProcessPage = () => {
                 )}
                 <Button
                   $variant="primary"
+                  disabled={!ecComplete}
                   onClick={() => navigate(`/vurdering?case_id=${encodeURIComponent(caseId)}&from=indkoeb`)}
                 >
                   <FaPlay /> {vurderinger.length > 0 ? 'Kør ny vurdering' : 'Start vurdering'}
+                </Button>
+                {vurderinger.length > 0 && (
+                  <Button $variant="secondary" onClick={() => setStep('risiko')}>
+                    Næste: Risiko & evidens <FaArrowRight />
+                  </Button>
+                )}
+              </div>
+            </NavRow>
+          </StepShell>
+        );
+      })()}
+
+      {activeStep.id === 'risiko' && (() => {
+        const doneEvidence = evidenceItems.filter((item) => (
+          item.status === 'faerdig' || item.status === 'godkendt'
+        )).length;
+        return (
+          <StepShell>
+            <h2>
+              <FaShieldAlt style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} />
+              Fase 4 — Risiko & evidens
+            </h2>
+            <p className="lede">{activeStep.description}</p>
+
+            {riskAssessments.length === 0 ? (
+              <Banner $tone="info">
+                <strong>Risikovurdering er ikke startet.</strong>{' '}
+                Sags-ID, systemnavn og formål følger automatisk med, så du kun
+                skal tilføje dokumenter og de fakta, der mangler.
+              </Banner>
+            ) : (
+              <Banner $tone="success">
+                <strong>{riskAssessments.length} risikovurdering{riskAssessments.length === 1 ? '' : 'er'} gemt på sagen.</strong>{' '}
+                Seneste udkast kan genåbnes fra risikovurderingen.
+              </Banner>
+            )}
+
+            <FieldList>
+              <FieldRow $ok={riskAssessments.length > 0}>
+                <span className="marker">
+                  {riskAssessments.length > 0 ? <FaCheckCircle /> : <FaCircle />}
+                </span>
+                <div className="body">
+                  <div className="label">Databeskyttelsesretlig risikovurdering</div>
+                  <div className="value">
+                    {riskAssessments.length > 0
+                      ? `${riskAssessments.length} journaliseret på ${caseId}`
+                      : 'Ikke startet · afklar relevans med DPO ved persondata eller høj risiko'}
+                  </div>
+                </div>
+              </FieldRow>
+              <FieldRow $ok={evidenceItems.length > 0 && doneEvidence === evidenceItems.length}>
+                <span className="marker">
+                  {evidenceItems.length > 0 && doneEvidence === evidenceItems.length
+                    ? <FaCheckCircle />
+                    : <FaCircle />}
+                </span>
+                <div className="body">
+                  <div className="label">Evidens fra vurderingen</div>
+                  <div className="value">
+                    {evidenceItems.length > 0
+                      ? `${doneEvidence}/${evidenceItems.length} artefakter færdige`
+                      : 'Ingen konkrete evidens-artefakter er oprettet endnu'}
+                  </div>
+                </div>
+              </FieldRow>
+            </FieldList>
+
+            <NavRow>
+              <Button $variant="ghost" onClick={() => setStep('vurdering')}>
+                ← Forrige: Vurdering
+              </Button>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Button
+                  $variant="secondary"
+                  onClick={() => navigate(`/sag/${encodeURIComponent(caseId)}?tab=evidens`)}
+                >
+                  Åbn evidens
+                </Button>
+                <Button
+                  $variant="secondary"
+                  onClick={() => navigate(`/risikovurdering?case_id=${encodeURIComponent(caseId)}`)}
+                >
+                  <FaShieldAlt /> {riskAssessments.length > 0 ? 'Åbn risikovurdering' : 'Start risikovurdering'}
+                </Button>
+                <Button $variant="primary" onClick={() => setStep('godkendelse')}>
+                  Næste: Godkendelse & drift <FaArrowRight />
+                </Button>
+              </div>
+            </NavRow>
+          </StepShell>
+        );
+      })()}
+
+      {activeStep.id === 'godkendelse' && (() => {
+        const ecComplete = Boolean(intake.ec_completed_at || intake.ec_captured_at);
+        const vurderinger = events.filter((event) => event.kind === 'vurdering');
+        const doneEvidence = evidenceItems.filter((item) => (
+          item.status === 'faerdig' || item.status === 'godkendt'
+        )).length;
+        const evidenceComplete = evidenceItems.length === 0
+          || doneEvidence === evidenceItems.length;
+        const hasLegalResult = vurderinger.length > 0 && Boolean(lastVerdict);
+        const hasRiskAssessment = riskAssessments.length > 0;
+        const readyForReview = ecComplete && hasLegalResult && evidenceComplete
+          && hasRiskAssessment && lastVerdict !== 'NO-GO';
+
+        return (
+          <StepShell>
+            <h2>
+              <FaTasks style={{ marginRight: 10, color: '#0d2e54', verticalAlign: 'middle' }} />
+              Fase 5 — Godkendelse & drift
+            </h2>
+            <p className="lede">{activeStep.description}</p>
+
+            <Banner $tone={readyForReview ? 'success' : lastVerdict === 'NO-GO' ? 'danger' : 'warn'}>
+              <strong>
+                {readyForReview
+                  ? 'Sagen er klar til menneskelig godkendelsesgennemgang.'
+                  : lastVerdict === 'NO-GO'
+                    ? 'Sagen kan ikke godkendes i sin nuværende form.'
+                    : 'Sagen mangler én eller flere forudsætninger.'}
+              </strong>{' '}
+              Bifrost foreslår næste skridt, men en ansvarlig medarbejder eller
+              jurist træffer den endelige beslutning.
+            </Banner>
+
+            <FieldList>
+              {[
+                ['EU AI Act-klassifikation', ecComplete ? 'Gennemført' : 'Mangler', ecComplete],
+                ['Juridisk vurdering', lastVerdict || 'Mangler', hasLegalResult],
+                ['Risikovurdering', hasRiskAssessment ? `${riskAssessments.length} gemt` : 'Ikke journaliseret', hasRiskAssessment],
+                ['Evidens', evidenceItems.length > 0 ? `${doneEvidence}/${evidenceItems.length} færdige` : 'Ingen krav oprettet', evidenceComplete],
+                ['Workflow-status', caseData?.status_label || caseData?.status || 'Kladde', ['godkendt', 'idriftsat', 'arkiveret'].includes(caseData?.status)],
+              ].map(([label, value, complete]) => (
+                <FieldRow key={label} $ok={complete}>
+                  <span className="marker">{complete ? <FaCheckCircle /> : <FaExclamationTriangle />}</span>
+                  <div className="body">
+                    <div className="label">{label}</div>
+                    <div className="value">{value}</div>
+                  </div>
+                </FieldRow>
+              ))}
+            </FieldList>
+
+            <NavRow>
+              <Button $variant="ghost" onClick={() => setStep('risiko')}>
+                ← Forrige: Risiko & evidens
+              </Button>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Button $variant="secondary" onClick={() => downloadReport('docx')}>
+                  <FaFileWord /> DOCX
+                </Button>
+                <Button $variant="secondary" onClick={() => downloadReport('pdf')}>
+                  <FaFilePdf /> PDF
+                </Button>
+                <Button
+                  $variant="secondary"
+                  onClick={() => navigate(`/sag/${encodeURIComponent(caseId)}`)}
+                >
+                  Åbn samlet sag <FaArrowRight />
+                </Button>
+                <Button
+                  $variant="primary"
+                  onClick={() => navigate('/sager')}
+                  title="Den endelige status sættes af en medarbejder eller jurist på sagsoversigten"
+                >
+                  Åbn godkendelsestavle <FaArrowRight />
                 </Button>
               </div>
             </NavRow>

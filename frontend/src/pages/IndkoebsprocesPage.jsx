@@ -8,23 +8,19 @@ import {
   FaSpinner,
   FaShoppingCart,
   FaCode,
-  FaCloudUploadAlt,
   FaCheck,
   FaFolderOpen,
-  FaFileWord,
-  FaFilePdf,
 } from 'react-icons/fa';
-import { EvidenceEditor } from '../components/rules';
 import { Breadcrumb } from '../components/ui';
 
 /**
  * IndkoebsprocesPage — 4-trins wizard der matcher Kalundborg Kommunes
  * faktiske workflow for indkøb af AI-løsninger.
  *
- * State persisteres i backend (cases.intake_state) — debounced auto-save
- * 800ms efter sidste edit. URL-param `?case_id=K-...` loader eksisterende
- * sag. "Mine sager"-strip øverst lister åbne drafts på tværs af sessions
- * og enheder (cross-device via Tailscale).
+ * Før et Serviceportal-ID findes, gemmes kladden lokalt i browseren. Når
+ * brugeren bekræfter `case_id`, flyttes hele state til cases.intake_state og
+ * auto-gemmes derefter i backend. Dermed opstår der ikke en fælles
+ * `__draft__`-sag eller dobbeltregistrering.
  */
 
 // ---- Layout primitives ----------------------------------------------------
@@ -212,10 +208,11 @@ const StepCell = styled.li`
       : p.$done
       ? 'rgba(45, 106, 49, 0.06)'
       : 'transparent'};
-  cursor: pointer;
+  cursor: ${(p) => (p.$disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(p) => (p.$disabled ? 0.55 : 1)};
   transition: background 0.15s ease;
 
-  &:hover { background: ${(p) => p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)'}; }
+  &:hover { background: ${(p) => (p.$disabled ? 'transparent' : p.theme.colors.paperSoft || 'rgba(13,46,84,0.04)')}; }
   &:last-child { border-right: none; }
 
   @media (max-width: 720px) {
@@ -434,60 +431,7 @@ const SecondaryButton = styled.button`
   font-size: 0.88rem;
   cursor: pointer;
   &:hover { border-color: ${(p) => p.theme.colors.primary}; color: ${(p) => p.theme.colors.primary}; }
-`;
-
-const ArtifactGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.85rem;
-  margin-top: 0.85rem;
-`;
-
-const ArtifactCard = styled.button`
-  background: ${(p) => (p.$status === 'faerdig' ? 'rgba(45, 106, 49, 0.06)' : p.theme.colors.paper)};
-  border: 1px solid ${(p) => (p.$status === 'faerdig' ? '#2d6a31' : p.theme.colors.line)};
-  border-radius: 6px;
-  padding: 0.85rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-
-  &:hover { border-color: ${(p) => p.theme.colors.primary}; }
-
-  .h {
-    font-family: ${(p) => p.theme.fonts.sans};
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: ${(p) => p.theme.colors.ink};
-    margin-bottom: 0.3rem;
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .pill {
-    font-family: ${(p) => p.theme.fonts.mono};
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: ${(p) =>
-      p.$status === 'faerdig'
-        ? '#2d6a31'
-        : p.$status === 'i_gang'
-        ? '#b08a4a'
-        : '#a03612'};
-    color: white;
-  }
-
-  .desc {
-    font-family: ${(p) => p.theme.fonts.body};
-    font-size: 0.78rem;
-    color: ${(p) => p.theme.colors.inkSoft};
-    line-height: 1.45;
-  }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const InfoBox = styled.div`
@@ -510,22 +454,30 @@ const STEPS = [
   { num: 1, label: 'Identificér behov', meta: 'Behovsbeskrivelse + dobbeltsystem-check' },
   { num: 2, label: 'Opret sag i Serviceportalen', meta: 'AI-enheden notificeres' },
   { num: 3, label: 'Indledende screening', meta: 'Indkøb vs. udvikling, AI Act-relevans' },
-  { num: 4, label: 'AI-enheden vurderer', meta: 'Tjekliste, DPIA, vurdering, endelig svar' },
+  { num: 4, label: 'Klar til klassifikation', meta: 'Data følger med til resten af processen' },
 ];
 
-const ARTIFACTS = [
-  { id: 'ai_indkoeb_tjekliste', desc: '11-punkts tjekliste — Kalundborgs egen' },
-  { id: 'dpia_taerskelsvurdering', desc: '9-kriterie tærskeltest — Datatilsynet/WP248' },
-  { id: 'dpia_dokument', desc: 'KL/Datatilsynets 5-trin DPIA (hvis tærsklen udløst)' },
-  { id: 'databehandleraftale_dbs', desc: 'DBS-standard, kvalitetstjek af IT-sikkerhed@kalundborg' },
-  { id: 'eu_mcc_klausuler', desc: 'EU Model Contractual Clauses — checklist (provider/deployer-ansvar)' },
-  { id: 'leverandoer_due_diligence', desc: 'Leverandørvurdering — certificeringer, sub-processors, eksit-strategi' },
-  { id: 'ai_faerdigheder_program', desc: 'AI Act Art. 4 — kompetenceniveau hos personale (gælder ALLE AI)' },
-  { id: 'risikostyringsplan', desc: 'AI Act Art. 9, ISO/IEC 23894-baseret' },
-  { id: 'transparenstekst_til_registrerede', desc: 'GDPR Art. 13/14 + AI-oplysning' },
-];
+const LOCAL_DRAFT_KEY = 'bifrost-indkoeb-local-draft-v1';
+const LEGACY_DRAFT_ID = '__draft__';
 
-const DRAFT_PLACEHOLDER_ID = '__draft__';  // brugt indtil sagsnummer er angivet
+function readLocalDraft() {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalDraft(state) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(state));
+}
+
+function clearLocalDraft() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(LOCAL_DRAFT_KEY);
+}
 
 function progressPct(intake) {
   // Crude completion-estimat baseret på antal udfyldte felter
@@ -539,33 +491,41 @@ function progressPct(intake) {
   return Math.round((filled / fields.length) * 100);
 }
 
-// Trigger browser-download af sag-rapport (DOCX eller PDF).
-function downloadCaseReport(caseId, format) {
-  if (!caseId) return;
-  const url = `/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/report?format=${format}`;
-  const a = document.createElement('a');
-  a.href = url;
-  a.rel = 'noopener';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
 // ---- Component -----------------------------------------------------------
 
 const IndkoebsprocesPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlCaseId = searchParams.get('case_id');
+  // Lazy state initialization hydrates exactly once. URL changes are handled
+  // separately by the load effect below.
+  const [initialDraft] = useState(() => (!urlCaseId ? readLocalDraft() : {}));
 
   // Wizard state
-  const [step, setStep] = useState(1);
-  const [behov, setBehov] = useState('');
-  const [dobbeltsystemTjekket, setDobbeltsystemTjekket] = useState(false);
-  const [sagsnummer, setSagsnummer] = useState(urlCaseId || '');
-  const [serviceportalDato, setServiceportalDato] = useState('');
-  const [indkoebEllerUdvikling, setIndkoebEllerUdvikling] = useState(null);
-  const [systemDescription, setSystemDescription] = useState('');
+  const [step, setStep] = useState(initialDraft.current_step || 1);
+  const [behov, setBehov] = useState(initialDraft.behov || '');
+  const [dobbeltsystemTjekket, setDobbeltsystemTjekket] = useState(
+    !!initialDraft.dobbeltsystem_tjekket,
+  );
+  const [sagsnummer, setSagsnummer] = useState(
+    urlCaseId && urlCaseId !== LEGACY_DRAFT_ID
+      ? urlCaseId
+      : initialDraft.sagsnummer || '',
+  );
+  const [serviceportalDato, setServiceportalDato] = useState(
+    initialDraft.serviceportal_dato || '',
+  );
+  const [indkoebEllerUdvikling, setIndkoebEllerUdvikling] = useState(
+    initialDraft.indkoeb_eller_udvikling || null,
+  );
+  const [systemName, setSystemName] = useState(initialDraft.system_name || '');
+  const [systemDescription, setSystemDescription] = useState(
+    initialDraft.system_description || '',
+  );
+  const [caseConfirmed, setCaseConfirmed] = useState(
+    Boolean(urlCaseId && urlCaseId !== LEGACY_DRAFT_ID),
+  );
+  const [existingCaseConflict, setExistingCaseConflict] = useState(null);
 
   // AI-assist state (E2.1)
   const [aiAssisting, setAiAssisting] = useState(false);
@@ -597,17 +557,22 @@ const IndkoebsprocesPage = () => {
   };
 
   // Backend persistence state
-  const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | saved | error
+  const [saveStatus, setSaveStatus] = useState(
+    Object.keys(initialDraft).length > 0 ? 'saved-local' : 'idle',
+  ); // idle | saving | saved-local | saved | error
   const [loadingExisting, setLoadingExisting] = useState(!!urlCaseId);
   const debounceRef = useRef(null);
   const lastSavedRef = useRef(null);
+  // Felter fra senere faser (fx ec_flags/ec_completed_at) må ikke gå tabt,
+  // når brugeren vender tilbage og retter intake-oplysninger.
+  const preservedIntakeRef = useRef({});
 
   // Drafts strip
   const [drafts, setDrafts] = useState([]);
   const fetchDrafts = useCallback(async () => {
     try {
       const r = await axios.get('/api/v3/cases/drafts');
-      setDrafts(r.data?.items || []);
+      setDrafts((r.data?.items || []).filter((item) => item.case_id !== LEGACY_DRAFT_ID));
     } catch {
       setDrafts([]);
     }
@@ -620,20 +585,31 @@ const IndkoebsprocesPage = () => {
       setLoadingExisting(false);
       return;
     }
+    setLoadingExisting(true);
     let cancelled = false;
     (async () => {
       try {
         const r = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(urlCaseId)}`);
         if (cancelled) return;
         const intake = r.data?.intake_state || {};
+        setExistingCaseConflict(null);
+        preservedIntakeRef.current = { ...intake };
         setStep(intake.current_step || 1);
         setBehov(intake.behov || '');
         setDobbeltsystemTjekket(!!intake.dobbeltsystem_tjekket);
-        setSagsnummer(urlCaseId);
+        setSagsnummer(urlCaseId === LEGACY_DRAFT_ID ? '' : urlCaseId);
         setServiceportalDato(intake.serviceportal_dato || '');
         setIndkoebEllerUdvikling(intake.indkoeb_eller_udvikling || null);
+        setSystemName(intake.system_name || '');
         setSystemDescription(intake.system_description || '');
+        setCaseConfirmed(urlCaseId !== LEGACY_DRAFT_ID);
         lastSavedRef.current = JSON.stringify(intake);
+        if (urlCaseId === LEGACY_DRAFT_ID) {
+          const recovered = { ...intake, sagsnummer: '' };
+          writeLocalDraft(recovered);
+          navigate('/indkoebsproces', { replace: true });
+          setSaveStatus('saved-local');
+        }
       } catch (err) {
         // 404 = ny sag, ok
         if (err?.response?.status !== 404) {
@@ -644,20 +620,23 @@ const IndkoebsprocesPage = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [urlCaseId]);
+  }, [navigate, urlCaseId]);
 
   // Debounced auto-save
   const currentState = useMemo(
     () => ({
+      ...preservedIntakeRef.current,
       current_step: step,
       behov,
       dobbeltsystem_tjekket: dobbeltsystemTjekket,
       sagsnummer,
       serviceportal_dato: serviceportalDato,
       indkoeb_eller_udvikling: indkoebEllerUdvikling,
+      system_name: systemName,
       system_description: systemDescription,
     }),
-    [step, behov, dobbeltsystemTjekket, sagsnummer, serviceportalDato, indkoebEllerUdvikling, systemDescription],
+    [step, behov, dobbeltsystemTjekket, sagsnummer, serviceportalDato,
+      indkoebEllerUdvikling, systemName, systemDescription],
   );
 
   useEffect(() => {
@@ -671,15 +650,20 @@ const IndkoebsprocesPage = () => {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
-      // Bestem gemme-key: brug sagsnummer hvis sat, ellers placeholder
-      const saveKey = sagsnummer.trim() || DRAFT_PLACEHOLDER_ID;
       setSaveStatus('saving');
+      if (!caseConfirmed) {
+        writeLocalDraft(currentState);
+        lastSavedRef.current = serialized;
+        setSaveStatus('saved-local');
+        return;
+      }
       try {
         const user = typeof window !== 'undefined' ? localStorage.getItem('tyrUser') || undefined : undefined;
         await axios.put(
-          `/api/v3/cases/by-case-id/${encodeURIComponent(saveKey)}/intake`,
+          `/api/v3/cases/by-case-id/${encodeURIComponent(sagsnummer.trim())}/intake`,
           { intake_state: currentState, user },
         );
+        clearLocalDraft();
         lastSavedRef.current = serialized;
         setSaveStatus('saved');
         // Refresh drafts-strip hver gang vi gemmer (så ny sag dukker op)
@@ -693,35 +677,12 @@ const IndkoebsprocesPage = () => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [currentState, loadingExisting, sagsnummer, behov, systemDescription, fetchDrafts]);
-
-  // Editor modal
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editorArtifactId, setEditorArtifactId] = useState(null);
-  const [evidenceCounter, setEvidenceCounter] = useState(0);
-
-  // Evidence rows status — bruges til checkmarks
-  const evidenceCaseKey = sagsnummer.trim() || DRAFT_PLACEHOLDER_ID;
-  const [evidenceMap, setEvidenceMap] = useState({});
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await axios.get(`/api/v3/cases/${encodeURIComponent(evidenceCaseKey)}/evidence`);
-        if (cancelled) return;
-        const m = {};
-        (r.data?.items || []).forEach((it) => { m[it.artifact_id] = it; });
-        setEvidenceMap(m);
-      } catch {
-        if (!cancelled) setEvidenceMap({});
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [evidenceCaseKey, evidenceCounter]);
+  }, [caseConfirmed, currentState, loadingExisting, sagsnummer, behov,
+    systemDescription, fetchDrafts]);
 
   const startNew = () => {
     if (saveStatus === 'saving' || behov.trim() || sagsnummer.trim()) {
-      if (!window.confirm('Start ny sag? Dine ufærdige felter gemmes som draft og kan findes i "Mine sager".')) {
+      if (!window.confirm('Start ny sag? Den lokale kladde nulstilles. Allerede oprettede sager bevares i "Mine sager".')) {
         return;
       }
     }
@@ -732,7 +693,12 @@ const IndkoebsprocesPage = () => {
     setSagsnummer('');
     setServiceportalDato('');
     setIndkoebEllerUdvikling(null);
+    setSystemName('');
     setSystemDescription('');
+    setCaseConfirmed(false);
+    setExistingCaseConflict(null);
+    preservedIntakeRef.current = {};
+    clearLocalDraft();
     lastSavedRef.current = null;
     setSaveStatus('idle');
   };
@@ -741,15 +707,48 @@ const IndkoebsprocesPage = () => {
     navigate(`/indkoebsproces?case_id=${encodeURIComponent(caseRow.case_id)}`);
   };
 
-  const openArtifact = (id) => {
-    setEditorArtifactId(id);
-    setEditorOpen(true);
-  };
-
-  const goVurdering = () => {
-    const params = new URLSearchParams({ from: 'indkoeb' });
-    if (sagsnummer.trim()) params.set('case_id', sagsnummer.trim());
-    navigate(`/vurdering?${params}`);
+  const confirmCaseAndContinue = async () => {
+    if (caseConfirmed) {
+      setStep(3);
+      return;
+    }
+    const confirmedId = sagsnummer.trim();
+    if (!confirmedId) return;
+    const nextState = { ...currentState, current_step: 3, sagsnummer: confirmedId };
+    setSaveStatus('saving');
+    try {
+      const existing = await axios
+        .get(`/api/v3/cases/by-case-id/${encodeURIComponent(confirmedId)}`)
+        .then((response) => response.data)
+        .catch((err) => {
+          if (err?.response?.status === 404) return null;
+          throw err;
+        });
+      if (existing) {
+        setExistingCaseConflict(existing);
+        setSaveStatus('saved-local');
+        return;
+      }
+      const user = typeof window !== 'undefined'
+        ? localStorage.getItem('tyrUser') || undefined
+        : undefined;
+      await axios.put(
+        `/api/v3/cases/by-case-id/${encodeURIComponent(confirmedId)}/intake`,
+        { intake_state: nextState, user },
+      );
+      clearLocalDraft();
+      lastSavedRef.current = JSON.stringify(nextState);
+      setCaseConfirmed(true);
+      setStep(3);
+      setSaveStatus('saved');
+      navigate(`/indkoebsproces?case_id=${encodeURIComponent(confirmedId)}`, {
+        replace: true,
+      });
+      fetchDrafts();
+    } catch (err) {
+      console.error('Case confirmation failed', err);
+      setSaveStatus('error');
+    }
   };
 
   return (
@@ -766,10 +765,10 @@ const IndkoebsprocesPage = () => {
       <Eyebrow>Bifrost · indkøbsproces</Eyebrow>
       <Title>Indkøb og udvikling af AI-løsninger</Title>
       <Lede>
-        4-trins proces der følger Kalundborg Kommunes faktiske workflow.
-        Sagen oprettes i Serviceportalen så AI-enheden notificeres, og hvert
-        trin viser hvilke skabeloner du skal udfylde. Slutter med en endelig
-        vurdering fra AI-enheden + Bifrosts regelmotor.
+        Fire korte intake-trin der følger Kalundborg Kommunes workflow.
+        Her registrerer du behovet og sagen én gang; oplysningerne følger
+        automatisk videre til EU-klassifikation, juridisk vurdering,
+        risiko/evidens og den menneskelige godkendelse.
         <br />
         <strong>Auto-gemmes løbende</strong> — du kan lukke browseren og
         komme tilbage når som helst.
@@ -778,8 +777,9 @@ const IndkoebsprocesPage = () => {
       <SaveStatus $status={saveStatus}>
         {saveStatus === 'saving' && (<><FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> Gemmer…</>)}
         {saveStatus === 'saved' && (<><FaCheck /> Gemt {sagsnummer ? `som sag ${sagsnummer}` : 'som draft'}</>)}
+        {saveStatus === 'saved-local' && (<><FaCheck /> Gemt lokalt som kladde — får permanent sags-ID i trin 2</>)}
         {saveStatus === 'error' && (<>⚠ Gem fejlede — prøv igen</>)}
-        {saveStatus === 'idle' && !urlCaseId && 'Ny sag — auto-gemmes når du begynder at skrive'}
+        {saveStatus === 'idle' && !urlCaseId && 'Ny sag — gemmes lokalt indtil sags-ID er oprettet'}
       </SaveStatus>
 
       {drafts.length > 0 && (
@@ -819,8 +819,29 @@ const IndkoebsprocesPage = () => {
         {STEPS.map((s) => {
           const active = step === s.num;
           const done = step > s.num;
+          const canOpen = s.num === 1
+            || (s.num === 2 && Boolean(behov.trim() && dobbeltsystemTjekket))
+            || (s.num === 3 && caseConfirmed)
+            || (s.num === 4 && caseConfirmed && Boolean(
+              indkoebEllerUdvikling && systemDescription.trim(),
+            ));
           return (
-            <StepCell key={s.num} $active={active} $done={done} onClick={() => setStep(s.num)}>
+            <StepCell
+              key={s.num}
+              $active={active}
+              $done={done}
+              $disabled={!canOpen}
+              role="button"
+              tabIndex={canOpen ? 0 : -1}
+              aria-disabled={!canOpen}
+              onClick={() => canOpen && setStep(s.num)}
+              onKeyDown={(event) => {
+                if (canOpen && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault();
+                  setStep(s.num);
+                }
+              }}
+            >
               <span className="num">{done ? <FaCheckCircle /> : s.num}</span>
               <span>
                 <span className="label">{s.label}</span>
@@ -887,7 +908,7 @@ const IndkoebsprocesPage = () => {
                 disabled={!behov.trim() || !dobbeltsystemTjekket}
                 onClick={() => setStep(2)}
               >
-                Næste — opret sag <FaArrowRight />
+                Næste — registrér sags-ID <FaArrowRight />
               </PrimaryButton>
             </div>
           </Controls>
@@ -923,18 +944,40 @@ const IndkoebsprocesPage = () => {
                 <span className="req">*</span>
               </label>
               <div className="hint">
-                Når du indtaster et sagsnummer, flyttes draft-data til den
-                permanente sags-ID. Hvis sagen allerede findes loades dens
-                gemte data.
+                Når du bekræfter sagsnummeret, gemmes alle hidtidige svar samlet
+                på den permanente sag. Et bekræftet sags-ID låses for at undgå
+                dubletter.
               </div>
               <input
                 id="sagsnummer"
                 type="text"
                 value={sagsnummer}
-                onChange={(e) => setSagsnummer(e.target.value)}
+                onChange={(e) => {
+                  setSagsnummer(e.target.value);
+                  setExistingCaseConflict(null);
+                }}
+                disabled={caseConfirmed}
                 placeholder="K-2026-..."
               />
             </Field>
+
+            {existingCaseConflict && (
+              <InfoBox role="alert">
+                <strong>Sags-ID'et findes allerede.</strong>{' '}
+                Den lokale kladde er ikke overskrevet. Åbn den eksisterende sag,
+                eller indtast et andet sags-ID.
+                <div style={{ marginTop: '0.65rem' }}>
+                  <SecondaryButton
+                    type="button"
+                    onClick={() => navigate(
+                      `/indkoebsproces?case_id=${encodeURIComponent(existingCaseConflict.case_id)}`,
+                    )}
+                  >
+                    Åbn {existingCaseConflict.case_id}
+                  </SecondaryButton>
+                </div>
+              </InfoBox>
+            )}
 
             <Field>
               <label htmlFor="oprettet_dato">Oprettelsesdato</label>
@@ -952,7 +995,7 @@ const IndkoebsprocesPage = () => {
               <SecondaryButton onClick={() => setStep(1)}>← Tilbage</SecondaryButton>
             </div>
             <div className="right">
-              <PrimaryButton disabled={!sagsnummer.trim()} onClick={() => setStep(3)}>
+              <PrimaryButton disabled={!sagsnummer.trim()} onClick={confirmCaseAndContinue}>
                 Næste — indledende screening <FaArrowRight />
               </PrimaryButton>
             </div>
@@ -999,6 +1042,20 @@ const IndkoebsprocesPage = () => {
 
           {indkoebEllerUdvikling && (
             <FieldGroup style={{ marginTop: '1.5rem' }}>
+              <Field>
+                <label htmlFor="systemnavn">Systemnavn eller arbejdstitel</label>
+                <div className="hint">
+                  Valgfrit. Navnet genbruges automatisk i risikovurdering,
+                  rapporter og sagens overblik.
+                </div>
+                <input
+                  id="systemnavn"
+                  type="text"
+                  value={systemName}
+                  onChange={(e) => setSystemName(e.target.value)}
+                  placeholder="Fx Borgerassistent Pension"
+                />
+              </Field>
               <Field>
                 <label htmlFor="systembeskrivelse">
                   Kort beskrivelse af løsningen
@@ -1057,6 +1114,7 @@ const IndkoebsprocesPage = () => {
             <div className="right">
               {indkoebEllerUdvikling && (
                 <SecondaryButton
+                  disabled={!systemDescription.trim()}
                   onClick={() => navigate(`/eu-checker?fromIndkoeb=${encodeURIComponent(sagsnummer)}`)}
                 >
                   Kør EU AI Act-tjek →
@@ -1066,7 +1124,7 @@ const IndkoebsprocesPage = () => {
                 disabled={!indkoebEllerUdvikling || !systemDescription.trim()}
                 onClick={() => setStep(4)}
               >
-                Næste — udfyld dokumentation <FaArrowRight />
+                Næste — gennemgå data <FaArrowRight />
               </PrimaryButton>
             </div>
           </Controls>
@@ -1075,76 +1133,45 @@ const IndkoebsprocesPage = () => {
 
       {step === 4 && (
         <Card>
-          <h2>Trin 4 — AI-enheden vurderer</h2>
+          <h2>Trin 4 — Klar til klassifikation</h2>
           <p className="lede">
-            Udfyld de relevante artefakter nedenfor. Klik på et artefakt for
-            at åbne dets udfyldnings-modal med pre-fyldt skabelon + lovhjemmel.
-            Status opdateres automatisk når du gemmer. <strong>Behov + system-
-            beskrivelse fra trin 1 og 3 overføres automatisk</strong> når du går
-            til vurderingsmotoren.
+            Grundlaget er nu samlet på sagen. De næste faser genbruger samme
+            sags-ID, behov, systemnavn og beskrivelse, så du ikke skal skrive
+            oplysningerne igen.
           </p>
 
           <InfoBox>
-            <strong>Anbefalet rækkefølge:</strong> Start med <em>Tjekliste</em> (giver
-            overblik) → <em>DPIA-tærskelsvurdering</em> (afgør om DPIA er nødvendig) →
-            <em> DPIA-dokument</em> (kun hvis tærsklen udløst) → <em>Databehandleraftale</em>
-            (skal kvalitetstjekkes af IT-sikkerhed@kalundborg.dk) → kør Bifrosts
-            vurderingsmotor for endelig GO/BETINGET-GO/NO-GO.
+            <strong>Sag:</strong> {sagsnummer}<br />
+            <strong>System:</strong> {systemName || 'Arbejdstitel ikke angivet'}<br />
+            <strong>Behov:</strong> {behov}<br />
+            <strong>Løsning:</strong> {systemDescription}
           </InfoBox>
 
-          <ArtifactGrid>
-            {ARTIFACTS.map((a) => {
-              const row = evidenceMap[a.id];
-              const status = row?.status || 'mangler';
-              return (
-                <ArtifactCard key={a.id} $status={status} onClick={() => openArtifact(a.id)}>
-                  <div className="h">
-                    <span>{a.id.replace(/_/g, ' ')}</span>
-                    <span className="pill">{status === 'faerdig' ? 'Færdig' : status === 'i_gang' ? 'I gang' : 'Mangler'}</span>
-                  </div>
-                  <div className="desc">{a.desc}</div>
-                </ArtifactCard>
-              );
-            })}
-          </ArtifactGrid>
+          <InfoBox>
+            <strong>Næste:</strong> EU AI Act-tjekket klassificerer anvendelsen.
+            Derefter anvender Bifrost resultatet i den juridiske vurdering og
+            viser kun den dokumentation og evidens, der faktisk er relevant.
+          </InfoBox>
 
           <Controls style={{ marginTop: '1.5rem' }}>
             <div className="left">
               <SecondaryButton onClick={() => setStep(3)}>← Tilbage</SecondaryButton>
             </div>
             <div className="right">
-              {sagsnummer && (
-                <>
-                  <SecondaryButton
-                    onClick={() => downloadCaseReport(sagsnummer, 'docx')}
-                    title="Download samlet rapport som Word-dokument"
-                  >
-                    <FaFileWord /> DOCX
-                  </SecondaryButton>
-                  <SecondaryButton
-                    onClick={() => downloadCaseReport(sagsnummer, 'pdf')}
-                    title="Download samlet rapport som print-klar PDF"
-                  >
-                    <FaFilePdf /> PDF
-                  </SecondaryButton>
-                </>
-              )}
-              <PrimaryButton onClick={goVurdering}>
-                <FaCloudUploadAlt /> Kør Bifrost-vurdering
+              <SecondaryButton
+                onClick={() => navigate(`/proces?case_id=${encodeURIComponent(sagsnummer)}&step=indkoeb`)}
+              >
+                Åbn samlet proces
+              </SecondaryButton>
+              <PrimaryButton
+                onClick={() => navigate(`/eu-checker?fromIndkoeb=${encodeURIComponent(sagsnummer)}&fromProces=1`)}
+              >
+                Start EU AI Act-tjek <FaArrowRight />
               </PrimaryButton>
             </div>
           </Controls>
         </Card>
       )}
-
-      <EvidenceEditor
-        open={editorOpen}
-        artifactId={editorArtifactId}
-        caseId={evidenceCaseKey}
-        user={typeof window !== 'undefined' ? localStorage.getItem('tyrUser') || undefined : undefined}
-        onClose={() => setEditorOpen(false)}
-        onSaved={() => setEvidenceCounter((n) => n + 1)}
-      />
     </Page>
   );
 };
