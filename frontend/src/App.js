@@ -287,7 +287,12 @@ const RouterShortcuts = ({ paletteOpen }) => {
 const AppInner = () => {
   const { preferences } = useUserPreferences();
   const themeMode = useMemo(() => (preferences?.theme === 'dark' ? darkTheme : lightTheme), [preferences?.theme]);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const showDiagnostics = useMemo(() => {
     if (process.env.REACT_APP_SHOW_DIAGNOSTICS === 'true') {
@@ -302,6 +307,16 @@ const AppInner = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themeMode.mode);
   }, [themeMode.mode]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const syncSidebarToViewport = (event) => setSidebarCollapsed(event.matches);
+    mediaQuery.addEventListener('change', syncSidebarToViewport);
+    return () => mediaQuery.removeEventListener('change', syncSidebarToViewport);
+  }, []);
 
   useCommandPaletteShortcut(() => setPaletteOpen(true));
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   FaHome,
@@ -13,6 +13,11 @@ import {
   FaBook,
   FaGavel,
   FaCog,
+  FaShieldAlt,
+  FaChartBar,
+  FaRobot,
+  FaGlobeEurope,
+  FaInfoCircle,
 } from 'react-icons/fa';
 
 /**
@@ -170,18 +175,23 @@ const PRIMARY_ITEMS = [
 ];
 
 const MORE_ITEMS = [
+  { path: '/risikovurdering', icon: FaShieldAlt, label: 'Risikovurdering' },
+  { path: '/portefolje', icon: FaChartBar, label: 'Portefølje' },
   { path: '/historik', icon: FaHistory, label: 'Historik' },
   { path: '/eu-checker', icon: FaBalanceScale, label: 'EU AI Act' },
   { path: '/videnbase', icon: FaBook, label: 'Videnbase' },
   { path: '/lov-assistent', icon: FaGavel, label: 'Lov-assistent' },
+  { path: '/ai-losninger', icon: FaRobot, label: 'AI-løsninger' },
+  { path: '/research', icon: FaGlobeEurope, label: 'Research' },
+  { path: '/ressourcer', icon: FaBook, label: 'Ressourcer' },
   { path: '/lov-overvaagning', icon: FaGavel, label: 'Lov-overvågning' },
   { path: '/drift', icon: FaCog, label: 'Drift' },
   { path: '/indstillinger', icon: FaCog, label: 'Indstillinger' },
+  { path: '/om', icon: FaInfoCircle, label: 'Om Bifrost' },
 ];
 
 export const BottomNav = () => {
   const [more, setMore] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <>
