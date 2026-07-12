@@ -21,6 +21,7 @@ from src.services.citation_verifier import (
     _group_rules_by_source,
     _looks_like_spa,
     _normalize,
+    _read_rendered_body,
     _result_from_source_text,
     _shortest_signature,
     flagged_rule_ids,
@@ -127,6 +128,31 @@ class TestSharedSourceMatching:
         assert result.citation_found is True
         assert result.flagged_for_review is False
         assert result.method == "playwright"
+
+    def test_waits_for_hydrated_document_before_reading_body(self):
+        class HydratingPage:
+            def __init__(self):
+                self.text = "Henter lovtekst"
+                self.calls = []
+
+            def wait_for_function(self, expression, timeout):
+                self.calls.append(("hydration", expression, timeout))
+                self.text = "x" * 6_000
+
+            def wait_for_load_state(self, state, timeout):
+                self.calls.append(("load-state", state, timeout))
+
+            def evaluate(self, _expression):
+                self.calls.append(("evaluate",))
+                return self.text
+
+        page = HydratingPage()
+
+        rendered = _read_rendered_body(page, timeout_ms=20_000)
+
+        assert len(rendered) == 6_000
+        assert page.calls[0][0] == "hydration"
+        assert page.calls[-1][0] == "evaluate"
 
     def test_verify_all_batches_dynamic_rules_in_one_call(self, session, monkeypatch):
         rules = [

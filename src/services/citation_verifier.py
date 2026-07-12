@@ -349,6 +349,33 @@ def _group_rules_by_source(rules: list[Rule]) -> dict[str, list[Rule]]:
     return dict(grouped)
 
 
+def _read_rendered_body(page, *, timeout_ms: int) -> str:
+    """Wait for a law portal's hydrated document before reading its text.
+
+    `networkidle` can fire while a portal still shows a tiny loading shell: its
+    JavaScript may schedule the document request after the network first goes
+    idle. All supported sources are full acts, so 5,000 visible characters is
+    a conservative signal that the legal document, not just chrome, is ready.
+    """
+    hydration_timeout = min(5_000, max(500, timeout_ms // 4))
+    try:
+        page.wait_for_function(
+            "() => document.body && document.body.innerText.trim().length >= 5000",
+            timeout=hydration_timeout,
+        )
+    except Exception:
+        # Preserve the verifier's fail-safe behavior: capture whatever the
+        # portal rendered and flag citations rather than failing the whole run.
+        pass
+
+    try:
+        page.wait_for_load_state("networkidle", timeout=1_000)
+    except Exception:
+        pass
+
+    return page.evaluate("() => document.body ? document.body.innerText : ''")
+
+
 def verify_rules_with_playwright(
     rules: list[Rule], *, timeout_ms: int = 20_000
 ) -> dict[str, VerificationResult]:
@@ -404,14 +431,15 @@ def verify_rules_with_playwright(
                                 results[rule.id].http_status = http_status
                             continue
 
-                        # Client-rendered law portals continue hydrating after
-                        # DOMContentLoaded. Network-idle is best effort only.
-                        try:
-                            page.wait_for_load_state("networkidle", timeout=3_000)
-                        except Exception:
-                            pass
-                        rendered_text = page.evaluate(
-                            "() => document.body ? document.body.innerText : ''"
+                        rendered_text = _read_rendered_body(
+                            page,
+                            timeout_ms=timeout_ms,
+                        )
+                        logger.info(
+                            "Rendered citation source %s: %d chars for %d rules",
+                            url,
+                            len(rendered_text or ""),
+                            len(source_rules),
                         )
                         for rule in source_rules:
                             results[rule.id] = _result_from_source_text(
