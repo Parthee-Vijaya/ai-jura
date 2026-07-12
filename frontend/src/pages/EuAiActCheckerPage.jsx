@@ -8,7 +8,7 @@ import {
   PageHeader,
   PrimaryButton,
 } from '../components/page-chrome/PageChrome';
-import { Breadcrumb, Banner } from '../components/ui';
+import { Breadcrumb, Banner, ErrorState } from '../components/ui';
 
 // ---- Routing engine ------------------------------------------------------
 //
@@ -356,6 +356,7 @@ const EuAiActCheckerPage = () => {
   const fromProces = searchParams.get('fromProces');
   const [payload, setPayload] = useState(null);
   const [error, setError] = useState(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   // Sprog-vælger: default DA hvis tilgængelig, ellers EN. Persistes i localStorage.
   const [lang, setLang] = useState(() => {
     if (typeof window === 'undefined') return 'da';
@@ -370,17 +371,19 @@ const EuAiActCheckerPage = () => {
 
   useEffect(() => {
     let cancelled = false;
+    setPayload(null);
+    setError(null);
     (async () => {
       try {
         const r = await axios.get(`/api/eu-ai-act-checker?lang=${encodeURIComponent(lang)}`);
         if (cancelled) return;
         setPayload(r.data);
       } catch (err) {
-        setError(err.message || 'Kunne ikke hente checker-data');
+        if (!cancelled) setError(err);
       }
     })();
     return () => { cancelled = true; };
-  }, [lang]);
+  }, [lang, loadAttempt]);
 
   const switchLang = (next) => {
     setLang(next);
@@ -531,9 +534,16 @@ const EuAiActCheckerPage = () => {
         <PageHeader
           eyebrow="Bifrost · EU compliance checker"
           title="EU AI Act Compliance Checker"
-          lede="EC's officielle wizard kunne ikke hentes."
+          lede="Klassificér anvendelsen trin for trin mod EU AI Act."
         />
-        <div style={{ color: '#a02020', fontFamily: 'monospace' }}>Fejl: {error}</div>
+        <ErrorState
+          title="EU AI Act-checkeren kunne ikke indlæses"
+          error={error}
+          detail={error?.response?.status
+            ? `Backend svarede med status ${error.response.status}.`
+            : undefined}
+          onRetry={() => setLoadAttempt((attempt) => attempt + 1)}
+        />
       </PageShell>
     );
   }
