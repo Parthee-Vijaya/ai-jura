@@ -142,8 +142,9 @@ def _call_provider(system_prompt, user_message, *, temperature, timeout, max_tok
 
     openai_key = os.getenv("OPENAI_API_KEY")
     if openai_key:
+        # Respect OPENAI_BASE_URL so local OpenAI-compatible endpoints stay local.
         return _post_openai_compatible(
-            base_url="https://api.openai.com/v1",
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             api_key=openai_key,
             model=os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini"),
             system_prompt=system_prompt,

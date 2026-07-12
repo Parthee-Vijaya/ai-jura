@@ -1,6 +1,9 @@
 services:
   # FastAPI Backend
-  backend:
+  # Service name matches nginx.conf's upstream so the same container DNS works
+  # in this standalone compose AND when the project is deployed inside a
+  # bigger compose file (e.g. dgx2_cicd) — no network aliases needed.
+  ai-jura-backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
@@ -35,7 +38,7 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - ai-jura-backend
     restart: unless-stopped
     networks:
       - judge-dredd-network

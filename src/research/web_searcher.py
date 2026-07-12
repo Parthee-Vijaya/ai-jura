@@ -286,7 +286,7 @@ class WebSearcher:
 
         try:
             async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
@@ -362,7 +362,7 @@ class WebSearcher:
 
         try:
             async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
@@ -473,7 +473,7 @@ class WebSearcher:
                 "Content-Type": "application/json"
             }
         else:
-            url = "https://api.openai.com/v1/chat/completions"
+            url = f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions"
             headers = {
                 "Authorization": f"Bearer {self.openai_api_key}",
                 "Content-Type": "application/json"
@@ -1172,7 +1172,7 @@ class WebSearcher:
                 url = f"{self.azure_endpoint}/openai/deployments/{self.azure_deployment}/chat/completions?api-version={self.azure_api_version}"
                 headers = {"api-key": self.azure_api_key, "Content-Type": "application/json"}
             else:
-                url = "https://api.openai.com/v1/chat/completions"
+                url = f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions"
                 headers = {"Authorization": f"Bearer {self.openai_api_key}", "Content-Type": "application/json"}
 
             async with self.session.post(url, headers=headers, json=payload) as response:
@@ -1247,7 +1247,7 @@ class WebSearcher:
 
         try:
             async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"
@@ -1472,7 +1472,7 @@ class WebSearcher:
 
         try:
             async with self.session.post(
-                "https://api.openai.com/v1/chat/completions",
+                f"{os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {self.openai_api_key}",
                     "Content-Type": "application/json"

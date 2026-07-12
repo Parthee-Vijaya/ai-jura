@@ -171,10 +171,14 @@ def _check_llm_provider(report: ConfigReport) -> None:
             detail=f"deployment: {os.getenv('AZURE_DEPLOYMENT_NAME', 'gpt-4o-mini')}",
         ))
     elif openai_active:
+        # If OPENAI_BASE_URL points somewhere other than the public OpenAI API,
+        # surface that — e.g. host.docker.internal:11434/v1 for local Ollama.
+        openai_base = os.getenv("OPENAI_BASE_URL", "").rstrip("/") or "https://api.openai.com/v1"
+        is_cloud = openai_base.startswith("https://api.openai.com")
         report.add(CheckItem(
             name="LLM provider",
             status="ok",
-            summary="OpenAI (api.openai.com)",
+            summary=("OpenAI (api.openai.com)" if is_cloud else f"OpenAI-compatible ({openai_base})"),
             detail=f"model: {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}",
         ))
     elif lm_active:

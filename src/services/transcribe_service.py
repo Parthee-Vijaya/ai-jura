@@ -91,8 +91,9 @@ def transcribe_audio(
     # Fallback til OpenAI
     openai_key = os.getenv("OPENAI_API_KEY")
     if openai_key:
+        # Respect OPENAI_BASE_URL so local OpenAI-compatible endpoints stay local.
         return _transcribe_via_openai_compatible(
-            base_url="https://api.openai.com/v1",
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             api_key=openai_key,
             model=os.getenv("OPENAI_WHISPER_MODEL", "whisper-1"),
             audio_bytes=audio_bytes,
