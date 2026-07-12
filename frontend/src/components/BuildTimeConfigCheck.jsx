@@ -238,7 +238,7 @@ const BuildTimeConfigCheck = () => {
           <Lede>Config-endpoint fejlede: <code>{error || 'ukendt fejl'}</code></Lede>
           <Footer>
             <Hint>Backend kører måske ikke endnu</Hint>
-            <OkButton onClick={() => setDismissed(true)}>Forsæt alligevel</OkButton>
+            <OkButton onClick={() => setDismissed(true)}>Fortsæt alligevel</OkButton>
           </Footer>
         </Card>
       </Overlay>

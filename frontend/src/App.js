@@ -289,6 +289,15 @@ const AppInner = () => {
   const themeMode = useMemo(() => (preferences?.theme === 'dark' ? darkTheme : lightTheme), [preferences?.theme]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const showDiagnostics = useMemo(() => {
+    if (process.env.REACT_APP_SHOW_DIAGNOSTICS === 'true') {
+      return true;
+    }
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return new URLSearchParams(window.location.search).get('diagnostics') === '1';
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themeMode.mode);
@@ -302,10 +311,9 @@ const AppInner = () => {
     <ThemeProvider theme={themeMode}>
       <GlobalStyle />
       <ToastProvider>
-      {/* Build-mode diagnostic — vises på hver page refresh så vi som
-          udviklere har øjeblikkeligt overblik over backend-status. Klik
-          OK for at lukke. Fjernes inden pilot. */}
-      <BuildTimeConfigCheck />
+      {/* Den fulde driftsrapport indeholder interne konfigurationsdetaljer og
+          må derfor kun åbnes eksplicit via ?diagnostics=1 eller build-env. */}
+      {showDiagnostics && <BuildTimeConfigCheck />}
       <Router>
         {/* A11y: skip-link — synlig kun ved keyboard-fokus */}
         <a href="#main-content" className="skip-to-main">
