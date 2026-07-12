@@ -397,7 +397,7 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
       const r = await axios.get(`/api/v3/cases/${encodeURIComponent(caseId)}/evidence`);
       return r.data;
     },
-    { enabled: !!caseId, retry: false, staleTime: 30_000 },
+    { enabled: !!caseData, retry: false, staleTime: 30_000 },
   );
 
   const { data: timelineData } = useQuery(
@@ -406,7 +406,7 @@ export const IndkoebsOverviewPanel = ({ caseId, defaultOpen = true }) => {
       const r = await axios.get(`/api/v3/cases/by-case-id/${encodeURIComponent(caseId)}/timeline?limit=20`);
       return r.data;
     },
-    { enabled: !!caseId, retry: false, staleTime: 30_000 },
+    { enabled: !!caseData, retry: false, staleTime: 30_000 },
   );
 
   const intake = caseData?.intake_state || {};

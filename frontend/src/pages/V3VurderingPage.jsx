@@ -50,7 +50,6 @@ const EXAMPLE_GO = {
     'ingen profilering af borgere. Personoplysninger behandles kun internt og ' +
     'kun af autoriserede sagsbehandlere. Alle GDPR-principper er dokumenteret ' +
     'inden idriftsættelse, sikkerhedsforanstaltninger på plads, gyldig DPIA findes.',
-  case_id: 'K-2026-EX-GO',
   note: 'Eksempel: lav-risiko søgesystem (alle GDPR-krav opfyldt)',
   signals: {
     'system.uses_ai': false,
@@ -111,7 +110,6 @@ const EXAMPLE_BETINGET_GO = {
     'hjælper borgere med at udfylde pensionsansøgninger og foretager profilering ' +
     'af ansøgers risikoprofil. Det træffer skriftlige afgørelser om tildeling, og ' +
     'borgere kan bestride dem. Behandler personoplysninger i fuldt automatiseret flow.',
-  case_id: 'K-2026-EX-BETINGET',
   note: 'Eksempel: typisk kommunal AI-case (pilot)',
   signals: {
     'system.uses_ai': true,
@@ -186,7 +184,6 @@ const EXAMPLE_NO_GO = {
     'offentlige rum, sociale medier-aktivitet, og økonomiske transaktioner. ' +
     'Scoren bruges af kommunen til at prioritere ydelser og udvælge borgere til ' +
     'særlig screening. Profilerer borgere systematisk på tværs af kontekster.',
-  case_id: 'K-2026-EX-NOGO',
   note: 'Eksempel: forbudt praksis (uddannelses-/test-formål)',
   signals: {
     'system.uses_ai': true,
@@ -1810,7 +1807,6 @@ const V3VurderingPage = () => {
 
   const loadExample = (ex) => {
     setDescription(ex.description);
-    setCaseId(ex.case_id);
     setNote(ex.note);
     setLoadedExample(ex);
   };
@@ -1846,22 +1842,43 @@ const V3VurderingPage = () => {
     () => decisions.filter((d) => d.status === 'BETINGET-GO' || d.status === 'NO-GO'),
     [decisions],
   );
-  // Reuse the case ID for evidence-fetch
-  const _evidenceCaseId = caseId || (result?.audit_log_id ? result.audit_log_id.slice(0, 8) : '');
+  const normalizedCaseId = caseId.trim();
+  const auditReference = result?.audit_log_id
+    ? result.audit_log_id.slice(0, 8)
+    : '';
+
+  // A user-entered reference or audit-log ID is not automatically a real case.
+  // Confirm the case before enabling case-only panels. Evidence may still be
+  // started on an explicit case reference before the workflow row exists.
+  const { data: linkedCaseData } = useQuery(
+    ['sag-overview-case', normalizedCaseId],
+    async () => {
+      const res = await axios.get(
+        `/api/v3/cases/by-case-id/${encodeURIComponent(normalizedCaseId)}`,
+      );
+      return res.data;
+    },
+    {
+      enabled: !!result && !!normalizedCaseId,
+      retry: false,
+      staleTime: 30_000,
+    },
+  );
+  const evidenceCaseId = normalizedCaseId;
 
   // Fetch saved evidence rows for this case so we can show green checkmarks
   // for already-completed artifacts. Refetches when evidenceCounter bumps
   // (after editor save) or when the case-id changes.
   const { data: evidenceRowsResp } = useQuery(
-    ['case-evidence', _evidenceCaseId, evidenceCounter],
+    ['case-evidence', evidenceCaseId, evidenceCounter],
     async () => {
-      if (!_evidenceCaseId) return { items: [] };
+      if (!evidenceCaseId) return { items: [] };
       const res = await axios.get(
-        `/api/v3/cases/${encodeURIComponent(_evidenceCaseId)}/evidence`,
+        `/api/v3/cases/${encodeURIComponent(evidenceCaseId)}/evidence`,
       );
       return res.data;
     },
-    { enabled: !!_evidenceCaseId, staleTime: 5_000 },
+    { enabled: !!evidenceCaseId, staleTime: 5_000 },
   );
   const evidenceStatusMap = useMemo(() => {
     const m = {};
@@ -1912,7 +1929,6 @@ const V3VurderingPage = () => {
   const displayTitle = isDocumentResult && result?.filename
     ? result.filename.replace(/\.(pdf|docx)$/i, '')
     : deriveTitle(description, caseId);
-  const displayCaseId = caseId || (result?.audit_log_id ? result.audit_log_id.slice(0, 8) : '');
   const evaluatedDate = formatDanishDate(result?.evaluated_at);
 
   // ----- FORM MODE -----
@@ -1937,9 +1953,14 @@ const V3VurderingPage = () => {
           står i marginen til højre.
         </Lede>
 
-        {/* Sag-komplet-overblik vises hvis caseId er sat — viser indkøbsproces-felter
-            med lov-krav-mapping, EC-flag, evidens-status, vurderingshistorik */}
-        {caseId && <IndkoebsOverviewPanel caseId={caseId} defaultOpen={true} />}
+        {/* Et verificeret indkøbs-prefill kan vise sagsoverblikket. Fritekst i
+            det valgfrie sags-ID-felt må ikke udløse tre case-kald pr. tastetryk. */}
+        {indkoebPrefill?.case_id && (
+          <IndkoebsOverviewPanel
+            caseId={indkoebPrefill.case_id}
+            defaultOpen={true}
+          />
+        )}
 
         {ecError && (
           <ErrorBox>
@@ -2344,7 +2365,14 @@ const V3VurderingPage = () => {
             ]}
           />
 
-          {displayCaseId && <CaseId>Sag {displayCaseId}</CaseId>}
+          {normalizedCaseId && (
+            <CaseId>
+              {linkedCaseData ? 'Sag' : 'Sagsreference'} {normalizedCaseId}
+            </CaseId>
+          )}
+          {!normalizedCaseId && auditReference && (
+            <CaseId>Vurdering {auditReference}</CaseId>
+          )}
           <CaseTitle>{displayTitle}</CaseTitle>
           <CaseMeta>
             {note && <>{note} · </>}
@@ -2389,9 +2417,9 @@ const V3VurderingPage = () => {
           {/* Sag-komplet-overblik også i result-mode — så sagsbehandleren kan se
               hvad der lå til grund + hvad der mangler at blive udfyldt. Default
               collapsed her så fokus er på verdict + krav. */}
-          {(caseId || displayCaseId) && (
+          {linkedCaseData && (
             <IndkoebsOverviewPanel
-              caseId={caseId || displayCaseId}
+              caseId={linkedCaseData.case_id}
               defaultOpen={false}
             />
           )}
@@ -2557,16 +2585,19 @@ const V3VurderingPage = () => {
               <>
                 <SectionH>Evidens-checkliste</SectionH>
                 <SectionLede>
-                  {evidenceItems.length} artefakter er identificeret på tværs af de ramte regler.
-                  Klik på et artefakt for at udfylde det med en lov-baseret skabelon —
-                  færdige artefakter får et grønt checkmark.
+                  {evidenceItems.length} artefakter er identificeret på tværs af de ramte regler.{' '}
+                  {evidenceCaseId
+                    ? 'Klik på et artefakt for at udfylde det med en lov-baseret skabelon — færdige artefakter får et grønt checkmark.'
+                    : 'Knyt vurderingen til en eksisterende sag for at udfylde og gemme artefakterne.'}
                 </SectionLede>
                 <EvidenceChecklist
                   items={evidenceItems}
-                  onToggle={(id) => {
-                    setEditorArtifactId(id);
-                    setEditorOpen(true);
-                  }}
+                  onToggle={evidenceCaseId
+                    ? (id) => {
+                      setEditorArtifactId(id);
+                      setEditorOpen(true);
+                    }
+                    : undefined}
                 />
               </>
             )}
@@ -2595,7 +2626,7 @@ const V3VurderingPage = () => {
       <EvidenceEditor
         open={editorOpen}
         artifactId={editorArtifactId}
-        caseId={_evidenceCaseId}
+        caseId={evidenceCaseId}
         user={typeof window !== 'undefined' ? localStorage.getItem('tyrUser') || undefined : undefined}
         onClose={() => setEditorOpen(false)}
         onSaved={() => setEvidenceCounter((n) => n + 1)}
