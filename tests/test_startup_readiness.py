@@ -6,6 +6,8 @@ import asyncio
 from types import SimpleNamespace
 
 import pytest
+from starlette.requests import Request
+from starlette.responses import Response
 
 import main as app_main
 from src.config import validation
@@ -67,3 +69,33 @@ async def test_external_feeds_do_not_block_lifespan_startup(monkeypatch):
             assert refreshes_started == {"news", "ticker"}
 
     await asyncio.wait_for(enter_and_exit_lifespan(), timeout=1.0)
+
+
+@pytest.mark.asyncio
+async def test_freshness_trigger_supports_rate_limit_headers(monkeypatch):
+    """SlowAPI needs a Response argument when the endpoint returns a dict."""
+    request = Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/api/v3/law/freshness/run",
+            "headers": [],
+            "client": ("127.0.0.1", 12345),
+            "app": app_main.app,
+        }
+    )
+    response = Response()
+
+    monkeypatch.setattr(app_main, "_v3_run_citation_verifier", lambda: None)
+
+    async def fake_freshness():
+        return {"count": 0, "items": []}
+
+    monkeypatch.setattr(app_main, "v3_law_freshness", fake_freshness)
+
+    result = await app_main.v3_law_freshness_run(
+        request=request,
+        response=response,
+    )
+
+    assert result == {"count": 0, "items": []}

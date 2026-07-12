@@ -4960,12 +4960,12 @@ async def v3_law_freshness():
 
 @app.post("/api/v3/law/freshness/run")
 @limiter.limit(ADMIN_WRITE)
-async def v3_law_freshness_run(request: Request):
+async def v3_law_freshness_run(request: Request, response: Response):
     """Manual trigger of the citation-verifier (for admin use / testing).
 
     Runs in a worker thread so the Playwright sync API (used by the SPA
-    fallback) doesn't trip on the asyncio event loop. ~3-8s per SPA rule
-    means this can take a couple of minutes.
+    fallback) doesn't trip on the asyncio event loop. Source pages are grouped,
+    so the current 15-rule corpus renders four pages in one browser session.
     """
     await asyncio.to_thread(_v3_run_citation_verifier)
     return await v3_law_freshness()
