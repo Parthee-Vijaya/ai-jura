@@ -23,10 +23,11 @@ import logging
 import os
 import re
 import unicodedata
-import uuid
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, UTC
 from typing import Optional
+from urllib.parse import urldefrag, urlparse
 
 import httpx
 from sqlalchemy import Column, DateTime, String, Text, Boolean, Integer
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 # ---- Database model for verification results --------------------------------
 
+
 class RuleFreshness(Base):
     """Latest verification status per rule_id. Updated daily."""
 
@@ -47,7 +49,9 @@ class RuleFreshness(Base):
 
     rule_id = Column(String(128), primary_key=True)
     last_checked_at = Column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC),
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
     )
     citation_found = Column(Boolean, nullable=False, default=False)
     flagged_for_review = Column(Boolean, nullable=False, default=False)
@@ -63,7 +67,9 @@ class RuleFreshness(Base):
     def to_dict(self) -> dict:
         return {
             "rule_id": self.rule_id,
-            "last_checked_at": self.last_checked_at.isoformat() if self.last_checked_at else None,
+            "last_checked_at": (
+                self.last_checked_at.isoformat() if self.last_checked_at else None
+            ),
             "citation_found": self.citation_found,
             "flagged_for_review": self.flagged_for_review,
             "http_status": self.http_status,
@@ -75,6 +81,7 @@ class RuleFreshness(Base):
 
 
 # ---- Verification logic -----------------------------------------------------
+
 
 @dataclass
 class VerificationResult:
@@ -115,6 +122,72 @@ def _shortest_signature(citat: str, n: int = 100) -> str:
     when full substring match fails (e.g. site reformatted listing)."""
     sig = _normalize(citat)
     return sig[:n] if len(sig) >= n else sig
+
+
+def _canonical_source_url(url: str) -> str:
+    """Return the fetchable page URL shared by citation fragment variants."""
+    page_url, _fragment = urldefrag(url)
+    return page_url
+
+
+def _result_from_source_text(
+    rule: Rule,
+    source_text: str,
+    *,
+    http_status: Optional[int],
+    method: str,
+) -> VerificationResult:
+    """Match one rule against already-fetched source text.
+
+    Keeping matching separate from fetching lets a rendered law page serve all
+    rules that cite it, instead of launching a browser once per citation.
+    """
+    raw_url = getattr(rule.kilde, "url", None) if rule.kilde else None
+    url = str(raw_url) if raw_url else None
+    citat = getattr(rule.kilde, "citat", "") if rule.kilde else ""
+
+    if not url or not citat:
+        return VerificationResult(
+            rule_id=rule.id,
+            citation_found=False,
+            flagged_for_review=True,
+            http_status=http_status,
+            error_message="No source URL or citat",
+            source_url=url,
+            snippet=None,
+            method=method,
+        )
+
+    body_normalized = _normalize(source_text or "")
+    citat_normalized = _normalize(citat)
+    found = citat_normalized in body_normalized
+    snippet: Optional[str] = None
+
+    if found:
+        idx = body_normalized.find(citat_normalized)
+        window_start = max(0, idx - 50)
+        window_end = min(len(body_normalized), idx + len(citat_normalized) + 50)
+        snippet = body_normalized[window_start:window_end]
+    else:
+        sig = _shortest_signature(citat, 100)
+        if sig and sig in body_normalized:
+            found = True
+            suffix = " (Playwright-render)" if method == "playwright" else ""
+            snippet = f"Delvis match — første 100 tegn fundet{suffix}"
+
+    source_kind = (
+        "Playwright-rendered HTML" if method == "playwright" else "kildens HTML"
+    )
+    return VerificationResult(
+        rule_id=rule.id,
+        citation_found=found,
+        flagged_for_review=not found,
+        http_status=http_status,
+        error_message=None if found else f"Citat ikke fundet i {source_kind}",
+        source_url=url,
+        snippet=snippet,
+        method=method,
+    )
 
 
 def verify_rule(rule: Rule, *, timeout: float = 15.0) -> VerificationResult:
@@ -161,30 +234,11 @@ def verify_rule(rule: Rule, *, timeout: float = 15.0) -> VerificationResult:
                 source_url=url,
                 snippet=None,
             )
-        body_normalized = _normalize(r.text)
-        citat_normalized = _normalize(citat)
-        found = citat_normalized in body_normalized
-        snippet: Optional[str] = None
-        if found:
-            idx = body_normalized.find(citat_normalized)
-            window_start = max(0, idx - 50)
-            window_end = min(len(body_normalized), idx + len(citat_normalized) + 50)
-            snippet = body_normalized[window_start:window_end]
-        else:
-            # Try a fuzzy match on first 100 chars
-            sig = _shortest_signature(citat, 100)
-            if sig and sig in body_normalized:
-                found = True  # close enough — flag it but don't fail
-                snippet = "Delvis match — første 100 tegn fundet, men ikke hele citatet"
-
-        return VerificationResult(
-            rule_id=rule_id,
-            citation_found=found,
-            flagged_for_review=not found,
+        return _result_from_source_text(
+            rule,
+            r.text,
             http_status=status,
-            error_message=None if found else "Citat ikke fundet i kildens HTML",
-            source_url=url,
-            snippet=snippet,
+            method="requests",
         )
     except httpx.RequestError as exc:
         logger.warning("citation-verify network error for %s: %s", rule_id, exc)
@@ -233,16 +287,20 @@ def persist_result(session: Session, result: VerificationResult) -> RuleFreshnes
 
 # ---- Playwright fallback ---------------------------------------------------
 
-# URL fragments that signal the page is server-rendered HTML where requests
-# cannot find the citat. These rules will skip directly to Playwright.
+# Trusted law portals that render content client-side, so requests cannot find
+# the citation text. These rules skip directly to Playwright when available.
 _KNOWN_SPA_HOSTS = (
     "eur-lex.europa.eu",
     "data.europa.eu",
+    "retsinformation.dk",
 )
 
 
 def _looks_like_spa(url: str) -> bool:
-    return any(host in url for host in _KNOWN_SPA_HOSTS)
+    hostname = (urlparse(url).hostname or "").lower()
+    return any(
+        hostname == host or hostname.endswith(f".{host}") for host in _KNOWN_SPA_HOSTS
+    )
 
 
 def is_playwright_available() -> bool:
@@ -252,13 +310,11 @@ def is_playwright_available() -> bool:
     Python package or the browser binary is missing.
     """
     try:
-        from playwright.sync_api import sync_playwright  # noqa: F401
+        from playwright.sync_api import sync_playwright
     except ImportError:
         return False
 
     try:
-        from playwright.sync_api import sync_playwright
-
         # Trying to find the executable is the cheapest way to confirm the
         # browser is installed without launching it.
         with sync_playwright() as p:
@@ -268,108 +324,132 @@ def is_playwright_available() -> bool:
         return False
 
 
-def verify_rule_with_playwright(
-    rule: Rule, *, timeout_ms: int = 30_000
-) -> VerificationResult:
-    """Verify a rule's citat by rendering the source URL with headless Chromium.
-
-    Used as a fallback for SPA-rendered pages (EUR-Lex etc.) where the static
-    HTML response from `requests` does not contain the citat text — the page
-    fetches it client-side.
-
-    Cost ~3-8s per page (Chromium boot + network + render).
-    """
+def _playwright_error_result(rule: Rule, message: str) -> VerificationResult:
     raw_url = getattr(rule.kilde, "url", None) if rule.kilde else None
-    url = str(raw_url) if raw_url else None
-    citat = getattr(rule.kilde, "citat", "") if rule.kilde else ""
-    rule_id = rule.id
+    return VerificationResult(
+        rule_id=rule.id,
+        citation_found=False,
+        flagged_for_review=True,
+        http_status=None,
+        error_message=message,
+        source_url=str(raw_url) if raw_url else None,
+        snippet=None,
+        method="playwright",
+    )
 
-    if not url or not citat:
-        return VerificationResult(
-            rule_id=rule_id,
-            citation_found=False,
-            flagged_for_review=True,
-            http_status=None,
-            error_message="No source URL or citat",
-            source_url=url,
-            snippet=None,
-            method="playwright",
-        )
+
+def _group_rules_by_source(rules: list[Rule]) -> dict[str, list[Rule]]:
+    """Group citation rules by the page that must be rendered."""
+    grouped: dict[str, list[Rule]] = defaultdict(list)
+    for rule in rules:
+        raw_url = getattr(rule.kilde, "url", None) if rule.kilde else None
+        citat = getattr(rule.kilde, "citat", "") if rule.kilde else ""
+        if raw_url and citat:
+            grouped[_canonical_source_url(str(raw_url))].append(rule)
+    return dict(grouped)
+
+
+def verify_rules_with_playwright(
+    rules: list[Rule], *, timeout_ms: int = 20_000
+) -> dict[str, VerificationResult]:
+    """Render each unique source page once and verify all citations on it.
+
+    A single Chromium browser and context are reused for the whole run. URL
+    fragments are ignored for fetching, so GDPR article links share one render.
+    """
+    results: dict[str, VerificationResult] = {}
+    grouped = _group_rules_by_source(rules)
+
+    for rule in rules:
+        raw_url = getattr(rule.kilde, "url", None) if rule.kilde else None
+        citat = getattr(rule.kilde, "citat", "") if rule.kilde else ""
+        if not raw_url or not citat:
+            results[rule.id] = _playwright_error_result(rule, "No source URL or citat")
+
+    if not grouped:
+        return results
 
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        return VerificationResult(
-            rule_id=rule_id,
-            citation_found=False,
-            flagged_for_review=True,
-            http_status=None,
-            error_message="Playwright not installed",
-            source_url=url,
-            snippet=None,
-            method="playwright",
-        )
-
-    citat_normalized = _normalize(citat)
+        for source_rules in grouped.values():
+            for rule in source_rules:
+                results[rule.id] = _playwright_error_result(
+                    rule, "Playwright not installed"
+                )
+        return results
 
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
             try:
                 context = browser.new_context(
                     user_agent="Bifrost/v3 citation-verifier (Playwright)",
                 )
-                page = context.new_page()
-                response = page.goto(url, wait_until="networkidle", timeout=timeout_ms)
-                http_status = response.status if response else None
-                # Wait for body text to settle. Some EUR-Lex variants hydrate
-                # content into an article element after first paint.
-                try:
-                    page.wait_for_load_state("networkidle", timeout=5_000)
-                except Exception:
-                    pass
-                rendered_text = page.evaluate(
-                    "() => document.body ? document.body.innerText : ''"
-                )
+                for url, source_rules in grouped.items():
+                    page = None
+                    try:
+                        page = context.new_page()
+                        response = page.goto(
+                            url,
+                            wait_until="domcontentloaded",
+                            timeout=timeout_ms,
+                        )
+                        http_status = response.status if response else None
+                        if http_status is not None and http_status >= 400:
+                            for rule in source_rules:
+                                results[rule.id] = _playwright_error_result(
+                                    rule, f"HTTP {http_status} from source"
+                                )
+                                results[rule.id].http_status = http_status
+                            continue
+
+                        # Client-rendered law portals continue hydrating after
+                        # DOMContentLoaded. Network-idle is best effort only.
+                        try:
+                            page.wait_for_load_state("networkidle", timeout=3_000)
+                        except Exception:
+                            pass
+                        rendered_text = page.evaluate(
+                            "() => document.body ? document.body.innerText : ''"
+                        )
+                        for rule in source_rules:
+                            results[rule.id] = _result_from_source_text(
+                                rule,
+                                rendered_text or "",
+                                http_status=http_status,
+                                method="playwright",
+                            )
+                    except Exception as exc:
+                        logger.exception(
+                            "Playwright verification failed for source %s", url
+                        )
+                        for rule in source_rules:
+                            results[rule.id] = _playwright_error_result(
+                                rule, f"Playwright error: {exc}"
+                            )
+                    finally:
+                        if page is not None:
+                            page.close()
             finally:
                 browser.close()
     except Exception as exc:
-        logger.exception("Playwright verification failed for %s", rule_id)
-        return VerificationResult(
-            rule_id=rule_id,
-            citation_found=False,
-            flagged_for_review=True,
-            http_status=None,
-            error_message=f"Playwright error: {exc}",
-            source_url=url,
-            snippet=None,
-            method="playwright",
-        )
+        logger.exception("Could not start Playwright citation verification")
+        for source_rules in grouped.values():
+            for rule in source_rules:
+                if rule.id not in results:
+                    results[rule.id] = _playwright_error_result(
+                        rule, f"Playwright error: {exc}"
+                    )
 
-    body_normalized = _normalize(rendered_text or "")
-    found = citat_normalized in body_normalized
-    snippet: Optional[str] = None
-    if found:
-        idx = body_normalized.find(citat_normalized)
-        window_start = max(0, idx - 50)
-        window_end = min(len(body_normalized), idx + len(citat_normalized) + 50)
-        snippet = body_normalized[window_start:window_end]
-    else:
-        sig = _shortest_signature(citat, 100)
-        if sig and sig in body_normalized:
-            found = True
-            snippet = "Delvis match — første 100 tegn fundet (Playwright-render)"
+    return results
 
-    return VerificationResult(
-        rule_id=rule_id,
-        citation_found=found,
-        flagged_for_review=not found,
-        http_status=http_status,
-        error_message=None if found else "Citat ikke fundet i Playwright-rendered HTML",
-        source_url=url,
-        snippet=snippet,
-        method="playwright",
-    )
+
+def verify_rule_with_playwright(
+    rule: Rule, *, timeout_ms: int = 30_000
+) -> VerificationResult:
+    """Compatibility wrapper for verifying one rendered source."""
+    return verify_rules_with_playwright([rule], timeout_ms=timeout_ms)[rule.id]
 
 
 def verify_all_rules(
@@ -382,37 +462,49 @@ def verify_all_rules(
     twice in a row produces the same final state.
 
     Two-pass strategy:
-      1. Fast `requests` for everything.
-      2. For rules that fail the requests check AND look SPA-rendered,
-         retry with Playwright. Skip pass 2 if Playwright isn't installed.
+      1. Fast `requests` for static pages. Known client-rendered law portals
+         are deferred when Playwright is available.
+      2. Render every unique missed source page once and reuse its text for all
+         citations on that page.
     """
     results_by_id: dict[str, VerificationResult] = {}
+    playwright_available = enable_playwright_fallback and is_playwright_available()
+    playwright_rules: list[Rule] = []
+
     for rule in rules:
         url = str(rule.kilde.url) if rule.kilde and rule.kilde.url else ""
-        # Skip directly to Playwright for known SPA hosts to save one round trip
-        if enable_playwright_fallback and _looks_like_spa(url) and is_playwright_available():
-            results_by_id[rule.id] = verify_rule_with_playwright(rule)
-        else:
-            results_by_id[rule.id] = verify_rule(rule)
+        if playwright_available and _looks_like_spa(url):
+            playwright_rules.append(rule)
+            continue
 
-    if enable_playwright_fallback and is_playwright_available():
-        for rule in rules:
+        static_result = verify_rule(rule)
+        results_by_id[rule.id] = static_result
+        if playwright_available and not static_result.citation_found:
+            playwright_rules.append(rule)
+
+    if playwright_rules:
+        logger.info(
+            "Retrying %d rules across %d source pages with Playwright",
+            len(playwright_rules),
+            len(_group_rules_by_source(playwright_rules)),
+        )
+        rendered_results = verify_rules_with_playwright(playwright_rules)
+        for rule in playwright_rules:
+            rendered = rendered_results.get(rule.id)
             current = results_by_id.get(rule.id)
-            if current and current.citation_found:
+            if rendered is None:
                 continue
-            if current and current.method == "playwright":
-                continue  # already tried Playwright — no point retrying
-            logger.info("Retrying rule %s with Playwright after requests miss", rule.id)
-            playwright_result = verify_rule_with_playwright(rule)
-            if playwright_result.citation_found or current is None:
-                results_by_id[rule.id] = playwright_result
+            # A completed render is the strongest result. If Chromium itself
+            # failed, retain a valid static response when one exists.
+            if rendered.http_status is not None or current is None:
+                results_by_id[rule.id] = rendered
 
     persisted: list[RuleFreshness] = []
     for rule in rules:
-        result = results_by_id.get(rule.id)
-        if result is None:
+        final_result = results_by_id.get(rule.id)
+        if final_result is None:
             continue
-        persisted.append(persist_result(session, result))
+        persisted.append(persist_result(session, final_result))
     return persisted
 
 

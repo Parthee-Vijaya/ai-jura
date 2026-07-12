@@ -7,6 +7,8 @@ DB persistence and flagged_rule_ids querying.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -15,13 +17,25 @@ from src.database.connection import Base
 from src.rule_engine import audit  # noqa: F401
 from src.services import citation_verifier as v3_freshness
 from src.services.citation_verifier import (
+    _canonical_source_url,
+    _group_rules_by_source,
+    _looks_like_spa,
     _normalize,
+    _result_from_source_text,
     _shortest_signature,
-    persist_result,
-    list_freshness,
     flagged_rule_ids,
+    list_freshness,
+    persist_result,
     VerificationResult,
+    verify_all_rules,
 )
+
+
+def _rule(rule_id: str, url: str, citat: str = "Et tilstrækkeligt langt lovcitat"):
+    return SimpleNamespace(
+        id=rule_id,
+        kilde=SimpleNamespace(url=url, citat=citat),
+    )
 
 
 @pytest.fixture()
@@ -45,7 +59,7 @@ class TestNormalize:
 
     def test_handles_unicode_quotes(self):
         # Curly quotes → straight quotes
-        assert "\"hello\"" in _normalize("“hello”")
+        assert '"hello"' in _normalize("“hello”")
 
     def test_handles_unicode_dashes(self):
         # em-dash → ascii-hyphen
@@ -71,6 +85,100 @@ class TestShortestSignature:
     def test_short_text_returned_in_full(self):
         sig = _shortest_signature("kort", n=100)
         assert sig == "kort"
+
+
+class TestSharedSourceMatching:
+    def test_canonical_url_strips_article_fragment(self):
+        assert _canonical_source_url("https://example.com/law#art_22") == (
+            "https://example.com/law"
+        )
+
+    def test_dynamic_source_detection_checks_hostname_boundary(self):
+        assert _looks_like_spa("https://eur-lex.europa.eu/eli/reg/2024/1689")
+        assert not _looks_like_spa("https://eur-lex.europa.eu.evil.example/law")
+
+    def test_groups_fragment_variants_under_one_source_page(self):
+        rules = [
+            _rule("gdpr.art5.test", "https://example.com/gdpr#art_5"),
+            _rule("gdpr.art22.test", "https://example.com/gdpr#art_22"),
+            _rule("ai_act.art5.test", "https://example.com/ai-act"),
+        ]
+
+        grouped = _group_rules_by_source(rules)
+
+        assert set(grouped) == {
+            "https://example.com/gdpr",
+            "https://example.com/ai-act",
+        }
+        assert [rule.id for rule in grouped["https://example.com/gdpr"]] == [
+            "gdpr.art5.test",
+            "gdpr.art22.test",
+        ]
+
+    def test_matches_multiple_rules_against_reused_text(self):
+        source = "Indledning. Et tilstrækkeligt langt lovcitat. Afslutning."
+        result = _result_from_source_text(
+            _rule("gdpr.art5.test", "https://example.com/gdpr"),
+            source,
+            http_status=200,
+            method="playwright",
+        )
+
+        assert result.citation_found is True
+        assert result.flagged_for_review is False
+        assert result.method == "playwright"
+
+    def test_verify_all_batches_dynamic_rules_in_one_call(self, session, monkeypatch):
+        rules = [
+            _rule(
+                "gdpr.art5.test",
+                "https://eur-lex.europa.eu/eli/reg/2016/679/oj/dan#art_5",
+            ),
+            _rule(
+                "gdpr.art22.test",
+                "https://eur-lex.europa.eu/eli/reg/2016/679/oj/dan#art_22",
+            ),
+        ]
+        batches = []
+
+        monkeypatch.setattr(v3_freshness, "is_playwright_available", lambda: True)
+
+        def fake_batch(batch):
+            batches.append(batch)
+            return {
+                rule.id: VerificationResult(
+                    rule.id,
+                    True,
+                    False,
+                    200,
+                    None,
+                    str(rule.kilde.url),
+                    "found",
+                    method="playwright",
+                )
+                for rule in batch
+            }
+
+        monkeypatch.setattr(
+            v3_freshness,
+            "verify_rules_with_playwright",
+            fake_batch,
+        )
+        monkeypatch.setattr(
+            v3_freshness,
+            "verify_rule",
+            lambda _rule: pytest.fail("known dynamic sources must skip static fetch"),
+        )
+
+        rows = verify_all_rules(session, rules)
+
+        assert len(batches) == 1
+        assert [rule.id for rule in batches[0]] == [
+            "gdpr.art5.test",
+            "gdpr.art22.test",
+        ]
+        assert len(rows) == 2
+        assert all(row.citation_found for row in rows)
 
 
 class TestPersistence:
