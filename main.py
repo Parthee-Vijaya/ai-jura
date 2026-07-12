@@ -102,18 +102,9 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning(f"Cache health issues detected: {cache_health['issues']}")
 
-    # Fetch nyheder med det samme så forsiden har data
-    try:
-        await news_service.get_latest_news(force_refresh=True)
-    except Exception as exc:
-        logger.warning("Første nyhedsopdatering fejlede: %s", exc)
-
-    try:
-        await ticker_service.get_latest(force_refresh=True)
-    except Exception as exc:
-        logger.warning("Første ticker-opdatering fejlede: %s", exc)
-
-    # Start baggrundsopgaven hvis ikke allerede aktiv
+    # External feeds must never gate API readiness. Both background tasks do
+    # an immediate refresh, then sleep between later refreshes. Until they
+    # finish, the services can serve their checked-in fallback data.
     if not news_refresh_task or news_refresh_task.done():
         news_refresh_task = asyncio.create_task(_refresh_news_periodically())
 
@@ -521,32 +512,32 @@ def _documentation_index() -> List[Dict[str, Any]]:
 
 
 async def _refresh_news_periodically() -> None:
-    """Baggrundsopgave der opdaterer nyheder hvert kvarter"""
+    """Refresh news immediately, then repeat at the configured interval."""
     logger.info("Starter periodisk nyhedsopdatering hver %s sekunder", NEWS_REFRESH_INTERVAL_SECONDS)
     try:
         while True:
-            await asyncio.sleep(NEWS_REFRESH_INTERVAL_SECONDS)
             try:
                 await news_service.get_latest_news(force_refresh=True)
                 logger.debug("Nyheds-cache opdateret via baggrundsopgave")
             except Exception as exc:  # pragma: no cover - defensiv logning
                 logger.warning("Kunne ikke opdatere nyheder automatisk: %s", exc)
+            await asyncio.sleep(NEWS_REFRESH_INTERVAL_SECONDS)
     except asyncio.CancelledError:  # pragma: no cover - normal shutdown sti
         logger.info("Periodisk nyhedsopgave stoppet")
         raise
 
 
 async def _refresh_ticker_periodically() -> None:
-    """Baggrundsopgave for internationale tech-nyheder"""
+    """Refresh the tech ticker immediately, then repeat in the background."""
     logger.info("Starter periodisk ticker-opdatering hver %s sekunder", NEWS_REFRESH_INTERVAL_SECONDS)
     try:
         while True:
-            await asyncio.sleep(NEWS_REFRESH_INTERVAL_SECONDS)
             try:
                 await ticker_service.get_latest(force_refresh=True)
                 logger.debug("Ticker-cache opdateret via baggrundsopgave")
             except Exception as exc:  # pragma: no cover
                 logger.warning("Kunne ikke opdatere ticker automatisk: %s", exc)
+            await asyncio.sleep(NEWS_REFRESH_INTERVAL_SECONDS)
     except asyncio.CancelledError:  # pragma: no cover
         logger.info("Periodisk ticker-opgave stoppet")
         raise
