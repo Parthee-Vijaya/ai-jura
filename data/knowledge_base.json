@@ -1914,5 +1914,479 @@
     "auto_generated": true,
     "added_at": "2026-05-10T14:54:59.282809+00:00",
     "id": 102
+  },
+  {
+    "term": "GDPR Art. 9 — særlige kategorier",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "GDPR Art. 9 regulerer behandling af særlige personoplysninger (f.eks. helbredsdata, etniske oprindelse, religiøs overbevisning). Det er forbudt medmindre specifikke undtagelser eller samtykke gælder.",
+    "context": "I kommunal AI-compliance er det afgørende at identificere, om data, der anvendes til beslutningsstøtte eller analyse, falder ind under Art. 9‑kategorien. Sagsbehandlere skal sikre, at der foreligger lovligt grundlag (samtykke, nødvendighed for sundhedspleje, offentlige interesser) og at passende tekniske og organisatoriske foranstaltninger er implementeret.",
+    "tags": [
+      "GDPR",
+      "Art.9",
+      "særlige kategorier",
+      "databeskyttelse",
+      "kommunal AI"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:00:29.020623+00:00",
+    "id": 103
+  },
+  {
+    "term": "GDPR Art. 22 — automatiserede individuelle afgørelser",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 22 giver den registrerede ret til ikke at blive underlagt beslutninger, der er fuldstændig automatiseret og har juridisk virkning eller tilsvarende betydning, medmindre beslutningen er baseret på en lovlig grund og den registrerede har fået adgang til at indgive anmodning om manuel gennemgang.",
+    "context": "I kommunal AI‑compliance er Art. 22 afgørende, når beslutningsprocesser (fx sagsbehandling eller tildeling af ydelser) anvender algoritmer uden menneskelig indgriben. Sagsbehandlere skal sikre, at automatiserede afgørelser enten undgår juridisk virkning eller giver registrerede mulighed for at anmode om manuel vurdering, samt dokumentere retfærdighed og proportionalitet.",
+    "tags": [
+      "GDPR",
+      "automatiseret beslutning",
+      "sagsbehandling",
+      "AI-regulering",
+      "registrerede rettigheder"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:00:47.248053+00:00",
+    "id": 104
+  },
+  {
+    "term": "GDPR Art. 25 — privacy by design + default",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 25 kræver, at personoplysninger behandles med \"privacy by design\" og \"privacy by default\". Det betyder, at beskyttelse af privatliv skal indbygges i systemer fra starten og som standard, uden brugerindgreb.",
+    "context": "I kommunal AI-compliance er Art. 25 afgørende, fordi AI-løsninger ofte håndterer store mængder personoplysninger. Sagsbehandlere skal sikre, at systemdesign og konfigurationer automatisk minimerer dataindsamling, begrænser adgang og anvender tekniske/organisatoriske foranstaltninger (f.eks. pseudonymisering) som standard.",
+    "tags": [
+      "GDPR",
+      "privacy by design",
+      "AI compliance",
+      "data protection",
+      "default settings"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:01:04.449780+00:00",
+    "id": 105
+  },
+  {
+    "term": "GDPR Art. 30 — fortegnelse over behandlingsaktiviteter",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "GDPR Art. 30 kræver, at den dataansvarlige eller databehandler fører en fortegnelse over alle behandlingsaktiviteter, herunder formål, kategorier af personoplysninger og modtagere.",
+    "context": "I kommunal AI-compliance er fortegnelsen afgørende for at dokumentere, hvilke data der behandles i AI-systemer, og hvordan de anvendes. Sagsbehandleren skal sikre, at fortegnelsen er opdateret og tilgængelig for myndighederne samt understøtter efterlevelse af andre GDPR-krav som dataminimering og rettigheder for registrerede.",
+    "tags": [
+      "GDPR",
+      "Art. 30",
+      "fortegnelse",
+      "dataansvarlig",
+      "AI-compliance"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:01:21.207465+00:00",
+    "id": 106
+  },
+  {
+    "term": "GDPR Art. 32 — sikkerhed ved behandling",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 32 kræver, at behandlingsansvarlige og databehandlere implementerer tekniske og organisatoriske foranstaltninger, der sikrer et passende sikkerhedsniveau for personoplysninger.",
+    "context": "I kommunal AI-compliance er Art. 32 central, fordi AI-systemer ofte håndterer store mængder følsomme data. Sagsbehandlere skal sikre, at sikkerhedsforanstaltninger (f.eks. kryptering, adgangskontrol og risikovurderinger) er på plads, dokumenteres og opdateres løbende i overensstemmelse med 2025/2026‑lovgivning.",
+    "tags": [
+      "GDPR",
+      "sikkerhed",
+      "AI-behandling",
+      "databeskyttelse",
+      "risikovurdering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:01:37.811651+00:00",
+    "id": 107
+  },
+  {
+    "term": "GDPR Art. 33-34 — brud-anmeldelse",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 33-34 omhandler krav til anmeldelse af personoplysningsbrud. Art. 33 forpligter behandlingsansvarlige til at underrette den relevante tilsynsmyndighed, og Art. 34 kræver information til berørte personer.",
+    "context": "I kommunal AI‑compliance er det afgørende at kunne identificere og rapportere brud på personoplysninger, som kan opstå ved AI‑systemer. Sagsbehandlere skal sikre, at der er procedurer for hurtig anmeldelse til Datatilsynet og kommunikation med berørte borgere, samt dokumentation af tidspunkt, omfang og foranstaltninger.",
+    "tags": [
+      "GDPR",
+      "brudanmeldelse",
+      "AI‑sikkerhed",
+      "datatilsyn",
+      "kommunalforvaltning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:01:54.528250+00:00",
+    "id": 108
+  },
+  {
+    "term": "GDPR Art. 35 — DPIA (konsekvensanalyse)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 35 kræver, at en organisation udfører en Data Protection Impact Assessment (DPIA) ved behandling af personoplysninger, hvor der er høj risiko for de registreredes rettigheder og friheder.",
+    "context": "I kommunal AI‑compliance er en DPIA afgørende, når AI-systemer anvendes til beslutningstagning eller overvågning. Sagsbehandleren skal identificere risici, dokumentere dem og beskrive foranstaltninger til at afbøde dem inden systemet implementeres.",
+    "tags": [
+      "GDPR",
+      "DPIA",
+      "AI",
+      "risikovurdering",
+      "persondata"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:02:10.835268+00:00",
+    "id": 109
+  },
+  {
+    "term": "GDPR Art. 36 — forhåndshøring af Datatilsynet",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "GDPR Art. 36 kræver, at behandlere indhenter Datatilsynets mening (forhåndshøring) før de påbegynder behandling, hvis behandlingen sandsynligvis vil medføre høj risiko for registreredes rettigheder og friheder.",
+    "context": "I kommunal AI-compliance er Art. 36 afgørende, når systemer anvender følsomme data eller komplekse algoritmer, som kan påvirke borgernes privatliv. Sagsbehandlere skal vurdere risikoen, udarbejde en formel høringsanmodning og indsamle Datatilsynets anbefalinger, før AI-behandlingen gennemføres.",
+    "tags": [
+      "GDPR",
+      "Datatilsynet",
+      "forhåndshøring",
+      "AI-behandling",
+      "risikovurdering"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:02:27.534811+00:00",
+    "id": 110
+  },
+  {
+    "term": "Databeskyttelsesloven (DK) §11 — CPR-behandling",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Databeskyttelsesloven §11 fastsætter regler for behandling af personoplysninger, hvor CPR-nummeret er den primære identifikator. Det kræver samtykke eller lovlig grund, og behandlingen skal være nødvendig, proportional og begrænset i varighed.",
+    "context": "I kommunal AI-compliance er CPR-behandling central, da mange AI-systemer anvender persondata til beslutningstagning. Sagsbehandlere skal sikre, at alle dataindsamlinger og -analyser overholder §11, herunder dokumentation af samtykke, formålsbegrænsning og sikkerhedsforanstaltninger. Manglende overholdelse kan medføre bøder og krav om datarengøring.",
+    "tags": [
+      "databeskyttelse",
+      "CPR-behandling",
+      "AI-compliance",
+      "persondata",
+      "lovgivning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:02:44.279360+00:00",
+    "id": 111
+  },
+  {
+    "term": "Datatilsynets DPIA-skabelon (2024 + 2025 AI-version)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Datatilsynets DPIA-skabelon (2024 + 2025 AI-version) er en vejledende skabelon, der beskriver krav og struktur for gennemførelse af Data Protection Impact Assessments (DPIA) i AI-arbejde, udarbejdet af Datatilsynet og opdateret til 2025.",
+    "context": "Skabelonen er central for kommunal AI-compliance, da den fastsætter de nødvendige oplysninger og vurderingskriterier for at sikre GDPR- og AI-lovgivningsmæssig beskyttelse af persondata. Sagsbehandlere skal bruge den til at dokumentere risikovurdering, formålsspecifikation og tekniske/organisatoriske foranstaltninger ved AI-projekter.",
+    "tags": [
+      "DPIA",
+      "AI-regulering",
+      "Datatilsynet",
+      "GDPR",
+      "2025 AI-version"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:03:01.441133+00:00",
+    "id": 112
+  },
+  {
+    "term": "WP248 — DPIA guidelines (Article 29 WP)",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "WP248 er retningslinjer for Data Protection Impact Assessment (DPIA) udarbejdet af EU-Kommissionen i henhold til Art. 29 WP, der fastsætter krav til vurdering af persondatasikkerhed ved AI-anvendelser.",
+    "context": "Kommunale myndigheder skal anvende WP248 ved planlægning eller drift af AI-systemer, der behandler personoplysninger. Retningslinjerne sikrer overholdelse af GDPR og EU's AI-regulering, reducerer risiko for databrud og styrker borgernes tillid.",
+    "tags": [
+      "DPIA",
+      "GDPR",
+      "AI-regulering",
+      "EU-retningslinjer",
+      "databeskyttelse"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:03:18.154723+00:00",
+    "id": 113
+  },
+  {
+    "term": "WP251 — automated individual decision-making guidelines",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "WP251 er en EU‑direktivskabelon, der fastsætter krav til automatiserede beslutningsprocesser, herunder datakvalitet, gennemsigtighed og ret til at få en menneskelig vurdering.",
+    "context": "Kommuner, der anvender AI til individuelle beslutninger (fx boligstøtte eller sagsbehandling), skal sikre, at systemerne opfylder WP251‑kravene. Sagsbehandlere skal kunne dokumentere datakilder, algoritmevalg og muligheder for manuel indgriben.",
+    "tags": [
+      "WP251",
+      "AI-diskrimination",
+      "gennemsigtighed",
+      "menneskelig indgriben",
+      "EU-direktiv"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:03:35.233142+00:00",
+    "id": 114
+  },
+  {
+    "term": "Forvaltningsloven §3 — inhabilitet",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Forvaltningsloven §3 fastsætter regler om inhabilitet, dvs. forbud mod at udøve offentlige funktioner, hvis der er personlig eller økonomisk interesse i resultatet.",
+    "context": "I kommunal AI‑compliance er §3 afgørende, fordi beslutningstagere skal sikre, at AI-baserede vurderinger ikke påvirkes af personlige interesser. Sagsbehandlere skal vurdere, om de er inhabilt i forhold til AI‑projekter eller -leverandører, og dokumentere eventuelle fravalg.",
+    "tags": [
+      "inhabilitet",
+      "forvaltningsloven",
+      "AI-compliance",
+      "beslutningsproces",
+      "interessekonflikt"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:03:51.897695+00:00",
+    "id": 115
+  },
+  {
+    "term": "Forvaltningsloven §19 — partshøring",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Forvaltningsloven §19 fastsætter krav om partshøring, dvs. at den eller de berørte parter skal indhente og give deres synspunkter, inden en afgørelse træffes.",
+    "context": "I kommunal AI‑compliance er partshøringen afgørende for at sikre, at automatiserede beslutningsprocesser ikke skader borgernes rettigheder. Sagsbehandlere skal indhente partshøring, dokumentere indsigter og vurdere AI‑modellernes konsekvenser, inden afgørelsen er endelig.",
+    "tags": [
+      "partshøring",
+      "forvaltningsloven",
+      "AI-beslutning",
+      "borgerrettigheder",
+      "dokumentation"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:04:08.601082+00:00",
+    "id": 116
+  },
+  {
+    "term": "Forvaltningsloven §22 — begrundelsespligt",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Forvaltningsloven §22 fastsætter, at en myndighed skal give begrundelse for afgørelser, der påvirker borgerens rettigheder eller økonomiske interesser.",
+    "context": "I kommunal AI-compliance er §22 afgørende, fordi automatiserede beslutningssystemer skal kunne dokumentere og begrunde deres resultater. Sagsbehandlere skal sikre, at AI‑output kan oversættes til juridisk begrundelse og opfylde krav om gennemsigtighed, retfærdighed og mulighed for klage.",
+    "tags": [
+      "forvaltningsloven",
+      "begrundelse",
+      "AI-dokumentation",
+      "beslutningssystemer",
+      "klageprocedure"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-08T01:04:25.299059+00:00",
+    "id": 117
+  },
+  {
+    "term": "God forvaltningsskik + AI — kvitteringer + frister",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "God forvaltningss",
+    "context": "",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:01:45.716552+00:00",
+    "id": 118
+  },
+  {
+    "term": "Saglighedsprincippet ved algoritmisk skøn",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Saglighedsprincippet ved algoritmisk skøn er kravet om, at kommunale AI-beslutninger skal træffes med rimelighed, gennemsigtighed og ikke‑diskriminerende hensyn.",
+    "context": "I den kommunale forvaltning er princippet afgørende for at sikre, at algoritmiske beslutninger overholder lov om kommunal selvstyrelse og und",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:03:05.390317+00:00",
+    "id": 119
+  },
+  {
+    "term": "Servicelov §102 — særlig støtte til voksne",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Servicelov §102 regulerer særlig støtte til voksne i socialfaglige sager, som kommunen skal yde efter lov.",
+    "context": "Stk. 1 og 2 fastsætter betingelserne for, hvornår en vok",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:04:24.848795+00:00",
+    "id": 120
+  },
+  {
+    "term": "Beskæftigelseslov §11 — kontaktforløbet + profilering",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Lovbestemmelse, der regulerer hvordan kommunen skal opbygge kontaktforløb og profilere borgere i beskæftigelsesforløb, herunder krav til dokumentation",
+    "context": "",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:04:47.496246+00:00",
+    "id": 121
+  },
+  {
+    "term": "Sundhedsloven §23 — patientinformation + AI",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Sundhedsloven §23 regulerer beskyttelse og behandling af patientoplysninger, herunder brug af AI-systemer i sundhedsse",
+    "context": "",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:05:33.673349+00:00",
+    "id": 122
+  },
+  {
+    "term": "Large Language Model (LLM) — basics",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "En Large Language Model (LLM) er en AI-model, der kan forstå og generere menneskeligt sprog baseret på mønstre i store datamængder.",
+    "context": "I kommunal AI‑compliance skal sagsbehandleren vide, at LLM",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-15T01:06:19.931085+00:00",
+    "id": 123
+  },
+  {
+    "term": "Forvaltningsloven §24 — begrundelsens indhold",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Stk 24 kræver, at myndighedens afgørelse ledsages af en klar og fyldig begrundelse, som gør beslutningens årsager synlige for den berørte.",
+    "context": "I kommunal AI‑compliance er §24 central, da AI‑beslutninger skal dokumenteres med tilstrækkelig begrundelse for at sikre lovlighed, gennemsigtighed og mulighed for kontrol. Sagsbehandleren skal sikre, at AI‑output lever op til denne krav om dokumenteret begrundelse.",
+    "tags": [
+      "forvaltningsloven",
+      "begrundelse",
+      "AI-compliance",
+      "kommunal-administration",
+      "lovgivning"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:00:40.342073+00:00",
+    "id": 124
+  },
+  {
+    "term": "Offentlighedsloven §13 — dataudtræk og sammenstilling",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Lovens §13 regulerer offentlighedens ret til at få udleveret og sammenstille data fra kommunale digitale systemer, herunder AI-baserede processer.",
+    "context": "For sagsbehandleren betyder §13, at ethvert AI‑drevet dataudtræk eller sammenstilling, der anvendes i kommunale sager, skal dokumenteres og kunne fremsættes ved anmodning. Det stiller krav om gennemsigtighed i algoritmiske processer og sikrer, at offentligheden kan få indsigt i de data, der ligger til grund for beslutninger.",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:01:20.777933+00:00",
+    "id": 125
+  },
+  {
+    "term": "Lighedsgrundsætningen i AI-kontekst",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Lighedsgrunds",
+    "context": "",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:01:32.739099+00:00",
+    "id": 126
+  },
+  {
+    "term": "Servicelov §11 — rådgivning og vejledning",
+    "category": "legal",
+    "iconKey": "FaGavel",
+    "definition": "Servicelov §11 regulerer rådgivning og vejledning fra kommunen til borgere om sociale ydelser.",
+    "context": "Bestemmelsen sikrer at kommunen kan yde rådgivning om ret til ydelser, herunder hjælp til ansøgninger og vejledning om betingelser. Den er gældende fra 2025/2026 og skal overholdes ved sagsbehandling.",
+    "tags": [
+      "servicelov",
+      "rådgivning",
+      "vejledning",
+      "lovgivning",
+      "kommunal"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:02:10.978091+00:00",
+    "id": 127
+  },
+  {
+    "term": "Beskæftigelseslov §27 — jobplan + AI-genereret indhold",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Beskæftigelseslov §27 regulerer ret til jobplan, og når AI-genereret indhold anvendes i sagsbehandling, skal det sikres, at dette ikke påvirker lovens krav om individuel vurdering og dokumentation.",
+    "context": "I kommunal sagsbehandling",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:02:51.096360+00:00",
+    "id": 128
+  },
+  {
+    "term": "Embeddings + vektordatabaser",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Embeddings er numeriske vektorrepræsentationer af data, og vektordatabaser er specialiserede lagringsstrukturer til effektiv similarity‑søgning.",
+    "context": "Inden for kommunal AI‑compliance anvendes embeddings og vektordatabaser til analyse af borgersager, risikobewertung og håndtering af personoplysninger. De muliggør hurtig semantisk søgning og understøttes løbende i 2025/2026‑opdateringer.",
+    "tags": [
+      "embeddings",
+      "vektordatabase",
+      "AI-compliance",
+      "maskinlæring",
+      "dataanalyse"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:04:13.513791+00:00",
+    "id": 129
+  },
+  {
+    "term": "Prompt injection + jailbreaking",
+    "category": "ai",
+    "iconKey": "FaBrain",
+    "definition": "Manipulation af AI-modeller gennem specifikke inputs, der får dem til at opføre sig som en anden model (jailbreak).",
+    "context": "I kommunal AI‑compliance er prompt injection og jailbreaking relevante, da de udgør sikkerhedsrisici ved offentlige AI‑værktøjer, som kan misbruges til at omgå begrænsninger eller fremstille falske oplysninger.",
+    "tags": [
+      "prompt injection",
+      "jailbreaking",
+      "AI-sikkerhed",
+      "compliance",
+      "manipulation"
+    ],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:04:24.301243+00:00",
+    "id": 130
+  },
+  {
+    "term": "Hallucination detection + citation grounding",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Metode til at identificere og korrigere AI-genererede fejl (hallucinationer) samt sikre at svar er understøttet af eksterne kilder gennem citation grounding.",
+    "context": "Inkludér i kommunal AI‑kompliance for at sikre pålidelige beslutningsgrundlag, undgå misinformation og opfylde krav om dokumentation og kildekritik i",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:04:34.981995+00:00",
+    "id": 131
+  },
+  {
+    "term": "Tool-use og agentic workflows",
+    "category": "compliance",
+    "iconKey": "FaShieldAlt",
+    "definition": "Tool-use og agentic workflows beskriver AI-systemers evne til at bruge eksterne værktøjer og autonomt planlægge handlinger for at opnå mål.",
+    "context": "I kommunal",
+    "tags": [],
+    "references": [],
+    "auto_generated": true,
+    "added_at": "2026-06-22T01:04:44.834079+00:00",
+    "id": 132
   }
 ]

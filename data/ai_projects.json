@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "fetched_at": "2026-05-08T20:49:25.582647+00:00",
+  "fetched_at": "2026-07-06T01:30:15.229564+00:00",
   "source": "offentlig-ai.dk",
   "count": 143,
   "items": [
@@ -12,7 +12,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/RefCase.png?h=6ff2f8ca&amp;itok=08KMmBRe",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/RefCase.png?h=6ff2f8ca&amp;itok=-dFarzvo",
       "externalUrl": "https://offentlig-ai.dk/projekter/refcase",
       "id": 1
     },
@@ -24,7 +24,7 @@
       "category": "Udlændinge og asyl",
       "scope": "EU",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI009%20-%20SIS%20%282%29.png?h=ad5703c2&amp;itok=IxsJR1Lv",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI009%20-%20SIS%20%282%29.png?h=ad5703c2&amp;itok=7Ta-LB_L",
       "externalUrl": "https://offentlig-ai.dk/projekter/sis",
       "id": 2
     },
@@ -36,7 +36,7 @@
       "category": "Udlændinge og asyl",
       "scope": "EU",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Image%20-%203_4.png?h=90fd6ca2&amp;itok=G0uvWD9u",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Image%20-%203_4.png?h=90fd6ca2&amp;itok=k3_b-VcF",
       "externalUrl": "https://offentlig-ai.dk/projekter/etias",
       "id": 3
     },
@@ -48,7 +48,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI012%20-%20Identifikation%20af%20hjertestop%20%281%29.png?h=b6cda681&amp;itok=XRBsTWsZ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI012%20-%20Identifikation%20af%20hjertestop%20%281%29.png?h=b6cda681&amp;itok=u9_H2RlW",
       "externalUrl": "https://offentlig-ai.dk/projekter/oeget-identifikation-hjertestop",
       "id": 4
     },
@@ -60,7 +60,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI089%20-%20M%C3%A5lrettet%20besk%C3%A6ftigelsesindsats.png?h=4a632f2f&amp;itok=rBC3Uhly",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI089%20-%20M%C3%A5lrettet%20besk%C3%A6ftigelsesindsats.png?h=4a632f2f&amp;itok=G5zmhYny",
       "externalUrl": "https://offentlig-ai.dk/projekter/omas",
       "id": 5
     },
@@ -72,7 +72,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI123%20-%20AI%20databaseret%20Process%20Mining.png?h=23f25432&amp;itok=kx6hHsI5",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI123%20-%20AI%20databaseret%20Process%20Mining.png?h=23f25432&amp;itok=y3i1Vpr7",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-databaseret-process-mining",
       "id": 6
     },
@@ -84,7 +84,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI%20Mammo.png?h=f85c5d83&amp;itok=xafIRE1r",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI%20Mammo.png?h=f85c5d83&amp;itok=PqFsIhU-",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-mammo",
       "id": 7
     },
@@ -96,7 +96,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI543%20-%20Kontrol%20med%20udbetaling%20af%20ydelser.png?h=7b7fbb37&amp;itok=0VUMnpLP",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI543%20-%20Kontrol%20med%20udbetaling%20af%20ydelser.png?h=7b7fbb37&amp;itok=yP2u3Icu",
       "externalUrl": "https://offentlig-ai.dk/projekter/kontrol-med-udbetaling-ydelser",
       "id": 8
     },
@@ -108,7 +108,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI940%20-%20AI-KOA_0.png?h=4f390593&amp;itok=-V-1DoKp",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI940%20-%20AI-KOA_0.png?h=4f390593&amp;itok=3NEZEYR2",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-koa",
       "id": 9
     },
@@ -120,7 +120,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/pregnant%20danish%2C%20not%20perfect%20looking%2C%20woman%20talking%20in%20phone%20with%20a%20little%20smile%20closed%20mouth%2C%20seeing%20her%20pregnant%20body.jpg?h=b94cd9c4&amp;itok=BAn5yRbu",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/pregnant%20danish%2C%20not%20perfect%20looking%2C%20woman%20talking%20in%20phone%20with%20a%20little%20smile%20closed%20mouth%2C%20seeing%20her%20pregnant%20body.jpg?h=b94cd9c4&amp;itok=_1JozoI-",
       "externalUrl": "https://offentlig-ai.dk/projekter/forbedret-visitation-gravide-foedende",
       "id": 10
     },
@@ -132,7 +132,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI941%20-%20WardHome.png?h=3c7b9b90&amp;itok=0XcTI5yI",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI941%20-%20WardHome.png?h=3c7b9b90&amp;itok=ZsUgBYI2",
       "externalUrl": "https://offentlig-ai.dk/projekter/wardhome",
       "id": 11
     },
@@ -144,7 +144,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Smartchest%20-%20Billede.jpg?h=7afb1587&amp;itok=cugwrhGR",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Smartchest%20-%20Billede.jpg?h=7afb1587&amp;itok=UuCOlm4r",
       "externalUrl": "https://offentlig-ai.dk/projekter/smartchest",
       "id": 12
     },
@@ -156,7 +156,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI056%20-%20DESERT_0.png?h=ad5703c2&amp;itok=vYeziaiP",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI056%20-%20DESERT_0.png?h=ad5703c2&amp;itok=ymYiFQJf",
       "externalUrl": "https://offentlig-ai.dk/projekter/desert",
       "id": 13
     },
@@ -168,7 +168,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI946%20-%20AI%20ved%20PET-scanning.png?h=ae01bef3&amp;itok=tFNXcpG_",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI946%20-%20AI%20ved%20PET-scanning.png?h=ae01bef3&amp;itok=LTyh2CyS",
       "externalUrl": "https://offentlig-ai.dk/projekter/reduktion-straaledosis-kraeftbehandling",
       "id": 14
     },
@@ -180,7 +180,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI951%20-%20Kunstig%20intelligens%20i%20almen%20praksis.png?h=67c2f4a3&amp;itok=AFVm-Wwz",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI951%20-%20Kunstig%20intelligens%20i%20almen%20praksis.png?h=67c2f4a3&amp;itok=Wdq3dIqB",
       "externalUrl": "https://offentlig-ai.dk/projekter/kunstig-intelligens-almen-praksis",
       "id": 15
     },
@@ -192,7 +192,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/White%20older%20patient%20lying%20in%20bed%20with%20a%20respirator%20covering%20the%20mouth%20and%20breathing%20deeply%2026-02-2025%20at%2014-08-05.jpeg?h=ad63f35b&amp;itok=UZ8Xhp4u",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/White%20older%20patient%20lying%20in%20bed%20with%20a%20respirator%20covering%20the%20mouth%20and%20breathing%20deeply%2026-02-2025%20at%2014-08-05.jpeg?h=ad63f35b&amp;itok=tCeq0HcN",
       "externalUrl": "https://offentlig-ai.dk/projekter/praediktion-forvaerring-blandt-kol-hjertesvigtpatienter",
       "id": 16
     },
@@ -204,7 +204,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI032%20-%20%C3%98get%20kontinuitet%20i%20%C3%A6ldreplejen%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens_0.jpg?h=0d1ca46e&amp;itok=3Sh6PBWY",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI032%20-%20%C3%98get%20kontinuitet%20i%20%C3%A6ldreplejen%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens_0.jpg?h=0d1ca46e&amp;itok=iqBsW_l8",
       "externalUrl": "https://offentlig-ai.dk/projekter/plai",
       "id": 17
     },
@@ -216,7 +216,7 @@
       "category": "Uddannelse",
       "scope": "Andet",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI063%20-%20Forebyggelse%20af%20frafald%20p%C3%A5%20erhvervsskole.png?h=139263fc&amp;itok=UFvIsot8",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI063%20-%20Forebyggelse%20af%20frafald%20p%C3%A5%20erhvervsskole.png?h=139263fc&amp;itok=L6hWNDvz",
       "externalUrl": "https://offentlig-ai.dk/projekter/forebyggelse-frafald-paa-erhvervsskole",
       "id": 18
     },
@@ -228,7 +228,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI027%20-%20Intelligent%20fordeling%20og%20journalisering%20af%20mails%20kan%20give%20borgere%20hurtigere%20sagsbehandling.jpg?h=0d1ca46e&amp;itok=L0ecveb-",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI027%20-%20Intelligent%20fordeling%20og%20journalisering%20af%20mails%20kan%20give%20borgere%20hurtigere%20sagsbehandling.jpg?h=0d1ca46e&amp;itok=b_lZFgCN",
       "externalUrl": "https://offentlig-ai.dk/projekter/smartmail",
       "id": 19
     },
@@ -236,11 +236,11 @@
       "slug": "automatiseret-journalisering",
       "title": "Automatiseret Journalisering",
       "description": "Systemet anvender kunstig intelligens til at sortere og journalisere henvendelser fra borgere og virksomheder i pilotinstitutionen, Styrelsen for International Rekruttering og Integration (SIRI).",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sagsbehandling",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/automatic%20sorting%20of%20e-mails%2C%20no%20text.jpg?h=0d1ca46e&amp;itok=JmBpff2F",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/automatic%20sorting%20of%20e-mails%2C%20no%20text.jpg?h=0d1ca46e&amp;itok=l7H_cIbD",
       "externalUrl": "https://offentlig-ai.dk/projekter/automatiseret-journalisering",
       "id": 20
     },
@@ -252,7 +252,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI938%20%20-%20Forbedret%20diagnostik%20af%20skizofreni%20og%20bipolar%20lidelse.jpg?h=0d1ca46e&amp;itok=XNu5Z8Ig",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI938%20%20-%20Forbedret%20diagnostik%20af%20skizofreni%20og%20bipolar%20lidelse.jpg?h=0d1ca46e&amp;itok=8Wy_oeTd",
       "externalUrl": "https://offentlig-ai.dk/projekter/forbedret-diagnostik-skizofreni-bipolar-lidelse",
       "id": 21
     },
@@ -264,7 +264,7 @@
       "category": "Udlændinge og asyl",
       "scope": "EU",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI000%20-%20VIS.png?h=ad5703c2&amp;itok=tsiKBy2b",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI000%20-%20VIS.png?h=ad5703c2&amp;itok=72z5tkmV",
       "externalUrl": "https://offentlig-ai.dk/projekter/vis",
       "id": 22
     },
@@ -276,7 +276,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/vk80tcm3.png?h=210f9096&amp;itok=GC6j2Kyc",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/vk80tcm3.png?h=210f9096&amp;itok=_s6msvSj",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-aktindsigt",
       "id": 23
     },
@@ -288,7 +288,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Helsing%C3%B8rbot.png?h=1d453f69&amp;itok=G5CuBQtD",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Helsing%C3%B8rbot.png?h=1d453f69&amp;itok=c4UYldZi",
       "externalUrl": "https://offentlig-ai.dk/projekter/helsingoerbot",
       "id": 24
     },
@@ -300,7 +300,7 @@
       "category": "Transport",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI965%20-%20FleetOptimiser_0.png?h=14512fc7&amp;itok=i9DZLt_I",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI965%20-%20FleetOptimiser_0.png?h=14512fc7&amp;itok=gl_zX5jV",
       "externalUrl": "https://offentlig-ai.dk/projekter/fleetoptimiser",
       "id": 25
     },
@@ -312,7 +312,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Bedre%20Match.png?h=43bbc9ef&amp;itok=0drTB-V4",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Bedre%20Match.png?h=43bbc9ef&amp;itok=pu3BiOo-",
       "externalUrl": "https://offentlig-ai.dk/projekter/bedre-match",
       "id": 26
     },
@@ -324,7 +324,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Risikovurdering%20af%20underretninger.jpg?h=0d1ca46e&amp;itok=M7-CMPMs",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Risikovurdering%20af%20underretninger.jpg?h=0d1ca46e&amp;itok=z3L8_Gab",
       "externalUrl": "https://offentlig-ai.dk/projekter/risikovurdering-underretninger",
       "id": 27
     },
@@ -336,7 +336,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/young%20sad%20tenager%20where%20you%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=tK0CGmcV",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/young%20sad%20tenager%20where%20you%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=-krn1sMC",
       "externalUrl": "https://offentlig-ai.dk/projekter/gladsaxe-modellen",
       "id": 28
     },
@@ -348,7 +348,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI960%20-%20Kr%C3%A6ftbehandling%20%281%29_0.png?h=70894bee&amp;itok=8aqIx1c_",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI960%20-%20Kr%C3%A6ftbehandling%20%281%29_0.png?h=70894bee&amp;itok=gJkuLvdQ",
       "externalUrl": "https://offentlig-ai.dk/projekter/bedre-tilrettelaeggelse-kraeftbehandling",
       "id": 29
     },
@@ -360,7 +360,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI933%20-%20AIR.png?h=378ace79&amp;itok=1QTvyaT2",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI933%20-%20AIR.png?h=378ace79&amp;itok=orJCrnEh",
       "externalUrl": "https://offentlig-ai.dk/projekter/air",
       "id": 30
     },
@@ -372,7 +372,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI658%20-%20STAR.png?h=ad5703c2&amp;itok=MNox_ctS",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI658%20-%20STAR.png?h=ad5703c2&amp;itok=yEqCJ2a4",
       "externalUrl": "https://offentlig-ai.dk/projekter/profilafklaringsvaerktoej",
       "id": 31
     },
@@ -384,7 +384,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/V%C3%A5dindeks.png?h=503099f2&amp;itok=3QXRd9XH",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/V%C3%A5dindeks.png?h=503099f2&amp;itok=vgW_t51n",
       "externalUrl": "https://offentlig-ai.dk/projekter/vaadindeks",
       "id": 32
     },
@@ -396,7 +396,7 @@
       "category": "Byggeri",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Optimeret%20bygningsanvendelse.png?h=6871f5d8&amp;itok=zSy_LD3F",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Optimeret%20bygningsanvendelse.png?h=6871f5d8&amp;itok=A-Z0lo57",
       "externalUrl": "https://offentlig-ai.dk/projekter/optimeret-bygningsanvendelse",
       "id": 33
     },
@@ -408,7 +408,7 @@
       "category": "Politi",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI015%20-%20PET-INTEL.png?h=e37da1e3&amp;itok=K_0EZM8L",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI015%20-%20PET-INTEL.png?h=e37da1e3&amp;itok=dfEBJZbb",
       "externalUrl": "https://offentlig-ai.dk/projekter/pet-intel",
       "id": 34
     },
@@ -420,7 +420,7 @@
       "category": "Politi",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI016%20-%20POL-INTEL.png?h=4c744b1f&amp;itok=haRoonPs",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI016%20-%20POL-INTEL.png?h=4c744b1f&amp;itok=Xq02C8S9",
       "externalUrl": "https://offentlig-ai.dk/projekter/pol-intel",
       "id": 35
     },
@@ -432,7 +432,7 @@
       "category": "Politi",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/danish%20policecar%20written%20_politi_%2C%20in%20the%20side%20of%20the%20road%20recording%20speed%20at%20a%20highway%20bridge%2C%20seen%20from%20the%20back%2C%20no%20writing%20on%20the%20car.jpg?h=0d1ca46e&amp;itok=byKhTX_y",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/danish%20policecar%20written%20_politi_%2C%20in%20the%20side%20of%20the%20road%20recording%20speed%20at%20a%20highway%20bridge%2C%20seen%20from%20the%20back%2C%20no%20writing%20on%20the%20car.jpg?h=0d1ca46e&amp;itok=HCm_vfBm",
       "externalUrl": "https://offentlig-ai.dk/projekter/anpg",
       "id": 36
     },
@@ -444,7 +444,7 @@
       "category": "Sagsbehandling",
       "scope": "Danmark",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI019%20-%20NHpraksis.png?h=22cb24fd&amp;itok=3telh03D",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI019%20-%20NHpraksis.png?h=22cb24fd&amp;itok=UVJNZEFF",
       "externalUrl": "https://offentlig-ai.dk/projekter/nhpraksis",
       "id": 37
     },
@@ -456,7 +456,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI055%20-%20HjerteRo.jpg?h=8328c14c&amp;itok=xASbUCt4",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI055%20-%20HjerteRo.jpg?h=8328c14c&amp;itok=1DDiPp3v",
       "externalUrl": "https://offentlig-ai.dk/projekter/hjertero",
       "id": 38
     },
@@ -464,11 +464,11 @@
       "slug": "bedre-diagnosticering-prostatacancer",
       "title": "Bedre diagnosticering af prostatacancer",
       "description": "Signaturprojektet omhandler en algoritme der skal hjælpe med at forbedre forståelsen af, hvordan metastaser ved prostatacancer opstår. Herefter skal en algoritme bidrage til udviklingen af et beslutningsstøtteværktøj, der kan understøtte den lægefaglige vurdering af, om der er behov for operation.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI054%20-%20Bedre%20diagnosticering%20af%20prostatacancer.png?h=42118d09&amp;itok=wpFtS-rI",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI054%20-%20Bedre%20diagnosticering%20af%20prostatacancer.png?h=42118d09&amp;itok=3syMDnlx",
       "externalUrl": "https://offentlig-ai.dk/projekter/bedre-diagnosticering-prostatacancer",
       "id": 39
     },
@@ -476,11 +476,11 @@
       "slug": "prioritering-kontrolsager-om-social-svindel",
       "title": "Prioritering af kontrolsager om social svindel",
       "description": "Systemet blev testet i Horsens Kommune og skulle angive, om der var høj eller lav sandsynlighed for social svindel i en konkret sag, så sagsbehandlerne kunne vurdere, hvor meget tid, der skulle afsættes til hver sag.",
-      "isSignature": true,
+      "isSignature": false,
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/hacker%20behind%20the%20computer%2C%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=cgH0HS4c",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/hacker%20behind%20the%20computer%2C%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=Ozmm8G7b",
       "externalUrl": "https://offentlig-ai.dk/projekter/prioritering-kontrolsager-om-social-svindel",
       "id": 40
     },
@@ -488,11 +488,11 @@
       "slug": "eurodac",
       "title": "Eurodac",
       "description": "Eurodac systemet er et EU-fingeraftryksregister, der opbevarer, behandler og sammenligner fingeraftryk fra asylansøgere og immigranter, der bliver tilbageholdt ved EU’s ydre grænser.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Udlændinge og asyl",
       "scope": "EU",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Eurodac.png?h=6d4b3a34&amp;itok=LAXtHB1P",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Eurodac.png?h=6d4b3a34&amp;itok=a50Eb3fh",
       "externalUrl": "https://offentlig-ai.dk/projekter/eurodac",
       "id": 41
     },
@@ -504,7 +504,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/danish%20man%20holding%20one%20hand%20on%20his%20chest%20in%20a%20little%20pain%2C%20where%20you%20cant%20see%20his%20face%2004-03-2025%20at%2010-32-22.jpeg?h=ad63f35b&amp;itok=evWhsqom",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/danish%20man%20holding%20one%20hand%20on%20his%20chest%20in%20a%20little%20pain%2C%20where%20you%20cant%20see%20his%20face%2004-03-2025%20at%2010-32-22.jpeg?h=ad63f35b&amp;itok=Iwi33-4S",
       "externalUrl": "https://offentlig-ai.dk/projekter/hjaelp-til-forudsigelse-blodprop-hjertet",
       "id": 42
     },
@@ -516,7 +516,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI888%20-%20ASTA.png?h=adf5ff26&amp;itok=AyIV0Zsm",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI888%20-%20ASTA.png?h=adf5ff26&amp;itok=gfj-zSyw",
       "externalUrl": "https://offentlig-ai.dk/projekter/asta",
       "id": 43
     },
@@ -528,7 +528,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI934%20-%20Opsporing%20af%20kritisk%20sygdom.png?h=1ad696e1&amp;itok=t2hk7-Kp",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI934%20-%20Opsporing%20af%20kritisk%20sygdom.png?h=1ad696e1&amp;itok=m7-QiaYK",
       "externalUrl": "https://offentlig-ai.dk/projekter/priokritisk",
       "id": 44
     },
@@ -540,7 +540,7 @@
       "category": "Byggeri",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/GeoDanmark.png?h=ac9a2f08&amp;itok=-Dtp2o1t",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/GeoDanmark.png?h=ac9a2f08&amp;itok=7MTswWs7",
       "externalUrl": "https://offentlig-ai.dk/projekter/geodanmark",
       "id": 45
     },
@@ -552,7 +552,7 @@
       "category": "Sagsbehandling",
       "scope": "Danmark",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI068%20-%20Legalese.png?h=a917d80d&amp;itok=xE40zS_K",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI068%20-%20Legalese.png?h=a917d80d&amp;itok=eZAyHKhG",
       "externalUrl": "https://offentlig-ai.dk/projekter/legalese",
       "id": 46
     },
@@ -564,7 +564,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Untitled%20design%20%284%29_0.png?h=3b2ee2d3&amp;itok=BfDUISVK",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Untitled%20design%20%284%29_0.png?h=3b2ee2d3&amp;itok=4HWBeDbq",
       "externalUrl": "https://offentlig-ai.dk/projekter/forebyggelse-komplikationer-efter-tarmkraeftkirurgi",
       "id": 47
     },
@@ -576,7 +576,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Underretninger%20i%20fokus.jpg?h=0d1ca46e&amp;itok=d3BpGlvT",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Underretninger%20i%20fokus.jpg?h=0d1ca46e&amp;itok=KCtkkUbL",
       "externalUrl": "https://offentlig-ai.dk/projekter/underretninger-fokus",
       "id": 48
     },
@@ -588,7 +588,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI876%20-%20KIRI%20%282%29.png?h=ad5703c2&amp;itok=Gnnyj_v5",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI876%20-%20KIRI%20%282%29.png?h=ad5703c2&amp;itok=jLO9z3R-",
       "externalUrl": "https://offentlig-ai.dk/projekter/kommune-kiri",
       "id": 49
     },
@@ -600,7 +600,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI441%20-%20AI-GOP.png?h=2aa1b0c0&amp;itok=8-ykwuEL",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI441%20-%20AI-GOP.png?h=2aa1b0c0&amp;itok=fvaoUFrf",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-gop",
       "id": 50
     },
@@ -612,7 +612,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/cleaning%20help%20in%20house%2C%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=hndkBUPc",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/cleaning%20help%20in%20house%2C%20cant%20see%20face.jpg?h=0d1ca46e&amp;itok=SMuVb5mU",
       "externalUrl": "https://offentlig-ai.dk/projekter/hurtigere-visitering-rengoeringshjaelp",
       "id": 51
     },
@@ -624,7 +624,7 @@
       "category": "Sundhed",
       "scope": "Danmark",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI959%20-%20aEye.jpg?h=0d1ca46e&amp;itok=PLfEq7na",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI959%20-%20aEye.jpg?h=0d1ca46e&amp;itok=lB9dRMAh",
       "externalUrl": "https://offentlig-ai.dk/projekter/aeye",
       "id": 52
     },
@@ -636,7 +636,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI937%20-%20Forebyggelse%20af%20underern%C3%A6ring%20og%20indl%C3%A6ggelse%20af%20%C3%A6ldre.jpg?h=0d1ca46e&amp;itok=1FjsTGJ1",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI937%20-%20Forebyggelse%20af%20underern%C3%A6ring%20og%20indl%C3%A6ggelse%20af%20%C3%A6ldre.jpg?h=0d1ca46e&amp;itok=TKiuKMi1",
       "externalUrl": "https://offentlig-ai.dk/projekter/forebyggelse-underernaering-indlaeggelse-aeldre",
       "id": 53
     },
@@ -648,7 +648,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI022%20-%20Kvalitetsudvikling%20med%20patienten%20i%20fokus.jpg?h=0d1ca46e&amp;itok=nBbqssrh",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI022%20-%20Kvalitetsudvikling%20med%20patienten%20i%20fokus.jpg?h=0d1ca46e&amp;itok=vsWobUh-",
       "externalUrl": "https://offentlig-ai.dk/projekter/kvalitetsudvikling-med-patienten-fokus",
       "id": 54
     },
@@ -660,7 +660,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI583%20-%20Forudsigelse%20af%20korttidsledighed%20hos%20nyledige%20borgere.png?h=65f9b22c&amp;itok=Sd1HfHn_",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI583%20-%20Forudsigelse%20af%20korttidsledighed%20hos%20nyledige%20borgere.png?h=65f9b22c&amp;itok=HIdYhAsi",
       "externalUrl": "https://offentlig-ai.dk/projekter/sagsbehandling-ved-sanktionering-ledige-borgere",
       "id": 55
     },
@@ -672,7 +672,7 @@
       "category": "Byggeri",
       "scope": "Kommunalt",
       "status": "Lukket",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI028%20-%20Kortere%20svartid%20p%C3%A5%20byggeans%C3%B8gninger%20og%20hj%C3%A6lp%20til%20indsendelse%20af%20rette%20dokumenter.jpg?h=0d1ca46e&amp;itok=2W6T9aM_",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI028%20-%20Kortere%20svartid%20p%C3%A5%20byggeans%C3%B8gninger%20og%20hj%C3%A6lp%20til%20indsendelse%20af%20rette%20dokumenter.jpg?h=0d1ca46e&amp;itok=7god_n0K",
       "externalUrl": "https://offentlig-ai.dk/projekter/kortere-svartid-paa-byggeansoegninger",
       "id": 56
     },
@@ -684,7 +684,7 @@
       "category": "Byggeri",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI030%20-%20Energioptimering%20af%20eksisterende%20bygningsmasse%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens.jpg?h=0d1ca46e&amp;itok=3gbHjtel",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI030%20-%20Energioptimering%20af%20eksisterende%20bygningsmasse%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens.jpg?h=0d1ca46e&amp;itok=lkNa16Md",
       "externalUrl": "https://offentlig-ai.dk/projekter/energioptimering-eksisterende-bygningsmasse",
       "id": 57
     },
@@ -696,7 +696,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI031%20-%20Tidlig%20opsporing%20af%20begyndende%20sygdom%20med%20data%20fra%20eksisterende%20systemer.jpg?h=0d1ca46e&amp;itok=nHYPmgdi",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI031%20-%20Tidlig%20opsporing%20af%20begyndende%20sygdom%20med%20data%20fra%20eksisterende%20systemer.jpg?h=0d1ca46e&amp;itok=F3RPQdfZ",
       "externalUrl": "https://offentlig-ai.dk/projekter/tidlig-opsporing-begyndende-sygdom",
       "id": 58
     },
@@ -708,7 +708,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI034%20-%20Bedre%20diagnostik%20af%20gravide%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens.jpg?h=0d1ca46e&amp;itok=AEZI-Fei",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI034%20-%20Bedre%20diagnostik%20af%20gravide%20ved%20hj%C3%A6lp%20af%20kunstig%20intelligens.jpg?h=0d1ca46e&amp;itok=QQ8cw6Ir",
       "externalUrl": "https://offentlig-ai.dk/projekter/bedre-diagnostik-gravide",
       "id": 59
     },
@@ -720,7 +720,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI036%20-%20Kunstig%20intelligens%20til%20underst%C3%B8ttelse%20af%20visitation%20af%20henvisninger%20fra%20almen%20praksis.png?h=758764ae&amp;itok=mJ2Hswur",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI036%20-%20Kunstig%20intelligens%20til%20underst%C3%B8ttelse%20af%20visitation%20af%20henvisninger%20fra%20almen%20praksis.png?h=758764ae&amp;itok=GQR77I3R",
       "externalUrl": "https://offentlig-ai.dk/projekter/visitation-henvisninger-fra-almen-praksis",
       "id": 60
     },
@@ -732,7 +732,7 @@
       "category": "Uddannelse",
       "scope": "Danmark",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI032%20-%20SkoleGPT.jpg?h=0d1ca46e&amp;itok=hOf3rZmb",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI032%20-%20SkoleGPT.jpg?h=0d1ca46e&amp;itok=LIGB57xo",
       "externalUrl": "https://offentlig-ai.dk/projekter/skolegpt",
       "id": 61
     },
@@ -740,11 +740,11 @@
       "slug": "ejendomsvurderingssystemet",
       "title": "Ejendomsvurderingssystemet",
       "description": "Det danske ejendomsvurderingssystem bruger algoritmer som GAM og KNN til at vurdere ejendomsværdier. Formålet er at skabe mere præcise og retfærdige vurderinger, der anvendes til ejendomsskatter.",
-      "isSignature": true,
+      "isSignature": false,
       "category": "Sagsbehandling",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI075%20-%20Ejendomsvurderingssystem.jpg?h=0d1ca46e&amp;itok=-WsQy-Ws",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI075%20-%20Ejendomsvurderingssystem.jpg?h=0d1ca46e&amp;itok=_w8AGR1d",
       "externalUrl": "https://offentlig-ai.dk/projekter/ejendomsvurderingssystemet",
       "id": 62
     },
@@ -756,7 +756,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI033%20-%20AI%20udeblivelse.jpg?h=0d1ca46e&amp;itok=HhlTNxwR",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI033%20-%20AI%20udeblivelse.jpg?h=0d1ca46e&amp;itok=G-Jld4fG",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-udeblivelse",
       "id": 63
     },
@@ -768,7 +768,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI001%20-%20RoboRef.jpg?h=0d1ca46e&amp;itok=5A4FyBor",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI001%20-%20RoboRef.jpg?h=0d1ca46e&amp;itok=EXJ4hjsD",
       "externalUrl": "https://offentlig-ai.dk/projekter/roboref",
       "id": 64
     },
@@ -780,7 +780,7 @@
       "category": "Sundhed",
       "scope": "Danmark",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/PHAIR.jpg?h=183abc8c&amp;itok=NiwJxyXK",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/PHAIR.jpg?h=183abc8c&amp;itok=ThJvKfih",
       "externalUrl": "https://offentlig-ai.dk/projekter/phair",
       "id": 65
     },
@@ -792,7 +792,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Promte%20chat.jpg?h=183abc8c&amp;itok=8Fw3r4gg",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Promte%20chat.jpg?h=183abc8c&amp;itok=bF5y8h-i",
       "externalUrl": "https://offentlig-ai.dk/projekter/promte-chat",
       "id": 66
     },
@@ -804,7 +804,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/en%20chatbot%20til%20kommune.jpg?h=183abc8c&amp;itok=mILrqyyE",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/en%20chatbot%20til%20kommune.jpg?h=183abc8c&amp;itok=Kij9i697",
       "externalUrl": "https://offentlig-ai.dk/projekter/raffleai",
       "id": 67
     },
@@ -816,7 +816,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/gentofte%20kommune%20copilot.jpg?h=183abc8c&amp;itok=JYpUVc5A",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/gentofte%20kommune%20copilot.jpg?h=183abc8c&amp;itok=-1gUGSpG",
       "externalUrl": "https://offentlig-ai.dk/projekter/copilot",
       "id": 68
     },
@@ -824,11 +824,11 @@
       "slug": "ai-byggesagsbehandling",
       "title": "AI I BYGGESAGSBEHANDLING",
       "description": "Gentofte Kommune har som første kommune i Danmark implementeret AI i byggesagsbehandlingen. AI-assistenten hjælper sagsbehandlere med at give borgere bedre og mere præcise svar på byggesager, hvilket resulterer i kortere ventetid og mere kvalificeret vejledning.",
-      "isSignature": true,
+      "isSignature": false,
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/byggeai.jpg?h=183abc8c&amp;itok=-ZjDEwO2",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/byggeai.jpg?h=183abc8c&amp;itok=06omx8d7",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-byggesagsbehandling",
       "id": 69
     },
@@ -852,7 +852,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/8abc28f5-b3e6-43ca-840a-f1e286ba4884.png?h=197483aa&amp;itok=tcI8XXgH",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/8abc28f5-b3e6-43ca-840a-f1e286ba4884.png?h=197483aa&amp;itok=HbeGkMyC",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-gdpr-bot",
       "id": 71
     },
@@ -864,7 +864,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Topbillede-robotterne%20i%20Horsens.png?h=e92c2de8&amp;itok=mVoMoT7u",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Topbillede-robotterne%20i%20Horsens.png?h=e92c2de8&amp;itok=IbDtttd9",
       "externalUrl": "https://offentlig-ai.dk/projekter/rpa-robot-til-kontrol-sundhedsregninger-fra-regionen",
       "id": 72
     },
@@ -876,7 +876,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2014.%20nov.%202025%2C%2009.53.55.png?h=197483aa&amp;itok=lwsEVuC-",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2014.%20nov.%202025%2C%2009.53.55.png?h=197483aa&amp;itok=-10AHAuI",
       "externalUrl": "https://offentlig-ai.dk/projekter/rpa-horsens-bosager",
       "id": 73
     },
@@ -888,7 +888,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-robotter%20til%20byggesagsbehandling%20i%20K%C3%B8benhavns%20Kommune%20%281%29.jpg?h=183abc8c&amp;itok=8bs1kw-l",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-robotter%20til%20byggesagsbehandling%20i%20K%C3%B8benhavns%20Kommune%20%281%29.jpg?h=183abc8c&amp;itok=vRXLo-Fp",
       "externalUrl": "https://offentlig-ai.dk/projekter/indialog-bertha",
       "id": 74
     },
@@ -900,7 +900,7 @@
       "category": "Byggeri",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-robotter%20til%20byggesagsbehandling%20i%20K%C3%B8benhavns%20Kommune.jpg?h=183abc8c&amp;itok=4pAkHNA3",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-robotter%20til%20byggesagsbehandling%20i%20K%C3%B8benhavns%20Kommune.jpg?h=183abc8c&amp;itok=Hn9hmNny",
       "externalUrl": "https://offentlig-ai.dk/projekter/ddb-20",
       "id": 75
     },
@@ -912,7 +912,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-baseret%20monitoreringsl%C3%B8sning%20pa%CC%8A%20plejehjem%2C%20der%20anvender%20computer%20vision%20til%20at%20overva%CC%8Age%20beboere%20i%20realtid.%20Systemet%20registrerer%20s%C3%B8vn%2C%20v%C3%A6kning%2C%20mobilitet%20og%20fald.%20%281%29.jpg?h=183abc8c&amp;itok=7--a11Dr",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-baseret%20monitoreringsl%C3%B8sning%20pa%CC%8A%20plejehjem%2C%20der%20anvender%20computer%20vision%20til%20at%20overva%CC%8Age%20beboere%20i%20realtid.%20Systemet%20registrerer%20s%C3%B8vn%2C%20v%C3%A6kning%2C%20mobilitet%20og%20fald.%20%281%29.jpg?h=183abc8c&amp;itok=7D6fN52j",
       "externalUrl": "https://offentlig-ai.dk/projekter/digitalt-tilsyn",
       "id": 76
     },
@@ -924,7 +924,7 @@
       "category": "Transport",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Pluto%20RoadSystems%20er%20et%20AI-baseret%20digitalt%20vejtilsynssystem.jpg?h=183abc8c&amp;itok=C-1dHqeL",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Pluto%20RoadSystems%20er%20et%20AI-baseret%20digitalt%20vejtilsynssystem.jpg?h=183abc8c&amp;itok=5Bs5wLKo",
       "externalUrl": "https://offentlig-ai.dk/projekter/pluto",
       "id": 77
     },
@@ -936,7 +936,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Roboref%20er%20en%20AI-l%C3%B8sning%20til%20automatisk%20m%C3%B8denotatskrivning%20og%20referatudarbejdelse%2C%20der%20integreres%20direkte%20i%20KMD%20Momentum-fagsystemet%20for%20at%20effektivisere%20dokumentationsprocessen%20i%20kommunal%20sagsbehandling.%20%281%29.jpg?h=183abc8c&amp;itok=YfUiWahM",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Roboref%20er%20en%20AI-l%C3%B8sning%20til%20automatisk%20m%C3%B8denotatskrivning%20og%20referatudarbejdelse%2C%20der%20integreres%20direkte%20i%20KMD%20Momentum-fagsystemet%20for%20at%20effektivisere%20dokumentationsprocessen%20i%20kommunal%20sagsbehandling.%20%281%29.jpg?h=183abc8c&amp;itok=No9Mxf5G",
       "externalUrl": "https://offentlig-ai.dk/projekter/kmd-momentum",
       "id": 78
     },
@@ -948,7 +948,7 @@
       "category": "Kultur",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/a%20nice%20vacation%20in%20vejle%20denmark.jpg?h=183abc8c&amp;itok=Go3k0zu8",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/a%20nice%20vacation%20in%20vejle%20denmark.jpg?h=183abc8c&amp;itok=uCrOeiQm",
       "externalUrl": "https://offentlig-ai.dk/projekter/victoria",
       "id": 79
     },
@@ -956,11 +956,11 @@
       "slug": "generativ-ai-site-search",
       "title": "Generativ AI Site Search",
       "description": "AI-drevet søgeplatform på Vejle Kommunes intranet. Samler indholds- og personsøgning på én søgeside. Forstår kontekst, synonymer og brugerintention gennem AI-teknologi.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-baseret%20monitoreringsl%C3%B8sning%20pa%CC%8A%20plejehjem%2C%20der%20anvender%20computer%20vision%20til%20at%20overva%CC%8Age%20beboere%20i%20realtid.%20Systemet%20registrerer%20s%C3%B8vn%2C%20v%C3%A6kning%2C%20mobilitet%20og%20fald..jpg?h=183abc8c&amp;itok=gxjCoFf5",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/AI-baseret%20monitoreringsl%C3%B8sning%20pa%CC%8A%20plejehjem%2C%20der%20anvender%20computer%20vision%20til%20at%20overva%CC%8Age%20beboere%20i%20realtid.%20Systemet%20registrerer%20s%C3%B8vn%2C%20v%C3%A6kning%2C%20mobilitet%20og%20fald..jpg?h=183abc8c&amp;itok=fYe7ZT_0",
       "externalUrl": "https://offentlig-ai.dk/projekter/generativ-ai-site-search",
       "id": 80
     },
@@ -972,7 +972,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Imagine%20robots%20taking%20care%20of%20bills%20and%20money%20%282%29.jpg?h=183abc8c&amp;itok=rh5KQMQM",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Imagine%20robots%20taking%20care%20of%20bills%20and%20money%20%282%29.jpg?h=183abc8c&amp;itok=UCyYQtqH",
       "externalUrl": "https://offentlig-ai.dk/projekter/kaunt",
       "id": 81
     },
@@ -984,7 +984,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2011.18.33.png?h=197483aa&amp;itok=slh14PO-",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2011.18.33.png?h=197483aa&amp;itok=oz6AXP6t",
       "externalUrl": "https://offentlig-ai.dk/projekter/muni",
       "id": 82
     },
@@ -996,7 +996,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2012.56.59.png?h=197483aa&amp;itok=r6rlmHd6",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2012.56.59.png?h=197483aa&amp;itok=2LbCrvqR",
       "externalUrl": "https://offentlig-ai.dk/projekter/teton",
       "id": 83
     },
@@ -1008,7 +1008,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2014.00.56.png?h=197483aa&amp;itok=4aE328JZ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2014.00.56.png?h=197483aa&amp;itok=CcxBEmyk",
       "externalUrl": "https://offentlig-ai.dk/projekter/digirehab",
       "id": 84
     },
@@ -1020,7 +1020,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2014.40.54.png?h=436b82d4&amp;itok=64_4geB0",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2014.40.54.png?h=436b82d4&amp;itok=NDD3umZ1",
       "externalUrl": "https://offentlig-ai.dk/projekter/forenkling-optimering-blanketter-med-eg-netblanket",
       "id": 85
     },
@@ -1032,7 +1032,7 @@
       "category": "Transport",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2016.53.06.png?h=197483aa&amp;itok=OMbVTuNy",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%205.%20nov.%202025%2C%2016.53.06.png?h=197483aa&amp;itok=0wN6yOQt",
       "externalUrl": "https://offentlig-ai.dk/projekter/plan",
       "id": 86
     },
@@ -1044,7 +1044,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%206.%20nov.%202025%2C%2009.40.43.png?h=197483aa&amp;itok=56P9Spoi",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%206.%20nov.%202025%2C%2009.40.43.png?h=197483aa&amp;itok=RRLhzakT",
       "externalUrl": "https://offentlig-ai.dk/projekter/talt",
       "id": 87
     },
@@ -1056,7 +1056,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%206.%20nov.%202025%2C%2009.54.24.png?h=0bbc924f&amp;itok=MU8bIy79",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%206.%20nov.%202025%2C%2009.54.24.png?h=0bbc924f&amp;itok=jy2Y2I-c",
       "externalUrl": "https://offentlig-ai.dk/projekter/lovot",
       "id": 88
     },
@@ -1068,7 +1068,7 @@
       "category": "Uddannelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2012.33.18.png?h=436b82d4&amp;itok=dFnkrfIi",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2012.33.18.png?h=436b82d4&amp;itok=ckgujOt9",
       "externalUrl": "https://offentlig-ai.dk/projekter/tts",
       "id": 89
     },
@@ -1080,7 +1080,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2012.53.54.png?h=197483aa&amp;itok=xpPh3wQH",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2012.53.54.png?h=197483aa&amp;itok=a5PbW9yO",
       "externalUrl": "https://offentlig-ai.dk/projekter/hugin-findr",
       "id": 90
     },
@@ -1088,11 +1088,11 @@
       "slug": "moedereferat-bot",
       "title": "Mødereferat bot",
       "description": "Projektet omfatter udviklingen af en AI-baseret transskriberingsløsning, der automatisk genererer mødereferater ved at transskribere samtaler i realtid og strukturere indholdet i standardiserede skabeloner.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2014.14.01.png?h=197483aa&amp;itok=9N1erWiE",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2014.14.01.png?h=197483aa&amp;itok=LJaDgCqM",
       "externalUrl": "https://offentlig-ai.dk/projekter/moedereferat-bot",
       "id": 91
     },
@@ -1104,7 +1104,7 @@
       "category": "Uddannelse",
       "scope": "",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2015.32.14.png?h=436b82d4&amp;itok=utwI9nDT",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2015.32.14.png?h=436b82d4&amp;itok=jlNr7SjK",
       "externalUrl": "https://offentlig-ai.dk/projekter/teacherspace",
       "id": 92
     },
@@ -1116,7 +1116,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2021.52.10.png?h=436b82d4&amp;itok=SdKJvTtb",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%207.%20nov.%202025%2C%2021.52.10.png?h=436b82d4&amp;itok=JZyGIjnV",
       "externalUrl": "https://offentlig-ai.dk/projekter/telefonrobot",
       "id": 93
     },
@@ -1128,7 +1128,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%208.%20nov.%202025%2C%2007.11.27.png?h=197483aa&amp;itok=ZEyAIx_o",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%208.%20nov.%202025%2C%2007.11.27.png?h=197483aa&amp;itok=XK_IRz74",
       "externalUrl": "https://offentlig-ai.dk/projekter/supwiz",
       "id": 94
     },
@@ -1140,7 +1140,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%208.%20nov.%202025%2C%2007.20.23.png?h=436b82d4&amp;itok=YuZFS-jg",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%208.%20nov.%202025%2C%2007.20.23.png?h=436b82d4&amp;itok=VNsKa_2E",
       "externalUrl": "https://offentlig-ai.dk/projekter/smart-tree-inventory",
       "id": 95
     },
@@ -1148,11 +1148,11 @@
       "slug": "boerge",
       "title": "Børge",
       "description": "AI-assistenten Børge hjælper borger.dk's redaktører med at omskrive tekster til borger.dk efter den seneste skrivevejledning. Systemet blev lanceret i februar 2025 af Digitaliseringsstyrelsen og fungerer som en sparringspartner for redaktører i de ca. 40 forskellige myndigheder, der har ansvar for indholdet på de 1.200 indholdssider på borger.dk.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sagsbehandling",
       "scope": "",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2011.54.03.png?h=197483aa&amp;itok=25o8xHfH",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2011.54.03.png?h=197483aa&amp;itok=0MgBH4hp",
       "externalUrl": "https://offentlig-ai.dk/projekter/boerge",
       "id": 96
     },
@@ -1160,11 +1160,11 @@
       "slug": "saigsresum",
       "title": "sAIgsresum",
       "description": "Sagsresumé hjælper ansatte på udførerområdet med at skabe et struktureret resumé med kildehenvisning. Løsningen er modulopbygget med henblik på mulig skalering. I plotcasen hjælper Sagsresumé ansatte med forberedelse til møder, der kræver læsning af op til 100 sider.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2014.03.54.png?h=436b82d4&amp;itok=SnOeHM_M",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2014.03.54.png?h=436b82d4&amp;itok=jYn2wm71",
       "externalUrl": "https://offentlig-ai.dk/projekter/saigsresum",
       "id": 97
     },
@@ -1176,7 +1176,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2014.14.31.png?h=197483aa&amp;itok=Xd9-yHq7",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2010.%20nov.%202025%2C%2014.14.31.png?h=197483aa&amp;itok=upt15yoE",
       "externalUrl": "https://offentlig-ai.dk/projekter/chatbot-til-bedre-dokumentation-brevkvalitet",
       "id": 98
     },
@@ -1188,7 +1188,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/forestil%20dig%20Pa%CC%8A%20personaleomra%CC%8Adet%20er%20der%20udviklet%20en%20AI-l%C3%B8sning%20til%20at%20identificere%20opsigelsessager%2C%20samt%20tjekke%20gyldigheden%20af%20en%20opsigelse%20ud%20fra%20en%20r%C3%A6kke%20kriterier.%20Resultaterne%20kvalitetssikres%20af%20en%20sagsbehandler..jpg?h=183abc8c&amp;itok=o7tm4mkA",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/forestil%20dig%20Pa%CC%8A%20personaleomra%CC%8Adet%20er%20der%20udviklet%20en%20AI-l%C3%B8sning%20til%20at%20identificere%20opsigelsessager%2C%20samt%20tjekke%20gyldigheden%20af%20en%20opsigelse%20ud%20fra%20en%20r%C3%A6kke%20kriterier.%20Resultaterne%20kvalitetssikres%20af%20en%20sagsbehandler..jpg?h=183abc8c&amp;itok=PKOODs06",
       "externalUrl": "https://offentlig-ai.dk/projekter/validering-opsigelser",
       "id": 99
     },
@@ -1196,11 +1196,11 @@
       "slug": "property-ai",
       "title": "Property AI",
       "description": "Proprty.ai er et AI-baseret system til automatiseret tilstandsvurdering og vedligeholdelsesplanlægning af kommunale bygninger. Systemet kombinerer kunstig intelligens med bygningsfaglig ekspertise til at forudsige restlevetid og vedligeholdelsbehov for bygningsdele.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Byggeri",
       "scope": "",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/prop.jpg?h=183abc8c&amp;itok=W1T9gIaJ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/prop.jpg?h=183abc8c&amp;itok=BY6VVtNm",
       "externalUrl": "https://offentlig-ai.dk/projekter/property-ai",
       "id": 100
     },
@@ -1212,7 +1212,7 @@
       "category": "Transport",
       "scope": "",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Imagine%20an%20ai%20for%20photos%20and%20geodata%20for%20road%20surveilance.jpg?h=183abc8c&amp;itok=k3A_8oZQ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Imagine%20an%20ai%20for%20photos%20and%20geodata%20for%20road%20surveilance.jpg?h=183abc8c&amp;itok=hAyUMd_w",
       "externalUrl": "https://offentlig-ai.dk/projekter/rsi-road-surface-inspector",
       "id": 101
     },
@@ -1224,7 +1224,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20nov.%202025%2C%2015.40.33.png?h=197483aa&amp;itok=E-kzcIox",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20nov.%202025%2C%2015.40.33.png?h=197483aa&amp;itok=kONEmf_s",
       "externalUrl": "https://offentlig-ai.dk/projekter/stillingsopslag",
       "id": 102
     },
@@ -1236,7 +1236,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20nov.%202025%2C%2016.00.41.png?h=197483aa&amp;itok=nTF4QfhS",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20nov.%202025%2C%2016.00.41.png?h=197483aa&amp;itok=xLsdlC9C",
       "externalUrl": "https://offentlig-ai.dk/projekter/domus-chat",
       "id": 103
     },
@@ -1248,7 +1248,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2011.19.20.png?h=197483aa&amp;itok=FklJVPTq",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2011.19.20.png?h=197483aa&amp;itok=HyDA_7dU",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-jobmatch",
       "id": 104
     },
@@ -1260,7 +1260,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2011.40.32.png?h=197483aa&amp;itok=YexUIMWP",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2011.40.32.png?h=197483aa&amp;itok=O3hW5xVL",
       "externalUrl": "https://offentlig-ai.dk/projekter/deloitte-plans",
       "id": 105
     },
@@ -1268,11 +1268,11 @@
       "slug": "brickit",
       "title": "Brickit",
       "description": "Brickit er en app der anvender billedgenkendelse til at scanne LEGO-klodser og foreslå byggevejledninger. Appen er testet i 2. klasse til at styrke kreativitet og engagement i indskolingen.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Uddannelse",
       "scope": "",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2012.09.19.png?h=197483aa&amp;itok=_HIHM8bM",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2012.09.19.png?h=197483aa&amp;itok=cWK1xNUv",
       "externalUrl": "https://offentlig-ai.dk/projekter/brickit",
       "id": 106
     },
@@ -1284,7 +1284,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2012.16.24.png?h=197483aa&amp;itok=PmOaMS1r",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2012.16.24.png?h=197483aa&amp;itok=f4NaL7A5",
       "externalUrl": "https://offentlig-ai.dk/projekter/graffitirenhold",
       "id": 107
     },
@@ -1296,7 +1296,7 @@
       "category": "Udlændinge og asyl",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2014.20.37.png?h=197483aa&amp;itok=bkJz6osM",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2014.20.37.png?h=197483aa&amp;itok=HJUQfxyL",
       "externalUrl": "https://offentlig-ai.dk/projekter/lets-talk",
       "id": 108
     },
@@ -1308,7 +1308,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2013.55.22.png?h=197483aa&amp;itok=fbGjJrjK",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2013.55.22.png?h=197483aa&amp;itok=lR1IqFqG",
       "externalUrl": "https://offentlig-ai.dk/projekter/pondoo-ai",
       "id": 109
     },
@@ -1320,7 +1320,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2016.36.37.png?h=436b82d4&amp;itok=cZ4zwN_L",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20nov.%202025%2C%2016.36.37.png?h=436b82d4&amp;itok=TOHIxy4e",
       "externalUrl": "https://offentlig-ai.dk/projekter/kmd-letbetaling",
       "id": 110
     },
@@ -1332,7 +1332,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%202.%20dec.%202025%2C%2015.20.58.png?h=436b82d4&amp;itok=jd_H9efQ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%202.%20dec.%202025%2C%2015.20.58.png?h=436b82d4&amp;itok=Fj0EHVLU",
       "externalUrl": "https://offentlig-ai.dk/projekter/psycop",
       "id": 111
     },
@@ -1344,7 +1344,7 @@
       "category": "Uddannelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2013.06.46.png?h=197483aa&amp;itok=rjdILOvS",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2013.06.46.png?h=197483aa&amp;itok=yQ91vpu7",
       "externalUrl": "https://offentlig-ai.dk/projekter/power-automate-tidligere-microsoft-flow",
       "id": 112
     },
@@ -1356,7 +1356,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2014.31.31.png?h=197483aa&amp;itok=ax7OefAZ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2014.31.31.png?h=197483aa&amp;itok=4nibkaTd",
       "externalUrl": "https://offentlig-ai.dk/projekter/notebookk",
       "id": 113
     },
@@ -1364,11 +1364,11 @@
       "slug": "kommunegpt",
       "title": "KommuneGPT",
       "description": "KommuneGPT er et fælleskommunalt generativt AI-værktøj, der fungerer som en troværdig digital assistent. Systemet udvikles i samarbejde mellem Næstved, Odense, Aarhus, Vejle og Sønderborg kommuner samt KL.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2015.08.38.png?h=197483aa&amp;itok=9PcuATA9",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2015.08.38.png?h=197483aa&amp;itok=j-H99BHa",
       "externalUrl": "https://offentlig-ai.dk/projekter/kommunegpt",
       "id": 114
     },
@@ -1380,7 +1380,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2015.25.40.png?h=197483aa&amp;itok=UDr0m6S1",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%203.%20dec.%202025%2C%2015.25.40.png?h=197483aa&amp;itok=Ivp0cF57",
       "externalUrl": "https://offentlig-ai.dk/projekter/kaia",
       "id": 115
     },
@@ -1392,7 +1392,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/A%20hospital%20humanoid%20robot%20in%20blue%20and%20white%20that%20looks%20%20like%20HospiBot.jpg?h=183abc8c&amp;itok=Om5XCF3M",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/A%20hospital%20humanoid%20robot%20in%20blue%20and%20white%20that%20looks%20%20like%20HospiBot.jpg?h=183abc8c&amp;itok=bGSuBMWD",
       "externalUrl": "https://offentlig-ai.dk/projekter/hospibot",
       "id": 116
     },
@@ -1404,7 +1404,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%20Dec%208%2C%202025%20at%2012_55_57%20PM.png?h=0bbc924f&amp;itok=j7Usf9sy",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%20Dec%208%2C%202025%20at%2012_55_57%20PM.png?h=0bbc924f&amp;itok=Kh8ODMkn",
       "externalUrl": "https://offentlig-ai.dk/projekter/trothilde",
       "id": 117
     },
@@ -1416,7 +1416,7 @@
       "category": "Sundhed",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Firefly_Gemini%20Flash_En%20plejeperson%20opdager%20hurtigt%2C%20at%20en%20%C3%A6ldre%20borger%20er%20faldet%20i%20sit%20hjem%2C%20mens%20diskret%20451639.png?h=579c3eab&amp;itok=MsTRqe1H",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/Firefly_Gemini%20Flash_En%20plejeperson%20opdager%20hurtigt%2C%20at%20en%20%C3%A6ldre%20borger%20er%20faldet%20i%20sit%20hjem%2C%20mens%20diskret%20451639.png?h=579c3eab&amp;itok=aD5vJ3fk",
       "externalUrl": "https://offentlig-ai.dk/projekter/orikio-tidligere-oso-ai",
       "id": 118
     },
@@ -1428,7 +1428,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%20Dec%208%2C%202025%20at%2012_49_31%20PM.png?h=0bbc924f&amp;itok=kI95ypyK",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%20Dec%208%2C%202025%20at%2012_49_31%20PM.png?h=0bbc924f&amp;itok=rjAOu1KE",
       "externalUrl": "https://offentlig-ai.dk/projekter/kk-gpt",
       "id": 119
     },
@@ -1440,7 +1440,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%209.%20dec.%202025%2C%2009.51.50.png?h=197483aa&amp;itok=p3LktBQf",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%209.%20dec.%202025%2C%2009.51.50.png?h=197483aa&amp;itok=KMKIcufv",
       "externalUrl": "https://offentlig-ai.dk/projekter/aktio",
       "id": 120
     },
@@ -1452,7 +1452,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%209.%20dec.%202025%2C%2011.22.38.png?h=197483aa&amp;itok=CEfuwNhd",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%209.%20dec.%202025%2C%2011.22.38.png?h=197483aa&amp;itok=ASIUuXaA",
       "externalUrl": "https://offentlig-ai.dk/projekter/mailife-genair8",
       "id": 121
     },
@@ -1464,7 +1464,7 @@
       "category": "Sundhed",
       "scope": "Regionalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2013.11.59.png?h=436b82d4&amp;itok=Nw3x7-IJ",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2013.11.59.png?h=436b82d4&amp;itok=oOZsTFvo",
       "externalUrl": "https://offentlig-ai.dk/projekter/rigshospitalet-chatbot",
       "id": 122
     },
@@ -1476,7 +1476,7 @@
       "category": "Social",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2015.48.21.png?h=436b82d4&amp;itok=0tkId90o",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2015.48.21.png?h=436b82d4&amp;itok=nL5-di8t",
       "externalUrl": "https://offentlig-ai.dk/projekter/chatbot-var",
       "id": 123
     },
@@ -1488,7 +1488,7 @@
       "category": "Uddannelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2016.07.28.png?h=436b82d4&amp;itok=ILnFZavk",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2011.%20dec.%202025%2C%2016.07.28.png?h=436b82d4&amp;itok=aYpyEkAA",
       "externalUrl": "https://offentlig-ai.dk/projekter/atel",
       "id": 124
     },
@@ -1500,7 +1500,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20dec.%202025%2C%2012.58.05.png?h=436b82d4&amp;itok=bF4HmAWn",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2012.%20dec.%202025%2C%2012.58.05.png?h=436b82d4&amp;itok=yVDz39Qj",
       "externalUrl": "https://offentlig-ai.dk/projekter/konsido",
       "id": 125
     },
@@ -1512,7 +1512,7 @@
       "category": "Transport",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2015.11.10.png?h=197483aa&amp;itok=NFoMXDTW",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2015.11.10.png?h=197483aa&amp;itok=Yc7fZabr",
       "externalUrl": "https://offentlig-ai.dk/projekter/computervision-paa-trafik",
       "id": 126
     },
@@ -1524,7 +1524,7 @@
       "category": "Transport",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2015.24.58.png?h=436b82d4&amp;itok=sIAJMvkv",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2015.24.58.png?h=436b82d4&amp;itok=iFeEU4In",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-drevet-vejsyn",
       "id": 127
     },
@@ -1536,7 +1536,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2016.00.46.png?h=197483aa&amp;itok=tzwTNPx7",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2016.00.46.png?h=197483aa&amp;itok=l-_h8Mhd",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-go",
       "id": 128
     },
@@ -1548,7 +1548,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2016.17.42.png?h=197483aa&amp;itok=qsuecel_",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2015.%20dec.%202025%2C%2016.17.42.png?h=197483aa&amp;itok=ublMguBh",
       "externalUrl": "https://offentlig-ai.dk/projekter/biped",
       "id": 129
     },
@@ -1560,7 +1560,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2012.03.39.png?h=197483aa&amp;itok=MDtGZkhw",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2012.03.39.png?h=197483aa&amp;itok=DFINuyQ5",
       "externalUrl": "https://offentlig-ai.dk/projekter/kaila",
       "id": 130
     },
@@ -1572,7 +1572,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2015.20.43.png?h=0bbc924f&amp;itok=HsI61c0o",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2015.20.43.png?h=0bbc924f&amp;itok=PVPQtuCC",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-hoering",
       "id": 131
     },
@@ -1584,7 +1584,7 @@
       "category": "Beskæftigelse",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2015.34.12.png?h=0bbc924f&amp;itok=vZssmnG5",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2015.34.12.png?h=0bbc924f&amp;itok=gu1dQ-bA",
       "externalUrl": "https://offentlig-ai.dk/projekter/kai",
       "id": 132
     },
@@ -1596,7 +1596,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2018.49.50.png?h=197483aa&amp;itok=JBeqq526",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2018.49.50.png?h=197483aa&amp;itok=LmmdINSn",
       "externalUrl": "https://offentlig-ai.dk/projekter/gladgpt",
       "id": 133
     },
@@ -1608,7 +1608,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2019.27.51.png?h=197483aa&amp;itok=eDBDjcmz",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2017.%20dec.%202025%2C%2019.27.51.png?h=197483aa&amp;itok=B9OBPJGt",
       "externalUrl": "https://offentlig-ai.dk/projekter/topdesk-ai-vidensassistent",
       "id": 134
     },
@@ -1616,11 +1616,11 @@
       "slug": "ai-miljoerapport-arbejdstitel",
       "title": "AI-Miljørapport (arbejdstitel)",
       "description": "AI-løsning der samler relevante data fra mange kilder og genererer udkast til miljørapporter, som efterfølgende kvalitetssikres af medarbejdere i Plan- og Landdistriktsstyrelsen.",
-      "isSignature": false,
+      "isSignature": true,
       "category": "Natur og miljø",
       "scope": "Danmark",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2011.14.04.png?h=436b82d4&amp;itok=s3lqByRW",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2011.14.04.png?h=436b82d4&amp;itok=O9GGErez",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-miljoerapport-arbejdstitel",
       "id": 135
     },
@@ -1632,7 +1632,7 @@
       "category": "Beskæftigelse",
       "scope": "",
       "status": "",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.00.34.png?h=197483aa&amp;itok=K4KG4rCg",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.00.34.png?h=197483aa&amp;itok=Hm-iDMIa",
       "externalUrl": "https://offentlig-ai.dk/projekter/ndj",
       "id": 136
     },
@@ -1644,7 +1644,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.09.01.png?h=197483aa&amp;itok=v2m2EoJX",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.09.01.png?h=197483aa&amp;itok=yG1OdZUI",
       "externalUrl": "https://offentlig-ai.dk/projekter/ai-ticket-routing",
       "id": 137
     },
@@ -1656,7 +1656,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.34.22.png?h=197483aa&amp;itok=JmqV_3d1",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2018.%20dec.%202025%2C%2013.34.22.png?h=197483aa&amp;itok=eMh4V-oB",
       "externalUrl": "https://offentlig-ai.dk/projekter/holgerbaek",
       "id": 138
     },
@@ -1668,7 +1668,7 @@
       "category": "Kultur",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.32.33.png?h=0bbc924f&amp;itok=0qz6_c-e",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.32.33.png?h=0bbc924f&amp;itok=dVguoOPg",
       "externalUrl": "https://offentlig-ai.dk/projekter/byhistoriskgpt",
       "id": 139
     },
@@ -1680,7 +1680,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.57.58.png?h=197483aa&amp;itok=fapsFZ8S",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.57.58.png?h=197483aa&amp;itok=jTtlVjgF",
       "externalUrl": "https://offentlig-ai.dk/projekter/heimdal-dns",
       "id": 140
     },
@@ -1692,7 +1692,7 @@
       "category": "Natur og miljø",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2011.09.36.png?h=0bbc924f&amp;itok=m5JLhAPi",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2011.09.36.png?h=0bbc924f&amp;itok=RiCt9S_Q",
       "externalUrl": "https://offentlig-ai.dk/projekter/ento",
       "id": 141
     },
@@ -1704,7 +1704,7 @@
       "category": "Andet",
       "scope": "Kommunalt",
       "status": "Planlægges taget i brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.32.33_0.png?h=0bbc924f&amp;itok=QthSHLH-",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2010.32.33_0.png?h=0bbc924f&amp;itok=9O4pXLTP",
       "externalUrl": "https://offentlig-ai.dk/projekter/lejregpt",
       "id": 142
     },
@@ -1716,7 +1716,7 @@
       "category": "Sagsbehandling",
       "scope": "Kommunalt",
       "status": "I brug",
-      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2014.51.30.png?h=197483aa&amp;itok=r3V5rvza",
+      "imageUrl": "https://offentlig-ai.dk/files/styles/open_graph/public/media/image/ChatGPT%20Image%2019.%20dec.%202025%2C%2014.51.30.png?h=197483aa&amp;itok=Zd6fQeGM",
       "externalUrl": "https://offentlig-ai.dk/projekter/edistribution",
       "id": 143
     }

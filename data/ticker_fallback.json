@@ -1,142 +1,51 @@
 [
   {
-    "title": "OpenAI trial lays bare rivalries behind start-up’s $852bn rise",
-    "url": "https://www.ft.com/content/c68bd831-434d-486c-86df-54d0369391ef",
+    "title": "The ‘innovators and disrupters’ hired to bring AI to the UK public sector",
+    "url": "https://www.ft.com/content/4df50959-1cd6-4d10-a586-9aaf589339e6",
     "source": "www.ft.com",
-    "published_at": "2026-05-10T06:00:38",
-    "scraped_at": "2026-05-10T11:07:11.386475Z"
+    "published_at": "2026-07-12T04:00:14",
+    "scraped_at": "2026-07-12T16:17:20.936617Z"
   },
   {
-    "title": "Women at the sharp end as AI takes over administrative roles",
-    "url": "https://www.ft.com/content/946650d6-f61f-4b98-8bb5-c0020c8a205f",
+    "title": "How AI rebrands fail to deliver a lasting share price boost",
+    "url": "https://www.ft.com/content/07fa9ce9-ac21-484c-a57c-078b0bb0fd3b",
     "source": "www.ft.com",
-    "published_at": "2026-05-10T04:00:04",
-    "scraped_at": "2026-05-10T11:07:11.386502Z"
+    "published_at": "2026-07-11T15:41:24",
+    "scraped_at": "2026-07-12T16:17:20.936706Z"
   },
   {
-    "title": "Voice AI in India is hard. Wispr Flow is betting on it anyway.",
-    "url": "https://techcrunch.com/2026/05/09/voice-ai-in-india-is-hard-wispr-flow-is-betting-on-it-anyway/",
-    "source": "Jagmeet Singh",
-    "published_at": "2026-05-10T02:00:00",
-    "scraped_at": "2026-05-10T11:07:11.127840Z"
-  },
-  {
-    "title": "So you’ve heard these AI terms and nodded along; let’s fix that",
-    "url": "https://techcrunch.com/2026/05/09/artificial-intelligence-definition-glossary-hallucinations-guide-to-common-ai-terms/",
-    "source": "Natasha Lomas, Romain Dillet, Kyle Wiggers, Lucas Ropek",
-    "published_at": "2026-05-09T21:45:00",
-    "scraped_at": "2026-05-10T11:07:11.127854Z"
-  },
-  {
-    "title": "Nvidia embraces role of AI investor, pushing past $40 billion in equity bets this year",
-    "url": "https://www.cnbc.com/2026/05/09/nvidia-embraces-ai-investor-topping-40-billion-in-equity-bets-2026.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-09T16:41:22",
-    "scraped_at": "2026-05-10T11:07:11.372689Z"
-  },
-  {
-    "title": "Nvidia has already committed $40B to equity AI deals this year",
-    "url": "https://techcrunch.com/2026/05/09/nvidia-has-already-committed-40b-to-equity-ai-deals-this-year/",
-    "source": "Anthony Ha",
-    "published_at": "2026-05-09T14:43:30",
-    "scraped_at": "2026-05-10T11:07:11.127862Z"
-  },
-  {
-    "title": "Hackable Robot Lawn Mower Unlocks a New Nightmare",
-    "url": "https://www.wired.com/story/security-news-this-week-hackable-robot-lawnmower-unlocks-a-new-nightmare/",
-    "source": "Maddy Varner, Matt Burgess, Andy Greenberg, Andrew Couts",
-    "published_at": "2026-05-09T10:30:00",
-    "scraped_at": "2026-05-10T11:07:11.046494Z"
-  },
-  {
-    "title": "Musk v. Altman week 2: OpenAI fires back, and Shivon Zilis reveals that Musk tried to poach Sam Altman",
-    "url": "https://www.technologyreview.com/2026/05/08/1137008/musk-v-altman-week-2-openai-fires-back-and-shivon-zilis-reveals-that-musk-tried-to-poach-sam-altman/",
-    "source": "Michelle Kim",
-    "published_at": "2026-05-08T23:59:19",
-    "scraped_at": "2026-05-10T11:07:11.123201Z"
-  },
-  {
-    "title": "Laid-off Oracle workers tried to negotiate better severance. Oracle said no.",
-    "url": "https://techcrunch.com/2026/05/08/laid-off-oracle-workers-tried-to-negotiate-better-severance-oracle-said-no/",
-    "source": "Julie Bort",
-    "published_at": "2026-05-08T22:59:05",
-    "scraped_at": "2026-05-10T11:07:11.127875Z"
-  },
-  {
-    "title": "Jim Cramer says 'it's not to late' to own AI winners powering the market",
-    "url": "https://www.cnbc.com/2026/05/08/jim-cramer-its-not-to-late-to-own-ai-winners.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T22:35:36",
-    "scraped_at": "2026-05-10T11:07:11.372729Z"
-  },
-  {
-    "title": "Intel shares soar on Apple chip deal report. Here's why it signals a total pivot for chipmaking",
-    "url": "https://www.cnbc.com/2026/05/08/intel-stock-apple-chip-deal.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T22:18:30",
-    "scraped_at": "2026-05-10T11:07:11.372771Z"
-  },
-  {
-    "title": "Wall Street sees 'changing of the guard in AI' as Intel, AMD shares soar while Nvidia lags",
-    "url": "https://www.cnbc.com/2026/05/08/wall-street-ai-chip-love-moves-from-nvidia-to-intel-amd-and-micron.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T20:07:35",
-    "scraped_at": "2026-05-10T11:07:11.372798Z"
-  },
-  {
-    "title": "Intel’s comeback story is even wilder than it seems",
-    "url": "https://techcrunch.com/2026/05/08/intels-comeback-story-is-even-wilder-than-it-seems/",
-    "source": "Connie Loizos",
-    "published_at": "2026-05-08T20:02:52",
-    "scraped_at": "2026-05-10T11:07:11.127888Z"
-  },
-  {
-    "title": "Anthropic's Mythos set off a cybersecurity 'hysteria.' Experts say the threat was already here",
-    "url": "https://www.cnbc.com/2026/05/08/anthropic-mythos-ai-cybersecurity-banks.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T20:01:44",
-    "scraped_at": "2026-05-10T11:07:11.372946Z"
-  },
-  {
-    "title": "Fitness wearable Whoop to offer on-demand clinician access to U.S. users",
-    "url": "https://www.cnbc.com/2026/05/08/whoop-on-demand-clinician-access.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T19:26:06",
-    "scraped_at": "2026-05-10T11:07:11.372902Z"
-  },
-  {
-    "title": "All the latest updates on AI data centers",
-    "url": "https://www.theverge.com/ai-artificial-intelligence/902546/data-centers-ai-energy-power-grids-controversy",
-    "source": "Justine Calma",
-    "published_at": "2026-05-08T18:45:08",
-    "scraped_at": "2026-05-10T11:07:11.103076Z"
-  },
-  {
-    "title": "Cloudflare says AI made 1,100 jobs obsolete, even as revenue hit a record high",
-    "url": "https://techcrunch.com/2026/05/08/cloudflare-says-ai-made-1100-jobs-obsolete-even-as-revenue-hit-a-record-high/",
-    "source": "Julie Bort",
-    "published_at": "2026-05-08T18:33:21",
-    "scraped_at": "2026-05-10T11:07:11.127898Z"
-  },
-  {
-    "title": "While AI pumps up portfolios, some companies sound the alarm",
-    "url": "https://www.ft.com/content/9fc6274f-8455-4728-bda7-d2ced906bdd6",
+    "title": "Wealthy warned over HMRC’s use of AI in tax crackdown",
+    "url": "https://www.ft.com/content/ab7f7fba-2e4a-4336-afd1-418b10c8248b",
     "source": "www.ft.com",
-    "published_at": "2026-05-08T16:26:27",
-    "scraped_at": "2026-05-10T11:07:11.386539Z"
+    "published_at": "2026-07-11T04:00:41",
+    "scraped_at": "2026-07-12T16:17:20.936736Z"
   },
   {
-    "title": "Jim Cramer says this struggling stock could remain under pressure in AI-driven market",
-    "url": "https://www.cnbc.com/2026/05/08/cramer-this-struggling-stock-may-remain-challenged-in-ai-driven-market.html",
-    "source": "www.cnbc.com",
-    "published_at": "2026-05-08T15:55:12",
-    "scraped_at": "2026-05-10T11:07:11.372851Z"
+    "title": "AI companies are throwing museums a lifeline. What do they want in return?",
+    "url": "https://www.ft.com/content/998152e8-90cd-4d95-ae43-e07b773ab943",
+    "source": "www.ft.com",
+    "published_at": "2026-07-11T04:00:34",
+    "scraped_at": "2026-07-12T16:17:20.936763Z"
   },
   {
-    "title": "The “people’s airline” and the enterprise AI gold rush",
-    "url": "https://techcrunch.com/podcast/the-peoples-airline-and-the-enterprise-ai-gold-rush/",
-    "source": "Kirsten Korosec, Anthony Ha, Sean O'Kane, Theresa Loconsolo",
-    "published_at": "2026-05-08T15:46:17",
-    "scraped_at": "2026-05-10T11:07:11.127919Z"
+    "title": "Why the chips are down despite the AI boom",
+    "url": "https://www.ft.com/content/3990d688-f716-46d0-8508-0318265431f5",
+    "source": "www.ft.com",
+    "published_at": "2026-07-11T04:00:34",
+    "scraped_at": "2026-07-12T16:17:20.936792Z"
+  },
+  {
+    "title": "Who cleans up after the vibe-coding party?",
+    "url": "https://www.ft.com/content/cec8df9e-b43b-4cd1-8feb-c07e804e8d33",
+    "source": "www.ft.com",
+    "published_at": "2026-07-11T04:00:10",
+    "scraped_at": "2026-07-12T16:17:20.936818Z"
+  },
+  {
+    "title": "Apple sues OpenAI alleging theft of top-secret information",
+    "url": "https://www.ft.com/content/5054739e-7f97-455c-910a-dd8a8150fed2",
+    "source": "www.ft.com",
+    "published_at": "2026-07-10T22:50:16",
+    "scraped_at": "2026-07-12T16:17:20.936847Z"
   }
 ]
