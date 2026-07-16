@@ -1,4 +1,25 @@
 services:
+  # PostgreSQL — gør stacken selvstændig (ingen ekstern DB nødvendig).
+  # Schema oprettes automatisk af backendens init_db() ved første opstart.
+  db:
+    image: postgres:16-alpine
+    container_name: judge-dredd-db
+    environment:
+      POSTGRES_USER: tyr
+      POSTGRES_PASSWORD: tyr_local_dev
+      POSTGRES_DB: tyr
+    volumes:
+      - judge-dredd-pgdata:/var/lib/postgresql/data
+    networks:
+      - judge-dredd-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tyr -d tyr"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
   # FastAPI Backend
   # Service name matches nginx.conf's upstream so the same container DNS works
   # in this standalone compose AND when the project is deployed inside a
@@ -14,11 +35,22 @@ services:
       - API_HOST=0.0.0.0
       - API_PORT=8000
       - PYTHONUNBUFFERED=1
+      # Peg på db-servicen ovenfor (vinder over en evt. DATABASE_URL i .env).
+      - DATABASE_URL=postgresql+psycopg2://tyr:tyr_local_dev@db:5432/tyr
+      # Tillad opstart uden fuld config (fx uden SMTP). Sæt OPENAI_API_KEY i
+      # .env for at aktivere de rigtige LLM-analyser.
+      - STRICT_CONFIG_VALIDATION=false
+      - ENABLE_CACHING=true
+    # .env er VALGFRI — stacken booter uden den. Opret en .env (fx fra
+    # .env.example) og læg din OPENAI_API_KEY der for fuld funktionalitet.
     env_file:
-      - .env
+      - path: .env
+        required: false
     volumes:
       - ./data:/app/data
-      - ./compliance.db:/app/compliance.db
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - judge-dredd-network
@@ -29,7 +61,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # React Frontend with Nginx
+  # React Frontend with Nginx (proxy'er /api til backend → ingen CORS)
   frontend:
     build:
       context: .
@@ -52,3 +84,6 @@ services:
 networks:
   judge-dredd-network:
     driver: bridge
+
+volumes:
+  judge-dredd-pgdata:
